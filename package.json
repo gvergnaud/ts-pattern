@@ -1,5 +1,5 @@
 {
-  "name": "@gvergnaud/match",
+  "name": "ts-pattern",
   "version": "0.0.1",
   "description": "Typescript pattern matching library",
   "main": "lib/index.js",
