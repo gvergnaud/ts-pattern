@@ -2,15 +2,15 @@
  * # Pattern matching
  **/
 
-/**
- * ## Catch All Type
- * `__` refers to a wildcard pattern matching any value
- */
 type __ = '__CATCH_ALL__';
+/**
+ * ### Catch All wildcard
+ * `__` refers to a wildcard pattern, matching any value
+ */
 export const __: __ = '__CATCH_ALL__';
 
 /**
- * ## Pattern
+ * ### Pattern
  * Patterns can be any (nested) javascript value.
  * They can also be "wildcards", using type constructors
  */
@@ -37,7 +37,7 @@ export type Pattern<a> = a extends number
   : { [k in keyof a]?: Pattern<a[k]> } | __;
 
 /**
- * ## InvertPattern
+ * ### InvertPattern
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
@@ -72,7 +72,7 @@ type InvertPattern<p> = p extends NumberConstructor
   : { [k in keyof p]: InvertPattern<p[k]> };
 
 /**
- * ## LeastUpperBound
+ * ### LeastUpperBound
  * An interesting one. A type taking two imbricated sets and returning the
  * smallest one.
  * We need that because sometimes the pattern's infered type holds more
@@ -129,42 +129,66 @@ type MatchedValue<a, p extends Pattern<a>> = LeastUpperBound<
 >;
 
 /**
- * ## match
+ * ### match
  * Entry point to create pattern matching code branches. It returns an
  * empty Match case.
  */
 export const match = <a, b>(value: a): Match<a, b> => builder<a, b>(value, []);
 
 /**
- * ## Match
+ * ### Match
  * An interface to create a pattern matching close.
  */
 type Match<a, b> = {
-  // If the data matches the given pattern, use this branch.
+  /**
+   * ### Match.with
+   * If the data matches the pattern provided as first argument,
+   * use this branch and execute the handler function.
+   **/
   with: <p extends Pattern<a>>(
     pattern: p,
     handler: (value: MatchedValue<a, p>) => b
   ) => Match<a, b>;
-  // When the first function returns a truthy value, use this branch.
+
+  /**
+   * ### Match.when
+   * When the first function returns a truthy value,
+   * use this branch and execute the handler function.
+   **/
   when: (
     predicate: (value: a) => unknown,
     handler: (value: a) => b
   ) => Match<a, b>;
-  // When the data matches the given pattern, and the predicate
-  // function returns a truthy value, use this branch.
+
+  /**
+   * ### Match.withWhen
+   * When the data matches the provided as first argument,
+   * and the predicate function provided as second argument returns a truthy value,
+   * use this branch and execute the handler function.
+   **/
   withWhen: <p extends Pattern<a>>(
     pattern: p,
     predicate: (value: MatchedValue<a, p>) => unknown,
     handler: (value: MatchedValue<a, p>) => b
   ) => Match<a, b>;
-  // Catch all branch.
+
+  /**
+   * ### Match.otherwise
+   * Catch-all branch.
+   *
+   * Equivalent to `.with(__)`
+   **/
   otherwise: (handler: () => b) => Match<a, b>;
-  // Run the pattern matching and return a value.
+
+  /**
+   * ### Match.run
+   * Runs the pattern matching and return a value.
+   * */
   run: () => b;
 };
 
 /**
- * ## builder
+ * ### builder
  * This is the implementation of our pattern matching, using the
  * builder pattern.
  * This builder pattern is neat because we can have complexe type checking
