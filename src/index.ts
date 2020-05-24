@@ -37,7 +37,7 @@ export type Pattern<a> = a extends number
   : { [k in keyof a]?: Pattern<a[k]> } | __;
 
 /**
- * ## Invert Pattern
+ * ## InvertPattern
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
@@ -70,9 +70,6 @@ type InvertPattern<p> = p extends NumberConstructor
   : p extends __
   ? __
   : { [k in keyof p]: InvertPattern<p[k]> };
-
-// A simple helper to avoid the boilerplate
-type Fun<a, b> = (value: a) => b;
 
 /**
  * ## LeastUpperBound
@@ -134,9 +131,37 @@ type MatchedValue<a, p extends Pattern<a>> = LeastUpperBound<
 /**
  * ## match
  * Entry point to create pattern matching code branches. It returns an
- * empty builder
+ * empty Match case.
  */
-export const match = <a, b>(value: a) => builder<a, b>(value, []);
+export const match = <a, b>(value: a): Match<a, b> => builder<a, b>(value, []);
+
+/**
+ * ## Match
+ * An interface to create a pattern matching close.
+ */
+type Match<a, b> = {
+  // If the data matches the given pattern, use this branch.
+  with: <p extends Pattern<a>>(
+    pattern: p,
+    handler: (value: MatchedValue<a, p>) => b
+  ) => Match<a, b>;
+  // When the first function returns a truthy value, use this branch.
+  when: (
+    predicate: (value: a) => unknown,
+    handler: (value: a) => b
+  ) => Match<a, b>;
+  // When the data matches the given pattern, and the predicate
+  // function returns a truthy value, use this branch.
+  withWhen: <p extends Pattern<a>>(
+    pattern: p,
+    predicate: (value: MatchedValue<a, p>) => unknown,
+    handler: (value: MatchedValue<a, p>) => b
+  ) => Match<a, b>;
+  // Catch all branch.
+  otherwise: (handler: () => b) => Match<a, b>;
+  // Run the pattern matching and return a value.
+  run: () => b;
+};
 
 /**
  * ## builder
@@ -145,48 +170,35 @@ export const match = <a, b>(value: a) => builder<a, b>(value, []);
  * This builder pattern is neat because we can have complexe type checking
  * for each of the methods adding new behavior to our pattern matching.
  */
-type Match<a, b> = {
-  with: <p extends Pattern<a>>(
-    pattern: p,
-    f: Fun<MatchedValue<a, p>, b>
-  ) => Match<a, b>;
-  when: (predicate: Fun<a, unknown>, f: Fun<a, b>) => Match<a, b>;
-  withWhen: <p extends Pattern<a>>(
-    pattern: p,
-    predicate: Fun<MatchedValue<a, p>, unknown>,
-    f: Fun<MatchedValue<a, p>, b>
-  ) => Match<a, b>;
-  otherwise: (f: () => b) => Match<a, b>;
-  run: () => b;
-};
-
 const builder = <a, b>(
   value: a,
-  patterns: [Fun<a, unknown>, Fun<any, b>][]
-) => ({
+  patterns: [(value: a) => unknown, (value: any) => b][]
+): Match<a, b> => ({
   with: <p extends Pattern<a>>(
     pattern: p,
-    f: Fun<MatchedValue<a, p>, b>
+    handler: (value: MatchedValue<a, p>) => b
   ): Match<a, b> =>
-    builder<a, b>(value, [...patterns, [matchPattern<a, p>(pattern), f]]),
+    builder<a, b>(value, [...patterns, [matchPattern<a, p>(pattern), handler]]),
 
-  when: (predicate: Fun<a, unknown>, f: Fun<a, b>): Match<a, b> =>
-    builder<a, b>(value, [...patterns, [predicate, f]]),
+  when: (
+    predicate: (value: a) => unknown,
+    handler: (value: a) => b
+  ): Match<a, b> => builder<a, b>(value, [...patterns, [predicate, handler]]),
 
   withWhen: <p extends Pattern<a>>(
     pattern: p,
-    predicate: Fun<MatchedValue<a, p>, unknown>,
-    f: Fun<MatchedValue<a, p>, b>
+    predicate: (value: MatchedValue<a, p>) => unknown,
+    handler: (value: MatchedValue<a, p>) => b
   ): Match<a, b> => {
     const doesMatch = (value: a) =>
       Boolean(matchPattern<a, p>(pattern)(value) && predicate(value as any));
-    return builder<a, b>(value, [...patterns, [doesMatch, f]]);
+    return builder<a, b>(value, [...patterns, [doesMatch, handler]]);
   },
 
-  otherwise: (f: () => b): Match<a, b> =>
+  otherwise: (handler: () => b): Match<a, b> =>
     builder<a, b>(value, [
       ...patterns,
-      [matchPattern<a, Pattern<a>>(__ as Pattern<a>), f],
+      [matchPattern<a, Pattern<a>>(__ as Pattern<a>), handler],
     ]),
 
   run: (): b => {
@@ -221,7 +233,7 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
 
   if (Array.isArray(pattern) && Array.isArray(value)) {
     return pattern.length === 1
-      ? value.every((v, i) => matchPattern(pattern[0])(v))
+      ? value.every((v) => matchPattern(pattern[0])(v))
       : pattern.length === value.length
       ? value.every((v, i) =>
           pattern[i] ? matchPattern(pattern[i])(v) : false
