@@ -145,27 +145,45 @@ export const match = <a, b>(value: a) => builder<a, b>(value, []);
  * This builder pattern is neat because we can have complexe type checking
  * for each of the methods adding new behavior to our pattern matching.
  */
+type Match<a, b> = {
+  with: <p extends Pattern<a>>(
+    pattern: p,
+    f: Fun<MatchedValue<a, p>, b>
+  ) => Match<a, b>;
+  when: (predicate: Fun<a, unknown>, f: Fun<a, b>) => Match<a, b>;
+  withWhen: <p extends Pattern<a>>(
+    pattern: p,
+    predicate: Fun<MatchedValue<a, p>, unknown>,
+    f: Fun<MatchedValue<a, p>, b>
+  ) => Match<a, b>;
+  otherwise: (f: () => b) => Match<a, b>;
+  run: () => b;
+};
+
 const builder = <a, b>(
   value: a,
   patterns: [Fun<a, unknown>, Fun<any, b>][]
 ) => ({
-  with: <p extends Pattern<a>>(pattern: p, f: Fun<MatchedValue<a, p>, b>) =>
+  with: <p extends Pattern<a>>(
+    pattern: p,
+    f: Fun<MatchedValue<a, p>, b>
+  ): Match<a, b> =>
     builder<a, b>(value, [...patterns, [matchPattern<a, p>(pattern), f]]),
 
-  when: (predicate: Fun<a, unknown>, f: Fun<a, b>) =>
+  when: (predicate: Fun<a, unknown>, f: Fun<a, b>): Match<a, b> =>
     builder<a, b>(value, [...patterns, [predicate, f]]),
 
   withWhen: <p extends Pattern<a>>(
     pattern: p,
     predicate: Fun<MatchedValue<a, p>, unknown>,
     f: Fun<MatchedValue<a, p>, b>
-  ) => {
+  ): Match<a, b> => {
     const doesMatch = (value: a) =>
       Boolean(matchPattern<a, p>(pattern)(value) && predicate(value as any));
     return builder<a, b>(value, [...patterns, [doesMatch, f]]);
   },
 
-  otherwise: (f: () => b) =>
+  otherwise: (f: () => b): Match<a, b> =>
     builder<a, b>(value, [
       ...patterns,
       [matchPattern<a, Pattern<a>>(__ as Pattern<a>), f],
