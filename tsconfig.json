@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "strict": true,
+    "downlevelIteration": true,
+    "outDir": "lib/"
+  },
+  "exclude": ["tests/"]
+}

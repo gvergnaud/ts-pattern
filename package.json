@@ -1,0 +1,40 @@
+{
+  "name": "@gvergnaud/match",
+  "version": "0.0.1",
+  "description": "Typescript pattern matching library",
+  "main": "lib/index.js",
+  "scripts": {
+    "clean": "rimraf lib",
+    "build": "tsc -d",
+    "prepare": "npm run clean && npm run build",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/gvergnaud/match.git"
+  },
+  "keywords": [
+    "pattern",
+    "matching",
+    "pattern-matching",
+    "typescript",
+    "match-with",
+    "match",
+    "switch",
+    "adt"
+  ],
+  "author": "Gabriel Vergnaud",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gvergnaud/match/issues"
+  },
+  "homepage": "https://github.com/gvergnaud/match#readme",
+  "devDependencies": {
+    "@types/jest": "^25.2.3",
+    "jest": "^26.0.1",
+    "prettier": "^2.0.5",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.0.0",
+    "typescript": "^3.9.3"
+  }
+}
