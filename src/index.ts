@@ -135,6 +135,13 @@ type MatchedValue<a, p extends Pattern<a>> = LeastUpperBound<
  */
 export const match = <a, b>(value: a): Match<a, b> => builder<a, b>(value, []);
 
+type InvertPredicate<a, p extends (value: a) => unknown> = p extends (
+  value: a
+  // @ts-ignore
+) => value is infer b
+  ? b
+  : a;
+
 /**
  * ### Match
  * An interface to create a pattern matching close.
@@ -155,21 +162,24 @@ type Match<a, b> = {
    * When the first function returns a truthy value,
    * use this branch and execute the handler function.
    **/
-  when: (
-    predicate: (value: a) => unknown,
-    handler: (value: a) => b
+  when: <p extends (value: a) => unknown>(
+    predicate: p,
+    handler: (value: InvertPredicate<a, p>) => b
   ) => Match<a, b>;
 
   /**
    * ### Match.withWhen
-   * When the data matches the provided as first argument,
+   * When the data matches the pattern provided as first argument,
    * and the predicate function provided as second argument returns a truthy value,
    * use this branch and execute the handler function.
    **/
-  withWhen: <p extends Pattern<a>>(
-    pattern: p,
-    predicate: (value: MatchedValue<a, p>) => unknown,
-    handler: (value: MatchedValue<a, p>) => b
+  withWhen: <
+    pat extends Pattern<a>,
+    pred extends (value: MatchedValue<a, pat>) => unknown
+  >(
+    pattern: pat,
+    predicate: pred,
+    handler: (value: InvertPredicate<MatchedValue<a, pat>, pred>) => b
   ) => Match<a, b>;
 
   /**
@@ -204,18 +214,21 @@ const builder = <a, b>(
   ): Match<a, b> =>
     builder<a, b>(value, [...patterns, [matchPattern<a, p>(pattern), handler]]),
 
-  when: (
-    predicate: (value: a) => unknown,
-    handler: (value: a) => b
+  when: <p extends (value: a) => unknown>(
+    predicate: p,
+    handler: (value: InvertPredicate<a, p>) => b
   ): Match<a, b> => builder<a, b>(value, [...patterns, [predicate, handler]]),
 
-  withWhen: <p extends Pattern<a>>(
-    pattern: p,
-    predicate: (value: MatchedValue<a, p>) => unknown,
-    handler: (value: MatchedValue<a, p>) => b
+  withWhen: <
+    pat extends Pattern<a>,
+    pred extends (value: MatchedValue<a, pat>) => unknown
+  >(
+    pattern: pat,
+    predicate: pred,
+    handler: (value: InvertPredicate<MatchedValue<a, pat>, pred>) => b
   ): Match<a, b> => {
     const doesMatch = (value: a) =>
-      Boolean(matchPattern<a, p>(pattern)(value) && predicate(value as any));
+      Boolean(matchPattern<a, pat>(pattern)(value) && predicate(value as any));
     return builder<a, b>(value, [...patterns, [doesMatch, handler]]);
   },
 
