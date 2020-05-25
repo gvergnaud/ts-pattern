@@ -1,13 +1,15 @@
 {
   "name": "ts-pattern",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Typescript pattern matching library",
   "main": "lib/index.js",
   "scripts": {
     "clean": "rimraf lib",
     "build": "tsc -d",
     "prepare": "npm run test && npm run clean && npm run build",
-    "test": "jest"
+    "test:values": "jest",
+    "test:types": "tsc --project tests/tsconfig.json",
+    "test": "npm run test:types && npm run test:values"
   },
   "repository": {
     "type": "git",
