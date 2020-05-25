@@ -2,6 +2,16 @@
  * # Pattern matching
  **/
 
+/**
+ * GuardValue returns the value guarded by a type guard function.
+ */
+type GuardValue<F> = F extends (value: any) => value is infer b
+  ? b
+  : F extends (value: infer a) => unknown
+  ? a
+  : never;
+
+/** type alias for the catch all string */
 type __ = '__CATCH_ALL__';
 /**
  * ### Catch All wildcard
@@ -135,13 +145,6 @@ type MatchedValue<a, p extends Pattern<a>> = LeastUpperBound<
  */
 export const match = <a, b>(value: a): Match<a, b> => builder<a, b>(value, []);
 
-type InvertPredicate<a, p extends (value: a) => unknown> = p extends (
-  value: a
-  // @ts-ignore
-) => value is infer b
-  ? b
-  : a;
-
 /**
  * ### Match
  * An interface to create a pattern matching close.
@@ -164,7 +167,7 @@ type Match<a, b> = {
    **/
   when: <p extends (value: a) => unknown>(
     predicate: p,
-    handler: (value: InvertPredicate<a, p>) => b
+    handler: (value: GuardValue<p>) => b
   ) => Match<a, b>;
 
   /**
@@ -179,7 +182,7 @@ type Match<a, b> = {
   >(
     pattern: pat,
     predicate: pred,
-    handler: (value: InvertPredicate<MatchedValue<a, pat>, pred>) => b
+    handler: (value: GuardValue<pred>) => b
   ) => Match<a, b>;
 
   /**
@@ -216,7 +219,7 @@ const builder = <a, b>(
 
   when: <p extends (value: a) => unknown>(
     predicate: p,
-    handler: (value: InvertPredicate<a, p>) => b
+    handler: (value: GuardValue<p>) => b
   ): Match<a, b> => builder<a, b>(value, [...patterns, [predicate, handler]]),
 
   withWhen: <
@@ -225,7 +228,7 @@ const builder = <a, b>(
   >(
     pattern: pat,
     predicate: pred,
-    handler: (value: InvertPredicate<MatchedValue<a, pat>, pred>) => b
+    handler: (value: GuardValue<pred>) => b
   ): Match<a, b> => {
     const doesMatch = (value: a) =>
       Boolean(matchPattern<a, pat>(pattern)(value) && predicate(value as any));
