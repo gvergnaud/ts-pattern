@@ -11,52 +11,84 @@ type GuardValue<F> = F extends (value: any) => value is infer b
   ? a
   : never;
 
-/** type alias for the catch all string */
-type __ = '__CATCH_ALL__';
+type GuardFunction<a> = (value: a) => boolean;
+
 /**
  * ### Catch All wildcard
  * `__` refers to a wildcard pattern, matching any value
  */
-export const __: __ = '__CATCH_ALL__';
+export const __ = {
+  string: '@match/string',
+  number: '@match/number',
+  boolean: '@match/boolean',
+} as const;
+
+/** type alias for the catch all string */
+type __ = typeof __;
+type StringPattern = '@match/string';
+type NumberPattern = '@match/number';
+type BooleanPattern = '@match/boolean';
+
+type SpecialPattern<a> = a extends number
+  ? NumberPattern | __
+  : a extends string
+  ? StringPattern | __
+  : a extends boolean
+  ? BooleanPattern | __
+  : __;
+
+type Primitives =
+  | number
+  | boolean
+  | string
+  | undefined
+  | null
+  | symbol
+  | bigint;
 
 /**
  * ### Pattern
  * Patterns can be any (nested) javascript value.
  * They can also be "wildcards", using type constructors
  */
-export type Pattern<a> = a extends number
-  ? a | NumberConstructor | __
-  : a extends string
-  ? a | StringConstructor | __
-  : a extends boolean
-  ? a | BooleanConstructor | __
-  : a extends [infer b, infer c, infer d, infer e, infer f]
-  ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>] | __
-  : a extends [infer b, infer c, infer d, infer e]
-  ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>] | __
-  : a extends [infer b, infer c, infer d]
-  ? [Pattern<b>, Pattern<c>, Pattern<d>] | __
-  : a extends [infer b, infer c]
-  ? [Pattern<b>, Pattern<c>] | __
-  : a extends (infer b)[]
-  ? Pattern<b>[] | __
-  : a extends Map<infer k, infer v>
-  ? Map<k, Pattern<v>> | __
-  : a extends Set<infer v>
-  ? Set<Pattern<v>> | __
-  : { [k in keyof a]?: Pattern<a[k]> } | __;
+export type Pattern<a> =
+  | GuardFunction<a>
+  | SpecialPattern<a>
+  | (a extends Primitives
+      ? a
+      : a extends [infer b, infer c, infer d, infer e, infer f]
+      ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>]
+      : a extends [infer b, infer c, infer d, infer e]
+      ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>]
+      : a extends [infer b, infer c, infer d]
+      ? [Pattern<b>, Pattern<c>, Pattern<d>]
+      : a extends [infer b, infer c]
+      ? [Pattern<b>, Pattern<c>]
+      : a extends (infer b)[]
+      ? Pattern<b>[]
+      : a extends Map<infer k, infer v>
+      ? Map<k, Pattern<v>>
+      : a extends Set<infer v>
+      ? Set<Pattern<v>>
+      : a extends object
+      ? { [k in keyof a]?: Pattern<a[k]> }
+      : a);
 
 /**
  * ### InvertPattern
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
-type InvertPattern<p> = p extends NumberConstructor
+export type InvertPattern<p> = p extends NumberPattern
   ? number
-  : p extends StringConstructor
+  : p extends StringPattern
   ? string
-  : p extends BooleanConstructor
+  : p extends BooleanPattern
   ? boolean
+  : p extends __
+  ? __
+  : p extends Primitives
+  ? p
   : p extends [infer pb, infer pc, infer pd, infer pe, infer pf]
   ? [
       InvertPattern<pb>,
@@ -77,9 +109,11 @@ type InvertPattern<p> = p extends NumberConstructor
   ? Map<pk, InvertPattern<pv>>
   : p extends Set<infer pv>
   ? Set<InvertPattern<pv>>
-  : p extends __
-  ? __
-  : { [k in keyof p]: InvertPattern<p[k]> };
+  : p extends GuardFunction<any>
+  ? GuardValue<p>
+  : p extends object
+  ? { [k in keyof p]: InvertPattern<p[k]> }
+  : p;
 
 /**
  * ### LeastUpperBound
@@ -89,7 +123,7 @@ type InvertPattern<p> = p extends NumberConstructor
  * information than the value on which we are matching (if the value is any
  * or unknown for instance).
  */
-type LeastUpperBound<a, b> = [a, b] extends [
+export type LeastUpperBound<a, b> = [a, b] extends [
   [infer aa, infer ab, infer ac, infer ad, infer ae],
   [infer ba, infer bb, infer bc, infer bd, infer be]
 ] // quintupple
@@ -127,13 +161,39 @@ type LeastUpperBound<a, b> = [a, b] extends [
   ? a
   : a extends __
   ? b
+  : [a, b] extends [object, object]
+  ? ObjectLeastUpperBound<a, b>
   : b extends a
   ? b
   : a extends b
   ? a
   : never;
 
-type MatchedValue<a, p extends Pattern<a>> = LeastUpperBound<
+/**
+ * if a key of an object has the never type,
+ * returns never, otherwise returns the type of object
+ **/
+type ExcludeIfContainsNever<a> = ValueOf<
+  {
+    [k in keyof a]: a[k] extends never ? 'exclude' : 'include';
+  }
+> extends 'include'
+  ? a
+  : never;
+
+type ObjectLeastUpperBound<a, b> = b extends a
+  ? b
+  : a extends b
+  ? a
+  : ExcludeIfContainsNever<
+      {
+        [k in keyof a]: k extends keyof b ? LeastUpperBound<a[k], b[k]> : a[k];
+      }
+    >;
+
+type ValueOf<a> = a[keyof a];
+
+export type MatchedValue<a, p extends Pattern<a>> = LeastUpperBound<
   a,
   InvertPattern<p>
 >;
@@ -256,18 +316,20 @@ const builder = <a, b>(
 const isObject = (value: unknown): value is Object =>
   value && typeof value === 'object';
 
-const wildcards = [String, Boolean, Number];
+const isPredicate = (f: unknown): f is (value: any) => unknown =>
+  typeof f === 'function';
 
 // tells us if the value matches a given pattern.
 const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
   value: a
 ): boolean => {
   if (pattern === __) return true;
-  if (pattern === String) return typeof value === 'string';
-  if (pattern === Boolean) return typeof value === 'boolean';
-  if (pattern === Number) {
+  if (pattern === __.string) return typeof value === 'string';
+  if (pattern === __.boolean) return typeof value === 'boolean';
+  if (pattern === __.number) {
     return typeof value === 'number' && !Number.isNaN(value);
   }
+  if (isPredicate(pattern)) return Boolean(pattern(value));
 
   if (typeof pattern !== typeof value) return false;
 
@@ -294,7 +356,7 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
       ? allValues.length === 0
       : patternValues.length === 1
       ? patternValues.every((subPattern) =>
-          wildcards.includes(subPattern)
+          Object.values(__).includes(subPattern)
             ? matchPattern<any, Pattern<any>>([subPattern])(allValues)
             : value.has(subPattern)
         )

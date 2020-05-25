@@ -1,4 +1,11 @@
-import { match, __, Pattern } from '../src';
+import {
+  match,
+  __,
+  Pattern,
+  InvertPattern,
+  LeastUpperBound,
+  MatchedValue,
+} from '../src';
 
 type Option<a> = { kind: 'none' } | { kind: 'some'; value: a };
 
@@ -8,10 +15,10 @@ type Blog = {
 };
 
 type State =
-  | { status: 'idle'; data?: undefined; error?: undefined }
-  | { status: 'loading'; data?: undefined; error?: undefined }
-  | { status: 'success'; data: string; error?: undefined }
-  | { status: 'error'; data?: undefined; error: Error };
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: string }
+  | { status: 'error'; error: Error };
 
 type Event =
   | { type: 'fetch' }
@@ -20,13 +27,14 @@ type Event =
   | { type: 'cancel' };
 
 describe('types', () => {
-  it('Pattern type should typecheck', () => {
-    type Input = [State, Event];
+  type Input = [State, Event];
 
+  it('wildcard patterns should typecheck', () => {
     let pattern: Pattern<Input>;
     pattern = __;
     pattern = [__, __];
     pattern = [{ status: 'success', data: '' }, __];
+    pattern = [{ status: 'success', data: __.string }, __];
     pattern = [{ status: 'success', data: __ }, __];
     pattern = [{ status: 'error', error: new Error() }, __];
     pattern = [{ status: 'idle' }, __];
@@ -34,6 +42,50 @@ describe('types', () => {
     pattern = [__, { type: __ }];
     pattern = [{ status: 'idle' }, { type: 'fetch' }];
     pattern = [{ status: __ }, { type: __ }];
+  });
+
+  it('guard patterns should typecheck', () => {
+    const pattern1: Pattern<Input> = () => true;
+    const pattern2: Pattern<Input> = (x) => {
+      const inferenceCheck: Input = x;
+      return true;
+    };
+    const pattern3: Pattern<Input> = [(data) => !!data, (event) => !!event];
+    const pattern3_1: Pattern<Input> = [
+      __,
+      { type: (t: Event['type']) => true },
+    ];
+    const pattern4: Pattern<Input> = [
+      { status: 'success', data: (d) => true },
+      __,
+    ];
+    const pattern4_1: Pattern<Input> = [{ status: 'error', data: '' }, __];
+    const pattern5: Pattern<Input> = [__, { type: (t: Event['type']) => true }];
+
+    const isFetch = (type: string): type is 'fetch' => type === 'fetch';
+
+    const pattern6: Pattern<Input> = [__, { type: isFetch }];
+
+    const pattern7: Pattern<{ x: string }> = {
+      x: (x) => true,
+    };
+
+    const pattern8: Pattern<[{ x: string }]> = [
+      {
+        x: (x) => true,
+      },
+    ];
+
+    const pattern9: Pattern<[{ x: string }, { y: number }]> = [
+      {
+        x: (x) => true,
+      },
+      {
+        y: (y) => true,
+      },
+    ];
+
+    const pattern10: Pattern<string | number> = (x) => true;
   });
 });
 
@@ -118,7 +170,7 @@ describe('match', () => {
           const inferenceCheck: never[] = x;
           return { kind: 'some', value: [{ id: 0, title: 'LOlol' }] };
         })
-        .with([{ id: Number, title: String }], (blogs) => {
+        .with([{ id: __.number, title: __.string }], (blogs) => {
           const inferenceCheck: { id: number; title: string }[] = blogs;
           return {
             kind: 'some',
@@ -141,10 +193,10 @@ describe('match', () => {
       const sum = (xs: number[]): number =>
         match<number[], number>(xs)
           .with([], () => 0)
-          .with([Number, Number], ([x, y]) => x + y)
-          .with([Number, Number, Number], ([x, y, z]) => x + y + z)
+          .with([__.number, __.number], ([x, y]) => x + y)
+          .with([__.number, __.number, __.number], ([x, y, z]) => x + y + z)
           .with(
-            [Number, Number, Number, Number],
+            [__.number, __.number, __.number, __.number],
             ([x, y, z, w]) => x + y + z + w
           )
           .run();
@@ -176,7 +228,7 @@ describe('match', () => {
                 const inferenceCheck: [string, number] = x;
                 return `number match`;
               })
-              .with([String, Number], (x) => {
+              .with([__.string, __.number], (x) => {
                 const inferenceCheck: [string, number] = x;
                 return `not matching`;
               })
@@ -246,7 +298,7 @@ describe('match', () => {
         ['angégé', { name: 'angéline' }],
       ]);
 
-      const userPattern = { name: String };
+      const userPattern = { name: __.string };
 
       const res = match<Map<string, { name: string }>, { name: string }>(
         usersMap
@@ -315,11 +367,11 @@ describe('match', () => {
       }; /* API logic. */
 
       const res = match<any, Blog | Error>(httpResult)
-        .with({ id: Number, title: String }, (r) => ({
+        .with({ id: __.number, title: __.string }, (r) => ({
           id: r.id,
           title: r.title,
         }))
-        .with({ errorMessage: String }, (r) => new Error(r.errorMessage))
+        .with({ errorMessage: __.string }, (r) => new Error(r.errorMessage))
         .otherwise(() => new Error('Client parse error'))
         .run();
 
@@ -412,12 +464,64 @@ describe('match', () => {
             .withWhen(
               { status: 'success' },
               (x) => x.data.length > 3,
-              () => true
+              (x) => {
+                const inferenceCheck: { status: 'success'; data: string } = x;
+                return true;
+              }
             )
             .otherwise(() => false)
             .run()
         ).toEqual(expected);
       });
+    });
+  });
+
+  describe('with when closes', () => {
+    it('type of value in predicate should be infered', () => {
+      type Vec3 = { x: number; y: number; z: number };
+      const vec: Vec3 = { x: 20, y: 4, z: 2 };
+
+      const res = match<Vec3, boolean>(vec)
+        .with(
+          {
+            x: (x): x is 20 => {
+              const inferenceCheck: number = x;
+              return x === 20;
+            },
+            y: __.number,
+          },
+          (vec) => {
+            const inferenceCheck: { x: 20; y: number; z: number } = vec;
+            return vec.y > 2;
+          }
+        )
+        .with(__, (x) => false)
+        .run();
+
+      expect(res).toEqual(true);
+
+      type A = { x: number; y: number; z: number };
+
+      type P = {
+        x: number;
+        y: (value: any) => value is 20;
+      };
+
+      type Y = InvertPattern<P>;
+      type X = MatchedValue<A, P>;
+
+      const lol: X = { x: 20, y: 20, z: 2 };
+
+      type EvPattern = { type: 'success' };
+
+      type Z3 = Event extends EvPattern ? true : false;
+      type Z4 = EvPattern extends Event ? true : false;
+
+      type Z = LeastUpperBound<Event, EvPattern>;
+
+      type Z2 = keyof Event | keyof EvPattern;
+
+      const ev: Z = { type: 'success', data: '' };
     });
   });
 });

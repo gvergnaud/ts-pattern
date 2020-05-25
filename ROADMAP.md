@@ -1,5 +1,7 @@
 ### Roadmap
 
+- [ ] Forbid impossible patterns like `{ status: 'error', data: (data) => data.length > 3 }` (error have no data)
+
 - [ ] Find a way to enforce exhaustive pattern matching
 - [ ] Add `not(value)` in patterns.
   - this should have type like `{type: 'not', value: T }` which could be inverted to
