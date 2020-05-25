@@ -379,6 +379,22 @@ describe('match', () => {
         ).toEqual(expected);
       });
     });
+
+    it('should narrow down the value type based on type guard', () => {
+      let n = 20;
+      const res = match<number, boolean>(n)
+        .when(
+          (x): x is 13 => x === 13,
+          (x) => {
+            const inferenceCheck: 13 = x;
+            return true;
+          }
+        )
+        .otherwise(() => false)
+        .run();
+
+      const inferenceCheck: boolean = res;
+    });
   });
 
   describe('withWhen', () => {
