@@ -3,5 +3,3 @@ node_modules
 npm-debug.log
 lib
 notes.md
-index.js
-index.d.ts
