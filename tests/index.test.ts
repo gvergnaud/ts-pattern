@@ -1,11 +1,4 @@
-import {
-  match,
-  __,
-  Pattern,
-  InvertPattern,
-  LeastUpperBound,
-  MatchedValue,
-} from '../src';
+import { match, __, when, not, Pattern } from '../src';
 
 type Option<a> = { kind: 'none' } | { kind: 'some'; value: a };
 
@@ -45,47 +38,85 @@ describe('types', () => {
   });
 
   it('guard patterns should typecheck', () => {
-    const pattern1: Pattern<Input> = () => true;
-    const pattern2: Pattern<Input> = (x) => {
+    const pattern1: Pattern<Input> = when(() => true);
+    const pattern2: Pattern<Input> = when((x) => {
       const inferenceCheck: Input = x;
       return true;
-    };
-    const pattern3: Pattern<Input> = [(data) => !!data, (event) => !!event];
+    });
+
+    const pattern3: Pattern<Input> = [
+      when((state) => {
+        const inferenceCheck: State = state;
+        return !!state;
+      }),
+      when((event) => {
+        const inferenceCheck: Event = event;
+        return !!event;
+      }),
+    ];
+
     const pattern3_1: Pattern<Input> = [
       __,
-      { type: (t: Event['type']) => true },
+      { type: when((t: Event['type']) => true) },
     ];
+
     const pattern4: Pattern<Input> = [
-      { status: 'success', data: (d) => true },
+      {
+        status: 'success',
+        data: when((d) => {
+          const inferenceCheck: string = d;
+          return true;
+        }),
+      },
       __,
     ];
+
     const pattern4_1: Pattern<Input> = [{ status: 'error', data: '' }, __];
-    const pattern5: Pattern<Input> = [__, { type: (t: Event['type']) => true }];
+
+    const pattern5: Pattern<Input> = [
+      __,
+      { type: when((t: Event['type']) => true) },
+    ];
 
     const isFetch = (type: string): type is 'fetch' => type === 'fetch';
 
-    const pattern6: Pattern<Input> = [__, { type: isFetch }];
+    const pattern6: Pattern<Input> = [__, { type: when(isFetch) }];
 
     const pattern7: Pattern<{ x: string }> = {
-      x: (x) => true,
+      x: when((x) => {
+        const inferenceCheck: string = x;
+        return true;
+      }),
     };
 
     const pattern8: Pattern<[{ x: string }]> = [
       {
-        x: (x) => true,
+        x: when((x) => {
+          const inferenceCheck: string = x;
+          return true;
+        }),
       },
     ];
 
     const pattern9: Pattern<[{ x: string }, { y: number }]> = [
       {
-        x: (x) => true,
+        x: when((x) => {
+          const inferenceCheck: string = x;
+          return true;
+        }),
       },
       {
-        y: (y) => true,
+        y: when((y) => {
+          const inferenceCheck: number = y;
+          return true;
+        }),
       },
     ];
 
-    const pattern10: Pattern<string | number> = (x) => true;
+    const pattern10: Pattern<string | number> = when((x) => {
+      const inferenceCheck: string | number = x;
+      return true;
+    });
   });
 });
 
@@ -355,6 +386,8 @@ describe('match', () => {
       expect(containsGabAndYo(new Set(['hello']))).toEqual([false, false]);
       expect(containsGabAndYo(new Set([]))).toEqual([false, false]);
       expect(containsGabAndYo(new Set([2]))).toEqual([false, false]);
+      expect(containsGabAndYo(new Set([__.number]))).toEqual([false, false]);
+      expect(containsGabAndYo(new Set([__.string]))).toEqual([false, false]);
     });
   });
 
@@ -476,52 +509,93 @@ describe('match', () => {
     });
   });
 
-  describe('with when closes', () => {
+  describe('pattern containing a when close', () => {
     it('type of value in predicate should be infered', () => {
       type Vec3 = { x: number; y: number; z: number };
       const vec: Vec3 = { x: 20, y: 4, z: 2 };
 
-      const res = match<Vec3, boolean>(vec)
-        .with(
-          {
-            x: (x): x is 20 => {
-              const inferenceCheck: number = x;
-              return x === 20;
+      const get = (vec: Vec3) =>
+        match<Vec3, boolean>(vec)
+          .with(
+            {
+              x: when((x): x is 20 => {
+                const inferenceCheck: number = x;
+                return x === 20;
+              }),
+              y: __.number,
             },
-            y: __.number,
-          },
-          (vec) => {
-            const inferenceCheck: { x: 20; y: number; z: number } = vec;
-            return vec.y > 2;
-          }
-        )
-        .with(__, (x) => false)
-        .run();
+            (vec) => {
+              const inferenceCheck: Vec3 = vec;
+              return vec.y > 2;
+            }
+          )
+          .with(
+            when(() => true),
+            (x) => {
+              const inferenceCheck: Vec3 = vec;
+              return false;
+            }
+          )
+          .run();
 
-      expect(res).toEqual(true);
-
-      type A = { x: number; y: number; z: number };
-
-      type P = {
-        x: number;
-        y: (value: any) => value is 20;
-      };
-
-      type Y = InvertPattern<P>;
-      type X = MatchedValue<A, P>;
-
-      const lol: X = { x: 20, y: 20, z: 2 };
-
-      type EvPattern = { type: 'success' };
-
-      type Z3 = Event extends EvPattern ? true : false;
-      type Z4 = EvPattern extends Event ? true : false;
-
-      type Z = LeastUpperBound<Event, EvPattern>;
-
-      type Z2 = keyof Event | keyof EvPattern;
-
-      const ev: Z = { type: 'success', data: '' };
+      expect(get(vec)).toEqual(true);
+      expect(get({ x: 2, y: 1, z: 0 })).toEqual(false);
     });
+  });
+
+  describe('pattern containing a not close', () => {
+    it('should work at the top level', () => {
+      const get = (x: unknown) =>
+        match<unknown, string>(x)
+          .with(not(__.number), (x) => {
+            const inferenceCheck: unknown = x;
+            return 'not a number';
+          })
+          .with(not(__.string), (x) => {
+            const inferenceCheck: unknown = x;
+            return 'not a string';
+          })
+          .run();
+
+      expect(get(20)).toEqual('not a string');
+      expect(get('hello')).toEqual('not a number');
+    });
+
+    it('should work in a nested structure', () => {
+      type DS = { x: string | number; y: string | number };
+      const get = (x: DS) =>
+        match<DS, string>(x)
+          .with({ y: __.number, x: not(__.string) }, (x) => {
+            const inferenceCheck: { x: number; y: number } = x;
+            return 'yes';
+          })
+          .with(__, () => 'no')
+          .run();
+
+      expect(get({ x: 2, y: 2 })).toEqual('yes');
+      expect(get({ y: 2, x: 'hello' })).toEqual('no');
+    });
+
+    it('should discriminate union types correctly', () => {
+      const one = 'one';
+      const two = 'two';
+
+      const get = (x: 'one' | 'two') =>
+        match<'one' | 'two', string>(x)
+          .with(not(one), (x) => {
+            const inferenceCheck: 'two' = x;
+            return 'not 1';
+          })
+          .with(not(two), (x) => {
+            const inferenceCheck: 'one' = x;
+            return 'not 2';
+          })
+          .run();
+
+      expect(get('two')).toEqual('not 1');
+      expect(get('one')).toEqual('not 2');
+    });
+
+    it('type of value in predicate should be infered', () => {});
   });
 });

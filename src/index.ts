@@ -2,40 +2,26 @@
  * # Pattern matching
  **/
 
-/**
- * GuardValue returns the value guarded by a type guard function.
- */
-type GuardValue<F> = F extends (value: any) => value is infer b
-  ? b
-  : F extends (value: infer a) => unknown
-  ? a
-  : never;
-
-type GuardFunction<a> = (value: a) => boolean;
+enum PatternType {
+  String = '@match/string',
+  Number = '@match/number',
+  Boolean = '@match/boolean',
+  Guard = '@match/guard',
+  Not = '@match/not',
+}
 
 /**
  * ### Catch All wildcard
  * `__` refers to a wildcard pattern, matching any value
  */
 export const __ = {
-  string: '@match/string',
-  number: '@match/number',
-  boolean: '@match/boolean',
+  string: PatternType.String,
+  number: PatternType.Number,
+  boolean: PatternType.Boolean,
 } as const;
 
 /** type alias for the catch all string */
 type __ = typeof __;
-type StringPattern = '@match/string';
-type NumberPattern = '@match/number';
-type BooleanPattern = '@match/boolean';
-
-type SpecialPattern<a> = a extends number
-  ? NumberPattern | __
-  : a extends string
-  ? StringPattern | __
-  : a extends boolean
-  ? BooleanPattern | __
-  : __;
 
 type Primitives =
   | number
@@ -47,12 +33,42 @@ type Primitives =
   | bigint;
 
 /**
+ * GuardValue returns the value guarded by a type guard function.
+ */
+type GuardValue<F> = F extends (value: any) => value is infer b
+  ? b
+  : F extends (value: infer a) => unknown
+  ? a
+  : never;
+
+type GuardFunction<a> = (value: a) => unknown;
+
+type GuardPattern<a> = {
+  patternKind: PatternType.Guard;
+  when: GuardFunction<a>;
+};
+
+type NotPattern<a> = {
+  patternKind: PatternType.Not;
+  pattern: Pattern<a>;
+};
+
+type SpecialPattern<a> = a extends number
+  ? typeof __.number | __
+  : a extends string
+  ? typeof __.string | __
+  : a extends boolean
+  ? typeof __.boolean | __
+  : __;
+
+/**
  * ### Pattern
  * Patterns can be any (nested) javascript value.
  * They can also be "wildcards", using type constructors
  */
 export type Pattern<a> =
-  | GuardFunction<a>
+  | GuardPattern<a>
+  | NotPattern<a | any>
   | SpecialPattern<a>
   | (a extends Primitives
       ? a
@@ -79,14 +95,21 @@ export type Pattern<a> =
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
-export type InvertPattern<p> = p extends NumberPattern
+type InvertPattern<p> = p extends typeof __.number
   ? number
-  : p extends StringPattern
+  : p extends typeof __.string
   ? string
-  : p extends BooleanPattern
+  : p extends typeof __.boolean
   ? boolean
   : p extends __
   ? __
+  : p extends GuardPattern<infer pb>
+  ? GuardValue<p['when']>
+  : p extends NotPattern<infer pb>
+  ? {
+      valueKind: PatternType.Not;
+      pattern: InvertPattern<pb>;
+    }
   : p extends Primitives
   ? p
   : p extends [infer pb, infer pc, infer pd, infer pe, infer pf]
@@ -109,8 +132,6 @@ export type InvertPattern<p> = p extends NumberPattern
   ? Map<pk, InvertPattern<pv>>
   : p extends Set<infer pv>
   ? Set<InvertPattern<pv>>
-  : p extends GuardFunction<any>
-  ? GuardValue<p>
   : p extends object
   ? { [k in keyof p]: InvertPattern<p[k]> }
   : p;
@@ -123,51 +144,54 @@ export type InvertPattern<p> = p extends NumberPattern
  * information than the value on which we are matching (if the value is any
  * or unknown for instance).
  */
-export type LeastUpperBound<a, b> = [a, b] extends [
-  [infer aa, infer ab, infer ac, infer ad, infer ae],
-  [infer ba, infer bb, infer bc, infer bd, infer be]
+
+type LeastUpperBound<a, b> = b extends a ? b : a extends b ? a : never;
+
+type ExtractMostPreciseValue<a, b> = [a, b] extends [
+  [infer a1, infer a2, infer a3, infer a4, infer a5],
+  [infer b1, infer b2, infer b3, infer b4, infer b5]
 ] // quintupple
   ? [
-      LeastUpperBound<aa, ba>,
-      LeastUpperBound<ab, bb>,
-      LeastUpperBound<ac, bc>,
-      LeastUpperBound<ad, bd>,
-      LeastUpperBound<ae, be>
+      ExtractMostPreciseValue<a1, b1>,
+      ExtractMostPreciseValue<a2, b2>,
+      ExtractMostPreciseValue<a3, b3>,
+      ExtractMostPreciseValue<a4, b4>,
+      ExtractMostPreciseValue<a5, b5>
     ]
   : [a, b] extends [
-      [infer aa, infer ab, infer ac, infer ad],
-      [infer ba, infer bb, infer bc, infer bd]
-    ] // quadrupple
+      [infer a1, infer a2, infer a3, infer a4],
+      [infer b1, infer b2, infer b3, infer b4]
+    ] // qua4rupple
   ? [
-      LeastUpperBound<aa, ba>,
-      LeastUpperBound<ab, bb>,
-      LeastUpperBound<ac, bc>,
-      LeastUpperBound<ad, bd>
+      ExtractMostPreciseValue<a1, b1>,
+      ExtractMostPreciseValue<a2, b2>,
+      ExtractMostPreciseValue<a3, b3>,
+      ExtractMostPreciseValue<a4, b4>
     ]
   : [a, b] extends [
-      [infer aa, infer ab, infer ac],
-      [infer ba, infer bb, infer bc]
+      [infer a1, infer a2, infer a3],
+      [infer b1, infer b2, infer b3]
     ] // tripple
-  ? [LeastUpperBound<aa, ba>, LeastUpperBound<ab, bb>, LeastUpperBound<ac, bc>]
-  : [a, b] extends [[infer aa, infer ab], [infer ba, infer bb]] // tupple
-  ? [LeastUpperBound<aa, ba>, LeastUpperBound<ab, bb>]
-  : [a, b] extends [(infer aa)[], (infer ba)[]]
-  ? LeastUpperBound<aa, ba>[]
+  ? [
+      ExtractMostPreciseValue<a1, b1>,
+      ExtractMostPreciseValue<a2, b2>,
+      ExtractMostPreciseValue<a3, b3>
+    ]
+  : [a, b] extends [[infer a1, infer a2], [infer b1, infer b2]] // tupple
+  ? [ExtractMostPreciseValue<a1, b1>, ExtractMostPreciseValue<a2, b2>]
+  : [a, b] extends [(infer a1)[], (infer b1)[]]
+  ? ExtractMostPreciseValue<a1, b1>[]
   : [a, b] extends [Map<infer ak, infer av>, Map<infer bk, infer bv>]
-  ? Map<LeastUpperBound<ak, bk>, LeastUpperBound<av, bv>>
+  ? Map<ExtractMostPreciseValue<ak, bk>, ExtractMostPreciseValue<av, bv>>
   : [a, b] extends [Set<infer av>, Set<infer bv>]
-  ? Set<LeastUpperBound<av, bv>>
+  ? Set<ExtractMostPreciseValue<av, bv>>
   : b extends __
   ? a
-  : a extends __
-  ? b
+  : b extends { valueKind: PatternType.Not; pattern: infer b1 }
+  ? Exclude<a, b1>
   : [a, b] extends [object, object]
-  ? ObjectLeastUpperBound<a, b>
-  : b extends a
-  ? b
-  : a extends b
-  ? a
-  : never;
+  ? ObjectExtractMostPreciseValue<a, b>
+  : LeastUpperBound<a, b>;
 
 /**
  * if a key of an object has the never type,
@@ -181,22 +205,34 @@ type ExcludeIfContainsNever<a> = ValueOf<
   ? a
   : never;
 
-type ObjectLeastUpperBound<a, b> = b extends a
+type ObjectExtractMostPreciseValue<a, b> = b extends a
   ? b
   : a extends b
   ? a
   : ExcludeIfContainsNever<
       {
-        [k in keyof a]: k extends keyof b ? LeastUpperBound<a[k], b[k]> : a[k];
+        [k in keyof a]: k extends keyof b
+          ? ExtractMostPreciseValue<a[k], b[k]>
+          : a[k];
       }
     >;
 
 type ValueOf<a> = a[keyof a];
 
-export type MatchedValue<a, p extends Pattern<a>> = LeastUpperBound<
+type MatchedValue<a, p extends Pattern<a>> = ExtractMostPreciseValue<
   a,
   InvertPattern<p>
 >;
+
+export const when = <a>(predicate: GuardFunction<a>): GuardPattern<a> => ({
+  patternKind: PatternType.Guard,
+  when: predicate,
+});
+
+export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
+  patternKind: PatternType.Not,
+  pattern,
+});
 
 /**
  * ### match
@@ -316,8 +352,19 @@ const builder = <a, b>(
 const isObject = (value: unknown): value is Object =>
   value && typeof value === 'object';
 
-const isPredicate = (f: unknown): f is (value: any) => unknown =>
-  typeof f === 'function';
+const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
+  const pattern = x as GuardPattern<unknown>;
+  return (
+    pattern &&
+    pattern.patternKind === PatternType.Guard &&
+    typeof pattern.when === 'function'
+  );
+};
+
+const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
+  const pattern = x as NotPattern<unknown>;
+  return pattern && pattern.patternKind === PatternType.Not;
+};
 
 // tells us if the value matches a given pattern.
 const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
@@ -329,7 +376,8 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
   if (pattern === __.number) {
     return typeof value === 'number' && !Number.isNaN(value);
   }
-  if (isPredicate(pattern)) return Boolean(pattern(value));
+  if (isGuardPattern(pattern)) return Boolean(pattern.when(value));
+  if (isNotPattern(pattern)) return !matchPattern(pattern.pattern)(value);
 
   if (typeof pattern !== typeof value) return false;
 
