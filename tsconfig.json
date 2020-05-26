@@ -3,7 +3,7 @@
     "module": "commonjs",
     "strict": true,
     "downlevelIteration": true,
-    "outDir": "lib/"
+    "outDir": "./"
   },
   "exclude": ["tests/"]
 }

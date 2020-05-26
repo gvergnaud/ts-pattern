@@ -2,9 +2,67 @@
 
 A complete pattern matching library for typescript.
 
-```ts
-import { match, __, when, not } from 'pattern';
+### Example
 
+```ts
+type State =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: string }
+  | { status: 'error'; error: Error };
+
+type Event =
+  | { type: 'fetch' }
+  | { type: 'success'; data: string }
+  | { type: 'error'; error: Error }
+  | { type: 'cancel' };
+```
+
+```ts
+import { match, __, not } from 'ts-pattern';
+
+const initState: State = {
+  status: 'idle',
+};
+
+const reducer = (state: State, event: Event): State =>
+  // Sometimes you want to match on two values at once.
+  // Here we pattern match both on the state and the event
+  // and return a new state.
+  match<[State, Event], State>([state, event])
+    // the first argument is the pattern : the shape of the value
+    // you expect for this branch.
+    .with([{ status: 'loading' }, { type: 'success' }], ([, event]) => ({
+      status: 'success',
+      data: event.data,
+    }))
+    // The second argument is the function that will be called if
+    // the data matches the given pattern.
+    // The type of the data structure is narrowed down to
+    // what is permitted by the pattern.
+    .with([{ status: 'loading' }, { type: 'error' }], ([, event]) => ({
+      status: 'error',
+      error: event.error,
+    }))
+    .with([{ status: 'loading' }, { type: 'cancel' }], () => initState)
+    // if you need to exclude a value, you can use
+    // a `not` pattern. it's a function taking a pattern
+    // and returning its opposite.
+    .with([{ status: not('loading') }, { type: 'fetch' }], () => ({
+      status: 'loading',
+    }))
+    // `__` is a wildcard, it will match any value.
+    // You can use it at the top level, or inside a data structure.
+    .with(__, () => state)
+    // You can also use `otherwise`, which is equivalent to `with(__)`.
+    .otherwise(() => state)
+    // `run` execute the match close, and returns the value
+    .run();
+```
+
+### type inference
+
+```ts
 type Input = { type: string } | string;
 
 match<Input, 'ok'>({ type: 'hello' })

@@ -1,10 +1,10 @@
 {
   "name": "ts-pattern",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Typescript pattern matching library",
-  "main": "lib/index.js",
+  "main": "index.js",
   "scripts": {
-    "clean": "rimraf lib",
+    "clean": "rimraf index.js index.d.ts",
     "build": "tsc -d",
     "prepare": "npm run test && npm run clean && npm run build",
     "test:values": "jest",
