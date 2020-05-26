@@ -12,7 +12,19 @@ enum PatternType {
 
 /**
  * ### Catch All wildcard
- * `__` refers to a wildcard pattern, matching any value
+ * `__` is wildcard pattern, matching **any value**.
+ *
+ * `__.string` is wildcard pattern matching any **string**.
+ *
+ * `__.number` is wildcard pattern matching any **number**.
+ *
+ * `__.boolean` is wildcard pattern matching any **boolean**.
+ * @example
+ *  match(value)
+ *   .with(__, () => 'will always match')
+ *   .with(__.string, () => 'will match on strings only')
+ *   .with(__.number, () => 'will match on numbers only')
+ *   .with(__.boolean, () => 'will match on booleans only')
  */
 export const __ = {
   string: PatternType.String,
@@ -108,7 +120,7 @@ type InvertPattern<p> = p extends typeof __.number
   : p extends NotPattern<infer pb>
   ? {
       valueKind: PatternType.Not;
-      pattern: InvertPattern<pb>;
+      value: InvertPattern<pb>;
     }
   : p extends Primitives
   ? p
@@ -187,9 +199,11 @@ type ExtractMostPreciseValue<a, b> = [a, b] extends [
   ? Set<ExtractMostPreciseValue<av, bv>>
   : b extends __
   ? a
-  : b extends { valueKind: PatternType.Not; pattern: infer b1 }
-  ? Exclude<a, b1>
-  : [a, b] extends [object, object]
+  : b extends { valueKind: PatternType.Not; value: infer b1 }
+  ? Exclude<a, b1> extends never
+    ? a
+    : Exclude<a, b1>
+  : b extends object
   ? ObjectExtractMostPreciseValue<a, b>
   : LeastUpperBound<a, b>;
 

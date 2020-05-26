@@ -5,20 +5,25 @@ A complete pattern matching library for typescript.
 ```ts
 import { match, __, when, not } from 'pattern';
 
-match({ type: 'hello' })
-  .with(__, () => 'ok')
-  .with(__.string, () => 'ok')
+type Input = { type: string } | string;
+
+match<Input, 'ok'>({ type: 'hello' })
+  .with(__, (value) => 'ok') // value: Input
+  .with(__.string, (value) => 'ok') // value: string
   .with(
-    when((x) => true),
-    () => 'ok'
+    when((value) => true),
+    (value) => 'ok' // value: Input
   )
-  .with(not('hello'), () => 'ok')
-  .with(not(__.string), () => 'ok')
-  .with(not(when((x) => true)), () => 'ok')
-  .with({ type: __ }, () => 'ok')
-  .with({ type: __.string }, () => 'ok')
-  .with({ type: when((x) => true) }, () => 'ok')
-  .with({ type: not('hello') }, () => 'ok')
-  .with({ type: not(__.string) }, () => 'ok')
-  .with({ type: not(when((x) => true)) }, () => 'ok');
+  .with(not('hello'), (value) => 'ok') // value: Input
+  .with(not(__.string), (value) => 'ok') // value: { type: string }
+  .with(not(when(() => true)), (value) => 'ok') // value: Input
+  .with({ type: __ }, (value) => 'ok') // value: { type: string }
+  .with({ type: __.string }, (value) => 'ok') // value: { type: string }
+  .with({ type: when(() => true) }, (value) => 'ok') // value: { type: string }
+  .with({ type: not('hello' as 'hello') }, (value) => 'ok') // value: { type: string }
+  .with({ type: not(__.string) }, (value) => 'ok') // value: { type: string }
+  .with({ type: not(when(() => true)) }, (value) => 'ok') // value: { type: string }
+  .with(not({ type: when(() => true) }), (value) => 'ok') // value: string
+  .with(not({ type: __.string }), (value) => 'ok') // value: string
+  .run();
 ```
