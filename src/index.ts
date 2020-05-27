@@ -85,21 +85,21 @@ export type Pattern<a> =
   | (a extends Primitives
       ? a
       : a extends [infer b, infer c, infer d, infer e, infer f]
-      ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>]
+      ? readonly [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>]
       : a extends [infer b, infer c, infer d, infer e]
-      ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>]
+      ? readonly [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>]
       : a extends [infer b, infer c, infer d]
-      ? [Pattern<b>, Pattern<c>, Pattern<d>]
+      ? readonly [Pattern<b>, Pattern<c>, Pattern<d>]
       : a extends [infer b, infer c]
-      ? [Pattern<b>, Pattern<c>]
+      ? readonly [Pattern<b>, Pattern<c>]
       : a extends (infer b)[]
-      ? Pattern<b>[]
+      ? readonly Pattern<b>[]
       : a extends Map<infer k, infer v>
       ? Map<k, Pattern<v>>
       : a extends Set<infer v>
       ? Set<Pattern<v>>
       : a extends object
-      ? { [k in keyof a]?: Pattern<a[k]> }
+      ? { readonly [k in keyof a]?: Pattern<a[k]> }
       : a);
 
 /**
@@ -124,7 +124,7 @@ type InvertPattern<p> = p extends typeof __.number
     }
   : p extends Primitives
   ? p
-  : p extends [infer pb, infer pc, infer pd, infer pe, infer pf]
+  : p extends readonly [infer pb, infer pc, infer pd, infer pe, infer pf]
   ? [
       InvertPattern<pb>,
       InvertPattern<pc>,
@@ -132,13 +132,13 @@ type InvertPattern<p> = p extends typeof __.number
       InvertPattern<pe>,
       InvertPattern<pf>
     ]
-  : p extends [infer pb, infer pc, infer pd, infer pe]
+  : p extends readonly [infer pb, infer pc, infer pd, infer pe]
   ? [InvertPattern<pb>, InvertPattern<pc>, InvertPattern<pd>, InvertPattern<pe>]
-  : p extends [infer pb, infer pc, infer pd]
+  : p extends readonly [infer pb, infer pc, infer pd]
   ? [InvertPattern<pb>, InvertPattern<pc>, InvertPattern<pd>]
-  : p extends [infer pb, infer pc]
+  : p extends readonly [infer pb, infer pc]
   ? [InvertPattern<pb>, InvertPattern<pc>]
-  : p extends (infer pp)[]
+  : p extends readonly (infer pp)[]
   ? InvertPattern<pp>[]
   : p extends Map<infer pk, infer pv>
   ? Map<pk, InvertPattern<pv>>
@@ -159,10 +159,14 @@ type InvertPattern<p> = p extends typeof __.number
 
 type LeastUpperBound<a, b> = b extends a ? b : a extends b ? a : never;
 
-type ExtractMostPreciseValue<a, b> = [a, b] extends [
-  [infer a1, infer a2, infer a3, infer a4, infer a5],
-  [infer b1, infer b2, infer b3, infer b4, infer b5]
-] // quintupple
+type ExtractMostPreciseValue<a, b> = b extends []
+  ? []
+  : [a, b] extends [
+      // a can be a union of a quintupple and other values,
+      // that's why we add `infer otherBranches` at the end
+      [infer a1, infer a2, infer a3, infer a4, infer a5] | infer otherBranches,
+      [infer b1, infer b2, infer b3, infer b4, infer b5]
+    ] // quintupple
   ? [
       ExtractMostPreciseValue<a1, b1>,
       ExtractMostPreciseValue<a2, b2>,
@@ -171,7 +175,7 @@ type ExtractMostPreciseValue<a, b> = [a, b] extends [
       ExtractMostPreciseValue<a5, b5>
     ]
   : [a, b] extends [
-      [infer a1, infer a2, infer a3, infer a4],
+      [infer a1, infer a2, infer a3, infer a4] | infer otherBranches,
       [infer b1, infer b2, infer b3, infer b4]
     ] // qua4rupple
   ? [
@@ -181,7 +185,7 @@ type ExtractMostPreciseValue<a, b> = [a, b] extends [
       ExtractMostPreciseValue<a4, b4>
     ]
   : [a, b] extends [
-      [infer a1, infer a2, infer a3],
+      [infer a1, infer a2, infer a3] | infer otherBranches,
       [infer b1, infer b2, infer b3]
     ] // tripple
   ? [
@@ -189,7 +193,10 @@ type ExtractMostPreciseValue<a, b> = [a, b] extends [
       ExtractMostPreciseValue<a2, b2>,
       ExtractMostPreciseValue<a3, b3>
     ]
-  : [a, b] extends [[infer a1, infer a2], [infer b1, infer b2]] // tupple
+  : [a, b] extends [
+      [infer a1, infer a2] | infer otherBranches,
+      [infer b1, infer b2]
+    ] // tupple
   ? [ExtractMostPreciseValue<a1, b1>, ExtractMostPreciseValue<a2, b2>]
   : [a, b] extends [(infer a1)[], (infer b1)[]]
   ? ExtractMostPreciseValue<a1, b1>[]
@@ -213,7 +220,7 @@ type ExtractMostPreciseValue<a, b> = [a, b] extends [
  **/
 type ExcludeIfContainsNever<a> = ValueOf<
   {
-    [k in keyof a]: a[k] extends never ? 'exclude' : 'include';
+    [k in keyof a]-?: a[k] extends never ? 'exclude' : 'include';
   }
 > extends 'include'
   ? a

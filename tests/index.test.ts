@@ -298,6 +298,47 @@ describe('match', () => {
           .run()
       ).toEqual('hello');
     });
+
+    it('should discriminate union types correctly 2', () => {
+      type Post = {
+        type: 'post';
+        id: number;
+        content: { body: string };
+      };
+      type Video = { type: 'video'; id: number; content: { src: string } };
+      type Image = { type: 'image'; id: number; content: { src: number } };
+
+      type Input = Post | Video | Image;
+
+      const res = match<Input, number>({
+        type: 'post',
+        id: 2,
+        content: { body: 'yo' },
+      })
+        .with({ type: 'post', content: __ }, (x) => {
+          const notNever: NotNever<typeof x> = true;
+          const inferenceCheck: Post = x;
+          return 1;
+        })
+        .with({ type: 'post', id: 7 }, (x) => {
+          const notNever: NotNever<typeof x> = true;
+          const inferenceCheck: Post = x;
+          return 1;
+        })
+        .with({ type: 'video', content: { src: __.string } }, (x) => {
+          const notNever: NotNever<typeof x> = true;
+          const inferenceCheck: Video = x;
+          return 2;
+        })
+        .with({ type: 'image' }, (x) => {
+          const notNever: NotNever<typeof x> = true;
+          const inferenceCheck: Image = x;
+          return 3;
+        })
+        .run();
+
+      expect(res).toEqual(1);
+    });
   });
 
   describe('List ([a])', () => {
@@ -346,6 +387,58 @@ describe('match', () => {
           .run();
 
       expect(sum([2, 3, 2, 4])).toEqual(11);
+    });
+
+    it('should discriminate correctly union of tuples', () => {
+      type Input =
+        | ['+', number, number]
+        | ['*', number, number]
+        | ['-', number]
+        | ['++', number];
+
+      const res = match<Input, number>(['-', 2])
+        .with(['+', __.number, __.number], (value) => {
+          const notNever: NotNever<typeof value> = true;
+          const inferenceCheck: ['+', number, number] = value;
+          const [, x, y] = value;
+          return x + y;
+        })
+        .with(['*', __.number, __.number], (value) => {
+          const notNever: NotNever<typeof value> = true;
+          const inferenceCheck: ['*', number, number] = value;
+          const [, x, y] = value;
+          return x * y;
+        })
+        .with(['-', __.number], (value) => {
+          const notNever: NotNever<typeof value> = true;
+          const inferenceCheck: ['-', number] = value;
+          const [, x] = value;
+          return -x;
+        })
+        .run();
+      const res2 = match<Input, number>(['-', 2])
+        .with(['+', __, __], (value) => {
+          const notNever: NotNever<typeof value> = true;
+          const inferenceCheck: ['+', number, number] = value;
+          const [, x, y] = value;
+          return x + y;
+        })
+        .with(['*', __, __], (value) => {
+          const notNever: NotNever<typeof value> = true;
+          const inferenceCheck: ['*', number, number] = value;
+          const [, x, y] = value;
+          return x * y;
+        })
+        .with(['-', __], (value) => {
+          const notNever: NotNever<typeof value> = true;
+          const inferenceCheck: ['-', number] = value;
+          const [, x] = value;
+          return -x;
+        })
+        .run();
+
+      expect(res).toEqual(-2);
+      expect(res2).toEqual(-2);
     });
 
     describe('should match heterogenous tuple patterns', () => {
@@ -642,6 +735,66 @@ describe('match', () => {
     });
   });
 
+  describe('deeply nested objects', () => {
+    it('should work with 4 levels of object nesting', () => {
+      type Post = {
+        type: 'post';
+        id: number;
+        content: { body: string; video: Video };
+      };
+      type Video = { type: 'video'; id: number; content: { src: string } };
+
+      const res = match<Post, number>({
+        type: 'post',
+        id: 2,
+        content: {
+          body: 'yo',
+          video: { type: 'video', content: { src: '' }, id: 2 },
+        },
+      })
+        .with(
+          { type: 'post', content: { video: { id: 2, content: { src: '' } } } },
+          (x) => {
+            const notNever: NotNever<typeof x> = true;
+            const inferenceCheck: Post = x;
+            return 1;
+          }
+        )
+        .run();
+
+      expect(res).toEqual(1);
+    });
+  });
+
+  describe('optional properties', () => {
+    it('matching on optional properties should work', () => {
+      type Post = {
+        type: 'post';
+        id?: number;
+        body: string;
+      };
+
+      const res = match<Post, number>({
+        type: 'post',
+        id: 2,
+        body: 'az',
+      })
+        .with({ type: 'post', id: __.number }, (x) => {
+          const notNever: NotNever<typeof x> = true;
+          const inferenceCheck: Post = x;
+          return 1;
+        })
+        .with({ type: 'post', id: 2 as const }, (x) => {
+          const notNever: NotNever<typeof x> = true;
+          const inferenceCheck: Post & { id: 2 } = x;
+          return 1;
+        })
+        .run();
+
+      expect(res).toEqual(1);
+    });
+  });
+
   describe('when', () => {
     it('should work for simple cases', () => {
       const values = [
@@ -807,7 +960,5 @@ describe('match', () => {
       expect(get('two')).toEqual('not 1');
       expect(get('one')).toEqual('not 2');
     });
-
-    it('type of value in predicate should be infered', () => {});
   });
 });
