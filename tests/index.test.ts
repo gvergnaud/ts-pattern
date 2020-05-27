@@ -146,7 +146,7 @@ describe('types', () => {
         return 'ok';
       })
       .with(
-        when((x) => true),
+        when<Input>((x) => true),
         (x) => {
           const notNever: NotNever<typeof x> = true;
           const inferenceCheck: Input = x;
@@ -190,12 +190,12 @@ describe('types', () => {
       })
       .with({ type: not(__.string) }, (x) => {
         const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: { type: string } = x;
+        const inferenceCheck: Input = x;
         return 'ok';
       })
-      .with({ type: not(when((x) => true)) }, (x) => {
+      .with({ type: not(when<string>((x) => true)) }, (x) => {
         const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: { type: string } = x;
+        const inferenceCheck: Input = x;
         return 'ok';
       })
       .with(not({ type: when((x: string) => true) }), (x) => {
@@ -966,6 +966,31 @@ describe('match', () => {
 
       expect(get('two')).toEqual('not 1');
       expect(get('one')).toEqual('not 2');
+    });
+
+    it('should discriminate union types correctly', () => {
+      type Input =
+        | {
+            type: 'success';
+          }
+        | { type: 'error' };
+
+      const get = (x: Input) =>
+        match<Input, string>(x)
+          .with({ type: not('success') }, (x) => {
+            const notNever: NotNever<typeof x> = true;
+            const inferenceCheck: { type: 'error' } = x;
+            return 'error';
+          })
+          .with({ type: not('error') }, (x) => {
+            const notNever: NotNever<typeof x> = true;
+            const inferenceCheck: { type: 'success' } = x;
+            return 'success';
+          })
+          .run();
+
+      expect(get({ type: 'error' })).toEqual('error');
+      expect(get({ type: 'success' })).toEqual('success');
     });
   });
 });

@@ -85,21 +85,21 @@ export type Pattern<a> =
   | (a extends Primitives
       ? a
       : a extends [infer b, infer c, infer d, infer e, infer f]
-      ? readonly [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>]
+      ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>]
       : a extends [infer b, infer c, infer d, infer e]
-      ? readonly [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>]
+      ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>]
       : a extends [infer b, infer c, infer d]
-      ? readonly [Pattern<b>, Pattern<c>, Pattern<d>]
+      ? [Pattern<b>, Pattern<c>, Pattern<d>]
       : a extends [infer b, infer c]
-      ? readonly [Pattern<b>, Pattern<c>]
+      ? [Pattern<b>, Pattern<c>]
       : a extends (infer b)[]
-      ? readonly Pattern<b>[]
+      ? Pattern<b>[]
       : a extends Map<infer k, infer v>
       ? Map<k, Pattern<v>>
       : a extends Set<infer v>
       ? Set<Pattern<v>>
       : a extends object
-      ? { readonly [k in keyof a]?: Pattern<a[k]> }
+      ? { [k in keyof a]?: Pattern<a[k]> }
       : a);
 
 /**
@@ -124,7 +124,7 @@ type InvertPattern<p> = p extends typeof __.number
     }
   : p extends Primitives
   ? p
-  : p extends readonly [infer pb, infer pc, infer pd, infer pe, infer pf]
+  : p extends [infer pb, infer pc, infer pd, infer pe, infer pf]
   ? [
       InvertPattern<pb>,
       InvertPattern<pc>,
@@ -132,13 +132,13 @@ type InvertPattern<p> = p extends typeof __.number
       InvertPattern<pe>,
       InvertPattern<pf>
     ]
-  : p extends readonly [infer pb, infer pc, infer pd, infer pe]
+  : p extends [infer pb, infer pc, infer pd, infer pe]
   ? [InvertPattern<pb>, InvertPattern<pc>, InvertPattern<pd>, InvertPattern<pe>]
-  : p extends readonly [infer pb, infer pc, infer pd]
+  : p extends [infer pb, infer pc, infer pd]
   ? [InvertPattern<pb>, InvertPattern<pc>, InvertPattern<pd>]
-  : p extends readonly [infer pb, infer pc]
+  : p extends [infer pb, infer pc]
   ? [InvertPattern<pb>, InvertPattern<pc>]
-  : p extends readonly (infer pp)[]
+  : p extends (infer pp)[]
   ? InvertPattern<pp>[]
   : p extends Map<infer pk, infer pv>
   ? Map<pk, InvertPattern<pv>>
@@ -207,9 +207,7 @@ type ExtractMostPreciseValue<a, b> = b extends []
   : b extends __
   ? a
   : b extends { valueKind: PatternType.Not; value: infer b1 }
-  ? Exclude<a, b1> extends never
-    ? a
-    : Exclude<a, b1>
+  ? Exclude<a, b1>
   : b extends object
   ? ObjectExtractMostPreciseValue<a, b>
   : LeastUpperBound<a, b>;
@@ -240,10 +238,13 @@ type ObjectExtractMostPreciseValue<a, b> = b extends a
 
 type ValueOf<a> = a[keyof a];
 
+// We fall back to `a` if we weren't able to extract anything more precise
 type MatchedValue<a, p extends Pattern<a>> = ExtractMostPreciseValue<
   a,
   InvertPattern<p>
->;
+> extends never
+  ? a
+  : ExtractMostPreciseValue<a, InvertPattern<p>>;
 
 export const when = <a>(predicate: GuardFunction<a>): GuardPattern<a> => ({
   patternKind: PatternType.Guard,
