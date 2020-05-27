@@ -779,6 +779,13 @@ describe('match', () => {
         id: 2,
         body: 'az',
       })
+        .with({ type: 'post' }, (x) => {
+          const notNever: NotNever<typeof x> = true;
+          const inferenceCheck: Post = x;
+          // id is still nullable
+          x.id = undefined;
+          return 1;
+        })
         .with({ type: 'post', id: __.number }, (x) => {
           const notNever: NotNever<typeof x> = true;
           const inferenceCheck: Post = x;

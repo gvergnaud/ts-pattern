@@ -232,7 +232,7 @@ type ObjectExtractMostPreciseValue<a, b> = b extends a
   ? a
   : ExcludeIfContainsNever<
       {
-        [k in keyof a]: k extends keyof b
+        [k in keyof a]-?: k extends keyof b
           ? ExtractMostPreciseValue<a[k], b[k]>
           : a[k];
       }
