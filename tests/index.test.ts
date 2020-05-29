@@ -1,4 +1,4 @@
-import { match, __, when, not, Pattern } from '../src';
+import { match, __, when, not, select, Pattern } from '../src';
 
 // the never type can be assigned to anything. This type prevent that
 type NotNever<a> = a extends never ? never : true;
@@ -18,7 +18,7 @@ type State =
 
 type Event =
   | { type: 'fetch' }
-  | { type: 'success'; data: string }
+  | { type: 'success'; data: string; requestTime?: number }
   | { type: 'error'; error: Error }
   | { type: 'cancel' };
 
@@ -991,6 +991,142 @@ describe('match', () => {
 
       expect(get({ type: 'error' })).toEqual('error');
       expect(get({ type: 'success' })).toEqual('success');
+    });
+  });
+});
+
+describe('select', () => {
+  it('should work with tuples', () => {
+    expect(
+      match<[string, number], number>(['get', 2])
+        .with(['get', select('y')], (_, { y }) => {
+          const inferenceCheck: [NotNever<typeof y>, number] = [true, y];
+          return y;
+        })
+        .run()
+    ).toEqual(2);
+  });
+
+  it('should work with array', () => {
+    // FIXME: We have got an issue with arrays. selections shouldn't
+    // work on array pattern, because we cant select multiple values.
+    expect(
+      match<string[], string>(['you', 'hello'])
+        .with([select('x')], (_, { x }) => {
+          const inferenceCheck: [NotNever<typeof x>, string] = [true, x];
+          return x;
+        })
+        .run()
+    ).toEqual('hello');
+  });
+
+  it('should work with objects', () => {
+    expect(
+      match<State & { other: number }, string>({
+        status: 'success',
+        data: 'some data',
+        other: 20,
+      })
+        .with(
+          { status: 'success', data: select('data'), other: select('other') },
+          (_, { data, other }) => {
+            const inferenceCheck: [NotNever<typeof data>, string] = [
+              true,
+              data,
+            ];
+            const inferenceCheck2: [NotNever<typeof other>, number] = [
+              true,
+              other,
+            ];
+            return data + other.toString();
+          }
+        )
+        .run()
+    ).toEqual('some data20');
+  });
+
+  it('should work with primitive types', () => {
+    expect(
+      match<string, string>('hello')
+        .with(select('x'), (_, { x }) => {
+          const inferenceCheck: [NotNever<typeof x>, string] = [true, x];
+          return x;
+        })
+        .run()
+    ).toEqual('hello');
+  });
+
+  it('should work with complex structures', () => {
+    const initState: State = {
+      status: 'idle',
+    };
+
+    const reducer = (state: State, event: Event): State =>
+      match<[State, Event], State>([state, event])
+        .with(
+          [
+            { status: 'loading' },
+            {
+              type: 'success',
+              data: select('data'),
+              requestTime: select('time'),
+            },
+          ],
+          (_, { data, time }) => {
+            const inferenceCheck: [
+              NotNever<typeof time>,
+              number | undefined
+            ] = [true, time];
+
+            return {
+              status: 'success',
+              data,
+            };
+          }
+        )
+        .with(
+          [{ status: 'loading' }, { type: 'success', data: select('data') }],
+          (_, { data }) => ({
+            status: 'success',
+            data,
+          })
+        )
+        .with(
+          [{ status: 'loading' }, { type: 'error', error: select('error') }],
+          (_, { error }) => ({
+            status: 'error',
+            error,
+          })
+        )
+        .with([{ status: 'loading' }, { type: 'cancel' }], () => initState)
+        .with([{ status: not('loading') }, { type: 'fetch' }], () => ({
+          status: 'loading',
+        }))
+        .with([select('state'), select('event')], (_, { state, event }) => {
+          const inferenceCheck: [NotNever<typeof state>, State] = [true, state];
+          const inferenceCheck2: [NotNever<typeof event>, Event] = [
+            true,
+            event,
+          ];
+          return state;
+        })
+        .run();
+
+    expect(reducer(initState, { type: 'cancel' })).toEqual(initState);
+
+    expect(reducer(initState, { type: 'fetch' })).toEqual({
+      status: 'loading',
+    });
+
+    expect(
+      reducer({ status: 'loading' }, { type: 'success', data: 'yo' })
+    ).toEqual({
+      status: 'success',
+      data: 'yo',
+    });
+
+    expect(reducer({ status: 'loading' }, { type: 'cancel' })).toEqual({
+      status: 'idle',
     });
   });
 });

@@ -1,3 +1,10 @@
+import {
+  ValueOf,
+  LeastUpperBound,
+  ExcludeIfContainsNever,
+  UnionToIntersection,
+} from './types/helpers';
+
 /**
  * # Pattern matching
  **/
@@ -8,6 +15,7 @@ enum PatternType {
   Boolean = '@match/boolean',
   Guard = '@match/guard',
   Not = '@match/not',
+  Select = '@match/select',
 }
 
 /**
@@ -65,6 +73,11 @@ type NotPattern<a> = {
   pattern: Pattern<a>;
 };
 
+type SelectPattern<k extends string> = {
+  patternKind: PatternType.Select;
+  key: k;
+};
+
 type SpecialPattern<a> = a extends number
   ? typeof __.number | __
   : a extends string
@@ -79,6 +92,7 @@ type SpecialPattern<a> = a extends number
  * They can also be "wildcards", using type constructors
  */
 export type Pattern<a> =
+  | SelectPattern<string>
   | GuardPattern<a>
   | NotPattern<a | any>
   | SpecialPattern<a>
@@ -113,6 +127,8 @@ type InvertPattern<p> = p extends typeof __.number
   ? string
   : p extends typeof __.boolean
   ? boolean
+  : p extends SelectPattern<string>
+  ? __
   : p extends __
   ? __
   : p extends GuardPattern<infer pb>
@@ -147,17 +163,6 @@ type InvertPattern<p> = p extends typeof __.number
   : p extends object
   ? { [k in keyof p]: InvertPattern<p[k]> }
   : p;
-
-/**
- * ### LeastUpperBound
- * An interesting one. A type taking two imbricated sets and returning the
- * smallest one.
- * We need that because sometimes the pattern's infered type holds more
- * information than the value on which we are matching (if the value is any
- * or unknown for instance).
- */
-
-type LeastUpperBound<a, b> = b extends a ? b : a extends b ? a : never;
 
 type ExtractMostPreciseValue<a, b> = b extends []
   ? []
@@ -212,31 +217,20 @@ type ExtractMostPreciseValue<a, b> = b extends []
   ? ObjectExtractMostPreciseValue<a, b>
   : LeastUpperBound<a, b>;
 
-/**
- * if a key of an object has the never type,
- * returns never, otherwise returns the type of object
- **/
-type ExcludeIfContainsNever<a> = ValueOf<
-  {
-    [k in keyof a]-?: a[k] extends never ? 'exclude' : 'include';
-  }
-> extends 'include'
-  ? a
-  : never;
-
 type ObjectExtractMostPreciseValue<a, b> = b extends a
   ? b
   : a extends b
   ? a
   : ExcludeIfContainsNever<
       {
-        [k in keyof a]-?: k extends keyof b
+        // we use require to remove the optional property modifier.
+        // since we use a[k] after that, optional properties will stay
+        // optional if no pattern was more precise.
+        [k in keyof Required<a>]: k extends keyof b
           ? ExtractMostPreciseValue<a[k], b[k]>
           : a[k];
       }
     >;
-
-type ValueOf<a> = a[keyof a];
 
 // We fall back to `a` if we weren't able to extract anything more precise
 type MatchedValue<a, p extends Pattern<a>> = ExtractMostPreciseValue<
@@ -246,6 +240,54 @@ type MatchedValue<a, p extends Pattern<a>> = ExtractMostPreciseValue<
   ? a
   : ExtractMostPreciseValue<a, InvertPattern<p>>;
 
+// Infinite recursion is forbidden in typescript, so we have
+// to trick this by duplicating type and compute its result
+// on a predefined number of recursion levels.
+type FindSelected<a, b> = b extends SelectPattern<infer Key>
+  ? { [k in Key]: a }
+  : [a, b] extends [object, object]
+  ? ValueOf<{ [k in keyof a & keyof b]: FindSelected1<a[k], b[k]> }>
+  : never;
+
+type FindSelected1<a, b> = b extends SelectPattern<infer Key>
+  ? { [k in Key]: a }
+  : [a, b] extends [object, object]
+  ? ValueOf<{ [k in keyof a & keyof b]: FindSelected2<a[k], b[k]> }>
+  : never;
+
+type FindSelected2<a, b> = b extends SelectPattern<infer Key>
+  ? { [k in Key]: a }
+  : [a, b] extends [object, object]
+  ? ValueOf<{ [k in keyof a & keyof b]: FindSelected3<a[k], b[k]> }>
+  : never;
+
+type FindSelected3<a, b> = b extends SelectPattern<infer Key>
+  ? { [k in Key]: a }
+  : [a, b] extends [object, object]
+  ? ValueOf<{ [k in keyof a & keyof b]: FindSelected4<a[k], b[k]> }>
+  : never;
+
+type FindSelected4<a, b> = b extends SelectPattern<infer Key>
+  ? { [k in Key]: a }
+  : [a, b] extends [object, object]
+  ? ValueOf<{ [k in keyof a & keyof b]: FindSelected5<a[k], b[k]> }>
+  : never;
+
+type FindSelected5<a, b> = b extends SelectPattern<infer Key>
+  ? { [k in Key]: a }
+  : never;
+
+type ToHandler<a, b, c> = (
+  value: a,
+  selections: UnionToIntersection<FindSelected<a, b>>
+) => c;
+
+type PatternHandler<a, b extends Pattern<a>, c> = ToHandler<
+  MatchedValue<a, b>,
+  b,
+  c
+>;
+
 export const when = <a>(predicate: GuardFunction<a>): GuardPattern<a> => ({
   patternKind: PatternType.Guard,
   when: predicate,
@@ -254,6 +296,11 @@ export const when = <a>(predicate: GuardFunction<a>): GuardPattern<a> => ({
 export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
   patternKind: PatternType.Not,
   pattern,
+});
+
+export const select = <k extends string>(key: k): SelectPattern<k> => ({
+  patternKind: PatternType.Select,
+  key,
 });
 
 /**
@@ -275,7 +322,7 @@ type Match<a, b> = {
    **/
   with: <p extends Pattern<a>>(
     pattern: p,
-    handler: (value: MatchedValue<a, p>) => b
+    handler: PatternHandler<a, p, b>
   ) => Match<a, b>;
 
   /**
@@ -327,18 +374,37 @@ type Match<a, b> = {
  */
 const builder = <a, b>(
   value: a,
-  patterns: [(value: a) => unknown, (value: any) => b][]
+  patterns: {
+    test: (value: a) => unknown;
+    select: (value: a) => object;
+    handler: (...args: any) => b;
+  }[]
 ): Match<a, b> => ({
   with: <p extends Pattern<a>>(
     pattern: p,
-    handler: (value: MatchedValue<a, p>) => b
+    handler: PatternHandler<a, p, b>
   ): Match<a, b> =>
-    builder<a, b>(value, [...patterns, [matchPattern<a, p>(pattern), handler]]),
+    builder<a, b>(value, [
+      ...patterns,
+      {
+        test: matchPattern<a, p>(pattern),
+        handler,
+        select: selectWithPattern<a, p>(pattern),
+      },
+    ]),
 
   when: <p extends (value: a) => unknown>(
     predicate: p,
     handler: (value: GuardValue<p>) => b
-  ): Match<a, b> => builder<a, b>(value, [...patterns, [predicate, handler]]),
+  ): Match<a, b> =>
+    builder<a, b>(value, [
+      ...patterns,
+      {
+        test: predicate,
+        handler,
+        select: () => ({}),
+      },
+    ]),
 
   withWhen: <
     pat extends Pattern<a>,
@@ -350,24 +416,34 @@ const builder = <a, b>(
   ): Match<a, b> => {
     const doesMatch = (value: a) =>
       Boolean(matchPattern<a, pat>(pattern)(value) && predicate(value as any));
-    return builder<a, b>(value, [...patterns, [doesMatch, handler]]);
+    return builder<a, b>(value, [
+      ...patterns,
+      {
+        test: doesMatch,
+        handler,
+        select: () => ({}),
+      },
+    ]);
   },
 
   otherwise: (handler: () => b): Match<a, b> =>
     builder<a, b>(value, [
       ...patterns,
-      [matchPattern<a, Pattern<a>>(__ as Pattern<a>), handler],
+      {
+        test: matchPattern<a, Pattern<a>>(__ as Pattern<a>),
+        handler,
+        select: () => ({}),
+      },
     ]),
 
   run: (): b => {
-    const tupple = patterns.find(([predicate]) => predicate(value));
-    if (!tupple) {
+    const entry = patterns.find(({ test }) => test(value));
+    if (!entry) {
       throw new Error(
         `Pattern matching error: no pattern matches value ${value}`
       );
     }
-    const [, mapper] = tupple;
-    return mapper(value);
+    return entry.handler(value, entry.select(value));
   },
 });
 
@@ -388,11 +464,17 @@ const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
   return pattern && pattern.patternKind === PatternType.Not;
 };
 
+const isSelectPattern = (x: unknown): x is SelectPattern<string> => {
+  const pattern = x as SelectPattern<string>;
+  return pattern && pattern.patternKind === PatternType.Select;
+};
+
 // tells us if the value matches a given pattern.
 const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
   value: a
 ): boolean => {
-  if (pattern === __) return true;
+  if (pattern === __ || isSelectPattern(pattern)) return true;
+
   if (pattern === __.string) return typeof value === 'string';
   if (pattern === __.boolean) return typeof value === 'boolean';
   if (pattern === __.number) {
@@ -440,4 +522,33 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
     );
   }
   return value === pattern;
+};
+
+const selectWithPattern = <a, p extends Pattern<a>>(pattern: p) => (
+  value: a
+): object => {
+  if (isSelectPattern(pattern)) return { [pattern.key]: value };
+
+  if (Array.isArray(pattern) && Array.isArray(value))
+    return pattern.length === 1
+      ? value.reduce(
+          (acc, v) => Object.assign(acc, selectWithPattern(pattern[0])(v)),
+          {}
+        )
+      : pattern.length === value.length
+      ? value.reduce(
+          (acc, v, i) => Object.assign(acc, selectWithPattern(pattern[i])(v)),
+          {}
+        )
+      : {};
+
+  if (isObject(pattern) && isObject(value))
+    return Object.keys(pattern).reduce(
+      (acc, k: string) =>
+        // @ts-ignore
+        Object.assign(acc, selectWithPattern(pattern[k])(value[k])),
+      {}
+    );
+
+  return {};
 };

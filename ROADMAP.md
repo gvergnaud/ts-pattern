@@ -3,15 +3,15 @@
 - [ ] Forbid impossible patterns like `{ status: 'error', data: (data) => data.length > 3 }` (error have no data)
 
 - [ ] Find a way to enforce exhaustive pattern matching
-- [ ] Add an operator to select a part of the data structure
+- [x] Add an operator to select a part of the data structure
 
 ```ts
 type Input = ['+', number, number] | ['*', number, number] | ['-', number];
 
-const res = match<Input, number>(input)
-  .with(['+', select, select], (x, y) => x + y)
-  .with(['*', select, select], (x, y) => x * y)
-  .with(['-', select], (x) => -x);
+const res = match<Input, number>(input).with(
+  ['+', select('x'), select('y')],
+  ({ x, y }) => x + y
+);
 ```
 
 - [x] Add `not(value)` in patterns.
