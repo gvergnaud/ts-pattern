@@ -3,6 +3,7 @@
 - [ ] Forbid impossible patterns like `{ status: 'error', data: (data) => data.length > 3 }` (error have no data)
 
 - [ ] Find a way to enforce exhaustive pattern matching
+- [x] Find a way to make the full type inference work
 - [x] Add an operator to select a part of the data structure
 
 ```ts

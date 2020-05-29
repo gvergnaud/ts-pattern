@@ -64,18 +64,18 @@ type GuardValue<F> = F extends (value: any) => value is infer b
 type GuardFunction<a> = (value: a) => unknown;
 
 type GuardPattern<a> = {
-  patternKind: PatternType.Guard;
-  when: GuardFunction<a>;
+  __patternKind: PatternType.Guard;
+  __when: GuardFunction<a>;
 };
 
 type NotPattern<a> = {
-  patternKind: PatternType.Not;
-  pattern: Pattern<a>;
+  __patternKind: PatternType.Not;
+  __pattern: Pattern<a>;
 };
 
 type SelectPattern<k extends string> = {
-  patternKind: PatternType.Select;
-  key: k;
+  __patternKind: PatternType.Select;
+  __key: k;
 };
 
 type SpecialPattern<a> = a extends number
@@ -132,7 +132,7 @@ type InvertPattern<p> = p extends typeof __.number
   : p extends __
   ? __
   : p extends GuardPattern<infer pb>
-  ? GuardValue<p['when']>
+  ? GuardValue<p['__when']>
   : p extends NotPattern<infer pb>
   ? {
       valueKind: PatternType.Not;
@@ -289,26 +289,31 @@ type PatternHandler<a, b extends Pattern<a>, c> = ToHandler<
 >;
 
 export const when = <a>(predicate: GuardFunction<a>): GuardPattern<a> => ({
-  patternKind: PatternType.Guard,
-  when: predicate,
+  __patternKind: PatternType.Guard,
+  __when: predicate,
 });
 
 export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
-  patternKind: PatternType.Not,
-  pattern,
+  __patternKind: PatternType.Not,
+  __pattern: pattern,
 });
 
 export const select = <k extends string>(key: k): SelectPattern<k> => ({
-  patternKind: PatternType.Select,
-  key,
+  __patternKind: PatternType.Select,
+  __key: key,
 });
+
+type Unset = '@match/unset';
+
+type PickReturnValue<a, b> = a extends Unset ? b : a;
 
 /**
  * ### match
  * Entry point to create pattern matching code branches. It returns an
  * empty Match case.
  */
-export const match = <a, b>(value: a): Match<a, b> => builder<a, b>(value, []);
+export const match = <a, b = Unset>(value: a): Match<a, b> =>
+  builder<a, b>(value, []);
 
 /**
  * ### Match
@@ -320,20 +325,20 @@ type Match<a, b> = {
    * If the data matches the pattern provided as first argument,
    * use this branch and execute the handler function.
    **/
-  with: <p extends Pattern<a>>(
+  with: <p extends Pattern<a>, c>(
     pattern: p,
-    handler: PatternHandler<a, p, b>
-  ) => Match<a, b>;
+    handler: PatternHandler<a, p, PickReturnValue<b, c>>
+  ) => Match<a, PickReturnValue<b, c>>;
 
   /**
    * ### Match.when
    * When the first function returns a truthy value,
    * use this branch and execute the handler function.
    **/
-  when: <p extends (value: a) => unknown>(
+  when: <p extends (value: a) => unknown, c>(
     predicate: p,
-    handler: (value: GuardValue<p>) => b
-  ) => Match<a, b>;
+    handler: (value: GuardValue<p>) => PickReturnValue<b, c>
+  ) => Match<a, PickReturnValue<b, c>>;
 
   /**
    * ### Match.withWhen
@@ -343,12 +348,13 @@ type Match<a, b> = {
    **/
   withWhen: <
     pat extends Pattern<a>,
-    pred extends (value: MatchedValue<a, pat>) => unknown
+    pred extends (value: MatchedValue<a, pat>) => unknown,
+    c
   >(
     pattern: pat,
     predicate: pred,
-    handler: (value: GuardValue<pred>) => b
-  ) => Match<a, b>;
+    handler: (value: GuardValue<pred>) => PickReturnValue<b, c>
+  ) => Match<a, PickReturnValue<b, c>>;
 
   /**
    * ### Match.otherwise
@@ -356,7 +362,9 @@ type Match<a, b> = {
    *
    * Equivalent to `.with(__)`
    **/
-  otherwise: (handler: () => b) => Match<a, b>;
+  otherwise: <c>(
+    handler: () => PickReturnValue<b, c>
+  ) => Match<a, PickReturnValue<b, c>>;
 
   /**
    * ### Match.run
@@ -377,14 +385,14 @@ const builder = <a, b>(
   patterns: {
     test: (value: a) => unknown;
     select: (value: a) => object;
-    handler: (...args: any) => b;
+    handler: (...args: any) => any;
   }[]
 ): Match<a, b> => ({
-  with: <p extends Pattern<a>>(
+  with: <p extends Pattern<a>, c>(
     pattern: p,
-    handler: PatternHandler<a, p, b>
-  ): Match<a, b> =>
-    builder<a, b>(value, [
+    handler: PatternHandler<a, p, PickReturnValue<b, c>>
+  ): Match<a, PickReturnValue<b, c>> =>
+    builder<a, PickReturnValue<b, c>>(value, [
       ...patterns,
       {
         test: matchPattern<a, p>(pattern),
@@ -393,11 +401,11 @@ const builder = <a, b>(
       },
     ]),
 
-  when: <p extends (value: a) => unknown>(
+  when: <p extends (value: a) => unknown, c>(
     predicate: p,
-    handler: (value: GuardValue<p>) => b
-  ): Match<a, b> =>
-    builder<a, b>(value, [
+    handler: (value: GuardValue<p>) => PickReturnValue<b, c>
+  ): Match<a, PickReturnValue<b, c>> =>
+    builder<a, PickReturnValue<b, c>>(value, [
       ...patterns,
       {
         test: predicate,
@@ -408,15 +416,16 @@ const builder = <a, b>(
 
   withWhen: <
     pat extends Pattern<a>,
-    pred extends (value: MatchedValue<a, pat>) => unknown
+    pred extends (value: MatchedValue<a, pat>) => unknown,
+    c
   >(
     pattern: pat,
     predicate: pred,
-    handler: (value: GuardValue<pred>) => b
-  ): Match<a, b> => {
+    handler: (value: GuardValue<pred>) => PickReturnValue<b, c>
+  ): Match<a, PickReturnValue<b, c>> => {
     const doesMatch = (value: a) =>
       Boolean(matchPattern<a, pat>(pattern)(value) && predicate(value as any));
-    return builder<a, b>(value, [
+    return builder<a, PickReturnValue<b, c>>(value, [
       ...patterns,
       {
         test: doesMatch,
@@ -426,8 +435,10 @@ const builder = <a, b>(
     ]);
   },
 
-  otherwise: (handler: () => b): Match<a, b> =>
-    builder<a, b>(value, [
+  otherwise: <c>(
+    handler: () => PickReturnValue<b, c>
+  ): Match<a, PickReturnValue<b, c>> =>
+    builder<a, PickReturnValue<b, c>>(value, [
       ...patterns,
       {
         test: matchPattern<a, Pattern<a>>(__ as Pattern<a>),
@@ -454,19 +465,19 @@ const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
   const pattern = x as GuardPattern<unknown>;
   return (
     pattern &&
-    pattern.patternKind === PatternType.Guard &&
-    typeof pattern.when === 'function'
+    pattern.__patternKind === PatternType.Guard &&
+    typeof pattern.__when === 'function'
   );
 };
 
 const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
   const pattern = x as NotPattern<unknown>;
-  return pattern && pattern.patternKind === PatternType.Not;
+  return pattern && pattern.__patternKind === PatternType.Not;
 };
 
 const isSelectPattern = (x: unknown): x is SelectPattern<string> => {
   const pattern = x as SelectPattern<string>;
-  return pattern && pattern.patternKind === PatternType.Select;
+  return pattern && pattern.__patternKind === PatternType.Select;
 };
 
 // tells us if the value matches a given pattern.
@@ -480,8 +491,8 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
   if (pattern === __.number) {
     return typeof value === 'number' && !Number.isNaN(value);
   }
-  if (isGuardPattern(pattern)) return Boolean(pattern.when(value));
-  if (isNotPattern(pattern)) return !matchPattern(pattern.pattern)(value);
+  if (isGuardPattern(pattern)) return Boolean(pattern.__when(value));
+  if (isNotPattern(pattern)) return !matchPattern(pattern.__pattern)(value);
 
   if (typeof pattern !== typeof value) return false;
 
@@ -527,7 +538,7 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
 const selectWithPattern = <a, p extends Pattern<a>>(pattern: p) => (
   value: a
 ): object => {
-  if (isSelectPattern(pattern)) return { [pattern.key]: value };
+  if (isSelectPattern(pattern)) return { [pattern.__key]: value };
 
   if (Array.isArray(pattern) && Array.isArray(value))
     return pattern.length === 1
