@@ -26,23 +26,76 @@
 ### Matching API
 
 ```ts
-match<string | number | boolean>()
-  // you can chain up to 5 patterns
+import { match, __ } from 'ts-pattern';
+
+match<[string, Event]>([event])
   .with(
-    __.number,
-    __.when((x) => x > 2), // type of x is infered to be a number
-    __.when((x) => x < 10),
+    [__, { type: 'click', value: { x: match.select('x'), y: Number } }],
+    ({ x }) => x > 2, // type of x is infered to be a number
+    ({ x }) => x < 10,
+    ({ x }) => `clicked ${x}`
+  )
+  .with(
+    [
+      __,
+      {
+        type: 'mousemove',
+        priority: match.when((x) => x > 5),
+        value: match.select('value', { x: Number, y: Number }),
+      },
+    ],
+    ({ value }) => `moved ${value.x}`
+  )
+  .otherwise(() => 'nothing')
+  .run();
+
+match<string | number | boolean>()
+  .with(
+    Number,
+    (x) => x > 2,
+    (x) => x < 10,
     (x) => `${x} is between 2 and 10.`
   )
+  .with(__)
+  .with(match.not(Boolean), (x) => `x is not a boolean.`)
+  .run();
+```
+
+```ts
+import { match, __ } from 'ts-pattern';
+
+type Event =
+  | {
+      type: 'click';
+      priority: 2;
+      value: { x: number; y: number; context: { page: string } };
+    }
+  | {
+      type: 'mousemove';
+      priority: 10;
+      value: { x: number; y: number; dx: number; dy: number };
+    };
+
+match<[string, Event]>([event])
+  // you can chain up to 5 patterns
   .with(
-    __.boolean,
-    __.when((x) => x)
+    [__, { type: 'click', value: { x: __.select('x'), y: __.number } }],
+    ({ x }) => x > 2, // type of x is infered to be a number
+    ({ x }) => x < 10,
+    ({ x }) => `clicked ${x}`
   )
   .with(
-    { type: 'hello' },
-    { data: __.when((data) => data.length > 2) },
-    (x) => ``
+    [
+      __,
+      {
+        type: 'mousemove',
+        priority: __.when((x) => x > 5),
+        value: __.select('value', { x: , y: __.number }),
+      },
+    ],
+    ({ x }) => `moved ${x}`
   )
+  .otherwise(() => 'nothing')
   // Remove when and withWhen
   .run();
 ```
@@ -50,11 +103,37 @@ match<string | number | boolean>()
 Alternatively put the functions on match instead of on `__`
 
 ```ts
+import { match } from 'ts-pattern';
+
+match<[string, Event]>([event])
+  .with(
+    [
+      match.any,
+      { type: 'click', value: { x: match.select('x'), y: match.number } },
+    ],
+    ({ x }) => x > 2, // type of x is infered to be a number
+    ({ x }) => x < 10,
+    ({ x }) => `clicked ${x}`
+  )
+  .with(
+    [
+      match.any,
+      {
+        type: 'mousemove',
+        priority: match.when((x) => x > 5),
+        value: { x: match.select('x'), y: match.number },
+      },
+    ],
+    ({ x }) => `moved ${x}`
+  )
+  .otherwise(() => 'nothing')
+  .run();
+
 match<string | number | boolean>()
   .with(
     match.number,
-    match.when((x) => x > 2),
-    match.when((x) => x < 10),
+    (x) => x > 2,
+    (x) => x < 10,
     (x) => `${x} is between 2 and 10.`
   )
   .run();
@@ -63,30 +142,126 @@ match<string | number | boolean>()
 Or on a new `pattern` var
 
 ```ts
+import { match, __, pattern } from 'ts-pattern';
+
+match<[string, Event]>([event])
+  .with(
+    [
+      __,
+      { type: 'click', value: { x: pattern.select('x'), y: pattern.number } },
+    ],
+    ({ x }) => x > 2, // type of x is infered to be a number
+    ({ x }) => x < 10,
+    ({ x }) => `clicked ${x}`
+  )
+  .with(
+    [
+      __,
+      {
+        type: 'mousemove',
+        priority: pattern.when((x) => x > 5),
+        value: { x: pattern.select('x'), y: pattern.number },
+      },
+    ],
+    ({ x }) => `moved ${x}`
+  )
+  .otherwise(() => 'nothing')
+  .run();
+
 match<string | number | boolean>()
   .with(
     pattern.number,
-    pattern.when((x) => x > 2),
-    pattern.when((x) => x < 10),
+    (x) => x > 2,
+    (x) => x < 10,
     (x) => `${x} is between 2 and 10.`
   )
-  .with(pattern.any)
   .with(pattern.not(pattern.boolean), (x) => `x is not a boolean.`)
+  .with(__, () => '')
   .run();
 ```
 
 Or a `P` var
 
 ```ts
+import { match, P } from 'ts-pattern';
+
+match<[string, Event]>([event])
+  .with(
+    [P.any, { type: 'click', value: { x: P.select('x'), y: P.number } }],
+    ({ x }) => x > 2, // type of x is infered to be a number
+    ({ x }) => x < 10,
+    ({ x }) => `clicked ${x}`
+  )
+  .with(
+    [
+      P.any,
+      {
+        type: 'mousemove',
+        priority: P.when((x) => x > 5),
+        value: { x: P.select('x'), y: P.number },
+      },
+    ],
+    ({ x }) => `moved ${x}`
+  )
+  .otherwise(() => 'nothing')
+  .run();
+
 match<string | number | boolean>()
   .with(
     P.number,
-    P.when((x) => x > 2),
-    P.when((x) => x < 10),
+    (x) => x > 2,
+    (x) => x < 10,
     (x) => `${x} is between 2 and 10.`
   )
   .with(P.any)
   .with(P.not(P.boolean), (x) => `x is not a boolean.`)
+  .run();
+```
+
+Or a `P` var
+
+```ts
+import * as Pattern from 'ts-pattern';
+
+Pattern.match<[string, Event]>([event])
+  .with(
+    [
+      Pattern.any,
+      {
+        type: 'click',
+        value: Pattern.select('value', {
+          x: Pattern.number,
+          y: Pattern.number,
+        }),
+      },
+    ],
+    ({ value }) => value.x > 2, // type of value.x is infered to be a number
+    ({ value }) => value.x < 10,
+    ({ value }) => `clicked ${value.x}`
+  )
+  .with(
+    [
+      Pattern.any,
+      {
+        type: 'mousemove',
+        priority: when((x) => x > 5),
+        value: { x: Pattern.select('x'), y: Pattern.number },
+      },
+    ],
+    ({ x }) => `moved ${x}`
+  )
+  .otherwise(() => 'nothing')
+  .run();
+
+match<string | number | boolean>()
+  .with(
+    Pattern.number,
+    (x) => x > 2,
+    (x) => x < 10,
+    (x) => `${x} is between 2 and 10.`
+  )
+  .with(Pattern.any)
+  .with(Pattern.not(Pattern.boolean), (x) => `x is not a boolean.`)
   .run();
 ```
 
