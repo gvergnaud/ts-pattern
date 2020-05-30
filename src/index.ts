@@ -1,246 +1,30 @@
+import { ValueOf, UnionToIntersection } from './types/helpers';
 import {
-  ValueOf,
-  LeastUpperBound,
-  ExcludeIfContainsNever,
-  UnionToIntersection,
-} from './types/helpers';
+  Pattern,
+  SelectPattern,
+  GuardFunction,
+  GuardPattern,
+  NotPattern,
+  PatternType,
+  GuardValue,
+  __,
+} from './types/Pattern';
+import { ExtractPreciseValue } from './types/ExtractPreciseValue';
+import { InvertPattern } from './types/InvertPattern';
 
 /**
  * # Pattern matching
  **/
 
-enum PatternType {
-  String = '@match/string',
-  Number = '@match/number',
-  Boolean = '@match/boolean',
-  Guard = '@match/guard',
-  Not = '@match/not',
-  Select = '@match/select',
-}
-
-/**
- * ### Catch All wildcard
- * `__` is wildcard pattern, matching **any value**.
- *
- * `__.string` is wildcard pattern matching any **string**.
- *
- * `__.number` is wildcard pattern matching any **number**.
- *
- * `__.boolean` is wildcard pattern matching any **boolean**.
- * @example
- *  match(value)
- *   .with(__, () => 'will always match')
- *   .with(__.string, () => 'will match on strings only')
- *   .with(__.number, () => 'will match on numbers only')
- *   .with(__.boolean, () => 'will match on booleans only')
- */
-export const __ = {
-  string: PatternType.String,
-  number: PatternType.Number,
-  boolean: PatternType.Boolean,
-} as const;
-
-/** type alias for the catch all string */
-type __ = typeof __;
-
-type Primitives =
-  | number
-  | boolean
-  | string
-  | undefined
-  | null
-  | symbol
-  | bigint;
-
-/**
- * GuardValue returns the value guarded by a type guard function.
- */
-type GuardValue<F> = F extends (value: any) => value is infer b
-  ? b
-  : F extends (value: infer a) => unknown
-  ? a
-  : never;
-
-type GuardFunction<a, b extends a> =
-  | ((value: a) => value is b)
-  | ((value: a) => boolean);
-
-type GuardPattern<a, b extends a = a> = {
-  __patternKind: PatternType.Guard;
-  __when: GuardFunction<a, b>;
-};
-
-type NotPattern<a> = {
-  __patternKind: PatternType.Not;
-  __pattern: Pattern<a>;
-};
-
-type SelectPattern<k extends string> = {
-  __patternKind: PatternType.Select;
-  __key: k;
-};
-
-type SpecialPattern<a> = a extends number
-  ? typeof __.number | __
-  : a extends string
-  ? typeof __.string | __
-  : a extends boolean
-  ? typeof __.boolean | __
-  : __;
-
-/**
- * ### Pattern
- * Patterns can be any (nested) javascript value.
- * They can also be "wildcards", using type constructors
- */
-export type Pattern<a> =
-  | SelectPattern<string>
-  | GuardPattern<a>
-  | NotPattern<a | any>
-  | SpecialPattern<a>
-  | (a extends Primitives
-      ? a
-      : a extends [infer b, infer c, infer d, infer e, infer f]
-      ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>]
-      : a extends [infer b, infer c, infer d, infer e]
-      ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>]
-      : a extends [infer b, infer c, infer d]
-      ? [Pattern<b>, Pattern<c>, Pattern<d>]
-      : a extends [infer b, infer c]
-      ? [Pattern<b>, Pattern<c>]
-      : a extends (infer b)[]
-      ? Pattern<b>[]
-      : a extends Map<infer k, infer v>
-      ? Map<k, Pattern<v>>
-      : a extends Set<infer v>
-      ? Set<Pattern<v>>
-      : a extends object
-      ? { [k in keyof a]?: Pattern<a[k]> }
-      : a);
-
-/**
- * ### InvertPattern
- * Since patterns have special wildcard values, we need a way
- * to transform a pattern into the type of value it represents
- */
-type InvertPattern<p> = p extends typeof __.number
-  ? number
-  : p extends typeof __.string
-  ? string
-  : p extends typeof __.boolean
-  ? boolean
-  : p extends SelectPattern<string>
-  ? __
-  : p extends __
-  ? __
-  : p extends GuardPattern<infer pa, infer pb>
-  ? pb
-  : p extends NotPattern<infer pb>
-  ? {
-      valueKind: PatternType.Not;
-      value: InvertPattern<pb>;
-    }
-  : p extends Primitives
-  ? p
-  : p extends [infer pb, infer pc, infer pd, infer pe, infer pf]
-  ? [
-      InvertPattern<pb>,
-      InvertPattern<pc>,
-      InvertPattern<pd>,
-      InvertPattern<pe>,
-      InvertPattern<pf>
-    ]
-  : p extends [infer pb, infer pc, infer pd, infer pe]
-  ? [InvertPattern<pb>, InvertPattern<pc>, InvertPattern<pd>, InvertPattern<pe>]
-  : p extends [infer pb, infer pc, infer pd]
-  ? [InvertPattern<pb>, InvertPattern<pc>, InvertPattern<pd>]
-  : p extends [infer pb, infer pc]
-  ? [InvertPattern<pb>, InvertPattern<pc>]
-  : p extends (infer pp)[]
-  ? InvertPattern<pp>[]
-  : p extends Map<infer pk, infer pv>
-  ? Map<pk, InvertPattern<pv>>
-  : p extends Set<infer pv>
-  ? Set<InvertPattern<pv>>
-  : p extends object
-  ? { [k in keyof p]: InvertPattern<p[k]> }
-  : p;
-
-type ExtractMostPreciseValue<a, b> = b extends []
-  ? []
-  : [a, b] extends [
-      // a can be a union of a quintupple and other values,
-      // that's why we add `infer otherBranches` at the end
-      [infer a1, infer a2, infer a3, infer a4, infer a5] | infer otherBranches,
-      [infer b1, infer b2, infer b3, infer b4, infer b5]
-    ] // quintupple
-  ? [
-      ExtractMostPreciseValue<a1, b1>,
-      ExtractMostPreciseValue<a2, b2>,
-      ExtractMostPreciseValue<a3, b3>,
-      ExtractMostPreciseValue<a4, b4>,
-      ExtractMostPreciseValue<a5, b5>
-    ]
-  : [a, b] extends [
-      [infer a1, infer a2, infer a3, infer a4] | infer otherBranches,
-      [infer b1, infer b2, infer b3, infer b4]
-    ] // qua4rupple
-  ? [
-      ExtractMostPreciseValue<a1, b1>,
-      ExtractMostPreciseValue<a2, b2>,
-      ExtractMostPreciseValue<a3, b3>,
-      ExtractMostPreciseValue<a4, b4>
-    ]
-  : [a, b] extends [
-      [infer a1, infer a2, infer a3] | infer otherBranches,
-      [infer b1, infer b2, infer b3]
-    ] // tripple
-  ? [
-      ExtractMostPreciseValue<a1, b1>,
-      ExtractMostPreciseValue<a2, b2>,
-      ExtractMostPreciseValue<a3, b3>
-    ]
-  : [a, b] extends [
-      [infer a1, infer a2] | infer otherBranches,
-      [infer b1, infer b2]
-    ] // tupple
-  ? [ExtractMostPreciseValue<a1, b1>, ExtractMostPreciseValue<a2, b2>]
-  : [a, b] extends [(infer a1)[], (infer b1)[]]
-  ? ExtractMostPreciseValue<a1, b1>[]
-  : [a, b] extends [Map<infer ak, infer av>, Map<infer bk, infer bv>]
-  ? Map<ExtractMostPreciseValue<ak, bk>, ExtractMostPreciseValue<av, bv>>
-  : [a, b] extends [Set<infer av>, Set<infer bv>]
-  ? Set<ExtractMostPreciseValue<av, bv>>
-  : b extends __
-  ? a
-  : b extends { valueKind: PatternType.Not; value: infer b1 }
-  ? Exclude<a, b1>
-  : b extends object
-  ? ObjectExtractMostPreciseValue<a, b>
-  : LeastUpperBound<a, b>;
-
-type ObjectExtractMostPreciseValue<a, b> = b extends a
-  ? b
-  : a extends b
-  ? a
-  : ExcludeIfContainsNever<
-      {
-        // we use require to remove the optional property modifier.
-        // since we use a[k] after that, optional properties will stay
-        // optional if no pattern was more precise.
-        [k in keyof Required<a>]: k extends keyof b
-          ? ExtractMostPreciseValue<a[k], b[k]>
-          : a[k];
-      }
-    >;
+export { Pattern, __ };
 
 // We fall back to `a` if we weren't able to extract anything more precise
-type MatchedValue<a, p extends Pattern<a>> = ExtractMostPreciseValue<
+type MatchedValue<a, p extends Pattern<a>> = ExtractPreciseValue<
   a,
   InvertPattern<p>
 > extends never
   ? a
-  : ExtractMostPreciseValue<a, InvertPattern<p>>;
+  : ExtractPreciseValue<a, InvertPattern<p>>;
 
 // Infinite recursion is forbidden in typescript, so we have
 // to trick this by duplicating type and compute its result
@@ -279,16 +63,14 @@ type FindSelected5<a, b> = b extends SelectPattern<infer Key>
   ? { [k in Key]: a }
   : never;
 
-type ToHandler<a, b, c> = (
-  value: a,
-  selections: UnionToIntersection<FindSelected<a, b>>
-) => c;
-
-type PatternHandler<a, b extends Pattern<a>, c> = ToHandler<
-  MatchedValue<a, b>,
-  b,
-  c
+type ExtractSelections<a, p extends Pattern<a>> = UnionToIntersection<
+  FindSelected<MatchedValue<a, p>, p>
 >;
+
+type PatternHandler<a, p extends Pattern<a>, c> = (
+  value: MatchedValue<a, p>,
+  selections: ExtractSelections<a, p>
+) => c;
 
 export const when = <a, b extends a = a>(
   predicate: GuardFunction<a, b>
@@ -329,10 +111,54 @@ type Match<a, b> = {
    * If the data matches the pattern provided as first argument,
    * use this branch and execute the handler function.
    **/
-  with: <p extends Pattern<a>, c>(
+  with<p extends Pattern<a>, c>(
     pattern: p,
     handler: PatternHandler<a, p, PickReturnValue<b, c>>
-  ) => Match<a, PickReturnValue<b, c>>;
+  ): Match<a, PickReturnValue<b, c>>;
+  with<
+    pat extends Pattern<a>,
+    pred extends (value: MatchedValue<a, pat>) => unknown,
+    c
+  >(
+    pattern: pat,
+    predicate: pred,
+    handler: (
+      value: GuardValue<pred>,
+      selections: ExtractSelections<a, pat>
+    ) => PickReturnValue<b, c>
+  ): Match<a, PickReturnValue<b, c>>;
+
+  with<
+    pat extends Pattern<a>,
+    pred extends (value: MatchedValue<a, pat>) => unknown,
+    pred2 extends (value: GuardValue<pred>) => unknown,
+    c
+  >(
+    pattern: pat,
+    predicate: pred,
+    predicate2: pred2,
+    handler: (
+      value: GuardValue<pred2>,
+      selections: ExtractSelections<a, pat>
+    ) => PickReturnValue<b, c>
+  ): Match<a, PickReturnValue<b, c>>;
+
+  with<
+    pat extends Pattern<a>,
+    pred extends (value: MatchedValue<a, pat>) => unknown,
+    pred2 extends (value: GuardValue<pred>) => unknown,
+    pred3 extends (value: GuardValue<pred2>) => unknown,
+    c
+  >(
+    pattern: pat,
+    predicate: pred,
+    predicate2: pred2,
+    predicate3: pred3,
+    handler: (
+      value: GuardValue<pred3>,
+      selections: ExtractSelections<a, pat>
+    ) => PickReturnValue<b, c>
+  ): Match<a, PickReturnValue<b, c>>;
 
   /**
    * ### Match.when
@@ -342,22 +168,6 @@ type Match<a, b> = {
   when: <p extends (value: a) => unknown, c>(
     predicate: p,
     handler: (value: GuardValue<p>) => PickReturnValue<b, c>
-  ) => Match<a, PickReturnValue<b, c>>;
-
-  /**
-   * ### Match.withWhen
-   * When the data matches the pattern provided as first argument,
-   * and the predicate function provided as second argument returns a truthy value,
-   * use this branch and execute the handler function.
-   **/
-  withWhen: <
-    pat extends Pattern<a>,
-    pred extends (value: MatchedValue<a, pat>) => unknown,
-    c
-  >(
-    pattern: pat,
-    predicate: pred,
-    handler: (value: GuardValue<pred>) => PickReturnValue<b, c>
   ) => Match<a, PickReturnValue<b, c>>;
 
   /**
@@ -392,18 +202,28 @@ const builder = <a, b>(
     handler: (...args: any) => any;
   }[]
 ): Match<a, b> => ({
-  with: <p extends Pattern<a>, c>(
+  with<p extends Pattern<a>, c>(
     pattern: p,
-    handler: PatternHandler<a, p, PickReturnValue<b, c>>
-  ): Match<a, PickReturnValue<b, c>> =>
-    builder<a, PickReturnValue<b, c>>(value, [
+    ...args: any[]
+  ): Match<a, PickReturnValue<b, c>> {
+    const handler = args[args.length - 1];
+    const predicates = args.slice(0, -1);
+
+    const doesMatch = (value: a) =>
+      Boolean(
+        matchPattern<a, p>(pattern)(value) &&
+          predicates.every((predicate) => predicate(value as any))
+      );
+
+    return builder<a, PickReturnValue<b, c>>(value, [
       ...patterns,
       {
-        test: matchPattern<a, p>(pattern),
+        test: doesMatch,
         handler,
         select: selectWithPattern<a, p>(pattern),
       },
-    ]),
+    ]);
+  },
 
   when: <p extends (value: a) => unknown, c>(
     predicate: p,
@@ -417,27 +237,6 @@ const builder = <a, b>(
         select: () => ({}),
       },
     ]),
-
-  withWhen: <
-    pat extends Pattern<a>,
-    pred extends (value: MatchedValue<a, pat>) => unknown,
-    c
-  >(
-    pattern: pat,
-    predicate: pred,
-    handler: (value: GuardValue<pred>) => PickReturnValue<b, c>
-  ): Match<a, PickReturnValue<b, c>> => {
-    const doesMatch = (value: a) =>
-      Boolean(matchPattern<a, pat>(pattern)(value) && predicate(value as any));
-    return builder<a, PickReturnValue<b, c>>(value, [
-      ...patterns,
-      {
-        test: doesMatch,
-        handler,
-        select: () => ({}),
-      },
-    ]);
-  },
 
   otherwise: <c>(
     handler: () => PickReturnValue<b, c>

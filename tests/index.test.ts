@@ -132,7 +132,7 @@ describe('types', () => {
   });
 
   it('should infer values correctly in handler', () => {
-    type Input = { type: string } | string;
+    type Input = { type: string; hello?: { yo: number } } | string;
 
     const res = match<Input>({ type: 'hello' })
       .with(__, (x) => {
@@ -881,9 +881,19 @@ describe('match', () => {
       values.forEach(({ value, expected }) => {
         expect(
           match(value)
-            .withWhen(
+            .with(
               { status: 'success' },
               (x) => x.data.length > 3,
+              (x) => {
+                const notNever: NotNever<typeof x> = true;
+                const inferenceCheck: { status: 'success'; data: string } = x;
+                return true;
+              }
+            )
+            .with(
+              { status: 'success', data: select('data') },
+              (x) => x.data.length > 3,
+              (x) => x.data.length < 10,
               (x) => {
                 const notNever: NotNever<typeof x> = true;
                 const inferenceCheck: { status: 'success'; data: string } = x;
@@ -893,6 +903,44 @@ describe('match', () => {
             .otherwise(() => false)
             .run()
         ).toEqual(expected);
+      });
+    });
+
+    it('type should be refined in each guard close', () => {
+      const values: { value: number | string; expected: boolean }[] = [
+        { value: -1, expected: false },
+        { value: 2, expected: true },
+        { value: 20, expected: false },
+        { value: 100, expected: false },
+      ];
+
+      values.forEach(({ value, expected }) => {
+        const res = match(value)
+          .with(
+            __,
+            (x): x is number => {
+              const inferenceCheck: string | number = x;
+              return typeof x === 'number';
+            },
+            (x): x is 2 => {
+              const inferenceCheck: number = x;
+              return x === 2;
+            },
+            (x) => {
+              const inferenceCheck: 2 = x;
+              return true;
+            }
+          )
+          .with(
+            __.string,
+            (x) => x.length > 2,
+            (x) => x.length < 10,
+            (x) => true
+          )
+          .otherwise(() => false)
+          .run();
+
+        expect(res).toEqual(expected);
       });
     });
   });
@@ -919,8 +967,8 @@ describe('match', () => {
               return vec.y > 2;
             }
           )
-          .with(
-            when(() => true),
+          .when(
+            () => true,
             (x) => {
               const notNever: NotNever<typeof vec> = true;
               const inferenceCheck: Vec3 = vec;
