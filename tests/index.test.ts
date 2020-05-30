@@ -134,7 +134,7 @@ describe('types', () => {
   it('should infer values correctly in handler', () => {
     type Input = { type: string } | string;
 
-    match<Input>({ type: 'hello' })
+    const res = match<Input>({ type: 'hello' })
       .with(__, (x) => {
         const notNever: NotNever<typeof x> = true;
         const inferenceCheck: Input = x;
@@ -146,7 +146,19 @@ describe('types', () => {
         return 'ok';
       })
       .with(
-        when<Input>((x) => true),
+        when((x) => true),
+        (x) => {
+          const notNever: NotNever<typeof x> = true;
+          const inferenceCheck: Input = x;
+          return 'ok';
+        }
+      )
+      .with(
+        when<Input>((x) => {
+          const notNever: NotNever<typeof x> = true;
+          const inferenceCheck: Input = x;
+          return true;
+        }),
         (x) => {
           const notNever: NotNever<typeof x> = true;
           const inferenceCheck: Input = x;
@@ -193,7 +205,7 @@ describe('types', () => {
         const inferenceCheck: Input = x;
         return 'ok';
       })
-      .with({ type: not(when<string>((x) => true)) }, (x) => {
+      .with({ type: not(when((x) => true)) }, (x) => {
         const notNever: NotNever<typeof x> = true;
         const inferenceCheck: Input = x;
         return 'ok';
@@ -209,6 +221,8 @@ describe('types', () => {
         return 'ok';
       })
       .run();
+
+    const inferenceCheck: string = res;
   });
 
   it('a union of object or primitive should be matched with a correct type inference', () => {
@@ -826,8 +840,8 @@ describe('match', () => {
       values.forEach(({ value, expected }) => {
         expect(
           match(value)
-            .when(
-              (x) => x > 10 && x < 50,
+            .with(
+              when((x: number) => x > 10 && x < 50),
               () => true
             )
             .otherwise(() => false)
@@ -839,8 +853,8 @@ describe('match', () => {
     it('should narrow down the value type based on type guard', () => {
       let n = 20;
       const res = match(n)
-        .when(
-          (x): x is 13 => x === 13,
+        .with(
+          when((x): x is 13 => x === 13),
           (x) => {
             const notNever: NotNever<typeof x> = true;
             const inferenceCheck: 13 = x;

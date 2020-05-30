@@ -61,11 +61,13 @@ type GuardValue<F> = F extends (value: any) => value is infer b
   ? a
   : never;
 
-type GuardFunction<a> = (value: a) => unknown;
+type GuardFunction<a, b extends a> =
+  | ((value: a) => value is b)
+  | ((value: a) => boolean);
 
-type GuardPattern<a> = {
+type GuardPattern<a, b extends a = a> = {
   __patternKind: PatternType.Guard;
-  __when: GuardFunction<a>;
+  __when: GuardFunction<a, b>;
 };
 
 type NotPattern<a> = {
@@ -131,8 +133,8 @@ type InvertPattern<p> = p extends typeof __.number
   ? __
   : p extends __
   ? __
-  : p extends GuardPattern<infer pb>
-  ? GuardValue<p['__when']>
+  : p extends GuardPattern<infer pa, infer pb>
+  ? pb
   : p extends NotPattern<infer pb>
   ? {
       valueKind: PatternType.Not;
@@ -288,7 +290,9 @@ type PatternHandler<a, b extends Pattern<a>, c> = ToHandler<
   c
 >;
 
-export const when = <a>(predicate: GuardFunction<a>): GuardPattern<a> => ({
+export const when = <a, b extends a = a>(
+  predicate: GuardFunction<a, b>
+): GuardPattern<a, b> => ({
   __patternKind: PatternType.Guard,
   __when: predicate,
 });
