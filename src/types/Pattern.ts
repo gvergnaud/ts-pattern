@@ -7,28 +7,6 @@ export enum PatternType {
   Select = '@match/select',
 }
 
-/**
- * ### Catch All wildcard
- * `__` is wildcard pattern, matching **any value**.
- *
- * `__.string` is wildcard pattern matching any **string**.
- *
- * `__.number` is wildcard pattern matching any **number**.
- *
- * `__.boolean` is wildcard pattern matching any **boolean**.
- * @example
- *  match(value)
- *   .with(__, () => 'will always match')
- *   .with(__.string, () => 'will match on strings only')
- *   .with(__.number, () => 'will match on numbers only')
- *   .with(__.boolean, () => 'will match on booleans only')
- */
-export const __ = {
-  string: PatternType.String,
-  number: PatternType.Number,
-  boolean: PatternType.Boolean,
-} as const;
-
 export type Primitives =
   | number
   | boolean
@@ -103,3 +81,42 @@ export type Pattern<a> =
       : a extends object
       ? { [k in keyof a]?: Pattern<a[k]> }
       : a);
+
+export const when = <a, b extends a = a>(
+  predicate: GuardFunction<a, b>
+): GuardPattern<a, b> => ({
+  __patternKind: PatternType.Guard,
+  __when: predicate,
+});
+
+export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
+  __patternKind: PatternType.Not,
+  __pattern: pattern,
+});
+
+export const select = <k extends string>(key: k): SelectPattern<k> => ({
+  __patternKind: PatternType.Select,
+  __key: key,
+});
+
+/**
+ * ### Catch All wildcard
+ * `__` is wildcard pattern, matching **any value**.
+ *
+ * `__.string` is wildcard pattern matching any **string**.
+ *
+ * `__.number` is wildcard pattern matching any **number**.
+ *
+ * `__.boolean` is wildcard pattern matching any **boolean**.
+ * @example
+ *  match(value)
+ *   .with(__, () => 'will always match')
+ *   .with(__.string, () => 'will match on strings only')
+ *   .with(__.number, () => 'will match on numbers only')
+ *   .with(__.boolean, () => 'will match on booleans only')
+ */
+export const __ = {
+  string: PatternType.String,
+  number: PatternType.Number,
+  boolean: PatternType.Boolean,
+} as const;

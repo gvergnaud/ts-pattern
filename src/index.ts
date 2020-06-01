@@ -1,97 +1,22 @@
-import { ValueOf, UnionToIntersection } from './types/helpers';
 import {
   Pattern,
   SelectPattern,
-  GuardFunction,
   GuardPattern,
   NotPattern,
   PatternType,
   GuardValue,
   __,
+  when,
+  not,
+  select,
 } from './types/Pattern';
-import { ExtractPreciseValue } from './types/ExtractPreciseValue';
-import { InvertPattern } from './types/InvertPattern';
+import { Unset, Match, PickReturnValue } from './types/Match';
 
 /**
  * # Pattern matching
  **/
 
-export { Pattern, __ };
-
-// We fall back to `a` if we weren't able to extract anything more precise
-type MatchedValue<a, p extends Pattern<a>> = ExtractPreciseValue<
-  a,
-  InvertPattern<p>
-> extends never
-  ? a
-  : ExtractPreciseValue<a, InvertPattern<p>>;
-
-// Infinite recursion is forbidden in typescript, so we have
-// to trick this by duplicating type and compute its result
-// on a predefined number of recursion levels.
-type FindSelected<a, b> = b extends SelectPattern<infer Key>
-  ? { [k in Key]: a }
-  : [a, b] extends [object, object]
-  ? ValueOf<{ [k in keyof a & keyof b]: FindSelected1<a[k], b[k]> }>
-  : never;
-
-type FindSelected1<a, b> = b extends SelectPattern<infer Key>
-  ? { [k in Key]: a }
-  : [a, b] extends [object, object]
-  ? ValueOf<{ [k in keyof a & keyof b]: FindSelected2<a[k], b[k]> }>
-  : never;
-
-type FindSelected2<a, b> = b extends SelectPattern<infer Key>
-  ? { [k in Key]: a }
-  : [a, b] extends [object, object]
-  ? ValueOf<{ [k in keyof a & keyof b]: FindSelected3<a[k], b[k]> }>
-  : never;
-
-type FindSelected3<a, b> = b extends SelectPattern<infer Key>
-  ? { [k in Key]: a }
-  : [a, b] extends [object, object]
-  ? ValueOf<{ [k in keyof a & keyof b]: FindSelected4<a[k], b[k]> }>
-  : never;
-
-type FindSelected4<a, b> = b extends SelectPattern<infer Key>
-  ? { [k in Key]: a }
-  : [a, b] extends [object, object]
-  ? ValueOf<{ [k in keyof a & keyof b]: FindSelected5<a[k], b[k]> }>
-  : never;
-
-type FindSelected5<a, b> = b extends SelectPattern<infer Key>
-  ? { [k in Key]: a }
-  : never;
-
-type ExtractSelections<a, p extends Pattern<a>> = UnionToIntersection<
-  FindSelected<MatchedValue<a, p>, p>
->;
-
-type PatternHandler<a, p extends Pattern<a>, c> = (
-  value: MatchedValue<a, p>,
-  selections: ExtractSelections<a, p>
-) => c;
-
-export const when = <a, b extends a = a>(
-  predicate: GuardFunction<a, b>
-): GuardPattern<a, b> => ({
-  __patternKind: PatternType.Guard,
-  __when: predicate,
-});
-
-export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
-  __patternKind: PatternType.Not,
-  __pattern: pattern,
-});
-
-export const select = <k extends string>(key: k): SelectPattern<k> => ({
-  __patternKind: PatternType.Select,
-  __key: key,
-});
-
-type Unset = '@match/unset';
-
-type PickReturnValue<a, b> = a extends Unset ? b : a;
+export { Pattern, __, when, not, select };
 
 /**
  * ### match
@@ -100,92 +25,6 @@ type PickReturnValue<a, b> = a extends Unset ? b : a;
  */
 export const match = <a, b = Unset>(value: a): Match<a, b> =>
   builder<a, b>(value, []);
-
-/**
- * ### Match
- * An interface to create a pattern matching close.
- */
-type Match<a, b> = {
-  /**
-   * ### Match.with
-   * If the data matches the pattern provided as first argument,
-   * use this branch and execute the handler function.
-   **/
-  with<p extends Pattern<a>, c>(
-    pattern: p,
-    handler: PatternHandler<a, p, PickReturnValue<b, c>>
-  ): Match<a, PickReturnValue<b, c>>;
-  with<
-    pat extends Pattern<a>,
-    pred extends (value: MatchedValue<a, pat>) => unknown,
-    c
-  >(
-    pattern: pat,
-    predicate: pred,
-    handler: (
-      value: GuardValue<pred>,
-      selections: ExtractSelections<a, pat>
-    ) => PickReturnValue<b, c>
-  ): Match<a, PickReturnValue<b, c>>;
-
-  with<
-    pat extends Pattern<a>,
-    pred extends (value: MatchedValue<a, pat>) => unknown,
-    pred2 extends (value: GuardValue<pred>) => unknown,
-    c
-  >(
-    pattern: pat,
-    predicate: pred,
-    predicate2: pred2,
-    handler: (
-      value: GuardValue<pred2>,
-      selections: ExtractSelections<a, pat>
-    ) => PickReturnValue<b, c>
-  ): Match<a, PickReturnValue<b, c>>;
-
-  with<
-    pat extends Pattern<a>,
-    pred extends (value: MatchedValue<a, pat>) => unknown,
-    pred2 extends (value: GuardValue<pred>) => unknown,
-    pred3 extends (value: GuardValue<pred2>) => unknown,
-    c
-  >(
-    pattern: pat,
-    predicate: pred,
-    predicate2: pred2,
-    predicate3: pred3,
-    handler: (
-      value: GuardValue<pred3>,
-      selections: ExtractSelections<a, pat>
-    ) => PickReturnValue<b, c>
-  ): Match<a, PickReturnValue<b, c>>;
-
-  /**
-   * ### Match.when
-   * When the first function returns a truthy value,
-   * use this branch and execute the handler function.
-   **/
-  when: <p extends (value: a) => unknown, c>(
-    predicate: p,
-    handler: (value: GuardValue<p>) => PickReturnValue<b, c>
-  ) => Match<a, PickReturnValue<b, c>>;
-
-  /**
-   * ### Match.otherwise
-   * Catch-all branch.
-   *
-   * Equivalent to `.with(__)`
-   **/
-  otherwise: <c>(
-    handler: () => PickReturnValue<b, c>
-  ) => Match<a, PickReturnValue<b, c>>;
-
-  /**
-   * ### Match.run
-   * Runs the pattern matching and return a value.
-   * */
-  run: () => b;
-};
 
 /**
  * ### builder
@@ -283,6 +122,10 @@ const isSelectPattern = (x: unknown): x is SelectPattern<string> => {
   return pattern && pattern.__patternKind === PatternType.Select;
 };
 
+const isListPattern = (x: unknown): x is [Pattern<unknown>] => {
+  return Array.isArray(x) && x.length === 1;
+};
+
 // tells us if the value matches a given pattern.
 const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
   value: a
@@ -297,15 +140,14 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
   if (isGuardPattern(pattern)) return Boolean(pattern.__when(value));
   if (isNotPattern(pattern)) return !matchPattern(pattern.__pattern)(value);
 
+  if (isListPattern(pattern) && Array.isArray(value))
+    return value.every((v) => matchPattern(pattern[0])(v));
+
   if (typeof pattern !== typeof value) return false;
 
   if (Array.isArray(pattern) && Array.isArray(value)) {
-    return pattern.length === 1
-      ? value.every((v) => matchPattern(pattern[0])(v))
-      : pattern.length === value.length
-      ? value.every((v, i) =>
-          pattern[i] ? matchPattern(pattern[i])(v) : false
-        )
+    return pattern.length <= value.length
+      ? pattern.every((subPattern, i) => matchPattern(subPattern)(value[i]))
       : false;
   }
 
@@ -340,18 +182,24 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
 
 const selectWithPattern = <a, p extends Pattern<a>>(pattern: p) => (
   value: a
-): object => {
+): Record<string, unknown> => {
   if (isSelectPattern(pattern)) return { [pattern.__key]: value };
 
+  if (isListPattern(pattern) && Array.isArray(value))
+    return value
+      .map((v) => selectWithPattern(pattern[0])(v))
+      .reduce<Record<string, unknown[]>>((acc, selections) => {
+        return Object.keys(selections).reduce((acc, key) => {
+          acc[key] = (acc[key] || []).concat([selections[key]]);
+          return acc;
+        }, acc);
+      }, {});
+
   if (Array.isArray(pattern) && Array.isArray(value))
-    return pattern.length === 1
-      ? value.reduce(
-          (acc, v) => Object.assign(acc, selectWithPattern(pattern[0])(v)),
-          {}
-        )
-      : pattern.length === value.length
-      ? value.reduce(
-          (acc, v, i) => Object.assign(acc, selectWithPattern(pattern[i])(v)),
+    return pattern.length <= value.length
+      ? pattern.reduce(
+          (acc, subPattern, i) =>
+            Object.assign(acc, selectWithPattern(subPattern)(value[i])),
           {}
         )
       : {};

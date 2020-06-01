@@ -624,8 +624,6 @@ describe('match', () => {
       expect(containsGabAndYo(new Set(['hello']))).toEqual([false, false]);
       expect(containsGabAndYo(new Set([]))).toEqual([false, false]);
       expect(containsGabAndYo(new Set([2]))).toEqual([false, false]);
-      expect(containsGabAndYo(new Set([__.number]))).toEqual([false, false]);
-      expect(containsGabAndYo(new Set([__.string]))).toEqual([false, false]);
     });
   });
 
@@ -1084,7 +1082,21 @@ describe('select', () => {
     // work on array pattern, because we cant select multiple values.
     expect(
       match<string[], string>(['you', 'hello'])
-        .with([select('x')], (_, { x }) => {
+        .with([select('x')], (xs, { x }) => {
+          const inferenceCheck2: [NotNever<typeof xs>, string[]] = [true, xs];
+          const inferenceCheck: [NotNever<typeof x>, string] = [true, x];
+          return x;
+        })
+        .run()
+    ).toEqual('hello');
+
+    expect(
+      match<{ text: string }[], string>([{ text: 'you' }, { text: 'hello' }])
+        .with([{ text: select('x') }], (xs, { x }) => {
+          const inferenceCheck2: [NotNever<typeof xs>, { text: string }[]] = [
+            true,
+            xs,
+          ];
           const inferenceCheck: [NotNever<typeof x>, string] = [true, x];
           return x;
         })
