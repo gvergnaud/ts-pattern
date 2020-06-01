@@ -73,7 +73,13 @@ export type Pattern<a> =
       : a extends [infer b, infer c]
       ? [Pattern<b>, Pattern<c>]
       : a extends (infer b)[]
-      ? Pattern<b>[]
+      ?
+          | []
+          | [Pattern<b>]
+          | [Pattern<b>, Pattern<b>]
+          | [Pattern<b>, Pattern<b>, Pattern<b>]
+          | [Pattern<b>, Pattern<b>, Pattern<b>, Pattern<b>]
+          | [Pattern<b>, Pattern<b>, Pattern<b>, Pattern<b>, Pattern<b>]
       : a extends Map<infer k, infer v>
       ? Map<k, Pattern<v>>
       : a extends Set<infer v>

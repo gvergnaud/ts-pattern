@@ -16,35 +16,37 @@ export type MatchedValue<a, p extends Pattern<a>> = ExtractPreciseValue<
 // on a predefined number of recursion levels.
 type FindSelected<a, b> = b extends SelectPattern<infer Key>
   ? { [k in Key]: a }
+  : [a, b] extends [(infer aa)[], [infer p]]
+  ? { [k in keyof FindSelected1<aa, p>]: FindSelected1<aa, p>[k][] }
   : [a, b] extends [object, object]
   ? ValueOf<{ [k in keyof a & keyof b]: FindSelected1<a[k], b[k]> }>
   : never;
 
 type FindSelected1<a, b> = b extends SelectPattern<infer Key>
   ? { [k in Key]: a }
+  : [a, b] extends [(infer aa)[], [infer p]]
+  ? { [k in keyof FindSelected2<aa, p>]: FindSelected2<aa, p>[k][] }
   : [a, b] extends [object, object]
   ? ValueOf<{ [k in keyof a & keyof b]: FindSelected2<a[k], b[k]> }>
   : never;
 
 type FindSelected2<a, b> = b extends SelectPattern<infer Key>
   ? { [k in Key]: a }
+  : [a, b] extends [(infer aa)[], [infer p]]
+  ? { [k in keyof FindSelected3<aa, p>]: FindSelected3<aa, p>[k][] }
   : [a, b] extends [object, object]
   ? ValueOf<{ [k in keyof a & keyof b]: FindSelected3<a[k], b[k]> }>
   : never;
 
 type FindSelected3<a, b> = b extends SelectPattern<infer Key>
   ? { [k in Key]: a }
+  : [a, b] extends [(infer aa)[], [infer p]]
+  ? { [k in keyof FindSelected4<aa, p>]: FindSelected4<aa, p>[k][] }
   : [a, b] extends [object, object]
   ? ValueOf<{ [k in keyof a & keyof b]: FindSelected4<a[k], b[k]> }>
   : never;
 
 type FindSelected4<a, b> = b extends SelectPattern<infer Key>
-  ? { [k in Key]: a }
-  : [a, b] extends [object, object]
-  ? ValueOf<{ [k in keyof a & keyof b]: FindSelected5<a[k], b[k]> }>
-  : never;
-
-type FindSelected5<a, b> = b extends SelectPattern<infer Key>
   ? { [k in Key]: a }
   : never;
 

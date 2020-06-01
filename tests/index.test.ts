@@ -1078,30 +1078,49 @@ describe('select', () => {
   });
 
   it('should work with array', () => {
-    // FIXME: We have got an issue with arrays. selections shouldn't
-    // work on array pattern, because we cant select multiple values.
     expect(
-      match<string[], string>(['you', 'hello'])
-        .with([select('x')], (xs, { x }) => {
+      match<string[], string[]>(['you', 'hello'])
+        .with([select('texts')], (xs, { texts }) => {
           const inferenceCheck2: [NotNever<typeof xs>, string[]] = [true, xs];
-          const inferenceCheck: [NotNever<typeof x>, string] = [true, x];
-          return x;
+          const inferenceCheck: [NotNever<typeof texts>, string[]] = [
+            true,
+            texts,
+          ];
+          return texts;
         })
         .run()
-    ).toEqual('hello');
+    ).toEqual(['you', 'hello']);
 
     expect(
-      match<{ text: string }[], string>([{ text: 'you' }, { text: 'hello' }])
-        .with([{ text: select('x') }], (xs, { x }) => {
+      match<{ text: string }[], string[]>([{ text: 'you' }, { text: 'hello' }])
+        .with([{ text: select('texts') }], (xs, { texts }) => {
           const inferenceCheck2: [NotNever<typeof xs>, { text: string }[]] = [
             true,
             xs,
           ];
-          const inferenceCheck: [NotNever<typeof x>, string] = [true, x];
-          return x;
+          const inferenceCheck: [NotNever<typeof texts>, string[]] = [
+            true,
+            texts,
+          ];
+          return texts;
         })
         .run()
-    ).toEqual('hello');
+    ).toEqual(['you', 'hello']);
+
+    expect(
+      match<{ text: { content: string } }[], string[]>([
+        { text: { content: 'you' } },
+        { text: { content: 'hello' } },
+      ])
+        .with([{ text: { content: select('texts') } }], (xs, { texts }) => {
+          const inferenceCheck: [NotNever<typeof texts>, string[]] = [
+            true,
+            texts,
+          ];
+          return texts;
+        })
+        .run()
+    ).toEqual(['you', 'hello']);
   });
 
   it('should work with objects', () => {

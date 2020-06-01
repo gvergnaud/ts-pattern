@@ -139,14 +139,13 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
   }
   if (isGuardPattern(pattern)) return Boolean(pattern.__when(value));
   if (isNotPattern(pattern)) return !matchPattern(pattern.__pattern)(value);
-
   if (isListPattern(pattern) && Array.isArray(value))
     return value.every((v) => matchPattern(pattern[0])(v));
 
   if (typeof pattern !== typeof value) return false;
 
   if (Array.isArray(pattern) && Array.isArray(value)) {
-    return pattern.length <= value.length
+    return pattern.length === value.length
       ? pattern.every((subPattern, i) => matchPattern(subPattern)(value[i]))
       : false;
   }
