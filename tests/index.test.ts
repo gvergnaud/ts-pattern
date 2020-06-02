@@ -961,7 +961,7 @@ describe('match', () => {
             },
             (vec) => {
               const notNever: NotNever<typeof vec> = true;
-              const inferenceCheck: Vec3 = vec;
+              const inferenceCheck: Vec3 & { x: 20 } = vec;
               return vec.y > 2;
             }
           )
