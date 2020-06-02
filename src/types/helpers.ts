@@ -15,13 +15,18 @@ export type LeastUpperBound<a, b> = b extends a ? b : a extends b ? a : never;
  * if a key of an object has the never type,
  * returns never, otherwise returns the type of object
  **/
-export type ExcludeIfContainsNever<a> = ValueOf<
-  {
-    [k in keyof a]-?: a[k] extends never ? 'exclude' : 'include';
-  }
-> extends 'include'
+export type ExcludeIfContainsNever<a> = a extends
+  | any[]
+  | Map<any, any>
+  | Set<any>
   ? a
-  : never;
+  : a extends object
+  ? {
+      [k in keyof a]-?: a[k] extends never ? 'exclude' : 'include';
+    }[keyof a] extends 'include'
+    ? a
+    : never
+  : a;
 
 // from https://stackoverflow.com/questions/50374908/transform-union-type-to-intersection-type/50375286#50375286
 export type UnionToIntersection<U> = (

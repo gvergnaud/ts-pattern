@@ -54,11 +54,6 @@ export type ExtractSelections<a, p extends Pattern<a>> = UnionToIntersection<
   FindSelected<MatchedValue<a, p>, p>
 >;
 
-export type PatternHandler<a, p extends Pattern<a>, c> = (
-  value: MatchedValue<a, p>,
-  selections: ExtractSelections<a, p>
-) => c;
-
 export type Unset = '@match/unset';
 
 export type PickReturnValue<a, b> = a extends Unset ? b : a;
@@ -75,7 +70,10 @@ export type Match<a, b> = {
    **/
   with<p extends Pattern<a>, c>(
     pattern: p,
-    handler: PatternHandler<a, p, PickReturnValue<b, c>>
+    handler: (
+      value: MatchedValue<a, p>,
+      selections: ExtractSelections<a, p>
+    ) => PickReturnValue<b, c>
   ): Match<a, PickReturnValue<b, c>>;
   with<
     pat extends Pattern<a>,

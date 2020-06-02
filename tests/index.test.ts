@@ -1233,3 +1233,81 @@ describe('select', () => {
     });
   });
 });
+
+describe('Nesting', () => {
+  describe('objects', () => {
+    it('it should work on 2 level', () => {
+      expect(
+        match({ one: { two: '2', foo: 2, bar: true } })
+          .with({ one: { foo: __, bar: __ } }, (x) => x.one.bar)
+          .run()
+      ).toEqual(true);
+    });
+
+    it('it should work on 3 level', () => {
+      expect(
+        match({ one: { two: { three: '2', foo: 2, bar: true } } })
+          .with({ one: { two: { foo: __, bar: __ } } }, (x) => x.one.two.bar)
+          .run()
+      ).toEqual(true);
+    });
+
+    it('it should work on 4 level', () => {
+      expect(
+        match({ one: { two: { three: { four: '2', foo: 2, bar: true } } } })
+          .with(
+            { one: { two: { three: { foo: __, bar: __ } } } },
+            (x) => x.one.two.three.bar
+          )
+          .run()
+      ).toEqual(true);
+    });
+
+    it('it should work on 5 level', () => {
+      expect(
+        match({
+          one: { two: { three: { four: { five: '2', foo: 2, bar: true } } } },
+        })
+          .with(
+            { one: { two: { three: { four: { foo: __, bar: __ } } } } },
+            (x) => x.one.two.three.four.bar
+          )
+          .run()
+      ).toEqual(true);
+    });
+  });
+
+  describe('array', () => {
+    it('it should work on 2 level', () => {
+      expect(
+        match([{ two: '2', foo: 2, bar: true }])
+          .with([{ foo: __, bar: select('bar') }], (x, { bar }) => bar)
+          .run()
+      ).toEqual([true]);
+    });
+
+    it('it should work on 3 level', () => {
+      expect(
+        match([[{ two: '2', foo: 2, bar: true }]])
+          .with([[{ foo: __, bar: select('bar') }]], (x, { bar }) => bar)
+          .run()
+      ).toEqual([[true]]);
+    });
+
+    it('it should work on 4 level', () => {
+      expect(
+        match([[[{ two: '2', foo: 2, bar: true }]]])
+          .with([[[{ foo: __, bar: select('bar') }]]], (x, { bar }) => bar)
+          .run()
+      ).toEqual([[[true]]]);
+    });
+
+    it('it should work on 5 level', () => {
+      expect(
+        match([[[[{ two: '2', foo: 2, bar: true }]]]])
+          .with([[[[{ foo: __, bar: __ }]]]], ([[[[{ bar }]]]]) => bar)
+          .run()
+      ).toEqual(true);
+    });
+  });
+});
