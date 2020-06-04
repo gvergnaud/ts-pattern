@@ -13,8 +13,8 @@ Pattern Matching is implemented in Elixir, Rust, Haskell, Swift and many other l
 - Supports every data structure you use: objects, arrays, tuples, Sets, Maps, and all primitive types.
 - Typesafe, with great type inference.
 - Catch all (`__`) and type specific wild cards support.
-- Supports `when(predicate)` and `not(pattern)` patterns for complexe cases.
-- Supports properties selection, via the `select(name)` function.
+- Supports `when(<predicate>)` and `not(<pattern>)` patterns for complexe cases.
+- Supports properties selection, via the `select(<name>)` function.
 - Tiny bundle footprint (1kb).
 
 ## Installation
@@ -92,6 +92,8 @@ First, we wrap the state and the event objects in an array. We also explicitly
 specify the type `[State, Event]` to make sure it is interpreted as a tuple by
 TypeScript, so we can match on each value separately.
 
+---
+
 Then we add a first `with` clause:
 
 ```ts
@@ -110,6 +112,8 @@ the data matches the given pattern.
 The type of the data structure is narrowed down to
 what is permitted by the pattern.
 
+---
+
 In the second `with` clause, we use the `select` function:
 
 ```ts
@@ -126,8 +130,10 @@ It will inject the `event.error` property inside a `selections` object given as
 second argument to the handler function. the `select` function takes the name of
 the selection, which can be whatever you like.
 
-It is pretty useful when pattern matching on deep data structures because it avoid
+It is pretty useful when pattern matching on deep data structures because it avoids
 the hassle of destructuring it in your handler.
+
+---
 
 if you need to match on everything but a specific value, you can use
 a `not(<pattern>)` pattern. it's a function taking a pattern
@@ -138,6 +144,8 @@ and returning its opposite:
     status: 'loading',
   }))
 ```
+
+---
 
 `__` is a wildcard, it will match any value.
 You can use it at the top level, or inside a data structure.
@@ -163,7 +171,10 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
   - Literals
   - Objects and arrays
   - Sets and Maps
-  - `__` and other wild cards
+  - `__` wildcard
+  - `__.string` wildcard
+  - `__.number` wildcard
+  - `__.boolean` wildcard
   - `when` guards
   - `not` patterns
   - `select` pattern
