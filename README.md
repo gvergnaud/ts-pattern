@@ -1,6 +1,41 @@
-# Typescript Pattern
+# TS Pattern
 
-A complete pattern matching library for typescript.
+A complete pattern matching library for TypeScript.
+
+## What is pattern matching?
+
+A declarative way of making code branches in function of the input type.
+Elixir, Rust, Haskell, Swift
+
+## Features
+
+- A strong focus on type safety and type inferences.
+- Supports everything you need: objects, arrays, tuples, Sets, Maps, and all primitive types.
+- Catch all (`__`) and type specific wild cards support.
+
+## Examples
+
+- Simple example
+- Reducer example
+- Polymorphic input
+- Untyped input (e.g. an API response)
+- `when` guards
+- `not` patterns
+- `select` pattern
+
+## Documentation
+
+- Installation
+- Patterns
+  - Literals
+  - Objects and arrays
+  - Sets and Maps
+  - `__` and other wild cards
+  - `when` guards
+  - `not` patterns
+  - `select` pattern
+
+## Pattern matching
 
 ### Example
 
