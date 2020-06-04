@@ -865,9 +865,40 @@ describe('match', () => {
       const notNever: NotNever<typeof res> = true;
       const inferenceCheck: boolean = res;
     });
+
+    it('should be able to correcly narrow a generic types', () => {
+      const map = <A, B>(
+        option: Option<A>,
+        mapper: (value: A) => B
+      ): Option<B> =>
+        match<Option<A>, Option<B>>(option)
+          .when(
+            (option): option is { kind: 'some'; value: A } =>
+              option.kind === 'some',
+            (option) => ({
+              kind: 'some',
+              value: mapper(option.value),
+            })
+          )
+          .when(
+            (option): option is { kind: 'none' } => option.kind === 'none',
+            (option) => option
+          )
+          .run();
+
+      const input = { kind: 'some' as const, value: 20 };
+      const expectedOutput = { kind: 'some' as const, value: `number is 20` };
+
+      const res = map(input, (x) => `number is ${x}`);
+
+      const notNever: NotNever<typeof res> = true;
+      const inferenceCheck: Option<string> = res;
+
+      expect(res).toEqual(expectedOutput);
+    });
   });
 
-  describe('withWhen', () => {
+  describe('`with` with `when` clauses', () => {
     it('should work for simple cases', () => {
       const values: { value: State; expected: boolean }[] = [
         { value: { status: 'success', data: 'yo' }, expected: false },
@@ -904,7 +935,7 @@ describe('match', () => {
       });
     });
 
-    it('type should be refined in each guard close', () => {
+    it('type should be refined in each guard clause', () => {
       const values: { value: number | string; expected: boolean }[] = [
         { value: -1, expected: false },
         { value: 2, expected: true },
@@ -943,7 +974,7 @@ describe('match', () => {
     });
   });
 
-  describe('pattern containing a when close', () => {
+  describe('pattern containing a when clause', () => {
     it('type of value in predicate should be infered', () => {
       type Vec3 = { x: number; y: number; z: number };
       const vec: Vec3 = { x: 20, y: 4, z: 2 };
@@ -980,7 +1011,7 @@ describe('match', () => {
     });
   });
 
-  describe('pattern containing a not close', () => {
+  describe('pattern containing a not clause', () => {
     it('should work at the top level', () => {
       const get = (x: unknown): string =>
         match(x)
