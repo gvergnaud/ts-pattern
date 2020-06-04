@@ -136,9 +136,7 @@ export type Match<a, b> = {
    *
    * Equivalent to `.with(__)`
    **/
-  otherwise: <c>(
-    handler: () => PickReturnValue<b, c>
-  ) => Match<a, PickReturnValue<b, c>>;
+  otherwise: <c>(handler: () => PickReturnValue<b, c>) => PickReturnValue<b, c>;
 
   /**
    * ### Match.run

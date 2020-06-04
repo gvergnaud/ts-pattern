@@ -77,9 +77,7 @@ const builder = <a, b>(
       },
     ]),
 
-  otherwise: <c>(
-    handler: () => PickReturnValue<b, c>
-  ): Match<a, PickReturnValue<b, c>> =>
+  otherwise: <c>(handler: () => PickReturnValue<b, c>): PickReturnValue<b, c> =>
     builder<a, PickReturnValue<b, c>>(value, [
       ...patterns,
       {
@@ -87,7 +85,7 @@ const builder = <a, b>(
         handler,
         select: () => ({}),
       },
-    ]),
+    ]).run(),
 
   run: (): b => {
     const entry = patterns.find(({ test }) => test(value));

@@ -252,8 +252,7 @@ describe('match', () => {
           const inferenceCheck: 2 = v;
           return v * v;
         })
-        .otherwise(() => -1)
-        .run();
+        .otherwise(() => -1);
 
       const inferenceCheck: [NotNever<typeof res>, number] = [true, res];
 
@@ -292,7 +291,6 @@ describe('match', () => {
             return 'vector1';
           })
           .otherwise(() => 'no match')
-          .run()
       ).toEqual('vector1');
     });
   });
@@ -385,8 +383,7 @@ describe('match', () => {
           const inferenceCheck: number = x;
           return { kind: 'none' };
         })
-        .otherwise(() => ({ kind: 'none' }))
-        .run();
+        .otherwise(() => ({ kind: 'none' }));
 
       expect(res).toEqual({ kind: 'some', value: [httpResult] });
     });
@@ -533,8 +530,7 @@ describe('match', () => {
             })
           )
           .with([{ status: 'loading' }, { type: 'cancel' }], () => initState)
-          .otherwise(() => state)
-          .run();
+          .otherwise(() => state);
 
       expect(reducer(initState, { type: 'fetch' })).toEqual({
         status: 'loading',
@@ -635,8 +631,7 @@ describe('match', () => {
           const inferenceCheck: string = x;
           return true;
         })
-        .otherwise(() => false)
-        .run();
+        .otherwise(() => false);
 
       expect(res).toEqual(true);
     });
@@ -648,8 +643,7 @@ describe('match', () => {
           const inferenceCheck: number = x;
           return true;
         })
-        .otherwise(() => false)
-        .run();
+        .otherwise(() => false);
 
       expect(res).toEqual(true);
     });
@@ -661,8 +655,7 @@ describe('match', () => {
           const inferenceCheck: boolean = x;
           return true;
         })
-        .otherwise(() => false)
-        .run();
+        .otherwise(() => false);
 
       expect(res).toEqual(true);
     });
@@ -680,8 +673,7 @@ describe('match', () => {
           title: r.title,
         }))
         .with({ errorMessage: __.string }, (r) => new Error(r.errorMessage))
-        .otherwise(() => new Error('Client parse error'))
-        .run();
+        .otherwise(() => new Error('Client parse error'));
 
       expect(res).toEqual({
         id: 20,
@@ -696,8 +688,7 @@ describe('match', () => {
           const inferenceCheck: number | boolean = x;
           return true;
         })
-        .otherwise(() => false)
-        .run();
+        .otherwise(() => false);
 
       expect(res).toEqual(false);
     });
@@ -709,8 +700,7 @@ describe('match', () => {
           const inferenceCheck: string | boolean = x;
           return true;
         })
-        .otherwise(() => false)
-        .run();
+        .otherwise(() => false);
 
       expect(res).toEqual(false);
     });
@@ -722,8 +712,7 @@ describe('match', () => {
           const inferenceCheck: string | number = x;
           return true;
         })
-        .otherwise(() => false)
-        .run();
+        .otherwise(() => false);
 
       expect(res).toEqual(false);
     });
@@ -843,7 +832,6 @@ describe('match', () => {
               () => true
             )
             .otherwise(() => false)
-            .run()
         ).toEqual(expected);
       });
     });
@@ -859,8 +847,7 @@ describe('match', () => {
             return true;
           }
         )
-        .otherwise(() => false)
-        .run();
+        .otherwise(() => false);
 
       const notNever: NotNever<typeof res> = true;
       const inferenceCheck: boolean = res;
@@ -930,7 +917,6 @@ describe('match', () => {
               }
             )
             .otherwise(() => false)
-            .run()
         ).toEqual(expected);
       });
     });
@@ -966,8 +952,7 @@ describe('match', () => {
             (x) => x.length < 10,
             (x) => true
           )
-          .otherwise(() => false)
-          .run();
+          .otherwise(() => false);
 
         expect(res).toEqual(expected);
       });
