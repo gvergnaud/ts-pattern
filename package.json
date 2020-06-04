@@ -17,7 +17,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/gvergnaud/match.git"
+    "url": "git+ssh://git@github.com/gvergnaud/ts-pattern.git"
   },
   "keywords": [
     "pattern",
@@ -32,9 +32,9 @@
   "author": "Gabriel Vergnaud",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/gvergnaud/match/issues"
+    "url": "https://github.com/gvergnaud/ts-pattern/issues"
   },
-  "homepage": "https://github.com/gvergnaud/match#readme",
+  "homepage": "https://github.com/gvergnaud/ts-pattern#readme",
   "devDependencies": {
     "@types/jest": "^25.2.3",
     "jest": "^26.0.1",
