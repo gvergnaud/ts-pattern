@@ -1,25 +1,31 @@
 # TS Pattern
 
-A complete pattern matching library for TypeScript.
+The Pattern Matching library for TypeScript you have been missing.
 
-## What is pattern matching?
+## What is Pattern Matching?
 
-A declarative way of making code branches in function of the input type.
-Elixir, Rust, Haskell, Swift
+Pattern Matching is a technique coming from Functional Programming languages to declaratively write conditional code branches based on the structure of one or several values. It is a well proven technique much more powerful and much less verbose than imperative alternatives (if/else/switch statements) especially when branching on several values.
+
+Pattern Matching is implemented in Elixir, Rust, Haskell, Swift and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years (if ever). Lukily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
 
 ## Features
 
-- A strong focus on type safety and type inferences.
-- Supports everything you need: objects, arrays, tuples, Sets, Maps, and all primitive types.
+- Supports every data structure you use: objects, arrays, tuples, Sets, Maps, and all primitive types.
+- Typesafe, with great type inference.
 - Catch all (`__`) and type specific wild cards support.
+- Supports `when` and `not` patterns for complexe cases.
+- Supports properties selection, via the `select` function.
+- Tiny bundle footprint (1kb).
 
-## Examples
+## Gist
+
+## Code Sandbox Examples
 
 - Simple example
-- Reducer example
+- [Reducer Demo (in React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
+- [`when` guards Demo](https://codesandbox.io/s/ts-pattern-when-guard-example-0s6d8?file=/src/index.ts)
 - Polymorphic input
 - Untyped input (e.g. an API response)
-- `when` guards
 - `not` patterns
 - `select` pattern
 

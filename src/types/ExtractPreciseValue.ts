@@ -61,7 +61,7 @@ export type ExtractPreciseValue<a, b> = ExcludeIfContainsNever<
         : a extends b
         ? a
         : {
-            // we use require to remove the optional property modifier.
+            // we use Required to remove the optional property modifier (:?).
             // since we use a[k] after that, optional properties will stay
             // optional if no pattern was more precise.
             [k in keyof Required<a>]: k extends keyof b
