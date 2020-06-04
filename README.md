@@ -80,7 +80,7 @@ const reducer = (state: State, event: Event): State =>
 
 Let's go through this bit by bit:
 
-### match(<value>)
+### match(value)
 
 `match` takes a value and returns a builder on which you can
 add your pattern matching cases.
@@ -93,7 +93,7 @@ Her we wrap the state and the event objects in an array and we explicitly
 specify the type `[State, Event]` to make sure it is interpreted as a tuple by
 TypeScript, so we can match on each value separately.
 
-### .with(<pattern>, <handler>)
+### .with(pattern, handler)
 
 Then we add a first `with` clause:
 
@@ -113,7 +113,7 @@ the data matches the given pattern.
 The type of the data structure is narrowed down to
 what is permitted by the pattern.
 
-### select(<name>)
+### select(name)
 
 In the second `with` clause, we use the `select` function:
 
@@ -134,7 +134,7 @@ the selection, which can be whatever you like.
 It is pretty useful when pattern matching on deep data structures because it avoids
 the hassle of destructuring it in your handler.
 
-### not(<pattern>)
+### not(pattern)
 
 if you need to match on everything but a specific value, you can use
 a `not(<pattern>)` pattern. it's a function taking a pattern
