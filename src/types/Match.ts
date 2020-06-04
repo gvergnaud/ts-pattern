@@ -132,9 +132,10 @@ export type Match<a, b> = {
 
   /**
    * ### Match.otherwise
-   * Catch-all branch.
+   * takes a function returning the default value
+   * and return the matched result.
    *
-   * Equivalent to `.with(__)`
+   * Equivalent to `.with(__, () => x).run()`
    **/
   otherwise: <c>(handler: () => PickReturnValue<b, c>) => PickReturnValue<b, c>;
 
