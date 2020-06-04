@@ -31,7 +31,7 @@ Via yarn
 yarn add ts-pattern
 ```
 
-## Example
+## Example and intro to key concepts
 
 Sometimes you want to match on two values at once. Let's say we want to
 create a reducer function, we could make a switch on the event's type, but
@@ -58,10 +58,6 @@ type Event =
 ```ts
 import { match, __, not, select } from 'ts-pattern';
 
-const initState: State = {
-  status: 'idle',
-};
-
 const reducer = (state: State, event: Event): State =>
   match<[State, Event], State>([state, event])
     .with([{ status: 'loading' }, { type: 'success' }], ([, event]) => ({
@@ -84,15 +80,20 @@ const reducer = (state: State, event: Event): State =>
 
 Let's go through this bit by bit:
 
+### `match(<value>)`
+
+`match` takes a value and returns a builder on which you can
+add your pattern matching cases.
+
 ```ts
 match<[State, Event], State>([state, event]);
 ```
 
-First, we wrap the state and the event objects in an array. We also explicitly
+Her we wrap the state and the event objects in an array and we explicitly
 specify the type `[State, Event]` to make sure it is interpreted as a tuple by
 TypeScript, so we can match on each value separately.
 
----
+### `.with(<pattern>, <handler>)`
 
 Then we add a first `with` clause:
 
@@ -112,7 +113,7 @@ the data matches the given pattern.
 The type of the data structure is narrowed down to
 what is permitted by the pattern.
 
----
+### `select(<name>)`
 
 In the second `with` clause, we use the `select` function:
 
@@ -133,7 +134,7 @@ the selection, which can be whatever you like.
 It is pretty useful when pattern matching on deep data structures because it avoids
 the hassle of destructuring it in your handler.
 
----
+### `not(<pattern>)`
 
 if you need to match on everything but a specific value, you can use
 a `not(<pattern>)` pattern. it's a function taking a pattern
@@ -145,7 +146,7 @@ and returning its opposite:
   }))
 ```
 
----
+### the `__` wildcard
 
 `__` is a wildcard, it will match any value.
 You can use it at the top level, or inside a data structure.
@@ -164,9 +165,21 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
   .otherwise(() => state);
 ```
 
-## Documentation
+## Code Sandbox Examples
 
-- Code Sandbox Examples
+- Simple example
+- [Reducer Demo (in React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
+- [`when` guards Demo](https://codesandbox.io/s/ts-pattern-when-guard-example-0s6d8?file=/src/index.ts)
+- Polymorphic input
+- Untyped input (e.g. an API response)
+- `not` patterns
+- `select` pattern
+
+## API Documentation
+
+- `.with()`
+- `.when()`
+- `.otherwise()`
 - Patterns
   - Literals
   - Objects and arrays
@@ -179,16 +192,6 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
   - `not` patterns
   - `select` pattern
 - Type inference
-
-### Code Sandbox Examples
-
-- Simple example
-- [Reducer Demo (in React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
-- [`when` guards Demo](https://codesandbox.io/s/ts-pattern-when-guard-example-0s6d8?file=/src/index.ts)
-- Polymorphic input
-- Untyped input (e.g. an API response)
-- `not` patterns
-- `select` pattern
 
 ### Patterns
 
