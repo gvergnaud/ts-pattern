@@ -4,7 +4,7 @@ The Pattern Matching library for TypeScript you have been missing.
 
 ## What is Pattern Matching?
 
-Pattern Matching is a technique coming from Functional Programming languages to declaratively write conditional code branches based on the structure of one or several values. It is a well proven technique much more powerful and much less verbose than imperative alternatives (if/else/switch statements) especially when branching on several values.
+Pattern Matching is a technique coming from Functional Programming languages to declaratively write conditional code branches based on the structure of one or several values. It is a well proven technique, much more powerful and much less verbose than imperative alternatives (if/else/switch statements) especially when branching on several values.
 
 Pattern Matching is implemented in Elixir, Rust, Haskell, Swift and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years (if ever). Lukily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
 
@@ -17,10 +17,31 @@ Pattern Matching is implemented in Elixir, Rust, Haskell, Swift and many other l
 - Supports properties selection, via the `select(name)` function.
 - Tiny bundle footprint (1kb).
 
-## Gist
+## Installation
 
-Sometimes you want to match on two values at once. Here we pattern match
-on both the current state and the event (or action) and return a new state.
+Via npm:
+
+```
+npm install ts-pattern
+```
+
+Via yarn
+
+```
+yarn add ts-pattern
+```
+
+## Example
+
+Sometimes you want to match on two values at once. Let's say we want to
+create a reducer function, we could make a switch on the event's type, but
+generally an event only makes sense if we are in a certain state.
+
+To avoid unwanted state changes that could lead to bugs, we pattern match
+on both the current state and the event and return a new state.
+
+I use the word `event` but you can replace it with `action` if you are used
+to Redux's terminology.
 
 ```ts
 type State =
@@ -35,46 +56,120 @@ type Event =
 ```
 
 ```ts
-import { match, __, not } from 'ts-pattern';
+import { match, __, not, select } from 'ts-pattern';
 
 const initState: State = {
   status: 'idle',
 };
 
 const reducer = (state: State, event: Event): State =>
-  //
   match<[State, Event], State>([state, event])
-    // the first argument is the pattern : the shape of the value
-    // you expect for this branch.
     .with([{ status: 'loading' }, { type: 'success' }], ([, event]) => ({
       status: 'success',
       data: event.data,
     }))
-    // The second argument is the function that will be called if
-    // the data matches the given pattern.
-    // The type of the data structure is narrowed down to
-    // what is permitted by the pattern.
-    .with([{ status: 'loading' }, { type: 'error' }], ([, event]) => ({
-      status: 'error',
-      error: event.error,
-    }))
-    // if you need to exclude a value, you can use
-    // a `not` pattern. it's a function taking a pattern
-    // and returning its opposite.
+    .with(
+      [{ status: 'loading' }, { type: 'error', error: select('err') }],
+      (_, { err }) => ({
+        status: 'error',
+        error: err,
+      })
+    )
     .with([{ status: not('loading') }, { type: 'fetch' }], () => ({
       status: 'loading',
     }))
-    // `__` is a wildcard, it will match any value.
-    // You can use it at the top level, or inside a data structure.
     .with(__, () => state)
-    // `run` execute the match close, and returns the value
-    // .run();
-    // You can also use `otherwise`, which take an handler returning
-    // a default value. It is equivalent to `with(__, handler).run()`.
-    .otherwise(() => state);
+    .run();
 ```
 
-## Code Sandbox Examples
+Let's go through this bit by bit:
+
+```ts
+match<[State, Event], State>([state, event]);
+```
+
+First, we wrap the state and the event objects in an array. We also explicitly
+specify the type `[State, Event]` to make sure it is interpreted as a tuple by
+TypeScript, so we can match on each value separately.
+
+Then we add a first `with` clause:
+
+```ts
+  .with([{ status: 'loading' }, { type: 'success' }], ([state, event]) => ({
+    // `state` is infered as { status: 'loading' }
+    // `event` is infered as { type: 'success', data: string }
+    status: 'success',
+    data: event.data,
+  }))
+```
+
+The first argument is the pattern: the shape of the value
+you expect for this branch.
+The second argument is the function that will be called if
+the data matches the given pattern.
+The type of the data structure is narrowed down to
+what is permitted by the pattern.
+
+In the second `with` clause, we use the `select` function:
+
+```ts
+  .with(
+    [{ status: 'loading' }, { type: 'error', error: select('err') }],
+    (_, { err }) => ({
+      status: 'error',
+      error: err,
+    })
+  )
+```
+
+It will inject the `event.error` property inside a `selections` object given as
+second argument to the handler function. the `select` function takes the name of
+the selection, which can be whatever you like.
+
+It is pretty useful when pattern matching on deep data structures because it avoid
+the hassle of destructuring it in your handler.
+
+if you need to match on everything but a specific value, you can use
+a `not(<pattern>)` pattern. it's a function taking a pattern
+and returning its opposite:
+
+```ts
+  .with([{ status: not('loading') }, { type: 'fetch' }], () => ({
+    status: 'loading',
+  }))
+```
+
+`__` is a wildcard, it will match any value.
+You can use it at the top level, or inside a data structure.
+
+```ts
+  .with(__, () => state)
+  .run();
+```
+
+`run()` execute the pattern matching, and returns the result.
+
+Alternatively you can use `otherwise`, which take an handler returning
+a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run()`.
+
+```ts
+  .otherwise(() => state);
+```
+
+## Documentation
+
+- Code Sandbox Examples
+- Patterns
+  - Literals
+  - Objects and arrays
+  - Sets and Maps
+  - `__` and other wild cards
+  - `when` guards
+  - `not` patterns
+  - `select` pattern
+- Type inference
+
+### Code Sandbox Examples
 
 - Simple example
 - [Reducer Demo (in React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
@@ -84,19 +179,21 @@ const reducer = (state: State, event: Event): State =>
 - `not` patterns
 - `select` pattern
 
-## Documentation
+### Patterns
 
-- Installation
-- Patterns
-  - Literals
-  - Objects and arrays
-  - Sets and Maps
-  - `__` and other wild cards
-  - `when` guards
-  - `not` patterns
-  - `select` pattern
+#### Literals
 
-## Pattern matching
+#### Object and arrays
+
+#### Sets and Maps
+
+#### Wildcards
+
+#### `when` guards
+
+#### `not` patterns
+
+#### `select` patterns
 
 ### type inference
 

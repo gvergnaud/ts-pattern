@@ -2,7 +2,7 @@
 
 - [ ] Find a way to enforce exhaustive pattern matching
 - [ ] Maybe change the syntax for list, and provide a `__.list` pattern
-- [x] Several pattern/when closes if necessary, with refined type inference from one to the other
+- [x] Several pattern/when clauses if necessary, with refined type inference from one to the other
 - [x] Find a way to make the full type inference work
 - [x] Add an operator to select a part of the data structure
 - [x] Add `not(value)` in patterns.

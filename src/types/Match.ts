@@ -60,7 +60,7 @@ export type PickReturnValue<a, b> = a extends Unset ? b : a;
 
 /**
  * ### Match
- * An interface to create a pattern matching close.
+ * An interface to create a pattern matching clause.
  */
 export type Match<a, b> = {
   /**
