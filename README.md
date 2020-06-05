@@ -262,10 +262,40 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
 
 ### .match
 
+```ts
+match(value);
+```
+
+Create a `Match` object on which you can later call `.with`, `.when`, `.otherwise` and `.run`.
+
+#### Signature
+
+```ts
+function match<TInput, TOutput>(input: TInput): Match<TInput, TOutput>;
+```
+
+#### Options
+
+- `input`
+  - **Required**
+  - the input value your patterns will be tested against.
+
 ### .with
 
 ```ts
   .with(pattern, [, when, when, when], handler)
+```
+
+#### Signature
+
+```ts
+function with(
+  pattern: Pattern<TInput>,
+  [, when: (value: TInput) => unknown,
+     when: (value: TInput) => unknown,
+     when: (value: TInput) => unknown],
+  handler: (value: TInput) => TOutput
+): Match<TInput, TOutput>;
 ```
 
 #### Options
@@ -291,6 +321,15 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
   .when(predicate, handler)
 ```
 
+#### Signature
+
+```ts
+function when(
+  predicate: (value: TInput) => unknown,
+  handler: (value: TInput) => TOutput
+): Match<TInput, TOutput>;
+```
+
 #### Options
 
 - `predicate: (value: TInput) => unknown`
@@ -309,6 +348,12 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
 
 Executes the match case and return its result.
 
+#### Signature
+
+```ts
+function otherwise(defaultHandler: () => TOutput): TOutput;
+```
+
 #### Options
 
 - `defaultHandler: () => TOutput`
@@ -324,6 +369,12 @@ Executes the match case and return its result.
 ```
 
 Executes the match case and return its result.
+
+#### Signature
+
+```ts
+function run(): TOutput;
+```
 
 ### Patterns
 
