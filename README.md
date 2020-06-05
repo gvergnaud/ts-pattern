@@ -43,6 +43,8 @@ on both the state and the event** and return a new state.
 I use the word `event` but you can replace it with `action` if you are used
 to Redux's terminology.
 
+### Full example:
+
 ```ts
 type State =
   | { status: 'idle' }
@@ -98,7 +100,7 @@ const reducer = (state: State, event: Event): State =>
     .run();
 ```
 
-Let's go through this bit by bit:
+**Let's go through this bit by bit:**
 
 ### match(value)
 
