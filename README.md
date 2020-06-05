@@ -300,7 +300,7 @@ function with(
   [, when: (value: TInput) => unknown,
      when: (value: TInput) => unknown,
      when: (value: TInput) => unknown],
-  handler: (value: TInput) => TOutput
+  handler: (value: TInput, selections: Selections<TInput>) => TOutput
 ): Match<TInput, TOutput>;
 ```
 
@@ -320,6 +320,7 @@ function with(
   - Function called when the match conditions are satisfied.
   - All handlers on a single `match` case must return values of the same type, `TOutput`.
   - `TInput` might be narrowed to a more precise type using the `pattern`.
+  - `selections` is an object properties selected from the input with the [`select` function](#select-patterns).
 
 ### .when
 
