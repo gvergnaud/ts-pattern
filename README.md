@@ -231,9 +231,9 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
 
 ## Code Sandbox Examples
 
-- Basic
+- [Basic](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/basic.ts)
 - [Reducer Demo (in React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
-- Untyped input (e.g. an API response)
+- [Untyped input (e.g. an API response)](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/api.ts)
 - [`when` guards Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/when.ts)
 - `not` patterns
 - `select` pattern
@@ -286,16 +286,36 @@ match<Input, 'ok'>({ type: 'hello' })
     when((value) => true),
     (value) => 'ok' // value: Input
   )
+  .with(
+    when((value): value is string => true),
+    (value) => 'ok' // value: string
+  )
   .with(not('hello'), (value) => 'ok') // value: Input
   .with(not(__.string), (value) => 'ok') // value: { type: string }
+  .with(not({ type: __.string }), (value) => 'ok') // value: string
   .with(not(when(() => true)), (value) => 'ok') // value: Input
   .with({ type: __ }, (value) => 'ok') // value: { type: string }
   .with({ type: __.string }, (value) => 'ok') // value: { type: string }
   .with({ type: when(() => true) }, (value) => 'ok') // value: { type: string }
   .with({ type: not('hello' as 'hello') }, (value) => 'ok') // value: { type: string }
-  .with({ type: not(__.string) }, (value) => 'ok') // value: { type: string }
+  .with({ type: not(__.string) }, (value) => 'ok') // value: never
   .with({ type: not(when(() => true)) }, (value) => 'ok') // value: { type: string }
-  .with(not({ type: when(() => true) }), (value) => 'ok') // value: string
-  .with(not({ type: __.string }), (value) => 'ok') // value: string
   .run();
 ```
+
+## Inspiration
+
+This library has been heavily inspired by this great article by Wim Jongeneel:
+[Pattern Matching in TypeScript with Record and Wildcard Patterns](https://medium.com/swlh/pattern-matching-in-typescript-with-record-and-wildcard-patterns-6097dd4e471d).
+It made me realise pattern matching could be implemented in userland and we didn't have
+to wait for it to be added to the language itself. Thanks so much for that 🙏
+
+### how is this different from `typescript-pattern-matching`
+
+Wim Jongeneel released his own npm package for pattern matching. `ts-pattern` has a few
+notable differences:
+
+- `ts-patterns`'s goal is to be a well unit-tested, production ready library.
+- It Supports more datastructures, like tuples, set and maps.
+- It Supports deep selection with the `select()` function.
+- It's type inference works on deeper patterns and is well tested.
