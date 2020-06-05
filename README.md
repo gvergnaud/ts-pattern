@@ -43,7 +43,7 @@ on both the state and the event** and return a new state.
 I use the word `event` but you can replace it with `action` if you are used
 to Redux's terminology.
 
-### Full example:
+### Full example
 
 ```ts
 type State =
