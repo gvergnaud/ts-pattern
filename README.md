@@ -56,6 +56,7 @@ yarn add ts-pattern
     - [`not` patterns](#not-patterns)
     - [`select` patterns](#select-patterns)
 - [Type inference](#type-inference)
+- [Inspirations](#inspirations)
 
 ## Code Sandbox Examples
 
@@ -484,7 +485,7 @@ match<Input, 'ok'>({ type: 'hello' })
   .run();
 ```
 
-## Inspiration
+## Inspirations
 
 This library has been heavily inspired by this great article by Wim Jongeneel:
 [Pattern Matching in TypeScript with Record and Wildcard Patterns](https://medium.com/swlh/pattern-matching-in-typescript-with-record-and-wildcard-patterns-6097dd4e471d).
