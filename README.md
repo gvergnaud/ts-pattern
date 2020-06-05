@@ -79,7 +79,7 @@ on both the state and the event** and return a new state.
 I use the word `event` but you can replace it with `action` if you are used
 to Redux's terminology.
 
-### Full example
+### Example: a state reducer with match
 
 ```ts
 type State =
@@ -289,6 +289,7 @@ function match<TInput, TOutput>(input: TInput): Match<TInput, TOutput>;
 ### .with
 
 ```ts
+match(...)
   .with(pattern, [, when, when, when], handler)
 ```
 
@@ -320,11 +321,12 @@ function with(
   - Function called when the match conditions are satisfied.
   - All handlers on a single `match` case must return values of the same type, `TOutput`.
   - `TInput` might be narrowed to a more precise type using the `pattern`.
-  - `selections` is an object properties selected from the input with the [`select` function](#select-patterns).
+  - `selections` is an object of properties selected from the input with the [`select` function](#select-patterns).
 
 ### .when
 
 ```ts
+match(...)
   .when(predicate, handler)
 ```
 
@@ -350,6 +352,8 @@ function when(
 ### .otherwise
 
 ```ts
+match(...)
+  .with(...)
   .otherwise(defaultHandler)
 ```
 
@@ -372,6 +376,8 @@ function otherwise(defaultHandler: () => TOutput): TOutput;
 ### .run
 
 ```ts
+match(...)
+  .with(...)
   .run()
 ```
 
