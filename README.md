@@ -397,8 +397,9 @@ value will take the type described by your pattern.
 Literals are primitive javascript values, like number, string, or boolean.
 
 ```ts
-let x: unknown = 2;
-const res = match(x)
+const input: unknown = 2;
+
+const output = match(input)
   .with(2, () => 'number: two')
   .with(true, () => 'boolean: true')
   .with('hello', () => 'string: hello')
@@ -407,7 +408,7 @@ const res = match(x)
   .with(20n, () => 'bigint: 20n')
   .otherwise(() => 'something else');
 
-console.log(res);
+console.log(output);
 // => 'two'
 ```
 
@@ -416,11 +417,13 @@ console.log(res);
 The `__` pattern will match any value.
 
 ```ts
-const res = match('hello')
+const input = 'hello';
+
+const output = match(input)
   .with(__, () => 'It will always match')
   .otherwise(() => 'This string will never be used');
 
-console.log(res);
+console.log(output);
 // => 'It will always match'
 ```
 
@@ -429,12 +432,14 @@ console.log(res);
 The `__.string` pattern will match any value of type `string`.
 
 ```ts
-const res = match('hello')
+const input = 'hello';
+
+const output = match(input)
   .with('bonjour', () => 'Won‘t match')
   .with(__.string, () => 'it is a string!')
   .run();
 
-console.log(res);
+console.log(output);
 // => 'it is a string!'
 ```
 
@@ -443,12 +448,14 @@ console.log(res);
 The `__.number` pattern will match any value of type `number`.
 
 ```ts
-const res = match<number | string>(2)
+const input = 2;
+
+const output = match<number | string>(input)
   .with(__.string, () => 'it is a string!')
   .with(__.number, () => 'it is a number!')
   .run();
 
-console.log(res);
+console.log(output);
 // => 'it is a number!'
 ```
 
@@ -457,13 +464,15 @@ console.log(res);
 The `__.boolean` pattern will match any value of type `boolean`.
 
 ```ts
-const res = match<number | string | boolean>(true)
+const input = true;
+
+const output = match<number | string | boolean>(input)
   .with(__.string, () => 'it is a string!')
   .with(__.number, () => 'it is a number!')
   .with(__.boolean, () => 'it is a boolean!')
   .run();
 
-console.log(res);
+console.log(output);
 // => 'it is a boolean!'
 ```
 
@@ -479,14 +488,15 @@ type Input =
   | { type: 'image'; src: string }
   | { type: 'video'; seconds: number };
 
-let x: Input = { type: 'user', name: 'Gabriel' };
-const res = match(x)
+let input: Input = { type: 'user', name: 'Gabriel' };
+
+const output = match(input)
   .with({ type: 'image' }, () => 'image')
   .with({ type: 'video', seconds: 10 }, () => 'video of 10 seconds.')
   .with({ type: 'user' }, ({ name }) => `user of name: ${name}`)
   .otherwise(() => 'something else');
 
-console.log(res);
+console.log(output);
 // => 'user of name: Gabriel'
 ```
 
@@ -499,18 +509,19 @@ must all match for your list pattern to match.
 ```ts
 type Input = { title: string; content: string }[];
 
-let xs: Input = [
+let input: Input = [
   { title: 'Hello world!', content: 'I‘m a very interesting content' },
   { title: 'Bonjour!', content: 'I‘m a very interesting content too' },
 ];
-const res = match(xs)
+
+const output = match(input)
   .with(
     [{ title: __.string, content: __.string }],
     (posts) => 'a list of posts!'
   )
   .otherwise(() => 'something else');
 
-console.log(res);
+console.log(output);
 // => 'a list of posts!'
 ```
 
@@ -527,14 +538,16 @@ type Input =
   | [number, '*', number]
   | ['-', number];
 
-const res = match<Input>([3, '*', 4])
+const input: Input = [3, '*', 4];
+
+const output = match<Input>(input)
   .with([__, '+', __], ([x, , y]) => x + y)
   .with([__, '-', __], ([x, , y]) => x - y)
   .with([__, '*', __], ([x, , y]) => x * y)
   .with(['-', __], ([, x]) => -x)
   .otherwise(() => NaN);
 
-console.log(res);
+console.log(output);
 // => 12
 ```
 
