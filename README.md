@@ -240,15 +240,15 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
 
 ## API Documentation
 
-- [`.with()`](#with)
-- `.when()`
-- `.otherwise()`
-- Patterns
-  - Literals
-  - Objects
-  - Arrays
-  - Sets
-  - Maps
+- [.with](#with)
+- [.when](#when)
+- [.otherwise](#when)
+- [Patterns](#pattern)
+  - [Literals](#literals)
+  - [Objects](#objects)
+  - [Arrays](#arrays)
+  - [Sets](#sets)
+  - [Maps](#maps)
   - `__` wildcard
   - `__.string` wildcard
   - `__.number` wildcard
@@ -270,17 +270,27 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
 
 #### Literals
 
-#### Object and arrays
+#### Object
 
-#### Sets and Maps
+#### Arrays
 
-#### Wildcards
+#### Sets
+
+#### Maps
+
+#### `__` wildcard
+
+#### `__.string` wildcard
+
+#### `__.number` wildcard
+
+#### `__.boolean` wildcard
 
 #### `when` guards
 
 #### `not` patterns
 
-#### `select` patterns
+#### `select` pattern
 
 ### type inference
 
