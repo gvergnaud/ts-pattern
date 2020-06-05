@@ -45,18 +45,20 @@ to Redux's terminology.
 
 ```ts
 type State =
-  | { status: 'loading' }
+  | { status: 'idle' }
+  | { status: 'loading'; startTime: number }
   | { status: 'success'; data: string }
   | { status: 'error'; error: Error };
 
 type Event =
   | { type: 'fetch' }
   | { type: 'success'; data: string }
-  | { type: 'error'; error: Error };
+  | { type: 'error'; error: Error }
+  | { type: 'cancel' };
 ```
 
 ```ts
-import { match, __, not, select } from 'ts-pattern';
+import { match, __, not, select, when } from 'ts-pattern';
 
 const reducer = (state: State, event: Event): State =>
   match<[State, Event], State>([state, event])
@@ -64,6 +66,7 @@ const reducer = (state: State, event: Event): State =>
       status: 'success',
       data: event.data,
     }))
+
     .with(
       [{ status: 'loading' }, { type: 'error', error: select('err') }],
       (_, { err }) => ({
@@ -71,10 +74,27 @@ const reducer = (state: State, event: Event): State =>
         error: err,
       })
     )
+
     .with([{ status: not('loading') }, { type: 'fetch' }], () => ({
       status: 'loading',
+      startTime: Date.now(),
     }))
+
+    .with(
+      [
+        {
+          status: 'loading',
+          startTime: when((time) => Date.now() > time + 1000),
+        },
+        { type: 'cancel' },
+      ],
+      () => ({
+        status: 'idle',
+      })
+    )
+
     .with(__, () => state)
+
     .run();
 ```
 
@@ -93,6 +113,10 @@ Here we wrap the state and the event objects in an array and we explicitly
 specify the type `[State, Event]` to make sure it is interpreted as
 a [Tuple](https://en.wikipedia.org/wiki/Tuple) by TypeScript, so we
 can match on each value separately.
+
+Most of the time, you don't need to specify the type of input
+and output with `match<Input, Output>(...)` because `match` is able to
+infer both of this values.
 
 ### .with(pattern, handler)
 
@@ -137,7 +161,7 @@ the hassle of destructuring it in your handler.
 
 ### not(pattern)
 
-if you need to match on everything **but** a specific value, you can use
+If you need to match on everything **but** a specific value, you can use
 a `not(<pattern>)` pattern. it's a function taking a pattern
 and returning its opposite:
 
@@ -145,6 +169,28 @@ and returning its opposite:
   .with([{ status: not('loading') }, { type: 'fetch' }], () => ({
     status: 'loading',
   }))
+```
+
+### when(predicate)
+
+The `when` function enables you to add a guard to your pattern.
+Your pattern will not match unless your predicate returns `true`.
+It might be handy if you need to make a dynamic checks on
+your data structure.
+
+```ts
+  .with(
+    [
+      {
+        status: 'loading',
+        startTime: when((startTime) => Date.now() > startTime + 1000),
+      },
+      { type: 'cancel' },
+    ],
+    () => ({
+      status: 'idle',
+    })
+  )
 ```
 
 ### the `__` wildcard
