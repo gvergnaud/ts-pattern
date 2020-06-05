@@ -240,39 +240,146 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
 
 ## API Documentation
 
+- [match](#match)
 - [.with](#with)
 - [.when](#when)
 - [.otherwise](#when)
-- [Patterns](#pattern)
+- [Patterns](#patterns)
   - [Literals](#literals)
   - [Objects](#objects)
   - [Arrays](#arrays)
+  - [Tuples](#tuples)
   - [Sets](#sets)
   - [Maps](#maps)
-  - `__` wildcard
-  - `__.string` wildcard
-  - `__.number` wildcard
-  - `__.boolean` wildcard
-  - `when` guards
-  - `not` patterns
-  - `select` pattern
-- Type inference
+  - [`__` wildcard](#__-wildcard)
+  - [`__.string` wildcard](#__string-wildcard)
+  - [`__.number` wildcard](#__number-wildcard)
+  - [`__.boolean` wildcard](#__boolean-wildcard)
+  - [`when` guards](#when-guards)
+  - [`not` patterns](#not-patterns)
+  - [`select` patterns](#select-patterns)
+- [Type inference](#type-inference)
+
+### .match
 
 ### .with
 
+```ts
+  .with(pattern, [, when, when, when], handler)
+```
+
+#### Options
+
+- `pattern: Pattern<TInput>`
+  - **Required**
+  - The pattern your input must match for the handler to be called.
+  - [See all valid patterns bellow](#patterns)
+- `when: (value: TInput) => unknown`
+  - Optional
+  - Additional condition the input must satisfy for the handler to be called.
+  - You can add up to 3 when functions. The input will match if they all return truthy values.
+  - `TInput` might be narrowed to a more precise type using the `pattern`.
+- `handler: (value: TInput, selections: Selections<TInput>) => TOutput`
+  - **Required**
+  - Function called when the match conditions are satisfied.
+  - All handlers on a single `match` case must return values of the same type, `TOutput`.
+  - `TInput` might be narrowed to a more precise type using the `pattern`.
+
 ### .when
+
+```ts
+  .when(predicate, handler)
+```
+
+#### Options
+
+- `predicate: (value: TInput) => unknown`
+  - **Required**
+  - Condition the input must satisfy for the handler to be called.
+- `handler: (value: TInput) => TOutput`
+  - **Required**
+  - Function called when the predicate condition is satisfied.
+  - All handlers on a single `match` case must return values of the same type, `TOutput`.
 
 ### .otherwise
 
+```ts
+  .otherwise(defaultHandler)
+```
+
+Executes the match case and return its result.
+
+#### Options
+
+- `defaultHandler: () => TOutput`
+  - **Required**
+  - Function called if no other patterns were matched.
+  - Think of it as the `default:` case of `switch` statements.
+  - All handlers on a single `match` case must return values of the same type, `TOutput`.
+
 ### .run
+
+```ts
+  .run()
+```
+
+Executes the match case and return its result.
 
 ### Patterns
 
+Patterns are values matching one of the possible shapes of your input. They can
+be literal values, data structures, wildcards, or special functions like `not`,
+`when` and `select`.
+
+If your input isn't typed, (if it's a `any` or a `unknown`), you have no constraints
+on the shape of your pattern, you can put whatever you want. In your handler, your
+value will take the type described by your pattern.
+
 #### Literals
+
+Literals are primitive javascript values, like number, string, or boolean.
+
+```ts
+let x: unknown = 2;
+const res = match(x)
+  .with(2, () => 'number: two')
+  .with(true, () => 'boolean: true')
+  .with('hello', () => 'string: hello')
+  .with(undefined, () => 'undefined')
+  .with(null, () => 'null')
+  .with(20n, () => 'bigint: 20n')
+  .otherwise(() => 'something else');
+
+console.log(res);
+// => 'two'
+```
 
 #### Object
 
+A pattern can be an object with sub-pattern properties. In order to match,
+the input must be an object with all properties defined on the pattern object
+and each property must match its sub-pattern.
+
+```ts
+type Input =
+  | { type: 'user'; name: string }
+  | { type: 'image'; src: string }
+  | { type: 'video'; seconds: number };
+
+let x: Input = { type: 'user', name: 'Gabriel' };
+const res = match(x)
+  .with({ type: 'image' }, () => 'image')
+  .with({ type: 'video', seconds: 10 }, () => 'video of 10 seconds.')
+  .with({ type: 'user' }, ({ name }) => `user of name: ${name}`)
+  .otherwise(() => 'something else');
+
+console.log(res);
+// => 'user of name: Gabriel'
+```
+
 #### Arrays
+
+#### Tuples
 
 #### Sets
 
