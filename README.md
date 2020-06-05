@@ -1,6 +1,7 @@
 # TS Pattern
 
-A complete Pattern Matching library for TypeScript with great type inference.
+A complete Pattern Matching library for [TypeScript](https://github.com/microsoft/TypeScript)
+with great type inference.
 
 ## What is Pattern Matching?
 
@@ -86,7 +87,7 @@ const reducer = (state: State, event: Event): State =>
       [
         {
           status: 'loading',
-          startTime: when((time) => Date.now() > time + 1000),
+          startTime: when((startTime) => Date.now() > startTime + 1000),
         },
         { type: 'cancel' },
       ],
@@ -232,9 +233,8 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
 
 - Simple example
 - [Reducer Demo (in React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
-- [`when` guards Demo](https://codesandbox.io/s/ts-pattern-when-guard-example-0s6d8?file=/src/index.ts)
-- Polymorphic input
 - Untyped input (e.g. an API response)
+- [`when` guards Demo](https://codesandbox.io/s/ts-pattern-when-guard-example-0s6d8?file=/src/index.ts)
 - `not` patterns
 - `select` pattern
 
@@ -245,8 +245,10 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
 - `.otherwise()`
 - Patterns
   - Literals
-  - Objects and arrays
-  - Sets and Maps
+  - Objects
+  - Arrays
+  - Sets
+  - Maps
   - `__` wildcard
   - `__.string` wildcard
   - `__.number` wildcard
