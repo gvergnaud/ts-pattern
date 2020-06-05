@@ -5,7 +5,7 @@ with great type inference.
 
 ## What is Pattern Matching?
 
-Pattern Matching is a technique coming from Functional Programming languages to declaratively write conditional code branches based on the structure of one or several values. It is a well proven technique, much more powerful and much less verbose than imperative alternatives (if/else/switch statements) especially when branching on complex data structures or on several values.
+Pattern Matching is a technique coming from Functional Programming languages to declaratively write conditional code branches based on the structure of one or several values. This technique has proven itself to be much more powerful and much less verbose than imperative alternatives (if/else/switch statements) especially when branching on complex data structures or on several values.
 
 Pattern Matching is implemented in Elixir, Rust, Haskell, Swift and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years (if ever). Lukily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
 
@@ -214,7 +214,7 @@ You can use it at the top level, or inside your pattern.
 
 ```
 
-### run() and otherwise()
+### .run() and .otherwise()
 
 ```ts
   .run();
@@ -235,12 +235,12 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
 - [Reducer Demo (in React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
 - [Untyped input (e.g. an API response)](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/api.ts)
 - [`when` guards Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/when.ts)
-- `not` patterns
-- `select` pattern
+- [`not` patterns](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.ts)
+- [`select` pattern](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.ts)
 
 ## API Documentation
 
-- `.with()`
+- [`.with()`](#with)
 - `.when()`
 - `.otherwise()`
 - Patterns
@@ -257,6 +257,14 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
   - `not` patterns
   - `select` pattern
 - Type inference
+
+### .with
+
+### .when
+
+### .otherwise
+
+### .run
 
 ### Patterns
 
@@ -308,14 +316,15 @@ match<Input, 'ok'>({ type: 'hello' })
 This library has been heavily inspired by this great article by Wim Jongeneel:
 [Pattern Matching in TypeScript with Record and Wildcard Patterns](https://medium.com/swlh/pattern-matching-in-typescript-with-record-and-wildcard-patterns-6097dd4e471d).
 It made me realise pattern matching could be implemented in userland and we didn't have
-to wait for it to be added to the language itself. Thanks so much for that 🙏
+to wait for it to be added to the language itself. I'm really greatful for that 🙏
 
-### how is this different from `typescript-pattern-matching`
+#### how is this different from `typescript-pattern-matching`
 
 Wim Jongeneel released his own npm package for pattern matching. `ts-pattern` has a few
 notable differences:
 
 - `ts-patterns`'s goal is to be a well unit-tested, production ready library.
-- It Supports more datastructures, like tuples, set and maps.
-- It Supports deep selection with the `select()` function.
-- It's type inference works on deeper patterns and is well tested.
+- It supports more data structures, like tuples, sets and maps.
+- It provides a "catch all", `__`.
+- It supports deep selection with the `select()` function.
+- Its type inference works on deeper patterns and is well tested.
