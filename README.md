@@ -43,15 +43,15 @@ yarn add ts-pattern
   - [.otherwise](#when)
   - [Patterns](#patterns)
     - [Literals](#literals)
-    - [Objects](#objects)
-    - [Arrays](#arrays)
-    - [Tuples](#tuples)
-    - [Sets](#sets)
-    - [Maps](#maps)
     - [`__` wildcard](#__-wildcard)
     - [`__.string` wildcard](#__string-wildcard)
     - [`__.number` wildcard](#__number-wildcard)
     - [`__.boolean` wildcard](#__boolean-wildcard)
+    - [Objects](#objects)
+    - [Lists (arrays)](#lists-arrays)
+    - [Tuples (arrays)](#tuples-arrays)
+    - [Sets](#sets)
+    - [Maps](#maps)
     - [`when` guards](#when-guards)
     - [`not` patterns](#not-patterns)
     - [`select` patterns](#select-patterns)
@@ -411,6 +411,62 @@ console.log(res);
 // => 'two'
 ```
 
+#### `__` wildcard
+
+The `__` pattern will match any value.
+
+```ts
+const res = match('hello')
+  .with(__, () => 'It will always match')
+  .otherwise(() => 'This string will never be used');
+
+console.log(res);
+// => 'It will always match'
+```
+
+#### `__.string` wildcard
+
+The `__.string` pattern will match any value of type `string`.
+
+```ts
+const res = match('hello')
+  .with('bonjour', () => 'Won‘t match')
+  .with(__.string, () => 'it is a string!')
+  .run();
+
+console.log(res);
+// => 'it is a string!'
+```
+
+#### `__.number` wildcard
+
+The `__.number` pattern will match any value of type `number`.
+
+```ts
+const res = match<number | string>(2)
+  .with(__.string, () => 'it is a string!')
+  .with(__.number, () => 'it is a number!')
+  .run();
+
+console.log(res);
+// => 'it is a number!'
+```
+
+#### `__.boolean` wildcard
+
+The `__.boolean` pattern will match any value of type `boolean`.
+
+```ts
+const res = match<number | string | boolean>(true)
+  .with(__.string, () => 'it is a string!')
+  .with(__.number, () => 'it is a number!')
+  .with(__.boolean, () => 'it is a boolean!')
+  .run();
+
+console.log(res);
+// => 'it is a boolean!'
+```
+
 #### Object
 
 A pattern can be an object with sub-pattern properties. In order to match,
@@ -434,21 +490,57 @@ console.log(res);
 // => 'user of name: Gabriel'
 ```
 
-#### Arrays
+#### Lists (arrays)
 
-#### Tuples
+To match on a list of values, your pattern can be an array with a single sub-pattern in it.
+This sub-pattern will be tested against all elements in your input array, and they
+must all match for your list pattern to match.
+
+```ts
+type Input = { title: string; content: string }[];
+
+let xs: Input = [
+  { title: 'Hello world!', content: 'I‘m a very interesting content' },
+  { title: 'Bonjour!', content: 'I‘m a very interesting content too' },
+];
+const res = match(xs)
+  .with(
+    [{ title: __.string, content: __.string }],
+    (posts) => 'a list of posts!'
+  )
+  .otherwise(() => 'something else');
+
+console.log(res);
+// => 'a list of posts!'
+```
+
+#### Tuples (arrays)
+
+In TypeScript, [Tuples](https://en.wikipedia.org/wiki/Tuple) are arrays with a fixed
+number of elements which can be of different types. You can pattern match on tuples
+with a tuple pattern matching your value in length and shape.
+
+```ts
+type Input =
+  | [number, '+', number]
+  | [number, '-', number]
+  | [number, '*', number]
+  | ['-', number];
+
+const res = match<Input>([3, '*', 4])
+  .with([__, '+', __], ([x, , y]) => x + y)
+  .with([__, '-', __], ([x, , y]) => x - y)
+  .with([__, '*', __], ([x, , y]) => x * y)
+  .with(['-', __], ([, x]) => -x)
+  .otherwise(() => NaN);
+
+console.log(res);
+// => 12
+```
 
 #### Sets
 
 #### Maps
-
-#### `__` wildcard
-
-#### `__.string` wildcard
-
-#### `__.number` wildcard
-
-#### `__.boolean` wildcard
 
 #### `when` guards
 
