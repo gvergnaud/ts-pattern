@@ -226,12 +226,48 @@ describe('types', () => {
   });
 
   it('a union of object or primitive should be matched with a correct type inference', () => {
-    type Input = { type: string } | string;
+    type Input =
+      | string
+      | number
+      | boolean
+      | { type: string }
+      | string[]
+      | [number, number];
 
     match<Input>({ type: 'hello' })
       .with({ type: __ }, (x) => {
         const notNever: NotNever<typeof x> = true;
         const inferenceCheck: { type: string } = x;
+        return 'ok';
+      })
+      .with(__.string, (x) => {
+        const notNever: NotNever<typeof x> = true;
+        const inferenceCheck: string = x;
+        return 'ok';
+      })
+      .with(__.number, (x) => {
+        const notNever: NotNever<typeof x> = true;
+        const inferenceCheck: number = x;
+        return 'ok';
+      })
+      .with(__.boolean, (x) => {
+        const notNever: NotNever<typeof x> = true;
+        const inferenceCheck: boolean = x;
+        return 'ok';
+      })
+      .with({ type: __.string }, (x) => {
+        const notNever: NotNever<typeof x> = true;
+        const inferenceCheck: { type: string } = x;
+        return 'ok';
+      })
+      .with([__.string], (x) => {
+        const notNever: NotNever<typeof x> = true;
+        const inferenceCheck: string[] = x;
+        return 'ok';
+      })
+      .with([__.number, __.number], (x) => {
+        const notNever: NotNever<typeof x> = true;
+        const inferenceCheck: [number, number] = x;
         return 'ok';
       })
       .run();
@@ -432,6 +468,7 @@ describe('match', () => {
           return -x;
         })
         .run();
+
       const res2 = match<Input, number>(['-', 2])
         .with(['+', __, __], (value) => {
           const notNever: NotNever<typeof value> = true;
@@ -512,24 +549,50 @@ describe('match', () => {
 
       const reducer = (state: State, event: Event): State =>
         match<[State, Event], State>([state, event])
-          .with([__, { type: 'fetch' }], () => ({
-            status: 'loading',
-          }))
-          .with(
-            [{ status: 'loading' }, { type: 'success' }],
-            ([, { data }]) => ({
+          .with([__, { type: 'fetch' }], (x) => {
+            const inferenceCheck: [
+              [State, { type: 'fetch' }],
+              NotNever<typeof x>
+            ] = [x, true];
+
+            return {
+              status: 'loading',
+            };
+          })
+
+          .with([{ status: 'loading' }, { type: 'success' }], (x) => {
+            const inferenceCheck: [
+              [{ status: 'loading' }, { type: 'success'; data: string }],
+              NotNever<typeof x>
+            ] = [x, true];
+
+            return {
               status: 'success',
-              data,
-            })
-          )
-          .with(
-            [{ status: 'loading' }, { type: 'error' }],
-            ([, { error }]) => ({
+              data: x[1].data,
+            };
+          })
+
+          .with([{ status: 'loading' }, { type: 'error' }], (x) => {
+            const inferenceCheck: [
+              [{ status: 'loading' }, { type: 'error'; error: Error }],
+              NotNever<typeof x>
+            ] = [x, true];
+
+            return {
               status: 'error',
-              error,
-            })
-          )
-          .with([{ status: 'loading' }, { type: 'cancel' }], () => initState)
+              error: x[1].error,
+            };
+          })
+
+          .with([{ status: 'loading' }, { type: 'cancel' }], (x) => {
+            const inferenceCheck: [
+              [{ status: 'loading' }, { type: 'cancel' }],
+              NotNever<typeof x>
+            ] = [x, true];
+
+            return initState;
+          })
+
           .otherwise(() => state);
 
       expect(reducer(initState, { type: 'fetch' })).toEqual({

@@ -231,10 +231,10 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
 
 ## Code Sandbox Examples
 
-- Simple example
+- Basic
 - [Reducer Demo (in React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
 - Untyped input (e.g. an API response)
-- [`when` guards Demo](https://codesandbox.io/s/ts-pattern-when-guard-example-0s6d8?file=/src/index.ts)
+- [`when` guards Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/when.ts)
 - `not` patterns
 - `select` pattern
 
