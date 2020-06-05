@@ -32,7 +32,41 @@ Via yarn
 yarn add ts-pattern
 ```
 
-## Example and intro to key concepts
+# Documentation
+
+- [Code Sandbox Examples](#code-sandbox-examples)
+- [Intro to key concepts](#intro-to-key-concepts)
+- [API Reference](#api-reference)
+  - [match](#match)
+  - [.with](#with)
+  - [.when](#when)
+  - [.otherwise](#when)
+  - [Patterns](#patterns)
+    - [Literals](#literals)
+    - [Objects](#objects)
+    - [Arrays](#arrays)
+    - [Tuples](#tuples)
+    - [Sets](#sets)
+    - [Maps](#maps)
+    - [`__` wildcard](#__-wildcard)
+    - [`__.string` wildcard](#__string-wildcard)
+    - [`__.number` wildcard](#__number-wildcard)
+    - [`__.boolean` wildcard](#__boolean-wildcard)
+    - [`when` guards](#when-guards)
+    - [`not` patterns](#not-patterns)
+    - [`select` patterns](#select-patterns)
+- [Type inference](#type-inference)
+
+## Code Sandbox Examples
+
+- [Basic](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/basic.ts)
+- [Reducer Demo (in React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
+- [Untyped input (e.g. an API response)](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/api.ts)
+- [`when` guards Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/when.ts)
+- [`not` patterns](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.ts)
+- [`select` pattern](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.ts)
+
+## Intro to key concepts
 
 Sometimes you want to match on two values at once. Let's say we want to
 create a reducer function, we could make a switch on the event's type, but
@@ -229,36 +263,7 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
   .otherwise(() => state);
 ```
 
-## Code Sandbox Examples
-
-- [Basic](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/basic.ts)
-- [Reducer Demo (in React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
-- [Untyped input (e.g. an API response)](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/api.ts)
-- [`when` guards Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/when.ts)
-- [`not` patterns](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.ts)
-- [`select` pattern](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.ts)
-
-## API Documentation
-
-- [match](#match)
-- [.with](#with)
-- [.when](#when)
-- [.otherwise](#when)
-- [Patterns](#patterns)
-  - [Literals](#literals)
-  - [Objects](#objects)
-  - [Arrays](#arrays)
-  - [Tuples](#tuples)
-  - [Sets](#sets)
-  - [Maps](#maps)
-  - [`__` wildcard](#__-wildcard)
-  - [`__.string` wildcard](#__string-wildcard)
-  - [`__.number` wildcard](#__number-wildcard)
-  - [`__.boolean` wildcard](#__boolean-wildcard)
-  - [`when` guards](#when-guards)
-  - [`not` patterns](#not-patterns)
-  - [`select` patterns](#select-patterns)
-- [Type inference](#type-inference)
+## API Reference
 
 ### .match
 
