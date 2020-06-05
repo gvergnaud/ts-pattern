@@ -394,7 +394,7 @@ value will take the type described by your pattern.
 
 #### Literals
 
-Literals are primitive javascript values, like number, string, or boolean.
+Literals are primitive javascript values, like number, string, boolean, bigint, null, undefined, and symbol.
 
 ```ts
 const input: unknown = 2;
@@ -602,8 +602,8 @@ to wait for it to be added to the language itself. I'm really greatful for that 
 Wim Jongeneel released his own npm package for pattern matching. `ts-pattern` has a few
 notable differences:
 
-- `ts-patterns`'s goal is to be a well unit-tested, production ready library.
+- `ts-patterns`'s goal is to be a well unit-tested, well documented, production ready library.
 - It supports more data structures, like tuples, sets and maps.
-- It provides a "catch all", `__`.
+- It provides a "catch all" pattern: `__`.
 - It supports deep selection with the `select()` function.
 - Its type inference works on deeper patterns and is well tested.
