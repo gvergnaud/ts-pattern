@@ -135,8 +135,10 @@ Then we add a first `with` clause:
 
 The first argument is the **pattern**: the **shape of value**
 you expect for this branch.
+
 The second argument is the handler function: the **branch** that will be called if
 the data matches the given pattern.
+
 The **type** of the data structure is **narrowed down** to
 what is permitted by the pattern.
 
@@ -175,8 +177,8 @@ and returning its opposite:
 
 ### when(predicate)
 
-The `when` function enables you to add a guard to your pattern.
-Your pattern will not match unless your predicate returns `true`.
+The `when` function enables you to **add a guard** to your pattern.
+Your pattern will not match **unless your predicate returns `true`**.
 It might be handy if you need to make a dynamic checks on
 your data structure.
 
@@ -197,8 +199,8 @@ your data structure.
 
 ### the `__` wildcard
 
-`__` is a wildcard, it will match any value.
-You can use it at the top level, or inside a data structure.
+`__` will match any value.
+You can use it at the top level, or inside your pattern.
 
 ```ts
   .with(__, () => state)
@@ -209,6 +211,11 @@ You can use it at the top level, or inside a data structure.
   // at any level:
   .with([__, { type: __ }], () => state)
 
+```
+
+### run() and otherwise()
+
+```ts
   .run();
 ```
 
