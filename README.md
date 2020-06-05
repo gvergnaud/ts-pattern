@@ -300,7 +300,7 @@ function with(
   [, when: (value: TInput) => unknown,
      when: (value: TInput) => unknown,
      when: (value: TInput) => unknown],
-  handler: (value: TInput, selections: Selections<TInput>) => TOutput
+  handler: (value: TInput, selections?: Selections<TInput>) => TOutput
 ): Match<TInput, TOutput>;
 ```
 
@@ -560,7 +560,7 @@ console.log(output);
 
 #### `not` patterns
 
-#### `select` pattern
+#### `select` patterns
 
 ### type inference
 
