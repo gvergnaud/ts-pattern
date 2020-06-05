@@ -1,7 +1,7 @@
 # TS Pattern
 
 A complete Pattern Matching library for [TypeScript](https://github.com/microsoft/TypeScript)
-with great type inference.
+with smart type inference.
 
 ## What is Pattern Matching?
 
