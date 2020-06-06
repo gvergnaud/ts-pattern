@@ -149,7 +149,7 @@ match<[State, Event], State>([state, event]);
 
 Here we wrap the state and the event objects in an array and we explicitly
 specify the type `[State, Event]` to make sure it is interpreted as
-a [Tuple](https://en.wikipedia.org/wiki/Tuple) by TypeScript, so we
+a [Tuple](#tuples-arrays) by TypeScript, so we
 can match on each value separately.
 
 Most of the time, you don't need to specify the type of input
@@ -404,6 +404,8 @@ value will take the type described by your pattern.
 Literals are primitive javascript values, like number, string, boolean, bigint, null, undefined, and symbol.
 
 ```ts
+import { match } from 'ts-pattern';
+
 const input: unknown = 2;
 
 const output = match(input)
@@ -424,6 +426,8 @@ console.log(output);
 The `__` pattern will match any value.
 
 ```ts
+import { match, __ } from 'ts-pattern';
+
 const input = 'hello';
 
 const output = match(input)
@@ -439,6 +443,8 @@ console.log(output);
 The `__.string` pattern will match any value of type `string`.
 
 ```ts
+import { match, __ } from 'ts-pattern';
+
 const input = 'hello';
 
 const output = match(input)
@@ -455,6 +461,8 @@ console.log(output);
 The `__.number` pattern will match any value of type `number`.
 
 ```ts
+import { match, __ } from 'ts-pattern';
+
 const input = 2;
 
 const output = match<number | string>(input)
@@ -471,6 +479,8 @@ console.log(output);
 The `__.boolean` pattern will match any value of type `boolean`.
 
 ```ts
+import { match, __ } from 'ts-pattern';
+
 const input = true;
 
 const output = match<number | string | boolean>(input)
@@ -490,6 +500,8 @@ the input must be an object with all properties defined on the pattern object
 and each property must match its sub-pattern.
 
 ```ts
+import { match } from 'ts-pattern';
+
 type Input =
   | { type: 'user'; name: string }
   | { type: 'image'; src: string }
@@ -514,6 +526,8 @@ This sub-pattern will be tested against all elements in your input array, and th
 must all match for your list pattern to match.
 
 ```ts
+import { match, __ } from 'ts-pattern';
+
 type Input = { title: string; content: string }[];
 
 let input: Input = [
@@ -539,6 +553,8 @@ number of elements which can be of different types. You can pattern match on tup
 with a tuple pattern matching your value in length and shape.
 
 ```ts
+import { match, __ } from 'ts-pattern';
+
 type Input =
   | [number, '+', number]
   | [number, '-', number]
@@ -560,9 +576,92 @@ console.log(output);
 
 #### Sets
 
+Similarly to array patterns, set patterns have a different meaning
+if they contain a single sub-pattern or several of them:
+
+```ts
+import { match, __ } from 'ts-pattern';
+
+type Input = Set<string | number>;
+
+const input: Input = new Set([1, 2, 3]);
+
+const output = match<Input>(input)
+  .with(new Set([1, 'hello']), (set) => `Set contains 1 and 'hello'`)
+  .with(new Set([1, 2]), (set) => `Set contains 1 and 2`)
+  .with(new Set([__.string]), (set) => `Set contains only strings`)
+  .with(new Set([__.number]), (set) => `Set contains only numbers`)
+  .otherwise(() => '');
+
+console.log(output);
+// => 'Set contains 1 and 2'
+```
+
+If a Set pattern contains one single wildcard pattern, it will match if
+each value in the input set match the wildcard.
+
+If a Set pattern contains several values, it will match if the
+input Set contains each of these values.
+
 #### Maps
 
+Map patterns are similar to object patterns. They match if each
+keyed sub-pattern match the input value for the same key.
+
+```ts
+import { match, __ } from 'ts-pattern';
+
+type Input = Map<string, string | number>;
+
+const input: Input = new Map([
+  ['a', 1],
+  ['b', 2],
+  ['c', 3],
+]);
+
+const output = match<Input>(input)
+  .with(new Map([['b', 2]]), (map) => `map.get('b') is 2`)
+  .with(new Map([['a', __.string]]), (map) => `map.get('a') is a string`)
+  .with(
+    new Map([
+      ['a', __.number],
+      ['c', __.number],
+    ]),
+    (map) => `map.get('a') and map.get('c') are number`
+  )
+  .otherwise(() => '');
+
+console.log(output);
+// => 'map.get('b') is 2'
+```
+
 #### `when` guards
+
+the `when` function enable you to match a subset of your data structure
+with a custom guard function. The pattern will match only if all
+`when` functions return a truthy value.
+
+Note that you can narrow down the type of your input by providing a
+[Type Guard function](https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards) to when.
+
+```ts
+import { match, when } from 'ts-pattern';
+
+type Input = { score: number };
+
+const output = match<Input>({ score: 10 })
+  .with(
+    {
+      score: when((score): score is 5 => score === 5),
+    },
+    (input) => 'Its a good 5/7.' // input is infered as { score: 5 }
+  )
+  .with({ score: when((score) => score < 5) }, () => 'bad')
+  .with({ score: when((score) => score > 5) }, () => 'good');
+
+console.log(output);
+// => 'good'
+```
 
 #### `not` patterns
 
