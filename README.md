@@ -637,9 +637,8 @@ console.log(output);
 
 #### `when` guards
 
-the `when` function enable you to match a subset of your data structure
-with a custom guard function. The pattern will match only if all
-`when` functions return a truthy value.
+the `when` function enables you to test the input with a custom guard function.
+The pattern will match only if all `when` functions return a truthy value.
 
 Note that you can narrow down the type of your input by providing a
 [Type Guard function](https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards) to when.
