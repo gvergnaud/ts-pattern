@@ -9,7 +9,7 @@ import { match } from 'ts-pattern';
 type Data =
   | { type: 'text'; content: string }
   | { type: 'img'; src: string }
-  | ... // Imagine this union is huge!
+  | ...; // Imagine this union is huge!
 
 type Result =
   | { type: 'ok'; data: Data }
