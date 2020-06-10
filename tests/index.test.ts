@@ -392,6 +392,35 @@ describe('match', () => {
 
       expect(res).toEqual(1);
     });
+
+    it('should discriminate union types correctly 3', () => {
+      type Data =
+        | { type: 'text'; content: string }
+        | { type: 'img'; src: string };
+
+      type Result =
+        | { type: 'ok'; data: Data }
+        | { type: 'error'; error: Error };
+
+      const result = {
+        type: 'ok',
+        data: { type: 'img', src: 'hello.com' },
+      } as Result;
+
+      const ouput = match(result)
+        .with(
+          { type: 'ok', data: { type: 'text' } },
+          (res) => `<p>${res.data.content}</p>`
+        )
+        .with(
+          { type: 'ok', data: { type: 'img' } },
+          (res) => `<img src="${res.data.src}" />`
+        )
+        .with({ type: 'error' }, () => '<p>Oups! An error occured</p>')
+        .otherwise(() => '<p>everything else</p>');
+
+      expect(ouput).toEqual('<img src="hello.com" />');
+    });
   });
 
   describe('List ([a])', () => {

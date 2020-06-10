@@ -3,11 +3,26 @@
 A complete Pattern Matching library for [TypeScript](https://github.com/microsoft/TypeScript)
 with smart type inference.
 
-## What is Pattern Matching?
+```tsx
+import { match } from 'ts-pattern';
 
-Pattern Matching is a technique coming from Functional Programming languages to declaratively write conditional code branches based on the structure of one or several values. This technique has proven itself to be much more powerful and much less verbose than imperative alternatives (if/else/switch statements) especially when branching on complex data structures or on several values.
+type Data =
+  | { type: 'text'; content: string }
+  | { type: 'img'; src: string }
+  | ... // Imagine this union is huge!
 
-Pattern Matching is implemented in Elixir, Rust, Haskell, Swift and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years (if ever). Lukily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
+type Result =
+  | { type: 'ok'; data: Data }
+  | { type: 'error'; error: Error };
+
+let result: Result;
+
+return match(result)
+  .with({ type: 'ok', data: { type: 'text' } }, (res) => <p>{res.data.content}</p>)
+  .with({ type: 'ok', data: { type: 'img' } }, (res) => <img src={res.data.src} />)
+  .with({ type: 'error' }, (res) => <p>Oups! An error occured</p>)
+  .otherwise(() => <p>everything else</p>);
+```
 
 ## Features
 
@@ -17,6 +32,12 @@ Pattern Matching is implemented in Elixir, Rust, Haskell, Swift and many other l
 - Supports `when(<predicate>)` and `not(<pattern>)` patterns for complexe cases.
 - Supports properties selection, via the `select(<name>)` function.
 - Tiny bundle footprint (**only 1kb**).
+
+## What is Pattern Matching?
+
+Pattern Matching is a technique coming from Functional Programming languages to declaratively write conditional code branches based on the structure of one or several values. This technique has proven itself to be much more powerful and much less verbose than imperative alternatives (if/else/switch statements) especially when branching on complex data structures or on several values.
+
+Pattern Matching is implemented in Elixir, Rust, Haskell, Swift and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years (if ever). Lukily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
 
 ## Installation
 
@@ -656,7 +677,8 @@ const output = match<Input>({ score: 10 })
     (input) => 'Its a good 5/7.' // input is infered as { score: 5 }
   )
   .with({ score: when((score) => score < 5) }, () => 'bad')
-  .with({ score: when((score) => score > 5) }, () => 'good');
+  .with({ score: when((score) => score > 5) }, () => 'good')
+  .run();
 
 console.log(output);
 // => 'good'
@@ -664,9 +686,61 @@ console.log(output);
 
 #### `not` patterns
 
+The `not` function enables you to match on everything **but** a specific value.
+it's a function taking a pattern and returning its opposite:
+
+```ts
+import { match, not } from 'ts-pattern';
+
+type Input = boolean | number;
+
+const toNumber = (input: Input) =>
+  match(input)
+    .with(not(__.boolean), (n) => n) // n: number
+    .with(true, () => 1)
+    .with(false, () => 0)
+    .run();
+
+console.log(toNumber(2));
+// => 2
+console.log(toNumber(true));
+// => 1
+```
+
 #### `select` patterns
 
+The `select` function enables you to pick a part of your data structure
+and inject it in the `selections` object given as second parameter to
+your handler function.
+
+It can be useful when you have a deep data structure and you want to
+avoid the hassle of destructuring it.
+
+```ts
+import { match, not } from 'ts-pattern';
+
+type Input =
+  | { type: 'post'; user: { name: string } }
+  | { ... };
+
+const input = { type: 'post', user: { name: 'Gabriel' } }
+
+const output = match<Input>(input)
+    .with(
+      { type: 'post', user: { name: select('username') } },
+      (_, { username }) => username // username: string
+    )
+    .otherwise(() => 'anonymous');
+
+console.log(output);
+// => 'Gabriel'
+```
+
 ### type inference
+
+`ts-pattern` strongly invests on typescript's type inference to narrow
+the type of your value to something that match what you would expect.
+Here are a few example:
 
 ```ts
 type Input = { type: string } | string;
