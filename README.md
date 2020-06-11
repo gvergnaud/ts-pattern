@@ -774,7 +774,7 @@ match<Input, 'ok'>({ type: 'hello' })
 This library has been heavily inspired by this great article by Wim Jongeneel:
 [Pattern Matching in TypeScript with Record and Wildcard Patterns](https://medium.com/swlh/pattern-matching-in-typescript-with-record-and-wildcard-patterns-6097dd4e471d).
 It made me realise pattern matching could be implemented in userland and we didn't have
-to wait for it to be added to the language itself. I'm really greatful for that 🙏
+to wait for it to be added to the language itself. I'm really grateful for that 🙏
 
 #### how is this different from `typescript-pattern-matching`
 
