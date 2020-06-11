@@ -394,29 +394,49 @@ describe('match', () => {
     });
 
     it('should discriminate union types correctly 3', () => {
-      type Data =
-        | { type: 'text'; content: string }
-        | { type: 'img'; src: string };
+      type Text = { type: 'text'; content: string };
+      type Img = { type: 'img'; src: string };
+      type Video = { type: 'video'; src: string };
+      type Story = {
+        type: 'story';
+        likes: number;
+        views: number;
+        author: string;
+        src: string;
+      };
+      type Data = Text | Img | Video | Story;
 
-      type Result =
-        | { type: 'ok'; data: Data }
-        | { type: 'error'; error: Error };
+      type Ok<T> = { type: 'ok'; data: T };
+      type ResError<T> = { type: 'error'; error: T };
+
+      type Result<TError, TOk> = Ok<TOk> | ResError<TError>;
 
       const result = {
         type: 'ok',
         data: { type: 'img', src: 'hello.com' },
-      } as Result;
+      } as Result<Error, Data>;
 
       const ouput = match(result)
-        .with(
-          { type: 'ok', data: { type: 'text' } },
-          (res) => `<p>${res.data.content}</p>`
-        )
-        .with(
-          { type: 'ok', data: { type: 'img' } },
-          (res) => `<img src="${res.data.src}" />`
-        )
-        .with({ type: 'error' }, () => '<p>Oups! An error occured</p>')
+        .with({ type: 'ok', data: { type: 'text' } }, (res) => {
+          const notNever: NotNever<typeof res> = true;
+          const inferenceCheck: Ok<Text> = res;
+          return `<p>${res.data.content}</p>`;
+        })
+        .with({ type: 'ok', data: { type: 'img' } }, (res) => {
+          const notNever: NotNever<typeof res> = true;
+          const inferenceCheck: Ok<Img> = res;
+          return `<img src="${res.data.src}" />`;
+        })
+        .with({ type: 'ok', data: { type: 'story', likes: 10 } }, (res) => {
+          const notNever: NotNever<typeof res> = true;
+          const inferenceCheck: Ok<Story> = res;
+          return `<div>story with ${res.data.likes} likes</div>`;
+        })
+        .with({ type: 'error' }, (res) => {
+          const notNever: NotNever<typeof res> = true;
+          const inferenceCheck: ResError<Error> = res;
+          return '<p>Oups! An error occured</p>';
+        })
         .otherwise(() => '<p>everything else</p>');
 
       expect(ouput).toEqual('<img src="hello.com" />');
