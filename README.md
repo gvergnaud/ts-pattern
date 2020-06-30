@@ -214,7 +214,7 @@ In the second `with` clause, we use the `select` function:
 ```
 
 It will inject the `event.error` property inside a `selections` object given as
-second argument to the handler function. the `select` function takes the **name** of
+second argument to the handler function. The `select` function takes the **name** of
 the selection, which can be whatever you like.
 
 It is pretty useful when pattern matching on deep data structures because it avoids
