@@ -1,7 +1,15 @@
-# TS Pattern
+<h1 align="center">ts-pattern</h1>
 
+<p align="center">
 A complete Pattern Matching library for [TypeScript](https://github.com/microsoft/TypeScript)
 with smart type inference.
+</p>
+
+<p align="center">
+
+<a href="https://www.npmjs.com/package/ts-pattern"><img src="https://badge.fury.io/js/ts-pattern.svg" alt="npm version" height="18"></a>
+
+</p>
 
 ```tsx
 import { match } from 'ts-pattern';
