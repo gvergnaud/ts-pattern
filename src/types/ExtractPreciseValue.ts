@@ -17,7 +17,7 @@ export type ExtractPreciseValue<a, b> = ExcludeIfContainsNever<
           ExtractPreciseValue<a4, b4>,
           ExtractPreciseValue<a5, b5>
         ]
-      : never
+      : LeastUpperBound<a, b>
     : b extends [infer b1, infer b2, infer b3, infer b4]
     ? a extends [infer a1, infer a2, infer a3, infer a4]
       ? [
@@ -26,7 +26,7 @@ export type ExtractPreciseValue<a, b> = ExcludeIfContainsNever<
           ExtractPreciseValue<a3, b3>,
           ExtractPreciseValue<a4, b4>
         ]
-      : never
+      : LeastUpperBound<a, b>
     : b extends [infer b1, infer b2, infer b3]
     ? a extends [infer a1, infer a2, infer a3]
       ? [
@@ -34,26 +34,26 @@ export type ExtractPreciseValue<a, b> = ExcludeIfContainsNever<
           ExtractPreciseValue<a2, b2>,
           ExtractPreciseValue<a3, b3>
         ]
-      : never
+      : LeastUpperBound<a, b>
     : b extends [infer b1, infer b2]
     ? a extends [infer a1, infer a2]
       ? [ExtractPreciseValue<a1, b1>, ExtractPreciseValue<a2, b2>]
-      : never
+      : LeastUpperBound<a, b>
     : b extends (infer b1)[]
     ? a extends (infer a1)[]
       ? ExtractPreciseValue<a1, b1>[]
-      : never
+      : LeastUpperBound<a, b>
     : b extends Map<infer bk, infer bv>
     ? a extends Map<infer ak, infer av>
       ? Map<ExtractPreciseValue<ak, bk>, ExtractPreciseValue<av, bv>>
-      : never
+      : LeastUpperBound<a, b>
     : b extends Set<infer bv>
     ? a extends Set<infer av>
       ? Set<ExtractPreciseValue<av, bv>>
-      : never
+      : LeastUpperBound<a, b>
     : b extends object
     ? a extends any[] | Set<any> | Map<any, any> | Primitives
-      ? never
+      ? LeastUpperBound<a, b>
       : b extends a
       ? b
       : a extends b

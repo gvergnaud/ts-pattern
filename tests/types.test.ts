@@ -251,4 +251,20 @@ describe('types', () => {
       })
       .run();
   });
+
+  describe('Unknown Input', () => {
+    const users: unknown = [{ name: 'Gabriel', postCount: 20 }];
+
+    const typedUsers = match(users)
+      .with([{ name: __.string, postCount: __.number }], (users) => users)
+      .otherwise(() => []);
+
+    // type of `typedUsers` is { name: string, postCount: number }[]
+
+    expect(
+      typedUsers
+        .map((user) => `<p>${user.name} has ${user.postCount} posts.</p>`)
+        .join('')
+    ).toEqual(`<p>Gabriel has 20 posts.</p>`);
+  });
 });
