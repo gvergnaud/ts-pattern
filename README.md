@@ -64,7 +64,7 @@ yarn add ts-pattern
 # Documentation
 
 - [Code Sandbox Examples](#code-sandbox-examples)
-- [Intro to key concepts](#intro-to-key-concepts)
+- [Getting Started](#getting-started)
 - [API Reference](#api-reference)
   - [match](#match)
   - [.with](#with)
@@ -96,7 +96,7 @@ yarn add ts-pattern
 - [`not` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.ts)
 - [`select` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.ts)
 
-## Intro to key concepts
+## Getting Started
 
 As an example, we are going to create a state reducer for a
 frontend application fetching some data using an HTTP request.
