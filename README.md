@@ -306,7 +306,7 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
 
 ## API Reference
 
-### .match
+### match
 
 ```ts
 match(value);
