@@ -194,7 +194,7 @@ can match on each value separately.
 
 Most of the time, you don't need to specify the type of input
 and output with `match<Input, Output>(...)` because `match` is able to
-infer both of this values.
+infer both of this types.
 
 ### .with(pattern, handler)
 
