@@ -103,7 +103,7 @@ frontend application fetching some data using an HTTP request.
 
 ### Example: a state reducer with ts-pattern
 
-This application can be in four different states: `idle`, `loading`,
+Our application can be in four different states: `idle`, `loading`,
 `success` and `error`. Depending on which state we are in, some events
 can occure. Here are all the possible types of event our application
 can respond to: `fetch`, `success`, `error` and `cancel`.
