@@ -98,17 +98,18 @@ yarn add ts-pattern
 
 ## Intro to key concepts
 
-Sometimes you want to match on two values at once. Let's say we want to
-create a reducer function, we could make a switch on the event's type, but
-generally an event only makes sense if we are in a certain state.
+As an example, we are going to create a state reducer for a
+frontend application fetching some data using an HTTP request.
 
-To avoid unwanted state changes that could lead to bugs, **we pattern match
-on both the state and the event** and return a new state.
+### Example: a state reducer with ts-pattern
+
+This application can be in four different states: `idle`, `loading`,
+`success` and `error`. Depending on which state we are in, some events
+can occure. Here are all the possible types of event our application
+can respond to: `fetch`, `success`, `error` and `cancel`.
 
 I use the word `event` but you can replace it with `action` if you are used
 to Redux's terminology.
-
-### Example: a state reducer with match
 
 ```ts
 type State =
@@ -123,6 +124,16 @@ type Event =
   | { type: 'error'; error: Error }
   | { type: 'cancel' };
 ```
+
+Even though our application can handle 4 events, **only a subset** of these
+events **make sense for each given state**. For instance we can only `cancel`
+a request if we are currently in the `loading` state.
+To avoid unwanted state changes that could lead to bugs, we want to create
+a reducer function that **matches on both the state and the event**
+and return a new state.
+
+This is a case were `match` really shines. Instead of writting nested
+switch statements, we can do that in a very expressive way:
 
 ```ts
 import { match, __, not, select, when } from 'ts-pattern';
