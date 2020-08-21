@@ -758,7 +758,7 @@ console.log(output);
 ### type inference
 
 `ts-pattern` strongly invests on typescript's type inference to narrow
-the type of your value to something that match what you would expect.
+the type of your value to something that matches what you would expect.
 Here are a few example:
 
 ```ts
