@@ -759,7 +759,7 @@ console.log(output);
 
 `ts-pattern` strongly invests on typescript's type inference to narrow
 the type of your value to something that matches what you would expect.
-Here are a few example:
+Here are a few examples:
 
 ```ts
 type Input = { type: string } | string;
@@ -782,7 +782,7 @@ match<Input, 'ok'>({ type: 'hello' })
   .with({ type: __ }, (value) => 'ok') // value: { type: string }
   .with({ type: __.string }, (value) => 'ok') // value: { type: string }
   .with({ type: when(() => true) }, (value) => 'ok') // value: { type: string }
-  .with({ type: not('hello' as 'hello') }, (value) => 'ok') // value: { type: string }
+  .with({ type: not('hello' as const) }, (value) => 'ok') // value: { type: string }
   .with({ type: not(__.string) }, (value) => 'ok') // value: never
   .with({ type: not(when(() => true)) }, (value) => 'ok') // value: { type: string }
   .run();
