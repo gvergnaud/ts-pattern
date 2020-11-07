@@ -37,7 +37,7 @@ return match(result)
 - Supports **every data structure** you use: objects, arrays, tuples, Sets, Maps, and all primitive types.
 - **Typesafe**, with great type inference.
 - Supports catch all (`__`) and type specific **wildcards**.
-- Supports `when(<predicate>)` and `not(<pattern>)` patterns for complexe cases.
+- Supports `when(<predicate>)` and `not(<pattern>)` patterns for complex cases.
 - Supports properties selection, via the `select(<name>)` function.
 - Tiny bundle footprint (**only 1kb**).
 
@@ -45,7 +45,7 @@ return match(result)
 
 Pattern Matching is a technique coming from Functional Programming languages to declaratively write conditional code branches based on the structure of one or several values. This technique has proven itself to be much more powerful and much less verbose than imperative alternatives (if/else/switch statements) especially when branching on complex data structures or on several values.
 
-Pattern Matching is implemented in Elixir, Rust, Haskell, Swift and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years (if ever). Lukily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
+Pattern Matching is implemented in Elixir, Rust, Haskell, Swift and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years (if ever). Luckily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
 
 ## Installation
 
@@ -105,7 +105,7 @@ frontend application fetching some data using an HTTP request.
 
 Our application can be in four different states: `idle`, `loading`,
 `success` and `error`. Depending on which state we are in, some events
-can occure. Here are all the possible types of event our application
+can occur. Here are all the possible types of event our application
 can respond to: `fetch`, `success`, `error` and `cancel`.
 
 I use the word `event` but you can replace it with `action` if you are used
@@ -132,7 +132,7 @@ To avoid unwanted state changes that could lead to bugs, we want to create
 a reducer function that **matches on both the state and the event**
 and return a new state.
 
-This is a case were `match` really shines. Instead of writting nested
+This is a case were `match` really shines. Instead of writing nested
 switch statements, we can do that in a very expressive way:
 
 ```ts
@@ -441,7 +441,7 @@ value will take the type described by your pattern.
 
 #### Literals
 
-Literals are primitive javascript values, like number, string, boolean, bigint, null, undefined, and symbol.
+Literals are primitive JavaScript values, like number, string, boolean, bigint, null, undefined, and symbol.
 
 ```ts
 import { match } from 'ts-pattern';
@@ -757,7 +757,7 @@ console.log(output);
 
 ### type inference
 
-`ts-pattern` strongly invests on typescript's type inference to narrow
+`ts-pattern` strongly invests on TypeScript's type inference to narrow
 the type of your value to something that matches what you would expect.
 Here are a few examples:
 
@@ -792,7 +792,7 @@ match<Input, 'ok'>({ type: 'hello' })
 
 This library has been heavily inspired by this great article by Wim Jongeneel:
 [Pattern Matching in TypeScript with Record and Wildcard Patterns](https://medium.com/swlh/pattern-matching-in-typescript-with-record-and-wildcard-patterns-6097dd4e471d).
-It made me realise pattern matching could be implemented in userland and we didn't have
+It made me realize pattern matching could be implemented in userland and we didn't have
 to wait for it to be added to the language itself. I'm really grateful for that 🙏
 
 #### how is this different from `typescript-pattern-matching`
