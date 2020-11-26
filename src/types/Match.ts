@@ -58,7 +58,15 @@ export type Unset = '@match/unset';
 
 export type PickReturnValue<a, b> = a extends Unset ? b : a;
 
-export type ExcludePattern<a, p> = a extends string ? Exclude<a, p> : a;
+
+type ExcludeString<a extends string, p>
+  = p extends string ? Exclude<a, p>
+  : a;
+export type ExcludePattern<a, p> = a extends string
+  ? ExcludeString<a, p>
+  : a;
+
+type NonExhaustivePattern = {__nonExhaustive: never};
 
 /**
  * ### Match
@@ -154,5 +162,5 @@ export type Match<a, b> = {
    * nb: Only works when the matched value extends string
    */
   exhaustive: [a] extends [never] ? () => Match<a, b>
-  : never;
+  : NonExhaustivePattern;
 };
