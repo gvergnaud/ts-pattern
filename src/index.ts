@@ -87,6 +87,9 @@ const builder = <a, b>(
       },
     ]).run(),
 
+  as: <c>(): Match<a, PickReturnValue<b, c>>  =>
+    builder<a, PickReturnValue<b, c>>(value, patterns),
+
   run: (): b => {
     const entry = patterns.find(({ test }) => test(value));
     if (!entry) {

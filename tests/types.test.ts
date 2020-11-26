@@ -252,7 +252,7 @@ describe('types', () => {
       .run();
   });
 
-  describe('Unknown Input', () => {
+  it('Unknown Input', () => {
     const users: unknown = [{ name: 'Gabriel', postCount: 20 }];
 
     const typedUsers = match(users)
@@ -267,4 +267,15 @@ describe('types', () => {
         .join('')
     ).toEqual(`<p>Gabriel has 20 posts.</p>`);
   });
+
+
+  it('Can set return type', () => {
+    const v = 'dt' as 'dt' | 'num' | 'nil';
+    match(v)
+      .as<Date | number | undefined>()
+      .with('dt', () => new Date())
+      .with('num', () => 42)
+      .with('nil', () => undefined)
+      .run();
+  })
 });

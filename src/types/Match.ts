@@ -140,6 +140,12 @@ export type Match<a, b> = {
   otherwise: <c>(handler: () => PickReturnValue<b, c>) => PickReturnValue<b, c>;
 
   /**
+   * ### Match.as
+   * Sets the return value type to a given type.
+   */
+  as: <c>() => Match<a, PickReturnValue<b, c>>;
+
+  /**
    * ### Match.run
    * Runs the pattern matching and return a value.
    * */
