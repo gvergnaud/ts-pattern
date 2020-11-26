@@ -10,7 +10,7 @@ import {
   not,
   select,
 } from './types/Pattern';
-import { Unset, Match, PickReturnValue } from './types/Match';
+import { Unset, Match, PickReturnValue, ExcludePattern } from './types/Match';
 
 /**
  * # Pattern matching
@@ -44,7 +44,7 @@ const builder = <a, b>(
   with<p extends Pattern<a>, c>(
     pattern: p,
     ...args: any[]
-  ): Match<a, PickReturnValue<b, c>> {
+  ): any {
     const handler = args[args.length - 1];
     const predicates = args.slice(0, -1);
 
@@ -54,7 +54,7 @@ const builder = <a, b>(
           predicates.every((predicate) => predicate(value as any))
       );
 
-    return builder<a, PickReturnValue<b, c>>(value, [
+    return builder<ExcludePattern<a, p>, PickReturnValue<b, c>>(value as any, [
       ...patterns,
       {
         test: doesMatch,
@@ -76,6 +76,9 @@ const builder = <a, b>(
         select: () => ({}),
       },
     ]),
+
+  exhaustive: ((): Match<a, b>  =>
+    builder<a, b>(value, patterns)) as any,
 
   otherwise: <c>(handler: () => PickReturnValue<b, c>): PickReturnValue<b, c> =>
     builder<a, PickReturnValue<b, c>>(value, [

@@ -4,6 +4,21 @@ import { State, Event, NotNever } from './utils';
 describe('types', () => {
   type Input = [State, Event];
 
+  it ('Can force exhaustive pattern', () => {
+    const v = 'dt' as 'dt' | 'num' | 'nil';
+    const matcher = match(v)
+      .with('dt', () => 1)
+      .with('num', () => 2);
+
+    // @ts-expect-error
+    matcher.exhaustive().run();
+
+    matcher
+      .with('nil', () => 3)
+      .exhaustive()
+      .run();
+  });
+
   it('wildcard patterns should typecheck', () => {
     let pattern: Pattern<Input>;
     pattern = __;

@@ -58,6 +58,8 @@ export type Unset = '@match/unset';
 
 export type PickReturnValue<a, b> = a extends Unset ? b : a;
 
+export type ExcludePattern<a, p> = a extends string ? Exclude<a, p> : a;
+
 /**
  * ### Match
  * An interface to create a pattern matching clause.
@@ -74,7 +76,7 @@ export type Match<a, b> = {
       value: MatchedValue<a, p>,
       selections: ExtractSelections<a, p>
     ) => PickReturnValue<b, c>
-  ): Match<a, PickReturnValue<b, c>>;
+  ): Match<ExcludePattern<a, p>, PickReturnValue<b, c>>;
   with<
     pat extends Pattern<a>,
     pred extends (value: MatchedValue<a, pat>) => unknown,
@@ -144,4 +146,13 @@ export type Match<a, b> = {
    * Runs the pattern matching and return a value.
    * */
   run: () => b;
+
+  /**
+   * ### Match.exhaustive
+   * Will yield a type error if all cases have not been handled
+   *
+   * nb: Only works when the matched value extends string
+   */
+  exhaustive: [a] extends [never] ? () => Match<a, b>
+  : never;
 };
