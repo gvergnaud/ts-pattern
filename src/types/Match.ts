@@ -1,4 +1,9 @@
-import type { Pattern, SelectPattern, GuardValue, Primitives } from './Pattern';
+import type {
+  Pattern,
+  SelectPattern,
+  GuardValue,
+  ExhaustivePattern,
+} from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPattern } from './InvertPattern';
 import type { ValueOf, UnionToIntersection } from './helpers';
@@ -11,7 +16,7 @@ export type MatchedValue<a, p extends Pattern<a>> = ExtractPreciseValue<
   ? a
   : ExtractPreciseValue<a, InvertPattern<p>>;
 
-// Infinite recursion is forbidden in typescript, so we have
+// Infinite recursion is forbidden in TypeScript < 4.1, so we have
 // to trick this by duplicating type and compute its result
 // on a predefined number of recursion levels.
 type FindSelected<a, b> = b extends SelectPattern<infer Key>
@@ -144,4 +149,50 @@ export type Match<a, b> = {
    * Runs the pattern matching and return a value.
    * */
   run: () => b;
+
+  /**
+   * ### Match.exhaustive
+   * Converts the match expression into an exhaustive match,
+   * checking that **all cases are handled**. `when` predicates
+   * aren't supported on exhaustive matches.
+   **/
+  exhaustive: () => ExhaustiveMatch<a, b>;
+};
+
+/**
+ * ### ExhaustiveMatch
+ * An interface to create an exhaustive pattern matching clause.
+ */
+export type ExhaustiveMatch<i, o> = {
+  /**
+   * ### Match.with
+   * If the data matches the pattern provided as first argument,
+   * use this branch and execute the handler function.
+   **/
+  with<p extends ExhaustivePattern<i>, c>(
+    pattern: p,
+    handler: (
+      value: MatchedValue<i, p>,
+      selections: ExtractSelections<i, p>
+    ) => PickReturnValue<o, c>
+  ): ExhaustiveMatch<Exclude<i, MatchedValue<i, p>>, PickReturnValue<o, c>>;
+
+  /**
+   * ### Match.otherwise
+   * takes a function returning the default value
+   * and return the matched result.
+   *
+   * Equivalent to `.with(__, () => x).run()`
+   **/
+  otherwise: <c>(handler: () => PickReturnValue<o, c>) => PickReturnValue<o, c>;
+
+  /**
+   * ### Match.run
+   * Runs the pattern matching and return a value.
+   *
+   * If this is of type `never`, it means you aren't matching
+   * every cases, and you should probably add a  another `.with(...)` clause
+   * to prevent potential runtime errors.
+   * */
+  run: [i] extends [never] ? () => o : never;
 };

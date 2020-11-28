@@ -80,3 +80,59 @@ export type Pattern<a> =
       : a extends object
       ? { [k in keyof a]?: Pattern<a[k]> }
       : a);
+
+/**
+ * ### ExhaustivePattern
+ * Just like the Pattern type, excluding when clauses.
+ */
+export type ExhaustivePattern<a> =
+  | SelectPattern<string>
+  | NotPattern<a | any>
+  | WildCardPattern<a>
+  | (a extends Primitives
+      ? a
+      : a extends [infer b, infer c, infer d, infer e, infer f]
+      ? [
+          ExhaustivePattern<b>,
+          ExhaustivePattern<c>,
+          ExhaustivePattern<d>,
+          ExhaustivePattern<e>,
+          ExhaustivePattern<f>
+        ]
+      : a extends [infer b, infer c, infer d, infer e]
+      ? [
+          ExhaustivePattern<b>,
+          ExhaustivePattern<c>,
+          ExhaustivePattern<d>,
+          ExhaustivePattern<e>
+        ]
+      : a extends [infer b, infer c, infer d]
+      ? [ExhaustivePattern<b>, ExhaustivePattern<c>, ExhaustivePattern<d>]
+      : a extends [infer b, infer c]
+      ? [ExhaustivePattern<b>, ExhaustivePattern<c>]
+      : a extends (infer b)[]
+      ?
+          | []
+          | [ExhaustivePattern<b>]
+          | [ExhaustivePattern<b>, ExhaustivePattern<b>]
+          | [ExhaustivePattern<b>, ExhaustivePattern<b>, ExhaustivePattern<b>]
+          | [
+              ExhaustivePattern<b>,
+              ExhaustivePattern<b>,
+              ExhaustivePattern<b>,
+              ExhaustivePattern<b>
+            ]
+          | [
+              ExhaustivePattern<b>,
+              ExhaustivePattern<b>,
+              ExhaustivePattern<b>,
+              ExhaustivePattern<b>,
+              ExhaustivePattern<b>
+            ]
+      : a extends Map<infer k, infer v>
+      ? Map<k, ExhaustivePattern<v>>
+      : a extends Set<infer v>
+      ? Set<ExhaustivePattern<v>>
+      : a extends object
+      ? { [k in keyof a]?: ExhaustivePattern<a[k]> }
+      : a);

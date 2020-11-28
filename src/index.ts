@@ -7,7 +7,12 @@ import type {
   GuardFunction,
 } from './types/Pattern';
 
-import type { Unset, Match, PickReturnValue } from './types/Match';
+import type {
+  Unset,
+  Match,
+  PickReturnValue,
+  ExhaustiveMatch,
+} from './types/Match';
 
 import { __, PatternType } from './PatternType';
 
@@ -118,6 +123,14 @@ const builder = <a, b>(
     }
     return entry.handler(value, entry.select(value));
   },
+
+  /**
+   * ### exhaustiveMatch
+   * Entry point to create pattern matching code branches. It returns an
+   * empty Match case.
+   */
+  exhaustive: (): ExhaustiveMatch<a, b> =>
+    (builder(value, patterns) as any) as ExhaustiveMatch<a, b>,
 });
 
 const isObject = (value: unknown): value is Object =>
