@@ -31,15 +31,11 @@ describe('exhaustive()', () => {
     it('string literals', () => {
       type Input = 'a' | 'b' | 'c';
       const input = 'b' as Input;
-      match(input)
-        .exhaustive()
-        // @ts-expect-error
-        .run();
 
       match(input)
         .exhaustive()
-        .with('a', (x) => {
-          const check: 'a' = x;
+        .with('b', (x) => {
+          const check: 'b' = x;
           return 1;
         })
         // @ts-expect-error
@@ -48,9 +44,10 @@ describe('exhaustive()', () => {
       match(input)
         .exhaustive()
         .with('a', (x) => 1)
+        .with('b', (x) => 1)
         // twice the same match
         // @ts-expect-error
-        .with('a', (x) => 1)
+        .with('b', (x) => 1)
         .run();
 
       match(input)
@@ -86,16 +83,12 @@ describe('exhaustive()', () => {
     it('number literals', () => {
       type Input = 1 | 2 | 3;
       const input = 2 as Input;
-      match(input)
-        .exhaustive()
-        // @ts-expect-error
-        .run();
 
       match(input)
         .exhaustive()
-        .with(1, (x) => {
-          const check: 1 = x;
-          return 1;
+        .with(2, (x) => {
+          const check: 2 = x;
+          return 2;
         })
         // @ts-expect-error
         .run();
@@ -103,9 +96,10 @@ describe('exhaustive()', () => {
       match(input)
         .exhaustive()
         .with(1, (x) => 1)
+        .with(2, () => 3)
         // twice the same match
         // @ts-expect-error
-        .with(1, () => 3)
+        .with(2, () => 3)
         .run();
 
       match(input)
@@ -143,11 +137,7 @@ describe('exhaustive()', () => {
         | { type: 1; data: number }
         | { type: 'two'; data: string }
         | { type: 3; data: boolean };
-      const input = { type: 'two', data: 'Hey' } as Input;
-      match(input)
-        .exhaustive()
-        // @ts-expect-error
-        .run();
+      const input = { type: 1, data: 2 } as Input;
 
       match(input)
         .exhaustive()
@@ -178,11 +168,7 @@ describe('exhaustive()', () => {
 
     it('union of tuples', () => {
       type Input = [1, number] | ['two', string] | [3, boolean];
-      const input = ['two', 'Hey'] as Input;
-      match(input)
-        .exhaustive()
-        // @ts-expect-error
-        .run();
+      const input = [1, 3] as Input;
 
       match(input)
         .exhaustive()
@@ -218,11 +204,7 @@ describe('exhaustive()', () => {
         | [1, Option<number>]
         | ['two', Option<string>]
         | [3, Option<boolean>];
-      const input = ['two', { kind: 'some', value: 'Hey' }] as Input;
-      match(input)
-        .exhaustive()
-        // @ts-expect-error
-        .run();
+      const input = [1, { kind: 'some', value: 3 }] as Input;
 
       match(input)
         .exhaustive()
@@ -283,6 +265,30 @@ describe('exhaustive()', () => {
         .with('Hello', () => 'english')
         .with('Bonjour', () => 'french')
         .with(__, (c) => 'something else')
+        .run();
+    });
+
+    it('should work with object properties union', () => {
+      type Input = { value: 'a' | 'b' };
+      const input = { value: 'a' } as Input;
+
+      match(input)
+        .exhaustive()
+        .with({ value: 'a' }, (x) => 1)
+        // @ts-expect-error
+        .run();
+
+      match(input)
+        .exhaustive()
+        .with({ value: __ }, (x) => 1)
+        .run();
+
+      match(input)
+        .exhaustive()
+        .with({ value: 'a' }, (x) => 1)
+        .with({ value: 'b' }, (x) => 1)
+        // FIXME:  This case should work
+        // @ts-expect-error
         .run();
     });
   });
