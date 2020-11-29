@@ -1,5 +1,6 @@
-import { PatternType, __, Primitives } from './Pattern';
-import { ExcludeIfContainsNever, LeastUpperBound } from './helpers';
+import type { PatternType, __ } from '../PatternType';
+import type { Primitives } from './Pattern';
+import type { ExcludeIfContainsNever, LeastUpperBound } from './helpers';
 
 export type ExtractPreciseValue<a, b> = ExcludeIfContainsNever<
   b extends []

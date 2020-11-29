@@ -1,22 +1,38 @@
-import {
+import type {
   Pattern,
   SelectPattern,
   GuardPattern,
   NotPattern,
-  PatternType,
   GuardValue,
-  __,
-  when,
-  not,
-  select,
+  GuardFunction,
 } from './types/Pattern';
-import { Unset, Match, PickReturnValue } from './types/Match';
+
+import type { Unset, Match, PickReturnValue } from './types/Match';
+
+import { __, PatternType } from './PatternType';
+
+export const when = <a, b extends a = a>(
+  predicate: GuardFunction<a, b>
+): GuardPattern<a, b> => ({
+  __patternKind: PatternType.Guard,
+  __when: predicate,
+});
+
+export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
+  __patternKind: PatternType.Not,
+  __pattern: pattern,
+});
+
+export const select = <k extends string>(key: k): SelectPattern<k> => ({
+  __patternKind: PatternType.Select,
+  __key: key,
+});
 
 /**
  * # Pattern matching
  **/
 
-export { Pattern, __, when, not, select };
+export { Pattern, __ };
 
 /**
  * ### match

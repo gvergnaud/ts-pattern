@@ -1,9 +1,8 @@
-import {
-  __,
+import type { PatternType, __ } from '../PatternType';
+import type {
   SelectPattern,
   GuardPattern,
   NotPattern,
-  PatternType,
   Primitives,
 } from './Pattern';
 

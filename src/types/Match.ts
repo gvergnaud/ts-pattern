@@ -1,7 +1,7 @@
-import { Pattern, SelectPattern, GuardValue } from './Pattern';
-import { ExtractPreciseValue } from './ExtractPreciseValue';
-import { InvertPattern } from './InvertPattern';
-import { ValueOf, UnionToIntersection } from './helpers';
+import type { Pattern, SelectPattern, GuardValue, Primitives } from './Pattern';
+import type { ExtractPreciseValue } from './ExtractPreciseValue';
+import type { InvertPattern } from './InvertPattern';
+import type { ValueOf, UnionToIntersection } from './helpers';
 
 // We fall back to `a` if we weren't able to extract anything more precise
 export type MatchedValue<a, p extends Pattern<a>> = ExtractPreciseValue<
