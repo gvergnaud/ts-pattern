@@ -105,7 +105,9 @@ const builder = <a, b>(
 });
 
 const isObject = (value: unknown): value is Object =>
-  value && typeof value === 'object';
+  Boolean(value && typeof value === 'object');
+
+const isArray = (value: unknown): value is any[] => Array.isArray(value);
 
 const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
   const pattern = x as GuardPattern<unknown>;
@@ -143,12 +145,12 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
   }
   if (isGuardPattern(pattern)) return Boolean(pattern.__when(value));
   if (isNotPattern(pattern)) return !matchPattern(pattern.__pattern)(value);
-  if (isListPattern(pattern) && Array.isArray(value))
+  if (isListPattern(pattern) && isArray(value))
     return value.every((v) => matchPattern(pattern[0])(v));
 
   if (typeof pattern !== typeof value) return false;
 
-  if (Array.isArray(pattern) && Array.isArray(value)) {
+  if (isArray(pattern) && isArray(value)) {
     return pattern.length === value.length
       ? pattern.every((subPattern, i) => matchPattern(subPattern)(value[i]))
       : false;
@@ -188,7 +190,7 @@ const selectWithPattern = <a, p extends Pattern<a>>(pattern: p) => (
 ): Record<string, unknown> => {
   if (isSelectPattern(pattern)) return { [pattern.__key]: value };
 
-  if (isListPattern(pattern) && Array.isArray(value))
+  if (isListPattern(pattern) && isArray(value))
     return value
       .map((v) => selectWithPattern(pattern[0])(v))
       .reduce<Record<string, unknown[]>>((acc, selections) => {
@@ -198,7 +200,7 @@ const selectWithPattern = <a, p extends Pattern<a>>(pattern: p) => (
         }, acc);
       }, {});
 
-  if (Array.isArray(pattern) && Array.isArray(value))
+  if (isArray(pattern) && isArray(value))
     return pattern.length <= value.length
       ? pattern.reduce(
           (acc, subPattern, i) =>
