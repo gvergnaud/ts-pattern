@@ -90,8 +90,14 @@ const builder = <a, b>(
   run: (): b => {
     const entry = patterns.find(({ test }) => test(value));
     if (!entry) {
+      let displayedValue;
+      try {
+        displayedValue = JSON.stringify(value);
+      } catch (e) {
+        displayedValue = value;
+      }
       throw new Error(
-        `Pattern matching error: no pattern matches value ${value}`
+        `Pattern matching error: no pattern matches value ${displayedValue}`
       );
     }
     return entry.handler(value, entry.select(value));
