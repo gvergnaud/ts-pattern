@@ -6,7 +6,12 @@ import type {
 } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPattern } from './InvertPattern';
-import type { ValueOf, UnionToIntersection } from './helpers';
+import type {
+  IsLiteral,
+  ValueOf,
+  UnionToIntersection,
+  ExcludeIfContainsNever,
+} from './helpers';
 
 // We fall back to `a` if we weren't able to extract anything more precise
 export type MatchedValue<a, p extends Pattern<a>> = ExtractPreciseValue<
@@ -160,6 +165,46 @@ export type Match<a, b> = {
 };
 
 type NonExhaustivePattern = { __nonExhaustive: never };
+
+type Equal<a, b> = a extends b ? (b extends a ? true : false) : false;
+
+type SmartExclude<a, b> = Equal<a, Exclude<a, b>> extends true
+  ? ExcludeIfContainsNever<
+      [a, b] extends [(infer a1)[], (infer b1)[]]
+        ? [a, b] extends [
+            [infer a1, infer a2, infer a3, infer a4, infer a5],
+            [infer b1, infer b2, infer b3, infer b4, infer b5]
+          ]
+          ? [
+              SmartExclude<a1, b1>,
+              SmartExclude<a2, b2>,
+              SmartExclude<a3, b3>,
+              SmartExclude<a4, b4>,
+              SmartExclude<a5, b5>
+            ]
+          : [a, b] extends [
+              [infer a1, infer a2, infer a3, infer a4],
+              [infer b1, infer b2, infer b3, infer b4]
+            ]
+          ? [
+              SmartExclude<a1, b1>,
+              SmartExclude<a2, b2>,
+              SmartExclude<a3, b3>,
+              SmartExclude<a4, b4>
+            ]
+          : [a, b] extends [
+              [infer a1, infer a2, infer a3],
+              [infer b1, infer b2, infer b3]
+            ]
+          ? [SmartExclude<a1, b1>, SmartExclude<a2, b2>, SmartExclude<a3, b3>]
+          : [a, b] extends [[infer a1, infer a2], [infer b1, infer b2]]
+          ? [SmartExclude<a1, b1>, SmartExclude<a2, b2>]
+          : SmartExclude<a1, b1>[]
+        : [a, b] extends [object, object]
+        ? { [k in keyof a & keyof b]: SmartExclude<a[k], b[k]> }
+        : Exclude<a, b>
+    >
+  : Exclude<a, b>;
 
 /**
  * ### ExhaustiveMatch

@@ -132,11 +132,45 @@ describe('exhaustive()', () => {
         .run();
     });
 
+    it('boolean literals', () => {
+      type Input =
+        | [true, true]
+        | [false, true]
+        | [false, false]
+        | [true, false];
+      const input = [true, true] as Input;
+
+      match(input)
+        .exhaustive()
+        .with([true, true], () => true)
+        .with([false, true], () => false)
+        .with([true, false], () => false)
+        .with([false, false], () => false)
+        .run();
+    });
+
     it('union of objects', () => {
       type Input =
         | { type: 1; data: number }
         | { type: 'two'; data: string }
-        | { type: 3; data: boolean };
+        | { type: 3; data: boolean }
+        | { type: 4 }
+        | { type: 'a' }
+        | { type: 'b' }
+        | { type: 'c' }
+        | { type: 'd' }
+        | { type: 'e' }
+        | { type: 'f' }
+        | { type: 'g' }
+        | { type: 'h' }
+        | { type: 'i' }
+        | { type: 'j' }
+        | { type: 'k' }
+        | { type: 'l' }
+        | { type: 'm' }
+        | { type: 'n' }
+        | { type: 'o' }
+        | { type: 'p' };
       const input = { type: 1, data: 2 } as Input;
 
       match(input)
@@ -157,6 +191,23 @@ describe('exhaustive()', () => {
         .with({ type: 1 }, (x) => 1)
         .with({ type: 'two' }, ({ data }) => data.length)
         .with({ type: 3 }, () => 3)
+        .with({ type: 4 }, () => 3)
+        .with({ type: 'a' }, () => 0)
+        .with({ type: 'b' }, () => 0)
+        .with({ type: 'c' }, () => 0)
+        .with({ type: 'd' }, () => 0)
+        .with({ type: 'e' }, () => 0)
+        .with({ type: 'f' }, () => 0)
+        .with({ type: 'g' }, () => 0)
+        .with({ type: 'h' }, () => 0)
+        .with({ type: 'i' }, () => 0)
+        .with({ type: 'j' }, () => 0)
+        .with({ type: 'k' }, () => 0)
+        .with({ type: 'l' }, () => 0)
+        .with({ type: 'm' }, () => 0)
+        .with({ type: 'n' }, () => 0)
+        .with({ type: 'o' }, () => 0)
+        .with({ type: 'p' }, () => 0)
         .run();
 
       match<Option<number>>({ kind: 'some', value: 3 })
@@ -287,8 +338,6 @@ describe('exhaustive()', () => {
         .exhaustive()
         .with({ value: 'a' }, (x) => 1)
         .with({ value: 'b' }, (x) => 1)
-        // FIXME:  This case should work
-        // @ts-expect-error
         .run();
     });
   });
