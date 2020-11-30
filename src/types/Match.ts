@@ -159,6 +159,8 @@ export type Match<a, b> = {
   exhaustive: () => ExhaustiveMatch<a, b>;
 };
 
+type NonExhaustivePattern = { __nonExhaustive: never };
+
 /**
  * ### ExhaustiveMatch
  * An interface to create an exhaustive pattern matching clause.
@@ -175,7 +177,10 @@ export type ExhaustiveMatch<i, o> = {
       value: MatchedValue<i, p>,
       selections: ExtractSelections<i, p>
     ) => PickReturnValue<o, c>
-  ): ExhaustiveMatch<Exclude<i, MatchedValue<i, p>>, PickReturnValue<o, c>>;
+  ): ExhaustiveMatch<
+    Exclude<i, ExtractPreciseValue<i, InvertPattern<p>>>,
+    PickReturnValue<o, c>
+  >;
 
   /**
    * ### Match.otherwise
@@ -190,9 +195,9 @@ export type ExhaustiveMatch<i, o> = {
    * ### Match.run
    * Runs the pattern matching and return a value.
    *
-   * If this is of type `never`, it means you aren't matching
+   * If this is of type `NonExhaustivePattern`, it means you aren't matching
    * every cases, and you should probably add a  another `.with(...)` clause
    * to prevent potential runtime errors.
    * */
-  run: [i] extends [never] ? () => o : never;
+  run: [i] extends [never] ? () => o : NonExhaustivePattern;
 };
