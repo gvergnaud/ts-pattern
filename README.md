@@ -49,7 +49,7 @@ Pattern Matching is implemented in Elixir, Rust, Haskell, Swift and many other l
 
 ## Installation
 
-Via npm:
+Via npm
 
 ```
 npm install ts-pattern
