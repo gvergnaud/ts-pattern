@@ -31,9 +31,19 @@ type ExcludeUnion<a> = IsUnion<a> extends true
 
 type Values<a extends object> = UnionToTuple<ValueOf<a>>;
 
-// TODO: Doesn't work with unions containing unions yet,
-// like { a: 'a' | 'b' } | string
-// should return ...x
+/**
+ * TODO: Doesn't work with unions containing unions yet,
+ * like { a: 'a' | 'b' } | string
+ * should return string | {a: 'a'} | {a: 'b'}
+ * Also it only works for object types for now.
+ * it should support:
+ * - literals
+ * - primitive types
+ * - tuples
+ * - arrays
+ * - maps
+ * - sets
+ */
 type FindUnions<a, path extends PropertyKey[] = []> = ContainsUnion<
   a
 > extends true
@@ -83,8 +93,9 @@ type SafeGet<data, k extends PropertyKey, def> = k extends keyof data
   ? data[k]
   : def;
 
-// TODO: This isn't valid yet, it totally discards the input data structure
-// instead of updating it
+// TODO:
+// Update should work with every supported data structure,
+// currently it only works with objects
 type Update<data, V, path extends PropertyKey[]> = path extends [
   infer head,
   ...(infer tail)
@@ -101,7 +112,7 @@ type Update<data, V, path extends PropertyKey[]> = path extends [
 
 type t3 = Update<{ test: 20 }, string, ['hello', 0, 'cool']>;
 
-export type DistributeUnions<T> = BuildMany<T, Distribute<FindUnions<T>>>;
+export type DistributeUnions<a> = BuildMany<a, Distribute<FindUnions<a>>>;
 
 type tinput = { a: '1' | '2'; b: '3' | '4'; c: '5' | '6' };
 
