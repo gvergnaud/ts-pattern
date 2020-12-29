@@ -1,4 +1,4 @@
-export type ValueOf<a> = a[keyof a];
+export type ValueOf<a> = a extends any[] ? a[number] : a[keyof a];
 
 /**
  * ### LeastUpperBound
@@ -56,6 +56,30 @@ export type IsLiteral<T> = T extends string
   ? IsLiteralBoolean<T>
   : false;
 
+export type IsUnion<a> = [a] extends [UnionToIntersection<a>] ? false : true;
+
+export type ContainsUnion<a> = IsUnion<a> extends true
+  ? true
+  : a extends object
+  ? false extends ValueOf<{ [k in keyof a]: ContainsUnion<a[k]> }>
+    ? false
+    : true
+  : false;
+
+type NeverKeys<o> = ValueOf<
+  {
+    [k in keyof o]: [o[k]] extends [never] ? k : never;
+  }
+>;
+
+type RemoveNeverKeys<o> = Omit<o, NeverKeys<o>>;
+
+export type ExcludeUnion<a> = IsUnion<a> extends true
+  ? never
+  : a extends object
+  ? RemoveNeverKeys<{ [k in keyof a]: ExcludeUnion<a[k]> }>
+  : a;
+
 export type UnionToTuple<T> = UnionToIntersection<
   T extends any ? (t: T) => T : never
 > extends (_: any) => infer W
@@ -63,3 +87,16 @@ export type UnionToTuple<T> = UnionToIntersection<
   : [];
 
 export type Cast<a, b> = a extends b ? a : never;
+
+export type Flatten<xs extends any[]> = xs extends [infer head, ...(infer tail)]
+  ? [...Cast<head, any[]>, ...Flatten<tail>]
+  : [];
+
+// tests
+export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <
+  T
+>() => T extends Y ? 1 : 2
+  ? true
+  : false;
+
+export type Expect<T extends true> = T;
