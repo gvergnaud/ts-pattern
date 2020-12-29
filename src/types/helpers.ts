@@ -55,3 +55,11 @@ export type IsLiteral<T> = T extends string
   : T extends boolean
   ? IsLiteralBoolean<T>
   : false;
+
+export type UnionToTuple<T> = UnionToIntersection<
+  T extends any ? (t: T) => T : never
+> extends (_: any) => infer W
+  ? [...UnionToTuple<Exclude<T, W>>, W]
+  : [];
+
+export type Cast<a, b> = a extends b ? a : never;

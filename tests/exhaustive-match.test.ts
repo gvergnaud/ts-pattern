@@ -149,6 +149,19 @@ describe('exhaustive()', () => {
         .run();
     });
 
+    it('boolean literals', () => {
+      type Input = [boolean, boolean];
+      const input = [true, true] as Input;
+
+      match(input)
+        .exhaustive()
+        .with([true, true], () => true)
+        .with([false, true], () => false)
+        .with([true, false], () => false)
+        .with([false, false], () => false)
+        .run();
+    });
+
     it('union of objects', () => {
       type Input =
         | { type: 1; data: number }
@@ -284,8 +297,17 @@ describe('exhaustive()', () => {
         .with(['two', { kind: 'none' }], () => 4)
         .with([1, __], () => 3)
         .with([3, __], () => 3)
-        // FIXME:  This case should work, because all cases of the Option are handled
-        // @ts-expect-error
+        .run();
+    });
+
+    it('deeply nested', () => {
+      type Input = ['two', Option<string>];
+      const input = ['two', { kind: 'some', value: 'hello' }] as Input;
+
+      match(input)
+        .exhaustive()
+        .with(['two', { kind: 'some' }], ([_, { value }]) => value.length)
+        .with(['two', { kind: 'none' }], () => 4)
         .run();
     });
 
