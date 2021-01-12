@@ -93,10 +93,34 @@ export type Flatten<xs extends any[]> = xs extends [infer head, ...(infer tail)]
   : [];
 
 // tests
-export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <
-  T
->() => T extends Y ? 1 : 2
-  ? true
-  : false;
+export type Equal<X, Y> = X extends Y ? (Y extends X ? true : false) : false;
 
 export type Expect<T extends true> = T;
+
+export type Length<it extends any[]> = it['length'];
+
+export type Iterator<
+  n extends number,
+  it extends any[] = []
+> = it['length'] extends n ? it : Iterator<n, [any, ...it]>;
+
+export type Next<it extends any[]> = [any, ...it];
+export type Prev<it extends any[]> = it extends [any, ...(infer tail)]
+  ? tail
+  : [];
+
+export type Slice<
+  xs extends any[],
+  it extends any[],
+  output extends any[] = []
+> = Length<it> extends 0
+  ? output
+  : xs extends [infer head, ...(infer tail)]
+  ? Slice<tail, Prev<it>, [...output, head]>
+  : output;
+
+export type Drop<xs extends any[], n extends any[]> = Length<n> extends 0
+  ? xs
+  : xs extends [any, ...(infer tail)]
+  ? Drop<tail, Prev<n>>
+  : [];

@@ -1,24 +1,77 @@
-import type { Cast, ValueOf, UnionToTuple, Flatten, IsUnion } from './helpers';
+import type {
+  Cast,
+  ValueOf,
+  UnionToTuple,
+  Flatten,
+  IsUnion,
+  ExcludeUnion,
+  Slice,
+  Drop,
+  Iterator,
+  Next,
+} from './helpers';
 
-type Values<a extends object> = UnionToTuple<ValueOf<a>>;
+export type Values<a extends object> = UnionToTuple<ValueOf<a>>;
 
 /**
- * TODO: Doesn't work with unions containing unions yet,
- * like { a: 'a' | 'b' } | string
- * should return string | {a: 'a'} | {a: 'b'}
- * Also it only works for object types for now.
+ * TODO: it only works for object types for now.
  * it should support:
- * - literals
- * - primitive types
- * - tuples
- * - arrays
- * - maps
- * - sets
+ * - [x] literals
+ * - [x] primitive types
+ * - [x] tuples
+ * - [x] objects
+ * - [ ] lists
+ * - [ ] maps
+ * - [ ] sets
+ *
+ * // Kinds are types of types.
+ *
+ * kind UnionConfig = {
+ *  cases: Union<{
+ *    value: b,
+ *    subUnions: UnionConfig[]
+ *  }>,
+ *  path: string[]
+ * }
+ * FindUnions :: a -> UnionConfig[]
  */
 export type FindUnions<a, path extends PropertyKey[] = []> = IsUnion<
   a
 > extends true
-  ? [[a, path]]
+  ? [
+      {
+        cases: a extends any
+          ? {
+              value: a;
+              subUnions: FindUnions<a, path>;
+            }
+          : never;
+        path: path;
+      }
+    ]
+  : a extends [infer a1, infer a2, infer a3, infer a4, infer a5]
+  ? [
+      ...FindUnions<a1, [...path, 0]>,
+      ...FindUnions<a2, [...path, 1]>,
+      ...FindUnions<a3, [...path, 2]>,
+      ...FindUnions<a4, [...path, 3]>,
+      ...FindUnions<a5, [...path, 4]>
+    ]
+  : a extends [infer a1, infer a2, infer a3, infer a4]
+  ? [
+      ...FindUnions<a1, [...path, 0]>,
+      ...FindUnions<a2, [...path, 1]>,
+      ...FindUnions<a3, [...path, 2]>,
+      ...FindUnions<a4, [...path, 3]>
+    ]
+  : a extends [infer a1, infer a2, infer a3]
+  ? [
+      ...FindUnions<a1, [...path, 0]>,
+      ...FindUnions<a2, [...path, 1]>,
+      ...FindUnions<a3, [...path, 2]>
+    ]
+  : a extends [infer a1, infer a2]
+  ? [...FindUnions<a1, [...path, 0]>, ...FindUnions<a2, [...path, 1]>]
   : a extends object
   ? Flatten<
       Values<
@@ -29,13 +82,17 @@ export type FindUnions<a, path extends PropertyKey[] = []> = IsUnion<
     >
   : [];
 
-// Distribute :: [a | b, path][] -> Union<[a, path][]>
+// Distribute :: UnionConfig[] -> Union<[a, path][]>
 export type Distribute<unions extends any[]> = unions extends [
-  [infer union, infer path],
+  { cases: infer cases; path: infer path },
   ...(infer tail)
 ]
-  ? union extends any
-    ? [[union, path], ...Distribute<tail>]
+  ? cases extends { value: infer value; subUnions: infer subUnions }
+    ? [
+        [value, path],
+        ...Distribute<Cast<subUnions, any[]>>,
+        ...Distribute<tail>
+      ]
     : never
   : [];
 
@@ -61,19 +118,31 @@ type SafeGet<data, k extends PropertyKey, def> = k extends keyof data
 
 // TODO:
 // Update should work with every supported data structure,
-// currently it only works with objects
-type Update<data, V, path extends PropertyKey[]> = path extends [
+// currently with
+// - object
+// - tuples
+type Update<data, value, path extends PropertyKey[]> = path extends [
   infer head,
   ...(infer tail)
 ]
-  ? data &
-      {
-        [k in Cast<head, PropertyKey>]: Update<
-          SafeGet<data, k, {}>,
-          V,
-          Cast<tail, PropertyKey[]>
-        >;
-      }
-  : V;
+  ? data extends [any, ...any]
+    ? head extends number
+      ? [
+          ...Slice<data, Iterator<head>>,
+          Update<data[head], value, Cast<tail, PropertyKey[]>>,
+          ...Drop<data, Next<Iterator<head>>>
+        ]
+      : never
+    : data extends any[]
+    ? Update<data[0], value, Cast<tail, PropertyKey[]>>[]
+    : data &
+        {
+          [k in Cast<head, PropertyKey>]: Update<
+            SafeGet<data, k, {}>,
+            value,
+            Cast<tail, PropertyKey[]>
+          >;
+        }
+  : value;
 
 export type DistributeUnions<a> = BuildMany<a, Distribute<FindUnions<a>>>;

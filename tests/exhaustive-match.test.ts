@@ -1,5 +1,5 @@
 import { match, when, __ } from '../src';
-import { Option, NotNever, Blog } from './utils';
+import { Option } from './utils';
 
 describe('exhaustive()', () => {
   it('should forbid using guard function, in pattern or as extra args', () => {
@@ -145,6 +145,14 @@ describe('exhaustive()', () => {
         .with([true, true], () => true)
         .with([false, true], () => false)
         .with([true, false], () => false)
+        // @ts-expect-error
+        .run();
+
+      match(input)
+        .exhaustive()
+        .with([true, true], () => true)
+        .with([false, true], () => false)
+        .with([true, false], () => false)
         .with([false, false], () => false)
         .run();
     });
@@ -152,6 +160,14 @@ describe('exhaustive()', () => {
     it('boolean literals', () => {
       type Input = [boolean, boolean];
       const input = [true, true] as Input;
+
+      match(input)
+        .exhaustive()
+        .with([true, true], () => true)
+        .with([false, true], () => false)
+        .with([true, false], () => false)
+        // @ts-expect-error
+        .run();
 
       match(input)
         .exhaustive()

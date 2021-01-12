@@ -2,9 +2,11 @@ import {
   FindUnions,
   Distribute,
   DistributeUnions,
+  Values,
 } from '../src/types/DistributeUnions';
 
-import { Equal, Expect } from '../src/types/helpers';
+import { Equal, Expect, UnionToTuple, ValueOf } from '../src/types/helpers';
+import { Option } from './utils';
 
 describe('FindUnions', () => {
   it('should correctly find all unions on an object', () => {
@@ -12,13 +14,75 @@ describe('FindUnions', () => {
       Expect<
         Equal<
           FindUnions<{ a: 1 | 2; b: 3 | 4 }>,
-          [[1 | 2, ['a']], [3 | 4, ['b']]]
+          [
+            {
+              cases:
+                | {
+                    value: 1;
+                    subUnions: [];
+                  }
+                | {
+                    value: 2;
+                    subUnions: [];
+                  };
+              path: ['a'];
+            },
+            {
+              cases:
+                | {
+                    value: 3;
+                    subUnions: [];
+                  }
+                | {
+                    value: 4;
+                    subUnions: [];
+                  };
+              path: ['b'];
+            }
+          ]
         >
       >,
       Expect<
         Equal<
           FindUnions<{ a: 1 | 2; b: 3 | 4; c: 5 | 6 }>,
-          [[1 | 2, ['a']], [3 | 4, ['b']], [5 | 6, ['c']]]
+          [
+            {
+              cases:
+                | {
+                    value: 1;
+                    subUnions: [];
+                  }
+                | {
+                    value: 2;
+                    subUnions: [];
+                  };
+              path: ['a'];
+            },
+            {
+              cases:
+                | {
+                    value: 3;
+                    subUnions: [];
+                  }
+                | {
+                    value: 4;
+                    subUnions: [];
+                  };
+              path: ['b'];
+            },
+            {
+              cases:
+                | {
+                    value: 5;
+                    subUnions: [];
+                  }
+                | {
+                    value: 6;
+                    subUnions: [];
+                  };
+              path: ['c'];
+            }
+          ]
         >
       >,
       Expect<
@@ -30,11 +94,66 @@ describe('FindUnions', () => {
             d: { e: 7 | 8; f: 9 | 10 };
           }>,
           [
-            [1 | 2, ['a']],
-            [3 | 4, ['b']],
-            [5 | 6, ['c']],
-            [7 | 8, ['d', 'e']],
-            [9 | 10, ['d', 'f']]
+            {
+              cases:
+                | {
+                    value: 1;
+                    subUnions: [];
+                  }
+                | {
+                    value: 2;
+                    subUnions: [];
+                  };
+              path: ['a'];
+            },
+            {
+              cases:
+                | {
+                    value: 3;
+                    subUnions: [];
+                  }
+                | {
+                    value: 4;
+                    subUnions: [];
+                  };
+              path: ['b'];
+            },
+            {
+              cases:
+                | {
+                    value: 5;
+                    subUnions: [];
+                  }
+                | {
+                    value: 6;
+                    subUnions: [];
+                  };
+              path: ['c'];
+            },
+            {
+              cases:
+                | {
+                    value: 7;
+                    subUnions: [];
+                  }
+                | {
+                    value: 8;
+                    subUnions: [];
+                  };
+              path: ['d', 'e'];
+            },
+            {
+              cases:
+                | {
+                    value: 9;
+                    subUnions: [];
+                  }
+                | {
+                    value: 10;
+                    subUnions: [];
+                  };
+              path: ['d', 'f'];
+            }
           ]
         >
       >,
@@ -50,8 +169,30 @@ describe('FindUnions', () => {
             };
           }>,
           [
-            [7 | 8, ['a', 'b', 'c', 'd', 'e']],
-            [9 | 10, ['a', 'b', 'c', 'd', 'f']]
+            {
+              cases:
+                | {
+                    value: 7;
+                    subUnions: [];
+                  }
+                | {
+                    value: 8;
+                    subUnions: [];
+                  };
+              path: ['a', 'b', 'c', 'd', 'e'];
+            },
+            {
+              cases:
+                | {
+                    value: 9;
+                    subUnions: [];
+                  }
+                | {
+                    value: 10;
+                    subUnions: [];
+                  };
+              path: ['a', 'b', 'c', 'd', 'f'];
+            }
           ]
         >
       >,
@@ -69,9 +210,42 @@ describe('FindUnions', () => {
             };
           }>,
           [
-            [7 | 8, ['a', 'b', 'c', 'd', 'e']],
-            [9 | 10, ['a', 'b', 'c', 'd', 'f']],
-            [2 | 3, ['a', 'b', 'g']]
+            {
+              cases:
+                | {
+                    value: 7;
+                    subUnions: [];
+                  }
+                | {
+                    value: 8;
+                    subUnions: [];
+                  };
+              path: ['a', 'b', 'c', 'd', 'e'];
+            },
+            {
+              cases:
+                | {
+                    value: 9;
+                    subUnions: [];
+                  }
+                | {
+                    value: 10;
+                    subUnions: [];
+                  };
+              path: ['a', 'b', 'c', 'd', 'f'];
+            },
+            {
+              cases:
+                | {
+                    value: 2;
+                    subUnions: [];
+                  }
+                | {
+                    value: 3;
+                    subUnions: [];
+                  };
+              path: ['a', 'b', 'g'];
+            }
           ]
         >
       >
@@ -81,12 +255,122 @@ describe('FindUnions', () => {
   it('should correctly find all unions on a tuple', () => {
     type cases = [
       Expect<
-        Equal<FindUnions<[1 | 2, 3 | 4]>, [[1 | 2, ['0']], [3 | 4, ['1']]]>
+        Equal<
+          FindUnions<[1 | 2, 3 | 4]>,
+          [
+            {
+              cases:
+                | {
+                    value: 1;
+                    subUnions: [];
+                  }
+                | {
+                    value: 2;
+                    subUnions: [];
+                  };
+              path: [0];
+            },
+            {
+              cases:
+                | {
+                    value: 3;
+                    subUnions: [];
+                  }
+                | {
+                    value: 4;
+                    subUnions: [];
+                  };
+              path: [1];
+            }
+          ]
+        >
       >,
       Expect<
         Equal<
           FindUnions<[1 | 2, 3 | 4, 5 | 6]>,
-          [[1 | 2, ['0']], [3 | 4, ['1']], [5 | 6, ['2']]]
+          [
+            {
+              cases:
+                | {
+                    value: 1;
+                    subUnions: [];
+                  }
+                | {
+                    value: 2;
+                    subUnions: [];
+                  };
+              path: [0];
+            },
+            {
+              cases:
+                | {
+                    value: 3;
+                    subUnions: [];
+                  }
+                | {
+                    value: 4;
+                    subUnions: [];
+                  };
+              path: [1];
+            },
+            {
+              cases:
+                | {
+                    value: 5;
+                    subUnions: [];
+                  }
+                | {
+                    value: 6;
+                    subUnions: [];
+                  };
+              path: [2];
+            }
+          ]
+        >
+      >,
+      Expect<
+        Equal<
+          FindUnions<{ type: 'a'; value: 1 | 2 } | { type: 'b'; value: 4 | 5 }>,
+          [
+            {
+              cases:
+                | {
+                    value: { type: 'a'; value: 1 | 2 };
+                    subUnions: [
+                      {
+                        cases:
+                          | {
+                              value: 1;
+                              subUnions: [];
+                            }
+                          | {
+                              value: 2;
+                              subUnions: [];
+                            };
+                        path: ['value'];
+                      }
+                    ];
+                  }
+                | {
+                    value: { type: 'b'; value: 4 | 5 };
+                    subUnions: [
+                      {
+                        cases:
+                          | {
+                              value: 4;
+                              subUnions: [];
+                            }
+                          | {
+                              value: 5;
+                              subUnions: [];
+                            };
+                        path: ['value'];
+                      }
+                    ];
+                  };
+              path: [];
+            }
+          ]
         >
       >
     ];
@@ -98,64 +382,368 @@ describe('Distribute', () => {
     type cases = [
       Expect<
         Equal<
-          Distribute<[[1 | 2, ['0']], [3 | 4, ['1']]]>,
-          | [[2, ['0']], [3, ['1']]]
-          | [[2, ['0']], [4, ['1']]]
-          | [[1, ['0']], [3, ['1']]]
-          | [[1, ['0']], [4, ['1']]]
+          UnionToTuple<
+            Distribute<
+              [
+                {
+                  cases:
+                    | {
+                        value: 1;
+                        subUnions: [];
+                      }
+                    | {
+                        value: 2;
+                        subUnions: [];
+                      };
+                  path: [0];
+                },
+                {
+                  cases:
+                    | {
+                        value: 3;
+                        subUnions: [];
+                      }
+                    | {
+                        value: 4;
+                        subUnions: [];
+                      };
+                  path: [1];
+                }
+              ]
+            >
+          >,
+          [
+            [[1, [0]], [3, [1]]],
+            [[1, [0]], [4, [1]]],
+            [[2, [0]], [3, [1]]],
+            [[2, [0]], [4, [1]]]
+          ]
         >
       >,
       Expect<
         Equal<
-          Distribute<[[1 | 2, ['0']], [3 | 4, ['1']], [5 | 6, ['2']]]>,
-          | [[2, ['0']], [3, ['1']], [5, ['2']]]
-          | [[2, ['0']], [3, ['1']], [6, ['2']]]
-          | [[2, ['0']], [4, ['1']], [5, ['2']]]
-          | [[2, ['0']], [4, ['1']], [6, ['2']]]
-          | [[1, ['0']], [3, ['1']], [5, ['2']]]
-          | [[1, ['0']], [3, ['1']], [6, ['2']]]
-          | [[1, ['0']], [4, ['1']], [5, ['2']]]
-          | [[1, ['0']], [4, ['1']], [6, ['2']]]
+          UnionToTuple<
+            Distribute<
+              [
+                {
+                  cases:
+                    | {
+                        value: 1;
+                        subUnions: [];
+                      }
+                    | {
+                        value: 2;
+                        subUnions: [];
+                      };
+                  path: [0];
+                },
+                {
+                  cases:
+                    | {
+                        value: 3;
+                        subUnions: [];
+                      }
+                    | {
+                        value: 4;
+                        subUnions: [];
+                      };
+                  path: [1];
+                },
+                {
+                  cases:
+                    | {
+                        value: 5;
+                        subUnions: [];
+                      }
+                    | {
+                        value: 6;
+                        subUnions: [];
+                      };
+                  path: [2];
+                }
+              ]
+            >
+          >,
+          [
+            [[1, [0]], [3, [1]], [5, [2]]],
+            [[1, [0]], [3, [1]], [6, [2]]],
+            [[1, [0]], [4, [1]], [5, [2]]],
+            [[1, [0]], [4, [1]], [6, [2]]],
+            [[2, [0]], [3, [1]], [5, [2]]],
+            [[2, [0]], [3, [1]], [6, [2]]],
+            [[2, [0]], [4, [1]], [5, [2]]],
+            [[2, [0]], [4, [1]], [6, [2]]]
+          ]
         >
+      >,
+      Equal<
+        // Nested
+        UnionToTuple<
+          Distribute<
+            [
+              {
+                cases:
+                  | {
+                      value: {
+                        type: 'a';
+                        value: 1 | 2;
+                      };
+                      subUnions: [
+                        {
+                          cases:
+                            | {
+                                value: 1;
+                                subUnions: [];
+                              }
+                            | {
+                                value: 2;
+                                subUnions: [];
+                              };
+                          path: ['value'];
+                        }
+                      ];
+                    }
+                  | {
+                      value: {
+                        type: 'b';
+                        value: 4 | 5;
+                      };
+                      subUnions: [
+                        {
+                          cases:
+                            | {
+                                value: 4;
+                                subUnions: [];
+                              }
+                            | {
+                                value: 5;
+                                subUnions: [];
+                              };
+                          path: ['value'];
+                        }
+                      ];
+                    };
+                path: [];
+              }
+            ]
+          >
+        >,
+        [
+          [[{ type: 'a'; value: 1 | 2 }, []], [1, ['value']]],
+          [[{ type: 'a'; value: 1 | 2 }, []], [2, ['value']]],
+          [[{ type: 'b'; value: 4 | 5 }, []], [4, ['value']]],
+          [[{ type: 'b'; value: 4 | 5 }, []], [5, ['value']]]
+        ]
       >
     ];
   });
 });
 
 describe('DistributeUnions', () => {
-  type tinput = { a: '1' | '2'; b: '3' | '4'; c: '5' | '6' };
+  type cases = [
+    Expect<
+      Equal<
+        UnionToTuple<
+          DistributeUnions<{ a: 1 | 2; b: '3' | '4'; c: '5' | '6' }>
+        >,
+        [
+          { a: 1; b: '3'; c: '5' },
+          { a: 1; b: '3'; c: '6' },
+          { a: 1; b: '4'; c: '5' },
+          { a: 1; b: '4'; c: '6' },
+          { a: 2; b: '3'; c: '5' },
+          { a: 2; b: '3'; c: '6' },
+          { a: 2; b: '4'; c: '5' },
+          { a: 2; b: '4'; c: '6' }
+        ]
+      >
+    >,
+    Expect<
+      Equal<
+        UnionToTuple<
+          DistributeUnions<
+            | { x: 'a'; value: Option<string> }
+            | { x: 'b'; value: Option<number> }
+          >
+        >,
+        [
+          { x: 'a'; value: { kind: 'none' } },
+          { x: 'a'; value: { kind: 'some'; value: string } },
+          { x: 'b'; value: { kind: 'none' } },
+          { x: 'b'; value: { kind: 'some'; value: number } }
+        ]
+      >
+    >,
+    Expect<
+      Equal<
+        UnionToTuple<
+          DistributeUnions<[1, number] | ['two', string] | [3, boolean]>
+        >,
+        [[1, number], ['two', string], [3, false], [3, true]]
+      >
+    >
+  ];
 
-  type t12 = DistributeUnions<tinput>;
-  type t15 = Exclude<t12, { a: '1' }>;
+  it('should leave unions of literals untouched', () => {
+    type cases = [
+      Expect<Equal<UnionToTuple<DistributeUnions<'a' | 'b'>>, ['a', 'b']>>,
+      Expect<Equal<UnionToTuple<DistributeUnions<1 | 2>>, [1, 2]>>,
+      Expect<Equal<UnionToTuple<DistributeUnions<boolean>>, [false, true]>>
+    ];
+  });
 
-  const t12: t12 = { a: '1', b: '3', c: '6' };
-  // @ts-expect-error
-  const t13: Exclude<t12, { a: '1'; b: '3' }> = {
-    a: '1',
-    b: '3',
-    c: '6',
-  };
-  const t16: Exclude<t12, { a: '1'; b: '3' }> = {
-    a: '2',
-    b: '3',
-    c: '6',
-  };
+  it('should work on nested tuples', () => {
+    type cases = [
+      Expect<
+        Equal<
+          UnionToTuple<
+            DistributeUnions<
+              | [1, Option<number>]
+              | ['two', Option<string>]
+              | [3, Option<boolean>]
+            >
+          >,
+          [
+            [1, { kind: 'none' }],
+            [1, { kind: 'some'; value: number }],
+            ['two', { kind: 'none' }],
+            ['two', { kind: 'some'; value: string }],
+            [3, { kind: 'none' }],
+            [3, { kind: 'some'; value: false }],
+            [3, { kind: 'some'; value: true }]
+          ]
+        >
+      >
+    ];
+  });
 
-  type Option<a> = { kind: 'none' } | { kind: 'some'; value: a };
+  it('should work for non unions', () => {
+    type cases = [
+      Expect<Equal<UnionToTuple<DistributeUnions<{}>>, [{}]>>,
+      Expect<Equal<UnionToTuple<DistributeUnions<[]>>, [[]]>>,
+      Expect<
+        Equal<
+          UnionToTuple<DistributeUnions<Map<string, string>>>,
+          [Map<string, string>]
+        >
+      >,
+      Expect<Equal<UnionToTuple<DistributeUnions<Set<string>>>, [Set<string>]>>,
+      Expect<Equal<UnionToTuple<DistributeUnions<string>>, [string]>>,
+      Expect<Equal<UnionToTuple<DistributeUnions<number>>, [number]>>,
+      // Expect<Equal<UnionToTuple<DistributeUnions<any>>, [any]>>,
+      Expect<Equal<UnionToTuple<DistributeUnions<never>>, []>>,
+      Expect<Equal<UnionToTuple<DistributeUnions<unknown>>, [unknown]>>
+    ];
+  });
 
-  type Input =
-    | { x: 'a'; value: Option<string> }
-    | { x: 'b'; value: Option<number> };
+  it('should work with objects', () => {
+    type obj = {
+      type: 'type';
+      x: undefined;
+      q: string;
+      union1: 'a' | 'b';
+      color: '3';
+      union2: '1' | '2' | '3';
+    };
 
-  type Input2 = ['a', Option<string>] | ['b', Option<number>];
+    type cases = [
+      Expect<
+        Equal<
+          UnionToTuple<DistributeUnions<obj>>,
+          [
+            {
+              type: 'type';
+              q: string;
+              x: undefined;
+              union1: 'a';
+              color: '3';
+              union2: '3';
+            },
+            {
+              type: 'type';
+              q: string;
+              x: undefined;
+              union1: 'a';
+              color: '3';
+              union2: '1';
+            },
+            {
+              type: 'type';
+              q: string;
+              x: undefined;
+              union1: 'a';
+              color: '3';
+              union2: '2';
+            },
+            {
+              type: 'type';
+              q: string;
+              x: undefined;
+              union1: 'b';
+              color: '3';
+              union2: '3';
+            },
+            {
+              type: 'type';
+              q: string;
+              x: undefined;
+              union1: 'b';
+              color: '3';
+              union2: '1';
+            },
+            {
+              type: 'type';
+              q: string;
+              x: undefined;
+              union1: 'b';
+              color: '3';
+              union2: '2';
+            }
+          ]
+        >
+      >
+    ];
+  });
 
-  type X = DistributeUnions<Input>;
-  type Z = Exclude<
-    DistributeUnions<Input>,
-    { x: 'a'; value: { kind: 'none' } }
-  >;
+  it('should work with object optional properties', () => {
+    type obj = {
+      x: 'a' | 'b';
+      y?: string;
+    };
 
-  const x: X = { x: 'a', value: { kind: 'none' } };
-  // @ts-expect-error
-  const z: Z = { x: 'a', value: { kind: 'none' } };
+    type x = UnionToTuple<DistributeUnions<obj>>;
+
+    type cases = [
+      Expect<
+        // TODO: currently broken
+        Equal<
+          x,
+          [
+            {
+              x: 'a';
+              y?: string;
+            },
+            {
+              x: 'b';
+              y?: string;
+            }
+          ]
+        >
+      >
+    ];
+  });
+
+  it('should work with lists', () => {
+    type cases = [
+      Expect<
+        Equal<UnionToTuple<DistributeUnions<('a' | 'b')[]>>, ['a'[], 'b'[]]>
+      >,
+      Expect<
+        Equal<
+          UnionToTuple<DistributeUnions<{ type: 'a' | 'b' }[]>>,
+          [{ type: 'a' }[], { type: 'b' }[]]
+        >
+      >
+    ];
+  });
 });
