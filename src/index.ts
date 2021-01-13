@@ -15,6 +15,7 @@ import type {
 } from './types/Match';
 
 import { __, PatternType } from './PatternType';
+import { DistributeUnions } from './types/DistributeUnions';
 
 export const when = <a, b extends a = a>(
   predicate: GuardFunction<a, b>
@@ -129,8 +130,11 @@ const builder = <a, b>(
    * Entry point to create pattern matching code branches. It returns an
    * empty Match case.
    */
-  exhaustive: (): ExhaustiveMatch<a, b> =>
-    (builder(value, patterns) as any) as ExhaustiveMatch<a, b>,
+  exhaustive: (): ExhaustiveMatch<DistributeUnions<a>, b> =>
+    (builder(value, patterns) as any) as ExhaustiveMatch<
+      DistributeUnions<a>,
+      b
+    >,
 });
 
 const isObject = (value: unknown): value is Object =>
