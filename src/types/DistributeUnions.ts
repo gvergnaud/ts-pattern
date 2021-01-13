@@ -121,11 +121,7 @@ type SafeGet<data, k extends PropertyKey, def> = k extends keyof data
   ? data[k]
   : def;
 
-// TODO:
-// Update should work with every supported data structure,
-// currently with
-// - object
-// - tuples
+// Update :: a -> b -> PropertyKey[] -> a
 type Update<data, value, path extends PropertyKey[]> = path extends [
   infer head,
   ...(infer tail)
