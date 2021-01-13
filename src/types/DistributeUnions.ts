@@ -1,10 +1,10 @@
 import type {
+  IsAny,
   Cast,
   ValueOf,
   UnionToTuple,
   Flatten,
   IsUnion,
-  ExcludeUnion,
   Slice,
   Drop,
   Iterator,
@@ -14,17 +14,13 @@ import type {
 export type Values<a extends object> = UnionToTuple<ValueOf<a>>;
 
 /**
- * TODO: it only works for object types for now.
- * it should support:
- * - [x] literals
- * - [x] primitive types
- * - [x] tuples
- * - [x] objects
- * - [ ] lists
- * - [ ] maps
- * - [ ] sets
+ * The reason we don't look further down the tree with lists,
+ * Set and Maps is that they can be heterogeneous,
+ * so matching on a A[] for a in input of (A|B)[]
+ * doesn't rule anything out. You can still have
+ * a (A|B)[] afterward. The same logic goes for Set and Maps.
  *
- * // Kinds are types of types.
+ * Kinds are types of types.
  *
  * kind UnionConfig = {
  *  cases: Union<{
@@ -72,11 +68,20 @@ export type FindUnions<a, path extends PropertyKey[] = []> = IsUnion<
     ]
   : a extends [infer a1, infer a2]
   ? [...FindUnions<a1, [...path, 0]>, ...FindUnions<a2, [...path, 1]>]
+  : a extends any[]
+  ? []
+  : a extends Set<any>
+  ? []
+  : a extends Map<any, any>
+  ? []
   : a extends object
   ? Flatten<
       Values<
         {
-          [k in keyof a]: FindUnions<a[k], [...path, k]>;
+          // we use Required to remove the optional property modifier (?:).
+          // since we use a[k] after that, optional properties will stay
+          // optional if no pattern was more precise.
+          [k in keyof Required<a>]: FindUnions<a[k], [...path, k]>;
         }
       >
     >
@@ -133,8 +138,12 @@ type Update<data, value, path extends PropertyKey[]> = path extends [
           ...Drop<data, Next<Iterator<head>>>
         ]
       : never
-    : data extends any[]
-    ? Update<data[0], value, Cast<tail, PropertyKey[]>>[]
+    : data extends (infer a)[]
+    ? Update<a, value, Cast<tail, PropertyKey[]>>[]
+    : data extends Set<infer a>
+    ? Set<Update<a, value, Cast<tail, PropertyKey[]>>>
+    : data extends Map<infer k, infer v>
+    ? Map<k, Update<v, value, Cast<tail, PropertyKey[]>>>
     : data &
         {
           [k in Cast<head, PropertyKey>]: Update<
@@ -145,4 +154,6 @@ type Update<data, value, path extends PropertyKey[]> = path extends [
         }
   : value;
 
-export type DistributeUnions<a> = BuildMany<a, Distribute<FindUnions<a>>>;
+export type DistributeUnions<a> = IsAny<a> extends true
+  ? any
+  : BuildMany<a, Distribute<FindUnions<a>>>;

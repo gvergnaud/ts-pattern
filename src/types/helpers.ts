@@ -92,10 +92,11 @@ export type Flatten<xs extends any[]> = xs extends [infer head, ...(infer tail)]
   ? [...Cast<head, any[]>, ...Flatten<tail>]
   : [];
 
-// tests
 export type Equal<X, Y> = X extends Y ? (Y extends X ? true : false) : false;
 
 export type Expect<T extends true> = T;
+
+export type IsAny<a> = [a] extends [never] ? false : Equal<a, any>;
 
 export type Length<it extends any[]> = it['length'];
 

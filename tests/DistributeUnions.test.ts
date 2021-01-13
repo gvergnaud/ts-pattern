@@ -630,7 +630,7 @@ describe('DistributeUnions', () => {
       Expect<Equal<UnionToTuple<DistributeUnions<Set<string>>>, [Set<string>]>>,
       Expect<Equal<UnionToTuple<DistributeUnions<string>>, [string]>>,
       Expect<Equal<UnionToTuple<DistributeUnions<number>>, [number]>>,
-      // Expect<Equal<UnionToTuple<DistributeUnions<any>>, [any]>>,
+      Expect<Equal<UnionToTuple<DistributeUnions<any>>, [any]>>,
       Expect<Equal<UnionToTuple<DistributeUnions<never>>, []>>,
       Expect<Equal<UnionToTuple<DistributeUnions<unknown>>, [unknown]>>
     ];
@@ -706,42 +706,55 @@ describe('DistributeUnions', () => {
   });
 
   it('should work with object optional properties', () => {
-    type obj = {
-      x: 'a' | 'b';
-      y?: string;
-    };
-
-    type x = UnionToTuple<DistributeUnions<obj>>;
-
     type cases = [
       Expect<
-        // TODO: currently broken
         Equal<
-          x,
+          UnionToTuple<
+            DistributeUnions<{
+              x: 'a' | 'b';
+              y?: string;
+            }>
+          >,
           [
-            {
-              x: 'a';
-              y?: string;
-            },
-            {
-              x: 'b';
-              y?: string;
-            }
+            { x: 'a'; y: undefined },
+            { x: 'a'; y: string },
+            { x: 'b'; y: undefined },
+            { x: 'b'; y: string }
           ]
         >
       >
     ];
   });
 
-  it('should work with lists', () => {
+  it('should not distribute unions for lists, set and maps', () => {
+    // The reason is that list can be heterogeneous, so
+    // matching on a A[] for a in input of (A|B)[] doesn't
+    // rule anything out. You can still have a (A|B)[] afterward.
+    // The same logic goes for Set and Maps.
     type cases = [
       Expect<
-        Equal<UnionToTuple<DistributeUnions<('a' | 'b')[]>>, ['a'[], 'b'[]]>
+        Equal<UnionToTuple<DistributeUnions<('a' | 'b')[]>>, [('a' | 'b')[]]>
       >,
       Expect<
         Equal<
-          UnionToTuple<DistributeUnions<{ type: 'a' | 'b' }[]>>,
-          [{ type: 'a' }[], { type: 'b' }[]]
+          UnionToTuple<DistributeUnions<{ type: 'a' | 'b'; x: 'c' | 'd' }[]>>,
+          [
+            (
+              | { type: 'a'; x: 'c' }
+              | { type: 'a'; x: 'd' }
+              | { type: 'b'; x: 'c' }
+              | { type: 'b'; x: 'd' }
+            )[]
+          ]
+        >
+      >,
+      Expect<
+        Equal<UnionToTuple<DistributeUnions<Set<'a' | 'b'>>>, [Set<'a' | 'b'>]>
+      >,
+      Expect<
+        Equal<
+          UnionToTuple<DistributeUnions<Map<string, 'a' | 'b'>>>,
+          [Map<string, 'a' | 'b'>]
         >
       >
     ];
