@@ -107,14 +107,6 @@ export type Match<a, b> = {
    * Runs the pattern matching and return a value.
    * */
   run: () => b;
-
-  /**
-   * ### Match.exhaustive
-   * Converts the match expression into an exhaustive match,
-   * checking that **all cases are handled**. `when` predicates
-   * aren't supported on exhaustive matches.
-   **/
-  exhaustive: () => ExhaustiveMatch<DistributeUnions<a>, b>;
 };
 
 type NonExhaustivePattern<i> = { __nonExhaustive: never } & i;

@@ -49,6 +49,16 @@ export const match = <a, b = Unset>(value: a): Match<a, b> =>
   builder<a, b>(value, []);
 
 /**
+ * ### exhaustiveMatch
+ * creates an exhaustive match expression checking
+ * that **all cases are handled**. `when` predicates
+ * aren't supported on exhaustive matches.
+ **/
+export const exhaustiveMatch = <a, b = Unset>(
+  value: a
+): ExhaustiveMatch<DistributeUnions<a>, b> => builder<a, b>(value, []) as any;
+
+/**
  * ### builder
  * This is the implementation of our pattern matching, using the
  * builder pattern.
@@ -124,17 +134,6 @@ const builder = <a, b>(
     }
     return entry.handler(value, entry.select(value));
   },
-
-  /**
-   * ### exhaustiveMatch
-   * Entry point to create pattern matching code branches. It returns an
-   * empty Match case.
-   */
-  exhaustive: (): ExhaustiveMatch<DistributeUnions<a>, b> =>
-    (builder(value, patterns) as any) as ExhaustiveMatch<
-      DistributeUnions<a>,
-      b
-    >,
 });
 
 const isObject = (value: unknown): value is Object =>
