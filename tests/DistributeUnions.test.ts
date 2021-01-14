@@ -643,7 +643,7 @@ describe('DistributeUnions', () => {
       q: string;
       union1: 'a' | 'b';
       color: '3';
-      union2: '1' | '2' | '3';
+      union2: '1' | '2';
     };
 
     type cases = [
@@ -651,14 +651,6 @@ describe('DistributeUnions', () => {
         Equal<
           UnionToTuple<DistributeUnions<obj>>,
           [
-            {
-              type: 'type';
-              q: string;
-              x: undefined;
-              union1: 'a';
-              color: '3';
-              union2: '3';
-            },
             {
               type: 'type';
               q: string;
@@ -674,14 +666,6 @@ describe('DistributeUnions', () => {
               union1: 'a';
               color: '3';
               union2: '2';
-            },
-            {
-              type: 'type';
-              q: string;
-              x: undefined;
-              union1: 'b';
-              color: '3';
-              union2: '3';
             },
             {
               type: 'type';
@@ -755,6 +739,32 @@ describe('DistributeUnions', () => {
         Equal<
           UnionToTuple<DistributeUnions<Map<string, 'a' | 'b'>>>,
           [Map<string, 'a' | 'b'>]
+        >
+      >,
+      Expect<
+        Equal<
+          UnionToTuple<
+            DistributeUnions<
+              | {
+                  type: 'a';
+                  items: { some: string; data: number }[];
+                }
+              | {
+                  type: 'b';
+                  items: { other: boolean; data: string }[];
+                }
+            >
+          >,
+          [
+            {
+              type: 'a';
+              items: { some: string; data: number }[];
+            },
+            {
+              type: 'b';
+              items: { other: boolean; data: string }[];
+            }
+          ]
         >
       >
     ];

@@ -279,7 +279,7 @@ describe('exhaustive()', () => {
         .run();
     });
 
-    it('deeply nested', () => {
+    it('deeply nested 1', () => {
       type Input =
         | [1, Option<number>]
         | ['two', Option<string>]
@@ -316,7 +316,7 @@ describe('exhaustive()', () => {
         .run();
     });
 
-    it('deeply nested', () => {
+    it('deeply nested 2', () => {
       type Input = ['two', Option<string>];
       const input = ['two', { kind: 'some', value: 'hello' }] as Input;
 
@@ -376,6 +376,120 @@ describe('exhaustive()', () => {
         .exhaustive()
         .with({ value: 'a' }, (x) => 1)
         .with({ value: 'b' }, (x) => 1)
+        .run();
+    });
+
+    it('should work with lists', () => {
+      type Input =
+        | {
+            type: 'a';
+            items: ({ some: string; data: number } | string)[];
+          }
+        | {
+            type: 'b';
+            items: { other: boolean; data: string }[];
+          };
+
+      const input = {
+        type: 'a',
+        items: [{ some: 'hello', data: 42 }],
+      } as Input;
+
+      match(input)
+        .exhaustive()
+        .with({ type: 'a' }, (x) => x.items)
+        // @ts-expect-error
+        .run();
+
+      match(input)
+        .exhaustive()
+        .with({ type: 'a' }, (x) => x.items)
+        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .run();
+
+      match(input)
+        .exhaustive()
+        .with({ type: 'a', items: [__] }, (x) => x.items)
+        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .run();
+
+      match<Input, string[]>(input)
+        .exhaustive()
+        .with({ type: 'a', items: [__.string] }, (x) => x.items)
+        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        // @ts-expect-error
+        .run();
+    });
+
+    it('should work with Sets', () => {
+      type Input = Set<string> | Set<number>;
+      const input = new Set(['']) as Input;
+
+      match(input)
+        .exhaustive()
+        .with(new Set([__.string]), (x) => x)
+        // @ts-expect-error
+        .run();
+
+      const x = match(input)
+        .exhaustive()
+        .with(new Set([__.string]), (x) => x)
+        .with(new Set([__.number]), (x) => new Set([]))
+        .run();
+    });
+
+    it('should work with Sets', () => {
+      type Input = Set<string> | Set<number>;
+      const input = new Set(['']) as Input;
+
+      expect(
+        match(input)
+          .exhaustive()
+          .with(new Set([__.string]), (x) => x)
+          // @ts-expect-error
+          .run()
+      ).toEqual(input);
+
+      expect(
+        match(input)
+          .exhaustive()
+          .with(new Set([__.string]), (x) => 1)
+          .with(new Set([__.number]), (x) => 2)
+          .run()
+      ).toEqual(1);
+    });
+
+    it('should work with Maps', () => {
+      type Input = Map<string, 1 | 2 | 3>;
+      const input = new Map([['hello', 1]]) as Input;
+
+      expect(
+        match(input)
+          .exhaustive()
+          .with(new Map([['hello' as const, __.number]]), (x) => x)
+          // @ts-expect-error
+          .run()
+      ).toEqual(input);
+
+      expect(
+        match(input)
+          .exhaustive()
+          .with(new Map([['hello', 1 as const]]), (x) => x)
+          // @ts-expect-error
+          .run()
+      ).toEqual(input);
+
+      expect(
+        match(input)
+          .exhaustive()
+          .with(new Map([['hello', 1 as const]]), (x) => x)
+          // @ts-expect-error
+          .run()
+      ).toEqual(input);
+
+      match(input)
+        .exhaustive()
+        .with(__, (x) => x)
         .run();
     });
   });
