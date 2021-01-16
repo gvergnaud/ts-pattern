@@ -1,8 +1,7 @@
 import type {
   IsAny,
   Cast,
-  ValueOf,
-  UnionToTuple,
+  Values,
   Flatten,
   IsUnion,
   Slice,
@@ -11,7 +10,27 @@ import type {
   Next,
 } from './helpers';
 
-export type Values<a extends object> = UnionToTuple<ValueOf<a>>;
+/**
+ * DistributeUnions takes a data structure of type `a`
+ * containing unions and turns it into a union of all possible
+ * combination of each unions.
+ *
+ * For instance `DistributeUnions<['a' | 'b', 1 | 2]>` will
+ * evaluate to `['a', 1] | ['a', 2] | ['b', 1] | ['b', 2]`.
+ *
+ * It does this in 3 main steps:
+ *  - 1. Find all unions contained in the data structure
+ *    with `FindUnions<a>`, which returns a tree of [union, path] pairs.
+ *  - 2. this tree is passed to the `Distribute` type level function,
+ *    Which turns it into a union of list of `[singleValue, path]` pairs.
+ *    Each list correspond to one of the possible combination of the unions
+ *    found in `a`.
+ *  - 3. build a data structure with the same shape as `a` for each combination
+ *    and return the union of these data structures.
+ */
+export type DistributeUnions<a> = IsAny<a> extends true
+  ? any
+  : BuildMany<a, Distribute<FindUnions<a>>>;
 
 /**
  * The reason we don't look further down the tree with lists,
@@ -148,25 +167,3 @@ type Update<data, value, path extends PropertyKey[]> = path extends [
           >;
         }
   : value;
-
-/**
- * DistributeUnions takes a data structure of type `a`
- * containing unions and turns it into a union of all possible
- * combination of each unions.
- *
- * For instance `DistributeUnions<['a' | 'b', 1 | 2]>` will
- * evaluate to `['a', 1] | ['a', 2] | ['b', 1] | ['b', 2]`.
- *
- * It does this in 3 main steps:
- *  - 1. Find all unions contained in the data structure
- *    with `FindUnions<a>`, which returns a tree of [union, path] pairs.
- *  - 2. this tree is passed to the `Distribute` type level function,
- *    Which turns it into a union of list of `[singleValue, path]` pairs.
- *    Each list correspond to one of the possible combination of the unions
- *    found in `a`.
- *  - 3. build a data structure with the same shape as `a` for each combination
- *    and return the union of these data structures.
- */
-export type DistributeUnions<a> = IsAny<a> extends true
-  ? any
-  : BuildMany<a, Distribute<FindUnions<a>>>;

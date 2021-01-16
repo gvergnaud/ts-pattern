@@ -376,8 +376,8 @@ describe('exhaustive()', () => {
         .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
         .run();
 
-      exhaustiveMatch<Input, string[]>(input)
-        .with({ type: 'a', items: [__.string] }, (x) => x.items)
+      exhaustiveMatch<Input>(input)
+        .with({ type: 'a', items: [{ some: __ }] }, (x) => x.items)
         .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
         // @ts-expect-error
         .run();
@@ -444,6 +444,21 @@ describe('exhaustive()', () => {
 
       exhaustiveMatch(input)
         .with(__, (x) => x)
+        .run();
+    });
+
+    it('should work with structures with a lot of unions', () => {
+      type X = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+      // This structures has 7 ** 3 = 343 possibilities
+      exhaustiveMatch<{
+        a: X;
+        b: X;
+        c: X;
+      }>({ a: 1, b: 1, c: 1 })
+        .with({ a: 1 }, () => 'cool')
+        .with({ b: 2 }, () => 'b = 2')
+        .with({ c: 1 }, () => 'b = 2')
+        .with({ b: __.number }, () => 'b = 2')
         .run();
     });
   });

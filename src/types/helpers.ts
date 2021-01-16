@@ -1,5 +1,7 @@
 export type ValueOf<a> = a extends any[] ? a[number] : a[keyof a];
 
+export type Values<a extends object> = UnionToTuple<ValueOf<a>>;
+
 /**
  * ### LeastUpperBound
  * An interesting one. A type taking two imbricated sets and returning the
