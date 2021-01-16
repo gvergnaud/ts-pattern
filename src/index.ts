@@ -7,9 +7,15 @@ import type {
   GuardFunction,
 } from './types/Pattern';
 
-import type { Unset, Match, PickReturnValue } from './types/Match';
+import type {
+  Unset,
+  Match,
+  PickReturnValue,
+  ExhaustiveMatch,
+} from './types/Match';
 
 import { __, PatternType } from './PatternType';
+import { DistributeUnions } from './types/DistributeUnions';
 
 export const when = <a, b extends a = a>(
   predicate: GuardFunction<a, b>
@@ -41,6 +47,16 @@ export { Pattern, __ };
  */
 export const match = <a, b = Unset>(value: a): Match<a, b> =>
   builder<a, b>(value, []);
+
+/**
+ * ### exhaustiveMatch
+ * creates an exhaustive match expression checking
+ * that **all cases are handled**. `when` predicates
+ * aren't supported on exhaustive matches.
+ **/
+export const exhaustiveMatch = <a, b = Unset>(
+  value: a
+): ExhaustiveMatch<DistributeUnions<a>, b> => builder<a, b>(value, []) as any;
 
 /**
  * ### builder

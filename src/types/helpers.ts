@@ -1,4 +1,6 @@
-export type ValueOf<a> = a[keyof a];
+export type ValueOf<a> = a extends any[] ? a[number] : a[keyof a];
+
+export type Values<a extends object> = UnionToTuple<ValueOf<a>>;
 
 /**
  * ### LeastUpperBound
@@ -44,3 +46,84 @@ export type UnionToIntersection<U> = (
 ) extends (k: infer I) => void
   ? I
   : never;
+
+type IsLiteralString<T extends string> = string extends T ? false : true;
+type IsLiteralNumber<T extends number> = number extends T ? false : true;
+type IsLiteralBoolean<T extends boolean> = boolean extends T ? false : true;
+export type IsLiteral<T> = T extends string
+  ? IsLiteralString<T>
+  : T extends number
+  ? IsLiteralNumber<T>
+  : T extends boolean
+  ? IsLiteralBoolean<T>
+  : false;
+
+export type IsUnion<a> = [a] extends [UnionToIntersection<a>] ? false : true;
+
+export type ContainsUnion<a> = IsUnion<a> extends true
+  ? true
+  : a extends object
+  ? false extends ValueOf<{ [k in keyof a]: ContainsUnion<a[k]> }>
+    ? false
+    : true
+  : false;
+
+type NeverKeys<o> = ValueOf<
+  {
+    [k in keyof o]: [o[k]] extends [never] ? k : never;
+  }
+>;
+
+type RemoveNeverKeys<o> = Omit<o, NeverKeys<o>>;
+
+export type ExcludeUnion<a> = IsUnion<a> extends true
+  ? never
+  : a extends object
+  ? RemoveNeverKeys<{ [k in keyof a]: ExcludeUnion<a[k]> }>
+  : a;
+
+export type UnionToTuple<T> = UnionToIntersection<
+  T extends any ? (t: T) => T : never
+> extends (_: any) => infer W
+  ? [...UnionToTuple<Exclude<T, W>>, W]
+  : [];
+
+export type Cast<a, b> = a extends b ? a : never;
+
+export type Flatten<xs extends any[]> = xs extends [infer head, ...(infer tail)]
+  ? [...Cast<head, any[]>, ...Flatten<tail>]
+  : [];
+
+export type Equal<X, Y> = X extends Y ? (Y extends X ? true : false) : false;
+
+export type Expect<T extends true> = T;
+
+export type IsAny<a> = [a] extends [never] ? false : Equal<a, any>;
+
+export type Length<it extends any[]> = it['length'];
+
+export type Iterator<
+  n extends number,
+  it extends any[] = []
+> = it['length'] extends n ? it : Iterator<n, [any, ...it]>;
+
+export type Next<it extends any[]> = [any, ...it];
+export type Prev<it extends any[]> = it extends [any, ...(infer tail)]
+  ? tail
+  : [];
+
+export type Slice<
+  xs extends any[],
+  it extends any[],
+  output extends any[] = []
+> = Length<it> extends 0
+  ? output
+  : xs extends [infer head, ...(infer tail)]
+  ? Slice<tail, Prev<it>, [...output, head]>
+  : output;
+
+export type Drop<xs extends any[], n extends any[]> = Length<n> extends 0
+  ? xs
+  : xs extends [any, ...(infer tail)]
+  ? Drop<tail, Prev<n>>
+  : [];

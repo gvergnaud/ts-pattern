@@ -74,6 +74,43 @@ describe('Nesting', () => {
           .run()
       ).toEqual(true);
     });
+
+    it('it should work on 6 level', () => {
+      expect(
+        match({
+          one: {
+            two: {
+              three: {
+                four: {
+                  five: {
+                    foo: 2,
+                    bar: true,
+                  },
+                },
+              },
+            },
+          },
+        })
+          .with(
+            {
+              one: {
+                two: {
+                  three: {
+                    four: {
+                      five: {
+                        foo: __,
+                        bar: select('bar'),
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            (x) => x.one.two.three.four.five.bar
+          )
+          .run()
+      ).toEqual(true);
+    });
   });
 
   describe('array', () => {
@@ -107,6 +144,14 @@ describe('Nesting', () => {
           .with([[[[{ foo: __, bar: __ }]]]], ([[[[{ bar }]]]]) => bar)
           .run()
       ).toEqual(true);
+    });
+
+    it('it should work on 6 level', () => {
+      expect(
+        match([[[[[{ two: '2', foo: 2, bar: true }]]]]])
+          .with([[[[[{ foo: __, bar: select('bar') }]]]]], (_, { bar }) => bar)
+          .run()
+      ).toEqual([[[[[true]]]]]);
     });
   });
 });
