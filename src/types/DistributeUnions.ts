@@ -80,7 +80,7 @@ export type FindUnions<a, path extends PropertyKey[] = []> = IsUnion<
         {
           // we use Required to remove the optional property modifier (?:).
           // since we use a[k] after that, optional properties will stay
-          // optional if no pattern was more precise.
+          // optional.
           [k in keyof Required<a>]: FindUnions<a[k], [...path, k]>;
         }
       >
@@ -101,8 +101,7 @@ export type Distribute<unions extends any[]> = unions extends [
     : never
   : [];
 
-// data :: DataStructure
-// union ::  Union<[value, path][]>
+// BuildMany :: DataStructure -> Union<[value, path][]> -> Union<DataStructure>
 type BuildMany<data, xs extends any[]> = xs extends any
   ? BuildOne<data, xs>
   : never;
@@ -150,6 +149,24 @@ type Update<data, value, path extends PropertyKey[]> = path extends [
         }
   : value;
 
+/**
+ * DistributeUnions takes a data structure of type `a`
+ * containing unions and turns it into a union of all possible
+ * combination of each unions.
+ *
+ * For instance `DistributeUnions<['a' | 'b', 1 | 2]>` will
+ * evaluate to `['a', 1] | ['a', 2] | ['b', 1] | ['b', 2]`.
+ *
+ * It does this in 3 main steps:
+ *  - 1. Find all unions contained in the data structure
+ *    with `FindUnions<a>`, which returns a tree of [union, path] pairs.
+ *  - 2. this tree is passed to the `Distribute` type level function,
+ *    Which turns it into a union of list of `[singleValue, path]` pairs.
+ *    Each list correspond to one of the possible combination of the unions
+ *    found in `a`.
+ *  - 3. build a data structure with the same shape as `a` for each combination
+ *    and return the union of these data structures.
+ */
 export type DistributeUnions<a> = IsAny<a> extends true
   ? any
   : BuildMany<a, Distribute<FindUnions<a>>>;
