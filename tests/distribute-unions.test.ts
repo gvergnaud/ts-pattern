@@ -2,7 +2,6 @@ import {
   FindUnions,
   Distribute,
   DistributeUnions,
-  Values,
 } from '../src/types/DistributeUnions';
 
 import { Equal, Expect, UnionToTuple, ValueOf } from '../src/types/helpers';
