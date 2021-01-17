@@ -11,7 +11,7 @@ with smart type inference.
   </a>
 </p>
 
-```tsx
+```ts
 import { match } from 'ts-pattern';
 
 type Data =
@@ -23,20 +23,21 @@ type Result =
   | { type: 'ok'; data: Data }
   | { type: 'error'; error: Error };
 
-let result: Result;
+const result: Result = ...;
 
 return match(result)
-  .with({ type: 'ok', data: { type: 'text' } }, (res) => <p>{res.data.content}</p>)
-  .with({ type: 'ok', data: { type: 'img' } }, (res) => <img src={res.data.src} />)
-  .with({ type: 'error' }, (res) => <p>Oups! An error occured</p>)
-  .otherwise(() => <p>everything else</p>);
+  .with({ type: 'ok', data: { type: 'text' } }, (res) => `<p>${res.data.content}</p>`)
+  .with({ type: 'ok', data: { type: 'img' } }, (res) => `<img src=${res.data.src} />`)
+  .with({ type: 'error' }, (res) => `<p>Oups! An error occured</p>`)
+  .otherwise(() => `<p>everything else</p>`);
 ```
 
 ## Features
 
-- Supports **every data structure** you use: objects, arrays, tuples, Sets, Maps, and all primitive types.
+- Works on **any data structure**: objects, arrays, tuples, Sets, Maps, and all primitive types.
 - **Typesafe**, with great type inference.
-- Supports catch all (`__`) and type specific **wildcards**.
+- Optional **Exhaustive checking**, enforcing that you are matching every possible case with `.exhaustive()`.
+- **Expressive syntax**, with catch-all and type specific **wildcards**: `__`.
 - Supports `when(<predicate>)` and `not(<pattern>)` patterns for complex cases.
 - Supports properties selection, via the `select(<name>)` function.
 - Tiny bundle footprint (**only 1kb**).
@@ -140,6 +141,8 @@ import { match, __, not, select, when } from 'ts-pattern';
 
 const reducer = (state: State, event: Event): State =>
   match<[State, Event], State>([state, event])
+    .exhaustive()
+
     .with([{ status: 'loading' }, { type: 'success' }], ([, event]) => ({
       status: 'success',
       data: event.data,
@@ -158,18 +161,9 @@ const reducer = (state: State, event: Event): State =>
       startTime: Date.now(),
     }))
 
-    .with(
-      [
-        {
-          status: 'loading',
-          startTime: when((startTime) => Date.now() > startTime + 1000),
-        },
-        { type: 'cancel' },
-      ],
-      () => ({
-        status: 'idle',
-      })
-    )
+    .with([{ status: 'loading' }, { type: 'cancel' }], () => ({
+      status: 'idle',
+    }))
 
     .with(__, () => state)
 
@@ -195,6 +189,16 @@ can match on each value separately.
 Most of the time, you don't need to specify the type of input
 and output with `match<Input, Output>(...)` because `match` is able to
 infer both of these types.
+
+### .exhaustive()
+
+`.exhaustive()` enables **exhaustive checking**, making sure we don't forget
+any possible case in our input data. This extra type safety is very nice
+because forgetting a case is an easy mistake to make, especially in an
+evolving code-base.
+
+Note that exhaustive pattern matching is **optional**. It comes with the trade-off
+of **disabling guard functions** (`when(...)`) and having slighly longer compilation times.
 
 ### .with(pattern, handler)
 
@@ -251,28 +255,6 @@ and returning its opposite:
   }))
 ```
 
-### when(predicate)
-
-The `when` function enables you to **add a guard** to your pattern.
-Your pattern will not match **unless your predicate returns `true`**.
-It might be handy if you need to make a dynamic checks on
-your data structure.
-
-```ts
-  .with(
-    [
-      {
-        status: 'loading',
-        startTime: when((startTime) => Date.now() > startTime + 1000),
-      },
-      { type: 'cancel' },
-    ],
-    () => ({
-      status: 'idle',
-    })
-  )
-```
-
 ### the `__` wildcard
 
 `__` will match any value.
@@ -302,6 +284,61 @@ a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run(
 
 ```ts
   .otherwise(() => state);
+```
+
+### Guard functions
+
+Sometimes, we need to make sure our input data respects a condition
+that can't be expressed by a pattern. Imagine if we wanted to check that a number
+is positive for instance. In this case, we can use **guard functions**:
+functions taking some data and returning a `boolean`.
+
+With `ts-pattern` you have two options to use a guard function:
+
+- use `when(<guard function>)` inside your pattern
+- pass it as second parameter to `.with(...)`
+
+**Note**: to use this feature, you will need to **disable exhaustive checking**
+by removing `.exhaustive()` if you were using it. That's because with guard functions,
+there is no way to know if the pattern is going to match or not at compile time,
+making exhaustive checking impossible.
+
+#### when(predicate)
+
+The `when` function lets you **add a guard** to your pattern.
+Your pattern will not match **unless your predicate returns `true`**.
+It might be handy if you need to make a dynamic checks on
+your data structure.
+
+```ts
+  .with(
+    [
+      {
+        status: 'loading',
+        startTime: when((startTime) => Date.now() > startTime + 1000),
+      },
+      { type: 'cancel' },
+    ],
+    () => ({
+      status: 'idle',
+    })
+  )
+```
+
+#### Passing a guard function to `.with(...)`
+
+`.with` optionally accepts up to 3 guard functions parameters between
+the `pattern` and the `handler` callback:
+
+```ts
+  .with(
+    [{ status: 'loading' },{ type: 'cancel' }],
+    ([state, event]) => Date.now() > state.startTime + 1000,
+    // you can add up to 2 other guard functions here
+    () => ({
+      status: 'idle'
+    })
+  )
 ```
 
 ## API Reference
@@ -388,6 +425,23 @@ function when(
   - **Required**
   - Function called when the predicate condition is satisfied.
   - All handlers on a single `match` case must return values of the same type, `TOutput`.
+
+### .exhaustive
+
+```ts
+match(...)
+  .exhaustive()
+  .with(...)
+```
+
+Enable exhaustive pattern matching, making sure at compile time that
+all possible cases are handled.
+
+#### Signature
+
+```ts
+function exhaustive(): ExhaustiveMatch<TInput, IOutput>;
+```
 
 ### .otherwise
 
@@ -803,5 +857,6 @@ notable differences:
 - `ts-patterns`'s goal is to be a well unit-tested, well documented, production ready library.
 - It supports more data structures, like tuples, sets and maps.
 - It provides a "catch all" pattern: `__`.
+- It supports exhaustive checking with `.exhaustive()`.
 - It supports deep selection with the `select()` function.
 - Its type inference works on deeper patterns and is well tested.
