@@ -57,22 +57,22 @@ export type Pattern<a> =
   | WildCardPattern<a>
   | (a extends Primitives
       ? a
-      : a extends [infer b, infer c, infer d, infer e, infer f]
-      ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>]
-      : a extends [infer b, infer c, infer d, infer e]
-      ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>]
-      : a extends [infer b, infer c, infer d]
-      ? [Pattern<b>, Pattern<c>, Pattern<d>]
-      : a extends [infer b, infer c]
-      ? [Pattern<b>, Pattern<c>]
       : a extends (infer b)[]
-      ?
-          | []
-          | [Pattern<b>]
-          | [Pattern<b>, Pattern<b>]
-          | [Pattern<b>, Pattern<b>, Pattern<b>]
-          | [Pattern<b>, Pattern<b>, Pattern<b>, Pattern<b>]
-          | [Pattern<b>, Pattern<b>, Pattern<b>, Pattern<b>, Pattern<b>]
+      ? a extends [infer b, infer c, infer d, infer e, infer f]
+        ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>]
+        : a extends [infer b, infer c, infer d, infer e]
+        ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>]
+        : a extends [infer b, infer c, infer d]
+        ? [Pattern<b>, Pattern<c>, Pattern<d>]
+        : a extends [infer b, infer c]
+        ? [Pattern<b>, Pattern<c>]
+        :
+            | []
+            | [Pattern<b>]
+            | [Pattern<b>, Pattern<b>]
+            | [Pattern<b>, Pattern<b>, Pattern<b>]
+            | [Pattern<b>, Pattern<b>, Pattern<b>, Pattern<b>]
+            | [Pattern<b>, Pattern<b>, Pattern<b>, Pattern<b>, Pattern<b>]
       : a extends Map<infer k, infer v>
       ? Map<k, Pattern<v>>
       : a extends Set<infer v>
@@ -91,44 +91,44 @@ export type ExhaustivePattern<a> =
   | WildCardPattern<a>
   | (a extends Primitives
       ? a
-      : a extends [infer b, infer c, infer d, infer e, infer f]
-      ? [
-          ExhaustivePattern<b>,
-          ExhaustivePattern<c>,
-          ExhaustivePattern<d>,
-          ExhaustivePattern<e>,
-          ExhaustivePattern<f>
-        ]
-      : a extends [infer b, infer c, infer d, infer e]
-      ? [
-          ExhaustivePattern<b>,
-          ExhaustivePattern<c>,
-          ExhaustivePattern<d>,
-          ExhaustivePattern<e>
-        ]
-      : a extends [infer b, infer c, infer d]
-      ? [ExhaustivePattern<b>, ExhaustivePattern<c>, ExhaustivePattern<d>]
-      : a extends [infer b, infer c]
-      ? [ExhaustivePattern<b>, ExhaustivePattern<c>]
       : a extends (infer b)[]
-      ?
-          | []
-          | [ExhaustivePattern<b>]
-          | [ExhaustivePattern<b>, ExhaustivePattern<b>]
-          | [ExhaustivePattern<b>, ExhaustivePattern<b>, ExhaustivePattern<b>]
-          | [
-              ExhaustivePattern<b>,
-              ExhaustivePattern<b>,
-              ExhaustivePattern<b>,
-              ExhaustivePattern<b>
-            ]
-          | [
-              ExhaustivePattern<b>,
-              ExhaustivePattern<b>,
-              ExhaustivePattern<b>,
-              ExhaustivePattern<b>,
-              ExhaustivePattern<b>
-            ]
+      ? a extends [infer b, infer c, infer d, infer e, infer f]
+        ? [
+            ExhaustivePattern<b>,
+            ExhaustivePattern<c>,
+            ExhaustivePattern<d>,
+            ExhaustivePattern<e>,
+            ExhaustivePattern<f>
+          ]
+        : a extends [infer b, infer c, infer d, infer e]
+        ? [
+            ExhaustivePattern<b>,
+            ExhaustivePattern<c>,
+            ExhaustivePattern<d>,
+            ExhaustivePattern<e>
+          ]
+        : a extends [infer b, infer c, infer d]
+        ? [ExhaustivePattern<b>, ExhaustivePattern<c>, ExhaustivePattern<d>]
+        : a extends [infer b, infer c]
+        ? [ExhaustivePattern<b>, ExhaustivePattern<c>]
+        :
+            | []
+            | [ExhaustivePattern<b>]
+            | [ExhaustivePattern<b>, ExhaustivePattern<b>]
+            | [ExhaustivePattern<b>, ExhaustivePattern<b>, ExhaustivePattern<b>]
+            | [
+                ExhaustivePattern<b>,
+                ExhaustivePattern<b>,
+                ExhaustivePattern<b>,
+                ExhaustivePattern<b>
+              ]
+            | [
+                ExhaustivePattern<b>,
+                ExhaustivePattern<b>,
+                ExhaustivePattern<b>,
+                ExhaustivePattern<b>,
+                ExhaustivePattern<b>
+              ]
       : a extends Map<infer k, infer v>
       ? Map<k, ExhaustivePattern<v>>
       : a extends Set<infer v>

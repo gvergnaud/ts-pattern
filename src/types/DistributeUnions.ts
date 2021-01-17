@@ -64,31 +64,31 @@ export type FindUnions<a, path extends PropertyKey[] = []> = IsUnion<
         path: path;
       }
     ]
-  : a extends [infer a1, infer a2, infer a3, infer a4, infer a5]
-  ? [
-      ...FindUnions<a1, [...path, 0]>,
-      ...FindUnions<a2, [...path, 1]>,
-      ...FindUnions<a3, [...path, 2]>,
-      ...FindUnions<a4, [...path, 3]>,
-      ...FindUnions<a5, [...path, 4]>
-    ]
-  : a extends [infer a1, infer a2, infer a3, infer a4]
-  ? [
-      ...FindUnions<a1, [...path, 0]>,
-      ...FindUnions<a2, [...path, 1]>,
-      ...FindUnions<a3, [...path, 2]>,
-      ...FindUnions<a4, [...path, 3]>
-    ]
-  : a extends [infer a1, infer a2, infer a3]
-  ? [
-      ...FindUnions<a1, [...path, 0]>,
-      ...FindUnions<a2, [...path, 1]>,
-      ...FindUnions<a3, [...path, 2]>
-    ]
-  : a extends [infer a1, infer a2]
-  ? [...FindUnions<a1, [...path, 0]>, ...FindUnions<a2, [...path, 1]>]
   : a extends any[]
-  ? []
+  ? a extends [infer a1, infer a2, infer a3, infer a4, infer a5]
+    ? [
+        ...FindUnions<a1, [...path, 0]>,
+        ...FindUnions<a2, [...path, 1]>,
+        ...FindUnions<a3, [...path, 2]>,
+        ...FindUnions<a4, [...path, 3]>,
+        ...FindUnions<a5, [...path, 4]>
+      ]
+    : a extends [infer a1, infer a2, infer a3, infer a4]
+    ? [
+        ...FindUnions<a1, [...path, 0]>,
+        ...FindUnions<a2, [...path, 1]>,
+        ...FindUnions<a3, [...path, 2]>,
+        ...FindUnions<a4, [...path, 3]>
+      ]
+    : a extends [infer a1, infer a2, infer a3]
+    ? [
+        ...FindUnions<a1, [...path, 0]>,
+        ...FindUnions<a2, [...path, 1]>,
+        ...FindUnions<a3, [...path, 2]>
+      ]
+    : a extends [infer a1, infer a2]
+    ? [...FindUnions<a1, [...path, 0]>, ...FindUnions<a2, [...path, 1]>]
+    : []
   : a extends Set<any>
   ? []
   : a extends Map<any, any>

@@ -30,22 +30,27 @@ export type InvertPattern<p> = p extends typeof __.number
     }
   : p extends Primitives
   ? p
-  : p extends [infer pb, infer pc, infer pd, infer pe, infer pf]
-  ? [
-      InvertPattern<pb>,
-      InvertPattern<pc>,
-      InvertPattern<pd>,
-      InvertPattern<pe>,
-      InvertPattern<pf>
-    ]
-  : p extends [infer pb, infer pc, infer pd, infer pe]
-  ? [InvertPattern<pb>, InvertPattern<pc>, InvertPattern<pd>, InvertPattern<pe>]
-  : p extends [infer pb, infer pc, infer pd]
-  ? [InvertPattern<pb>, InvertPattern<pc>, InvertPattern<pd>]
-  : p extends [infer pb, infer pc]
-  ? [InvertPattern<pb>, InvertPattern<pc>]
   : p extends (infer pp)[]
-  ? InvertPattern<pp>[]
+  ? p extends [infer pb, infer pc, infer pd, infer pe, infer pf]
+    ? [
+        InvertPattern<pb>,
+        InvertPattern<pc>,
+        InvertPattern<pd>,
+        InvertPattern<pe>,
+        InvertPattern<pf>
+      ]
+    : p extends [infer pb, infer pc, infer pd, infer pe]
+    ? [
+        InvertPattern<pb>,
+        InvertPattern<pc>,
+        InvertPattern<pd>,
+        InvertPattern<pe>
+      ]
+    : p extends [infer pb, infer pc, infer pd]
+    ? [InvertPattern<pb>, InvertPattern<pc>, InvertPattern<pd>]
+    : p extends [infer pb, infer pc]
+    ? [InvertPattern<pb>, InvertPattern<pc>]
+    : InvertPattern<pp>[]
   : p extends Map<infer pk, infer pv>
   ? Map<pk, InvertPattern<pv>>
   : p extends Set<infer pv>
