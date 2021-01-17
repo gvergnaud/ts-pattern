@@ -12,6 +12,7 @@ import type {
   Match,
   PickReturnValue,
   ExhaustiveMatch,
+  EmptyMatch,
 } from './types/Match';
 
 import { __, PatternType } from './PatternType';
@@ -45,18 +46,8 @@ export { Pattern, __ };
  * Entry point to create pattern matching code branches. It returns an
  * empty Match case.
  */
-export const match = <a, b = Unset>(value: a): Match<a, b> =>
+export const match = <a, b = Unset>(value: a): EmptyMatch<a, b> =>
   builder<a, b>(value, []);
-
-/**
- * ### exhaustiveMatch
- * creates an exhaustive match expression checking
- * that **all cases are handled**. `when` predicates
- * aren't supported on exhaustive matches.
- **/
-export const exhaustiveMatch = <a, b = Unset>(
-  value: a
-): ExhaustiveMatch<DistributeUnions<a>, b> => builder<a, b>(value, []) as any;
 
 /**
  * ### builder
@@ -72,7 +63,7 @@ const builder = <a, b>(
     select: (value: a) => object;
     handler: (...args: any) => any;
   }[]
-): Match<a, b> => ({
+): EmptyMatch<a, b> => ({
   with<p extends Pattern<a>, c>(
     pattern: p,
     ...args: any[]
@@ -134,6 +125,15 @@ const builder = <a, b>(
     }
     return entry.handler(value, entry.select(value));
   },
+
+  /**
+   * ### exhaustive
+   * creates an exhaustive match expression checking
+   * that **all cases are handled**. `when` predicates
+   * aren't supported on exhaustive matches.
+   **/
+  exhaustive: (): ExhaustiveMatch<DistributeUnions<a>, b> =>
+    builder(value, patterns) as any,
 });
 
 const isObject = (value: unknown): value is Object =>

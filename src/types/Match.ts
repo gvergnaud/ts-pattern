@@ -109,6 +109,16 @@ export type Match<a, b> = {
   run: () => b;
 };
 
+export type EmptyMatch<i, o> = Match<i, o> & {
+  /**
+   * ### exhaustive
+   * creates an exhaustive match expression checking
+   * that **all cases are handled**. `when` predicates
+   * aren't supported on exhaustive matches.
+   **/
+  exhaustive: () => ExhaustiveMatch<DistributeUnions<i>, o>;
+};
+
 type NonExhaustivePattern<i> = { __nonExhaustive: never } & i;
 
 /**
