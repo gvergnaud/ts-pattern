@@ -502,10 +502,10 @@ describe('exhaustive()', () => {
         c: X;
       }>({ a: 1, b: 1, c: 1 })
         .exhaustive()
-        .with({ a: 1 }, () => 'cool')
+        .with({ a: 1 }, () => 'a = 1')
         .with({ b: 2 }, () => 'b = 2')
-        .with({ c: 1 }, () => 'b = 2')
-        .with({ b: __.number }, () => 'b = 2')
+        .with({ c: 1 }, () => 'c = 1')
+        .with({ a: __ }, () => 'otherwise')
         .run();
     });
   });
