@@ -34,7 +34,7 @@ return match(result)
 
 ## Features
 
-- Works on **any data structure**: objects, arrays, tuples, Sets, Maps, and all primitive types.
+- Works on **any data structure**: nested objects, arrays, tuples, Sets, Maps and all primitive types.
 - **Typesafe**, with great type inference.
 - Optional **exhaustivity checking**, enforcing that you are matching every possible case with `.exhaustive()`.
 - **Expressive syntax**, with catch-all and type specific **wildcards**: `__`.
