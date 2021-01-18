@@ -306,7 +306,7 @@ making exhaustivity checking impossible.
 #### when(predicate)
 
 The `when` function lets you **add a guard** to your pattern.
-Your pattern will not match **unless your predicate returns `true`**.
+Your pattern will not match **unless your predicate (guard) function returns `true`**.
 It might be handy if you need to make a dynamic checks on
 your data structure.
 
