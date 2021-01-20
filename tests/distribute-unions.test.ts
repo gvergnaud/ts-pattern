@@ -698,12 +698,7 @@ describe('DistributeUnions', () => {
               y?: string;
             }>
           >,
-          [
-            { x: 'a'; y: undefined },
-            { x: 'a'; y: string },
-            { x: 'b'; y: undefined },
-            { x: 'b'; y: string }
-          ]
+          [{ x: 'a'; y?: string }, { x: 'b'; y?: string }]
         >
       >
     ];

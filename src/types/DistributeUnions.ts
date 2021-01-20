@@ -98,9 +98,9 @@ export type FindUnions<a, path extends PropertyKey[] = []> = IsUnion<
       Values<
         {
           // we use Required to remove the optional property modifier (?:).
-          // since we use a[k] after that, optional properties will stay
-          // optional.
-          [k in keyof Required<a>]: FindUnions<a[k], [...path, k]>;
+          // Optional properties aren't considered as union types to avoid
+          // generating a huge union.
+          [k in keyof Required<a>]: FindUnions<NonNullable<a[k]>, [...path, k]>;
         }
       >
     >
