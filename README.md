@@ -36,7 +36,7 @@ return match(result)
 
 - Works on **any data structure**: nested objects, arrays, tuples, Sets, Maps and all primitive types.
 - **Typesafe**, with great type inference.
-- Optional **exhaustivity checking**, enforcing that you are matching every possible case with `.exhaustive()`.
+- Optional **exhaustive matching**, enforcing that you are matching every possible case with `.exhaustive()`.
 - **Expressive syntax**, with catch-all and type specific **wildcards**: `__`.
 - Supports `when(<predicate>)` and `not(<pattern>)` patterns for complex cases.
 - Supports properties selection, via the `select(<name>)` function.
@@ -192,7 +192,7 @@ infer both of these types.
 
 ### .exhaustive()
 
-`.exhaustive()` enables **exhaustivity checking**, making sure we don't forget
+`.exhaustive()` enables **exhaustive matching**, making sure we don't forget
 any possible case in our input data. This extra type safety is very nice
 because forgetting a case is an easy mistake to make, especially in an
 evolving code-base.
@@ -298,10 +298,10 @@ With `ts-pattern` you have two options to use a guard function:
 - use `when(<guard function>)` inside your pattern
 - pass it as second parameter to `.with(...)`
 
-**Note**: to use this feature, you will need to **disable exhaustivity checking**
+**Note**: to use this feature, you will need to **disable exhaustive matching**
 by removing `.exhaustive()` if you were using it. That's because with guard functions,
 there is no way to know if the pattern is going to match or not at compile time,
-making exhaustivity checking impossible.
+making exhaustive matching impossible.
 
 #### when(predicate)
 
@@ -857,6 +857,6 @@ notable differences:
 - `ts-patterns`'s goal is to be a well unit-tested, well documented, production ready library.
 - It supports more data structures, like tuples, sets and maps.
 - It provides a "catch all" pattern: `__`.
-- It supports exhaustivity checking with `.exhaustive()`.
+- It supports exhaustive matching with `.exhaustive()`.
 - It supports deep selection with the `select()` function.
 - Its type inference works on deeper patterns and is well tested.
