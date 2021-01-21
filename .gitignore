@@ -4,3 +4,4 @@ npm-debug.log
 lib
 notes.md
 .vscode/
+tracing_output_folder/

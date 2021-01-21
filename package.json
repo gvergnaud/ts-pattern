@@ -9,7 +9,8 @@
     "prepare": "npm run test && npm run build",
     "test:values": "jest",
     "test:types": "tsc --project tests/tsconfig.json",
-    "test": "npm run test:types && npm run test:values"
+    "test": "npm run test:types && npm run test:values",
+    "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics"
   },
   "files": [
     "lib/**/*"
