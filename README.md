@@ -198,7 +198,8 @@ because forgetting a case is an easy mistake to make, especially in an
 evolving code-base.
 
 Note that exhaustive pattern matching is **optional**. It comes with the trade-off
-of **disabling guard functions** (`when(...)`) and having longer compilation times.
+of **disabling guard functions** (`when(...)`) and having **longer compilation times**.
+If you are using `.otherwise()`, you probably don't need to use `.exhaustive()`.
 
 ### .with(pattern, handler)
 
