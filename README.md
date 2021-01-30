@@ -62,6 +62,8 @@ Via yarn
 yarn add ts-pattern
 ```
 
+⚠️ `ts-pattern@2` requires TypeScript >= v4. If you are using TypeScript v3, please install `ts-pattern@1.1.0`.
+
 # Documentation
 
 - [Code Sandbox Examples](#code-sandbox-examples)
