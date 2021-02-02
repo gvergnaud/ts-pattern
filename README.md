@@ -37,7 +37,7 @@ return match(result)
 - Works on **any data structure**: nested objects, arrays, tuples, Sets, Maps and all primitive types.
 - **Typesafe**, with great type inference.
 - Optional **exhaustive matching**, enforcing that you are matching every possible case with `.exhaustive()`.
-- **Expressive syntax**, with catch-all and type specific **wildcards**: `__`.
+- **Expressive API**, with catch-all and type specific **wildcards**: `__`.
 - Supports `when(<predicate>)` and `not(<pattern>)` patterns for complex cases.
 - Supports properties selection, via the `select(<name>)` function.
 - Tiny bundle footprint (**only 1kb**).
