@@ -1,4 +1,5 @@
 import type { __, PatternType } from '../PatternType';
+import { IsPlainObject } from './helpers';
 
 export type Primitives =
   | number
@@ -77,7 +78,7 @@ export type Pattern<a> =
       ? Map<k, Pattern<v>>
       : a extends Set<infer v>
       ? Set<Pattern<v>>
-      : a extends object
+      : IsPlainObject<a> extends true
       ? { [k in keyof a]?: Pattern<a[k]> }
       : a);
 
@@ -133,6 +134,6 @@ export type ExhaustivePattern<a> =
       ? Map<k, ExhaustivePattern<v>>
       : a extends Set<infer v>
       ? Set<ExhaustivePattern<v>>
-      : a extends object
+      : IsPlainObject<a> extends true
       ? { [k in keyof a]?: ExhaustivePattern<a[k]> }
       : a);

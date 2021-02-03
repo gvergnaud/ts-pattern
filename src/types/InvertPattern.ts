@@ -1,4 +1,5 @@
 import type { PatternType, __ } from '../PatternType';
+import { IsPlainObject } from './helpers';
 import type {
   SelectPattern,
   GuardPattern,
@@ -55,6 +56,6 @@ export type InvertPattern<p> = p extends typeof __.number
   ? Map<pk, InvertPattern<pv>>
   : p extends Set<infer pv>
   ? Set<InvertPattern<pv>>
-  : p extends object
+  : IsPlainObject<p> extends true
   ? { [k in keyof p]: InvertPattern<p[k]> }
   : p;

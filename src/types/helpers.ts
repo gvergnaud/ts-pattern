@@ -21,8 +21,8 @@ export type ExcludeIfContainsNever<a> = a extends Map<any, any> | Set<any>
   ? a
   : a extends any[]
   ? ExcludeNeverArray<a>
-  : a extends object
-  ? ExcludeNeverObject<a>
+  : IsPlainObject<a> extends true
+  ? ExcludeNeverObject<Cast<a, object>>
   : a;
 
 type ExcludeNeverArray<a extends any[]> =
@@ -62,7 +62,7 @@ export type IsUnion<a> = [a] extends [UnionToIntersection<a>] ? false : true;
 
 export type ContainsUnion<a> = IsUnion<a> extends true
   ? true
-  : a extends object
+  : IsPlainObject<a> extends true
   ? false extends ValueOf<{ [k in keyof a]: ContainsUnion<a[k]> }>
     ? false
     : true
@@ -78,7 +78,7 @@ type RemoveNeverKeys<o> = Omit<o, NeverKeys<o>>;
 
 export type ExcludeUnion<a> = IsUnion<a> extends true
   ? never
-  : a extends object
+  : IsPlainObject<a> extends true
   ? RemoveNeverKeys<{ [k in keyof a]: ExcludeUnion<a[k]> }>
   : a;
 
@@ -127,3 +127,17 @@ export type Drop<xs extends any[], n extends any[]> = Length<n> extends 0
   : xs extends [any, ...(infer tail)]
   ? Drop<tail, Prev<n>>
   : [];
+
+type BuiltInObjects =
+  | Function
+  | Error
+  | Date
+  | RegExp
+  | Generator
+  | { readonly [Symbol.toStringTag]: string };
+
+export type IsPlainObject<o> = o extends object
+  ? o extends BuiltInObjects
+    ? false
+    : true
+  : false;

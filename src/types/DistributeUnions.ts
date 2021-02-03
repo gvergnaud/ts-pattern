@@ -8,6 +8,7 @@ import type {
   Drop,
   Iterator,
   Next,
+  IsPlainObject,
 } from './helpers';
 
 /**
@@ -93,7 +94,7 @@ export type FindUnions<a, path extends PropertyKey[] = []> = IsUnion<
   ? []
   : a extends Map<any, any>
   ? []
-  : a extends object
+  : IsPlainObject<a> extends true
   ? Flatten<
       Values<
         {
