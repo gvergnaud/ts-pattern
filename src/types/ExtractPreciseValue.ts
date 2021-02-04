@@ -1,6 +1,10 @@
 import type { PatternType, __ } from '../PatternType';
 import type { Primitives } from './Pattern';
-import type { ExcludeIfContainsNever, LeastUpperBound } from './helpers';
+import type {
+  ExcludeIfContainsNever,
+  IsPlainObject,
+  LeastUpperBound,
+} from './helpers';
 
 export type ExtractPreciseValue<a, b> = ExcludeIfContainsNever<
   b extends []
@@ -52,7 +56,7 @@ export type ExtractPreciseValue<a, b> = ExcludeIfContainsNever<
     ? a extends Set<infer av>
       ? Set<ExtractPreciseValue<av, bv>>
       : LeastUpperBound<a, b>
-    : b extends object
+    : IsPlainObject<b> extends true
     ? a extends any[] | Set<any> | Map<any, any> | Primitives
       ? LeastUpperBound<a, b>
       : b extends a

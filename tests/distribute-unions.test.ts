@@ -161,9 +161,8 @@ describe('FindUnions', () => {
           FindUnions<{
             a: {
               b: {
-                c: {
-                  d: { e: 7 | 8; f: 9 | 10 };
-                };
+                e: 7 | 8;
+                f: 9 | 10;
               };
             };
           }>,
@@ -178,7 +177,7 @@ describe('FindUnions', () => {
                     value: 8;
                     subUnions: [];
                   };
-              path: ['a', 'b', 'c', 'd', 'e'];
+              path: ['a', 'b', 'e'];
             },
             {
               cases:
@@ -190,7 +189,7 @@ describe('FindUnions', () => {
                     value: 10;
                     subUnions: [];
                   };
-              path: ['a', 'b', 'c', 'd', 'f'];
+              path: ['a', 'b', 'f'];
             }
           ]
         >
@@ -198,15 +197,12 @@ describe('FindUnions', () => {
       Expect<
         Equal<
           FindUnions<{
+            e: 'not a union';
             a: {
-              b: {
-                c: {
-                  d: { e: 7 | 8; f: 9 | 10 };
-                  e: 'not a union';
-                };
-                g: 2 | 3;
-              };
+              e: 7 | 8;
+              f: 9 | 10;
             };
+            b: 2 | 3;
           }>,
           [
             {
@@ -219,7 +215,7 @@ describe('FindUnions', () => {
                     value: 8;
                     subUnions: [];
                   };
-              path: ['a', 'b', 'c', 'd', 'e'];
+              path: ['a', 'e'];
             },
             {
               cases:
@@ -231,7 +227,7 @@ describe('FindUnions', () => {
                     value: 10;
                     subUnions: [];
                   };
-              path: ['a', 'b', 'c', 'd', 'f'];
+              path: ['a', 'f'];
             },
             {
               cases:
@@ -243,7 +239,7 @@ describe('FindUnions', () => {
                     value: 3;
                     subUnions: [];
                   };
-              path: ['a', 'b', 'g'];
+              path: ['b'];
             }
           ]
         >
