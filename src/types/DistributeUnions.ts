@@ -53,8 +53,8 @@ export type DistributeUnions<a> = IsAny<a> extends true
  * FindUnions :: a -> UnionConfig[]
  */
 export type FindUnions<a, path extends PropertyKey[] = []> =
-  // Don't try to find unions after 3 levels
-  Length<path> extends 3
+  // Don't try to find unions after 4 levels
+  Length<path> extends 4
     ? []
     : IsUnion<a> extends true
     ? [

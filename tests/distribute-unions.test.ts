@@ -160,8 +160,10 @@ describe('FindUnions', () => {
         Equal<
           FindUnions<{
             a: {
-              e: 7 | 8;
-              f: 9 | 10;
+              b: {
+                e: 7 | 8;
+                f: 9 | 10;
+              };
             };
           }>,
           [
@@ -175,7 +177,7 @@ describe('FindUnions', () => {
                     value: 8;
                     subUnions: [];
                   };
-              path: ['a', 'e'];
+              path: ['a', 'b', 'e'];
             },
             {
               cases:
@@ -187,7 +189,7 @@ describe('FindUnions', () => {
                     value: 10;
                     subUnions: [];
                   };
-              path: ['a', 'f'];
+              path: ['a', 'b', 'f'];
             }
           ]
         >
