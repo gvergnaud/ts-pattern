@@ -1,4 +1,5 @@
-import { match, __ } from '../src';
+import { match, Pattern, __ } from '../src';
+import { IsPlainObject } from '../src/types/helpers';
 import { Option, NotNever, Blog } from './utils';
 
 describe('List ([a])', () => {
@@ -29,5 +30,16 @@ describe('List ([a])', () => {
       .otherwise(() => ({ kind: 'none' }));
 
     expect(res).toEqual({ kind: 'some', value: [httpResult] });
+  });
+
+  it('should work with generics', () => {
+    const reverse = <T>(xs: T[]): T[] => {
+      return match<T[], T[]>(xs)
+        .with([], () => [])
+        .with(__, ([x, ...xs]) => [...reverse(xs), x])
+        .run();
+    };
+
+    expect(reverse([1, 2, 3])).toEqual([3, 2, 1]);
   });
 });

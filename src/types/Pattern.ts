@@ -39,12 +39,12 @@ export type SelectPattern<k extends string> = {
 };
 
 type WildCardPattern<a> = a extends number
-  ? typeof __.number | typeof __
+  ? typeof __.number
   : a extends string
-  ? typeof __.string | typeof __
+  ? typeof __.string
   : a extends boolean
-  ? typeof __.boolean | typeof __
-  : typeof __;
+  ? typeof __.boolean
+  : never;
 
 /**
  * ### Pattern
@@ -52,6 +52,7 @@ type WildCardPattern<a> = a extends number
  * They can also be "wildcards", using type constructors
  */
 export type Pattern<a> =
+  | typeof __
   | SelectPattern<string>
   | GuardPattern<a>
   | NotPattern<a | any>
@@ -87,6 +88,7 @@ export type Pattern<a> =
  * Just like the Pattern type, excluding when clauses.
  */
 export type ExhaustivePattern<a> =
+  | typeof __
   | SelectPattern<string>
   | NotPattern<a | any>
   | WildCardPattern<a>
