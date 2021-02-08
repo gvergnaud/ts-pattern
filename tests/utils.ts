@@ -3,6 +3,12 @@ export type NotNever<a> = a extends never ? never : true;
 
 export type Option<a> = { kind: 'none' } | { kind: 'some'; value: a };
 
+export const none: Option<never> = { kind: 'none' };
+export const some = <a>(value: a): Option<a> => ({
+  kind: 'some',
+  value,
+});
+
 export type Blog = {
   id: number;
   title: string;

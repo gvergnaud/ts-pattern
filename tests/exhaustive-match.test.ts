@@ -1,5 +1,5 @@
 import { match, when, __ } from '../src';
-import { Option } from './utils';
+import { Option, some, none } from './utils';
 
 describe('exhaustive()', () => {
   it('should forbid using guard function, in pattern or as extra args', () => {
@@ -503,10 +503,24 @@ describe('exhaustive()', () => {
       }>({ a: 1, b: 1, c: 1 })
         .exhaustive()
         .with({ a: 1 }, () => 'a = 1')
-        .with({ b: 2 }, () => 'b = 2')
         .with({ c: 1 }, () => 'c = 1')
-        .with({ a: __ }, () => 'otherwise')
+        .with({ b: 1 }, () => 'otherwise')
+        .with({ b: 2 }, () => 'b = 2')
+        .with({ b: 3 }, () => 'otherwise')
+        .with({ b: 4 }, () => 'otherwise')
+        .with({ b: 5 }, () => 'otherwise')
+        .with({ b: 6 }, () => 'otherwise')
+        .with({ b: 7 }, () => 'otherwise')
         .run();
+    });
+
+    it('should work with generics', () => {
+      const f = <a>(xs: a[]) =>
+        match<a[], Option<a>>(xs)
+          .exhaustive()
+          .with([], () => none)
+          .with(__, (xs) => some(xs[xs.length - 1]))
+          .run();
     });
   });
 });

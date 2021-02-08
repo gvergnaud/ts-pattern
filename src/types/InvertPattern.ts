@@ -24,7 +24,7 @@ export type InvertPattern<p> = p extends typeof __.number
   ? PatternPlaceholder
   : p extends typeof __
   ? PatternPlaceholder
-  : p extends GuardPattern<infer pa, infer pb>
+  : p extends GuardPattern<any, infer pb>
   ? pb
   : p extends NotPattern<infer pb>
   ? {
