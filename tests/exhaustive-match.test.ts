@@ -45,9 +45,7 @@ describe('exhaustive()', () => {
         .exhaustive()
         .with('a', (x) => 1)
         .with('b', (x) => 1)
-        // twice the same match.exhaustive()
         // @ts-expect-error
-        .with('b', (x) => 1)
         .run();
 
       match(input)
@@ -97,9 +95,7 @@ describe('exhaustive()', () => {
         .exhaustive()
         .with(1, (x) => 1)
         .with(2, () => 3)
-        // twice the same match.exhaustive()
         // @ts-expect-error
-        .with(2, () => 3)
         .run();
 
       match(input)
@@ -515,12 +511,35 @@ describe('exhaustive()', () => {
     });
 
     it('should work with generics', () => {
-      const f = <a>(xs: a[]) =>
+      const last = <a>(xs: a[]) =>
         match<a[], Option<a>>(xs)
           .exhaustive()
           .with([], () => none)
           .with(__, (xs) => some(xs[xs.length - 1]))
           .run();
+
+      expect(last([1, 2, 3])).toEqual(some(3));
+    });
+
+    it('should work with inputs of varying shapes', () => {
+      type Input = { type: 'test' } | ['hello', Option<string>] | 'hello'[];
+      type Output = ['hello', Option<string>];
+      const input = { type: 'test' } as Input;
+
+      const output = match(input)
+        .exhaustive()
+        .with(
+          ['hello', { kind: 'some' }],
+          (x): Output => {
+            return x;
+          }
+        )
+        .with(['hello'], (x) => {
+          return ['hello', none];
+        })
+        .with({ type: __ }, () => ['hello', none])
+        .with([__], () => ['hello', none])
+        .run();
     });
   });
 });

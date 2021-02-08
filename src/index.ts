@@ -132,7 +132,7 @@ const builder = <a, b>(
    * that **all cases are handled**. `when` predicates
    * aren't supported on exhaustive matches.
    **/
-  exhaustive: (): ExhaustiveMatch<DistributeUnions<a>, b> =>
+  exhaustive: (): ExhaustiveMatch<DistributeUnions<a>, a, b> =>
     builder(value, patterns) as any,
 });
 

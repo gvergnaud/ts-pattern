@@ -116,7 +116,7 @@ export type EmptyMatch<i, o> = Match<i, o> & {
    * that **all cases are handled**. `when` predicates
    * aren't supported on exhaustive matches.
    **/
-  exhaustive: () => ExhaustiveMatch<DistributeUnions<i>, o>;
+  exhaustive: () => ExhaustiveMatch<DistributeUnions<i>, i, o>;
 };
 
 type NonExhaustivePattern<i> = { __nonExhaustive: never } & i;
@@ -125,7 +125,7 @@ type NonExhaustivePattern<i> = { __nonExhaustive: never } & i;
  * ### ExhaustiveMatch
  * An interface to create an exhaustive pattern matching clause.
  */
-export type ExhaustiveMatch<i, o> = {
+export type ExhaustiveMatch<distributedInput, i, o> = {
   /**
    * ### Match.with
    * If the data matches the pattern provided as first argument,
@@ -138,7 +138,12 @@ export type ExhaustiveMatch<i, o> = {
       selections: ExtractSelections<i, p>
     ) => PickReturnValue<o, c>
   ): ExhaustiveMatch<
-    Exclude<i, ExtractPreciseValue<i, InvertPattern<p>>>,
+    // For performances, we pass both the original input and
+    // the distributedInput to ExhaustiveMatch, so we can compute the pattern
+    // from the original input, which is much faster than computing it
+    // from the distributed one.
+    Exclude<distributedInput, ExtractPreciseValue<i, InvertPattern<p>>>,
+    i,
     PickReturnValue<o, c>
   >;
 
@@ -159,5 +164,7 @@ export type ExhaustiveMatch<i, o> = {
    * every cases, and you should probably add a  another `.with(...)` clause
    * to prevent potential runtime errors.
    * */
-  run: [i] extends [never] ? () => o : NonExhaustivePattern<i>;
+  run: [distributedInput] extends [never]
+    ? () => o
+    : NonExhaustivePattern<distributedInput>;
 };
