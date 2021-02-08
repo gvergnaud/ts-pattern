@@ -14,8 +14,8 @@ export type ExtractPreciseValue<a, b> = b extends PatternPlaceholder
         ? []
         : b extends { valueKind: PatternType.Not; value: infer b1 }
         ? Exclude<a, b1>
-        : b extends (infer b1)[]
-        ? a extends (infer a1)[]
+        : b extends (infer bItem)[]
+        ? a extends (infer aItem)[]
           ? b extends [infer b1, infer b2, infer b3, infer b4, infer b5]
             ? a extends [infer a1, infer a2, infer a3, infer a4, infer a5]
               ? [
@@ -25,7 +25,7 @@ export type ExtractPreciseValue<a, b> = b extends PatternPlaceholder
                   ExtractPreciseValue<a4, b4>,
                   ExtractPreciseValue<a5, b5>
                 ]
-              : ExtractPreciseValue<a1, b1>[]
+              : LeastUpperBound<a, b>
             : b extends [infer b1, infer b2, infer b3, infer b4]
             ? a extends [infer a1, infer a2, infer a3, infer a4]
               ? [
@@ -34,7 +34,7 @@ export type ExtractPreciseValue<a, b> = b extends PatternPlaceholder
                   ExtractPreciseValue<a3, b3>,
                   ExtractPreciseValue<a4, b4>
                 ]
-              : ExtractPreciseValue<a1, b1>[]
+              : LeastUpperBound<a, b>
             : b extends [infer b1, infer b2, infer b3]
             ? a extends [infer a1, infer a2, infer a3]
               ? [
@@ -42,12 +42,12 @@ export type ExtractPreciseValue<a, b> = b extends PatternPlaceholder
                   ExtractPreciseValue<a2, b2>,
                   ExtractPreciseValue<a3, b3>
                 ]
-              : ExtractPreciseValue<a1, b1>[]
+              : LeastUpperBound<a, b>
             : b extends [infer b1, infer b2]
             ? a extends [infer a1, infer a2]
               ? [ExtractPreciseValue<a1, b1>, ExtractPreciseValue<a2, b2>]
-              : ExtractPreciseValue<a1, b1>[]
-            : ExtractPreciseValue<a1, b1>[]
+              : LeastUpperBound<a, b>
+            : ExtractPreciseValue<aItem, bItem>[]
           : LeastUpperBound<a, b>
         : b extends Map<infer bk, infer bv>
         ? a extends Map<infer ak, infer av>
