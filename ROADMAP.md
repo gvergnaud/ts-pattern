@@ -1,7 +1,7 @@
 ### Roadmap
 
-
-- [ ] Maybe change the syntax for list, and provide a `__.list` pattern
+- [ ] add a lightweight `select` API for single values
+- [ ] Maybe change the syntax for list, and provide a `__.list` pattern, so we can support unary tuples
 - [x] Find a way to enforce exhaustive pattern matching
 - [x] Several pattern/when clauses if necessary, with refined type inference from one to the other
 - [x] Find a way to make the full type inference work
