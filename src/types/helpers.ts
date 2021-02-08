@@ -141,3 +141,7 @@ export type IsPlainObject<o> = o extends object
     ? false
     : true
   : false;
+
+export type Compute<a extends any> = a extends BuiltInObjects
+  ? a
+  : { [k in keyof a]: a[k] } & unknown;

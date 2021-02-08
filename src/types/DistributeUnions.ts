@@ -10,6 +10,7 @@ import type {
   Next,
   IsPlainObject,
   Length,
+  Compute,
 } from './helpers';
 
 /**
@@ -165,12 +166,14 @@ type Update<data, value, path extends PropertyKey[]> = path extends [
     ? Set<Update<a, value, Cast<tail, PropertyKey[]>>>
     : data extends Map<infer k, infer v>
     ? Map<k, Update<v, value, Cast<tail, PropertyKey[]>>>
-    : data &
-        {
-          [k in Cast<head, PropertyKey>]: Update<
-            SafeGet<data, k, {}>,
-            value,
-            Cast<tail, PropertyKey[]>
-          >;
-        }
+    : Compute<
+        data &
+          {
+            [k in Cast<head, PropertyKey>]: Update<
+              SafeGet<data, k, {}>,
+              value,
+              Cast<tail, PropertyKey[]>
+            >;
+          }
+      >
   : value;
