@@ -186,4 +186,17 @@ describe('tuple ([a, b])', () => {
       status: 'idle',
     });
   });
+
+  it('should work with as const', () => {
+    type State = { type: 'a' } | { type: 'b' };
+    type Event = { type: 'c' } | { type: 'd' };
+    const state = { type: 'a' } as State;
+    const event = { type: 'c' } as Event;
+
+    const output = match([state, event] as const)
+      .with([{ type: 'a' }, { type: 'c' }], () => 'a + c')
+      .otherwise(() => 'no');
+
+    expect(output).toEqual('a + c');
+  });
 });
