@@ -1,6 +1,6 @@
 ### Roadmap
 
-- [ ] add a `or(...Pattern<a>[])` pattern
+- [ ] add a `oneOf(...Pattern<a>[])` pattern (or `or`?)
 - [ ] add a lightweight `select` API for single values
 - [ ] Maybe change the syntax for list, and provide a `__.list` pattern, so we can support unary tuples
 - [x] Find a way to enforce exhaustive pattern matching
