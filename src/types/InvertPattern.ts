@@ -5,6 +5,7 @@ import type {
   GuardPattern,
   NotPattern,
   Primitives,
+  OneOfPattern,
 } from './Pattern';
 
 export type PatternPlaceholder = { __placeholder: '@match/placeholder' };
@@ -31,6 +32,8 @@ export type InvertPattern<p> = p extends typeof __.number
       valueKind: PatternType.Not;
       value: InvertPattern<pb>;
     }
+  : p extends OneOfPattern<infer a>
+  ? a
   : p extends Primitives
   ? p
   : p extends (infer pp)[]

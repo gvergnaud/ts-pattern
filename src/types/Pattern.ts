@@ -38,6 +38,11 @@ export type SelectPattern<k extends string> = {
   __key: k;
 };
 
+export type OneOfPattern<a> = {
+  __patternKind: PatternType.OneOf;
+  __patterns: ExhaustivePattern<a>[];
+};
+
 type WildCardPattern<a> = a extends number
   ? typeof __.number
   : a extends string
@@ -56,6 +61,7 @@ export type Pattern<a> =
   | SelectPattern<string>
   | GuardPattern<a>
   | NotPattern<a | any>
+  | OneOfPattern<a>
   | WildCardPattern<a>
   | (a extends Primitives
       ? a
@@ -91,6 +97,7 @@ export type ExhaustivePattern<a> =
   | typeof __
   | SelectPattern<string>
   | NotPattern<a | any>
+  | OneOfPattern<a>
   | WildCardPattern<a>
   | (a extends Primitives
       ? a

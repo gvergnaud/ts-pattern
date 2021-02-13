@@ -5,6 +5,8 @@ import type {
   NotPattern,
   GuardValue,
   GuardFunction,
+  OneOfPattern,
+  ExhaustivePattern,
 } from './types/Pattern';
 
 import type {
@@ -33,6 +35,13 @@ export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
 export const select = <k extends string>(key: k): SelectPattern<k> => ({
   __patternKind: PatternType.Select,
   __key: key,
+});
+
+export const oneOf = <a>(
+  ...patterns: ExhaustivePattern<a>[]
+): OneOfPattern<a> => ({
+  __patternKind: PatternType.OneOf,
+  __patterns: patterns,
 });
 
 /**

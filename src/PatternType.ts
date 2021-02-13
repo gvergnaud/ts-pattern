@@ -5,6 +5,7 @@ export enum PatternType {
   Guard = '@match/guard',
   Not = '@match/not',
   Select = '@match/select',
+  OneOf = '@match/one-of',
 }
 
 /**
