@@ -2,12 +2,12 @@
 
 - [ ] add a `oneOf(...Pattern<a>[])` pattern (or `or`?)
 - [ ] add a lightweight `select` API for single values
-- [ ] add a `__.rest` (maybe `__.rest(Pattern<a>)`) pattern for list. Example of using `__.rest`:
+- [ ] add a `rest` (maybe `rest(Pattern<a>)`) pattern for list. Example of using `rest`:
 
 ```ts
 const reverse2 = <T>(xs: T[]): T[] => {
   return match<T[], T[]>(xs)
-    .with([x, ...__.rest], ([x, ...xs]) => [...reverse(xs), x])
+    .with([__, ...rest], ([x, ...xs]) => [...reverse(xs), x])
     .otherwise(() => []);
 };
 ```
