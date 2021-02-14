@@ -8,11 +8,13 @@ import type {
 } from './types/Pattern';
 
 import type {
-  Unset,
+  InferredOutput,
   Match,
-  PickReturnValue,
+  PickOutput,
   ExhaustiveMatch,
   EmptyMatch,
+  UnwrapOutput,
+  PermittedOutput,
 } from './types/Match';
 
 import { __, PatternType } from './PatternType';
@@ -46,7 +48,7 @@ export { Pattern, __ };
  * Entry point to create pattern matching code branches. It returns an
  * empty Match case.
  */
-export const match = <a, b = Unset>(value: a): EmptyMatch<a, b> =>
+export const match = <a, b = InferredOutput>(value: a): EmptyMatch<a, b> =>
   builder<a, b>(value, []);
 
 /**
@@ -67,7 +69,7 @@ const builder = <a, b>(
   with<p extends Pattern<a>, c>(
     pattern: p,
     ...args: any[]
-  ): Match<a, PickReturnValue<b, c>> {
+  ): Match<a, PickOutput<b, c>> {
     const handler = args[args.length - 1];
     const predicates = args.slice(0, -1);
 
@@ -77,7 +79,7 @@ const builder = <a, b>(
           predicates.every((predicate) => predicate(value as any))
       );
 
-    return builder<a, PickReturnValue<b, c>>(value, [
+    return builder<a, PickOutput<b, c>>(value, [
       ...patterns,
       {
         test: doesMatch,
@@ -89,9 +91,9 @@ const builder = <a, b>(
 
   when: <p extends (value: a) => unknown, c>(
     predicate: p,
-    handler: (value: GuardValue<p>) => PickReturnValue<b, c>
-  ): Match<a, PickReturnValue<b, c>> =>
-    builder<a, PickReturnValue<b, c>>(value, [
+    handler: (value: GuardValue<p>) => c
+  ): Match<a, PickOutput<b, c>> =>
+    builder<a, PickOutput<b, c>>(value, [
       ...patterns,
       {
         test: predicate,
@@ -100,8 +102,10 @@ const builder = <a, b>(
       },
     ]),
 
-  otherwise: <c>(handler: () => PickReturnValue<b, c>): PickReturnValue<b, c> =>
-    builder<a, PickReturnValue<b, c>>(value, [
+  otherwise: <c>(
+    handler: () => PermittedOutput<b, c>
+  ): UnwrapOutput<PickOutput<b, c>> =>
+    builder<a, PickOutput<b, c>>(value, [
       ...patterns,
       {
         test: matchPattern<a, Pattern<a>>(__ as Pattern<a>),
@@ -110,7 +114,7 @@ const builder = <a, b>(
       },
     ]).run(),
 
-  run: (): b => {
+  run: (): UnwrapOutput<b> => {
     const entry = patterns.find(({ test }) => test(value));
     if (!entry) {
       let displayedValue;

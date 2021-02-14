@@ -4,7 +4,7 @@ import { NotNever } from './utils';
 describe('not', () => {
   describe('pattern containing a not clause', () => {
     it('should work at the top level', () => {
-      const get = (x: unknown): string =>
+      const get = (x: unknown) =>
         match(x)
           .with(not(__.number), (x) => {
             const notNever: NotNever<typeof x> = true;

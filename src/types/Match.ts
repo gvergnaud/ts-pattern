@@ -17,43 +17,52 @@ export type ExtractSelections<a, p extends Pattern<a>> = UnionToIntersection<
   FindSelected<MatchedValue<a, p>, p>
 >;
 
-export type Unset = '@match/unset';
+export type InferredOutput<T = never> = {
+  __kind: '@match/inferred-output';
+  value: T;
+};
 
-export type PickReturnValue<a, b> = a extends Unset ? b : a;
+export type PermittedOutput<a, b> = a extends InferredOutput<any> ? b : a;
+
+export type PickOutput<a, b> = a extends InferredOutput<infer out>
+  ? InferredOutput<out | b>
+  : b;
+
+export type UnwrapOutput<a> = a extends InferredOutput<infer out> ? out : a;
 
 /**
  * ### Match
  * An interface to create a pattern matching clause.
  */
-export type Match<a, b> = {
+export type Match<i, o> = {
   /**
    * ### Match.with
    * If the data matches the pattern provided as first argument,
    * use this branch and execute the handler function.
    **/
-  with<p extends Pattern<a>, c>(
+  with<p extends Pattern<i>, c>(
     pattern: p,
     handler: (
-      value: MatchedValue<a, p>,
-      selections: ExtractSelections<a, p>
-    ) => PickReturnValue<b, c>
-  ): Match<a, PickReturnValue<b, c>>;
+      value: MatchedValue<i, p>,
+      selections: ExtractSelections<i, p>
+    ) => PermittedOutput<o, c>
+  ): Match<i, PickOutput<o, PermittedOutput<o, c>>>;
   with<
-    pat extends Pattern<a>,
-    pred extends (value: MatchedValue<a, pat>) => unknown,
+    pat extends Pattern<i>,
+    pred extends (value: MatchedValue<i, pat>) => unknown,
     c
   >(
     pattern: pat,
     predicate: pred,
     handler: (
       value: GuardValue<pred>,
-      selections: ExtractSelections<a, pat>
-    ) => PickReturnValue<b, c>
-  ): Match<a, PickReturnValue<b, c>>;
+      selections: ExtractSelections<i, pat>
+    ) => PermittedOutput<o, c>
+  ): Match<i, PickOutput<o, PermittedOutput<o, c>>>;
 
   with<
-    pat extends Pattern<a>,
-    pred extends (value: MatchedValue<a, pat>) => unknown,
+    pat extends Pattern<i>,
+    pred extends (value: MatchedValue<i, pat>) => unknown,
     pred2 extends (value: GuardValue<pred>) => unknown,
     c
   >(
@@ -62,13 +71,13 @@ export type Match<a, b> = {
     predicate2: pred2,
     handler: (
       value: GuardValue<pred2>,
-      selections: ExtractSelections<a, pat>
-    ) => PickReturnValue<b, c>
-  ): Match<a, PickReturnValue<b, c>>;
+      selections: ExtractSelections<i, pat>
+    ) => PermittedOutput<o, c>
+  ): Match<i, PickOutput<o, PermittedOutput<o, c>>>;
 
   with<
-    pat extends Pattern<a>,
-    pred extends (value: MatchedValue<a, pat>) => unknown,
+    pat extends Pattern<i>,
+    pred extends (value: MatchedValue<i, pat>) => unknown,
     pred2 extends (value: GuardValue<pred>) => unknown,
     pred3 extends (value: GuardValue<pred2>) => unknown,
     c
@@ -79,19 +88,19 @@ export type Match<a, b> = {
     predicate3: pred3,
     handler: (
       value: GuardValue<pred3>,
-      selections: ExtractSelections<a, pat>
-    ) => PickReturnValue<b, c>
-  ): Match<a, PickReturnValue<b, c>>;
+      selections: ExtractSelections<i, pat>
+    ) => PermittedOutput<o, c>
+  ): Match<i, PickOutput<o, PermittedOutput<o, c>>>;
 
   /**
    * ### Match.when
    * When the first function returns a truthy value,
    * use this branch and execute the handler function.
    **/
-  when: <p extends (value: a) => unknown, c>(
+  when: <p extends (value: i) => unknown, c>(
     predicate: p,
-    handler: (value: GuardValue<p>) => PickReturnValue<b, c>
-  ) => Match<a, PickReturnValue<b, c>>;
+    handler: (value: GuardValue<p>) => PermittedOutput<o, c>
+  ) => Match<i, PickOutput<o, PermittedOutput<o, c>>>;
 
   /**
    * ### Match.otherwise
@@ -100,13 +109,15 @@ export type Match<a, b> = {
    *
    * Equivalent to `.with(__, () => x).run()`
    **/
-  otherwise: <c>(handler: () => PickReturnValue<b, c>) => PickReturnValue<b, c>;
+  otherwise: <c>(
+    handler: () => PermittedOutput<o, c>
+  ) => UnwrapOutput<PickOutput<o, c>>;
 
   /**
    * ### Match.run
    * Runs the pattern matching and return a value.
    * */
-  run: () => b;
+  run: () => UnwrapOutput<o>;
 };
 
 export type EmptyMatch<i, o> = Match<i, o> & {
@@ -136,7 +147,7 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     handler: (
       value: MatchedValue<i, p>,
       selections: ExtractSelections<i, p>
-    ) => PickReturnValue<o, c>
+    ) => UnwrapOutput<PickOutput<o, c>>
   ): ExhaustiveMatch<
     // For performances, we pass both the original input and
     // the distributedInput to ExhaustiveMatch, so we can compute the pattern
@@ -144,7 +155,7 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     // from the distributed one.
     Exclude<distributedInput, ExtractPreciseValue<i, InvertPattern<p>>>,
     i,
-    PickReturnValue<o, c>
+    PickOutput<o, c>
   >;
 
   /**
@@ -154,7 +165,9 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
    *
    * Equivalent to `.with(__, () => x).run()`
    **/
-  otherwise: <c>(handler: () => PickReturnValue<o, c>) => PickReturnValue<o, c>;
+  otherwise: <c>(
+    handler: () => PermittedOutput<o, c>
+  ) => UnwrapOutput<PickOutput<o, c>>;
 
   /**
    * ### Match.run
@@ -165,6 +178,6 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
    * to prevent potential runtime errors.
    * */
   run: [distributedInput] extends [never]
-    ? () => o
+    ? () => UnwrapOutput<o>
     : NonExhaustivePattern<distributedInput>;
 };
