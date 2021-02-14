@@ -167,7 +167,7 @@ type Update<data, value, path extends PropertyKey[]> = path extends [
     : data extends Map<infer k, infer v>
     ? Map<k, Update<v, value, Cast<tail, PropertyKey[]>>>
     : Compute<
-        data &
+        Omit<data, Cast<head, PropertyKey>> &
           {
             [k in Cast<head, PropertyKey>]: Update<
               SafeGet<data, k, {}>,
