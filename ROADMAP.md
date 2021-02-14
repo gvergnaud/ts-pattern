@@ -2,6 +2,17 @@
 
 - [ ] add a `oneOf(...Pattern<a>[])` pattern (or `or`?)
 - [ ] add a lightweight `select` API for single values
+- [ ] add a `__.rest` (maybe `__.rest(Pattern<a>)`) pattern for list. Example of using `__.rest`:
+
+```ts
+const reverse2 = <T>(xs: T[]): T[] => {
+  return match<T[], T[]>(xs)
+    .with([x, ...__.rest], ([x, ...xs]) => [...reverse(xs), x])
+    .otherwise(() => []);
+};
+```
+
+- [ ] When not provided, maybe compute the output type from all branches
 - [ ] Maybe change the syntax for list, and provide a `__.list` pattern, so we can support unary tuples
 - [x] Find a way to enforce exhaustive pattern matching
 - [x] Several pattern/when clauses if necessary, with refined type inference from one to the other
