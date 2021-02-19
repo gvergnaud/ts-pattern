@@ -5,5 +5,5 @@
     "downlevelIteration": true,
     "outDir": "lib/"
   },
-  "exclude": ["tests/", "libs/"]
+  "exclude": ["tests/", "lib/"]
 }

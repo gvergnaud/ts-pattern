@@ -1,7 +1,7 @@
 import type { Pattern, GuardValue, ExhaustivePattern } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPattern } from './InvertPattern';
-import type { DistributeUnions } from './DistributeUnions';
+import type { DeepExclude } from './DeepExclude';
 import type { UnionToIntersection } from './helpers';
 import type { FindSelected } from './FindSelected';
 
@@ -116,7 +116,7 @@ export type EmptyMatch<i, o> = Match<i, o> & {
    * that **all cases are handled**. `when` predicates
    * aren't supported on exhaustive matches.
    **/
-  exhaustive: () => ExhaustiveMatch<DistributeUnions<i>, i, o>;
+  exhaustive: () => ExhaustiveMatch<i, i, o>;
 };
 
 type NonExhaustivePattern<i> = { __nonExhaustive: never } & i;
@@ -142,7 +142,7 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     // the distributedInput to ExhaustiveMatch, so we can compute the pattern
     // from the original input, which is much faster than computing it
     // from the distributed one.
-    Exclude<distributedInput, ExtractPreciseValue<i, InvertPattern<p>>>,
+    DeepExclude<distributedInput, InvertPattern<p>>,
     i,
     PickReturnValue<o, c>
   >;

@@ -7,8 +7,6 @@ import type {
   Primitives,
 } from './Pattern';
 
-export type PatternPlaceholder = { __placeholder: '@match/placeholder' };
-
 /**
  * ### InvertPattern
  * Since patterns have special wildcard values, we need a way
@@ -21,9 +19,9 @@ export type InvertPattern<p> = p extends typeof __.number
   : p extends typeof __.boolean
   ? boolean
   : p extends SelectPattern<string>
-  ? PatternPlaceholder
+  ? any
   : p extends typeof __
-  ? PatternPlaceholder
+  ? any
   : p extends GuardPattern<any, infer pb>
   ? pb
   : p extends NotPattern<infer pb>

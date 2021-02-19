@@ -149,3 +149,14 @@ export type IsPlainObject<o> = o extends object
 export type Compute<a extends any> = a extends BuiltInObjects
   ? a
   : { [k in keyof a]: a[k] } & unknown;
+
+export type UnionLength<a> = Length<UnionToTuple<a>>;
+
+// All :: Bool[] -> Bool
+export type All<xs> = xs extends [infer head, ...(infer tail)]
+  ? boolean extends head
+    ? false
+    : head extends true
+    ? All<tail>
+    : false
+  : true;

@@ -1,5 +1,5 @@
 import {
-  FindUnions,
+  FindAllUnions,
   Distribute,
   DistributeUnions,
 } from '../src/types/DistributeUnions';
@@ -7,12 +7,12 @@ import {
 import { Equal, Expect } from '../src/types/helpers';
 import { Option } from './utils';
 
-describe('FindUnions', () => {
+describe('FindAllUnions', () => {
   it('should correctly find all unions on an object', () => {
     type cases = [
       Expect<
         Equal<
-          FindUnions<{ a: 1 | 2; b: 3 | 4 }>,
+          FindAllUnions<{ a: 1 | 2; b: 3 | 4 }>,
           [
             {
               cases:
@@ -43,7 +43,7 @@ describe('FindUnions', () => {
       >,
       Expect<
         Equal<
-          FindUnions<{ a: 1 | 2; b: 3 | 4; c: 5 | 6 }>,
+          FindAllUnions<{ a: 1 | 2; b: 3 | 4; c: 5 | 6 }>,
           [
             {
               cases:
@@ -86,7 +86,7 @@ describe('FindUnions', () => {
       >,
       Expect<
         Equal<
-          FindUnions<{
+          FindAllUnions<{
             a: 1 | 2;
             b: 3 | 4;
             c: 5 | 6;
@@ -158,7 +158,7 @@ describe('FindUnions', () => {
       >,
       Expect<
         Equal<
-          FindUnions<{
+          FindAllUnions<{
             a: {
               b: {
                 e: 7 | 8;
@@ -196,7 +196,7 @@ describe('FindUnions', () => {
       >,
       Expect<
         Equal<
-          FindUnions<{
+          FindAllUnions<{
             e: 'not a union';
             a: {
               e: 7 | 8;
@@ -251,7 +251,7 @@ describe('FindUnions', () => {
     type cases = [
       Expect<
         Equal<
-          FindUnions<[1 | 2, 3 | 4]>,
+          FindAllUnions<[1 | 2, 3 | 4]>,
           [
             {
               cases:
@@ -282,7 +282,7 @@ describe('FindUnions', () => {
       >,
       Expect<
         Equal<
-          FindUnions<[1 | 2, 3 | 4, 5 | 6]>,
+          FindAllUnions<[1 | 2, 3 | 4, 5 | 6]>,
           [
             {
               cases:
@@ -325,7 +325,9 @@ describe('FindUnions', () => {
       >,
       Expect<
         Equal<
-          FindUnions<{ type: 'a'; value: 1 | 2 } | { type: 'b'; value: 4 | 5 }>,
+          FindAllUnions<
+            { type: 'a'; value: 1 | 2 } | { type: 'b'; value: 4 | 5 }
+          >,
           [
             {
               cases:
@@ -523,6 +525,8 @@ describe('Distribute', () => {
 });
 
 describe('DistributeUnions', () => {
+  type x = DistributeUnions<{ a: 1 | 2; b: '3' | '4'; c: '5' | '6' }>;
+
   type cases = [
     Expect<
       Equal<
@@ -576,8 +580,8 @@ describe('DistributeUnions', () => {
           | ['two', { kind: 'none' }]
           | ['two', { kind: 'some'; value: string }]
           | [3, { kind: 'none' }]
-          | [3, { kind: 'some'; value: false }]
           | [3, { kind: 'some'; value: true }]
+          | [3, { kind: 'some'; value: false }]
         >
       >
     ];

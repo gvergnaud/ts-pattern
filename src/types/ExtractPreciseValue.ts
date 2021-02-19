@@ -1,13 +1,13 @@
 import type { PatternType, __ } from '../PatternType';
 import type { Primitives } from './Pattern';
-import { PatternPlaceholder } from './InvertPattern';
 import type {
   ExcludeIfContainsNever,
+  IsAny,
   IsPlainObject,
   LeastUpperBound,
 } from './helpers';
 
-export type ExtractPreciseValue<a, b> = b extends PatternPlaceholder
+export type ExtractPreciseValue<a, b> = IsAny<b> extends true
   ? a
   : ExcludeIfContainsNever<
       b extends []
