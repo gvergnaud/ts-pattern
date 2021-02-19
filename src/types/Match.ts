@@ -6,10 +6,9 @@ import type { UnionToIntersection } from './helpers';
 import type { FindSelected } from './FindSelected';
 
 // We fall back to `a` if we weren't able to extract anything more precise
-export type MatchedValue<a, p extends Pattern<a>> = ExtractPreciseValue<
-  a,
-  InvertPattern<p>
-> extends never
+export type MatchedValue<a, p extends Pattern<a>> = [
+  ExtractPreciseValue<a, InvertPattern<p>>
+] extends [never]
   ? a
   : ExtractPreciseValue<a, InvertPattern<p>>;
 

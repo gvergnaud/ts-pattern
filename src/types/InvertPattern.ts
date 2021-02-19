@@ -19,9 +19,9 @@ export type InvertPattern<p> = p extends typeof __.number
   : p extends typeof __.boolean
   ? boolean
   : p extends SelectPattern<string>
-  ? any
+  ? unknown
   : p extends typeof __
-  ? any
+  ? unknown
   : p extends GuardPattern<any, infer pb>
   ? pb
   : p extends NotPattern<infer pb>
