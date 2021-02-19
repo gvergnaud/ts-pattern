@@ -17,7 +17,7 @@ export type ExtractSelections<a, p extends Pattern<a>> = UnionToIntersection<
   FindSelected<MatchedValue<a, p>, p>
 >;
 
-export type Unset = '@match/unset';
+export type Unset = '@ts-pattern/unset';
 
 export type PickReturnValue<a, b> = a extends Unset ? b : a;
 
