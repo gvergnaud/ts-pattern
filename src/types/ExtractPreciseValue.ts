@@ -1,5 +1,5 @@
 import type { PatternType, __ } from '../PatternType';
-import type { Primitives } from './Pattern';
+import type { NotPattern, Primitives } from './Pattern';
 import type {
   ExcludeIfContainsNever,
   IsAny,
@@ -10,7 +10,7 @@ import type {
 export type ExtractPreciseValue<a, b> = ExcludeIfContainsNever<
   b extends []
     ? []
-    : b extends { valueKind: PatternType.Not; value: infer b1 }
+    : b extends NotPattern<infer b1>
     ? Exclude<a, b1>
     : b extends (infer bItem)[]
     ? a extends (infer aItem)[]

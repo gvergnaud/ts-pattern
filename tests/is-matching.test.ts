@@ -10,15 +10,6 @@ describe('IsMatching', () => {
           IsMatching<{ type: 'a'; color: 'yellow' | 'green' }, { type: 'a' }>,
           true
         >
-      >,
-      Expect<
-        Equal<
-          IsMatching<
-            { type: 'a'; color: 'yellow' | 'green' },
-            NotPattern<{ type: 'b' }>
-          >,
-          true
-        >
       >
     ];
   });
@@ -28,15 +19,6 @@ describe('IsMatching', () => {
       Expect<
         Equal<
           IsMatching<{ type: 'a'; color: 'yellow' | 'green' }, { type: 'b' }>,
-          false
-        >
-      >,
-      Expect<
-        Equal<
-          IsMatching<
-            { type: 'a'; color: 'yellow' | 'green' },
-            NotPattern<{ type: 'a' }>
-          >,
           false
         >
       >

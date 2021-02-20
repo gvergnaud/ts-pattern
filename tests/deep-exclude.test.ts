@@ -8,19 +8,6 @@ type Colors = 'pink' | 'purple' | 'red' | 'yellow' | 'blue';
 describe('DeepExclude', () => {
   it('should work with bug unions', () => {
     it('should work with big unions', () => {
-      type x = DeepExclude<
-        | { type: 'textWithColor'; union: BigUnion }
-        | {
-            type: 'textWithColorAndBackground';
-            union: BigUnion;
-            union2: BigUnion;
-          },
-        {
-          type: 'textWithColorAndBackground';
-          union: NotPattern<'a'>;
-        }
-      >;
-
       type cases = [
         Expect<
           Equal<
@@ -41,7 +28,6 @@ describe('DeepExclude', () => {
           >
         >,
         Expect<
-          // TODO : fix this case
           Equal<
             DeepExclude<
               | { type: 'textWithColor'; union: BigUnion }
@@ -59,6 +45,7 @@ describe('DeepExclude', () => {
             | {
                 type: 'textWithColorAndBackground';
                 union: 'a';
+                union2: BigUnion;
               }
           >
         >

@@ -3,11 +3,7 @@ import { NotPattern, Primitives } from './Pattern';
 
 type Extends<a, b> = a extends b ? true : false;
 
-export type IsMatching<a, p> = p extends NotPattern<infer a2>
-  ? IsMatching<a, a2> extends true
-    ? false
-    : true
-  : p extends Primitives
+export type IsMatching<a, p> = p extends Primitives
   ? Extends<p, a>
   : [a, p] extends [any[], any[]]
   ? [a, p] extends [

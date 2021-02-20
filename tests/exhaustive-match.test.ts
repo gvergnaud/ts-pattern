@@ -1,4 +1,8 @@
-import { match, when, __ } from '../src';
+import { match, not, when, __ } from '../src';
+import { DeepExclude } from '../src/types/DeepExclude';
+import { DistributeMatchingUnions } from '../src/types/DistributeUnions';
+import { InvertNotPattern } from '../src/types/InvertPattern';
+import { NotPattern } from '../src/types/Pattern';
 import { Option, some, none } from './utils';
 
 describe('exhaustive()', () => {
@@ -507,6 +511,16 @@ describe('exhaustive()', () => {
         .with({ b: 5 }, () => 'otherwise')
         .with({ b: 6 }, () => 'otherwise')
         .with({ b: 7 }, () => 'otherwise')
+        .run();
+
+      match<{
+        a: X;
+        b: X;
+        c: X;
+      }>({ a: 1, b: 1, c: 1 })
+        .exhaustive()
+        .with({ a: not(1) }, () => 'a != 1')
+        .with({ a: 1 }, () => 'a != 1')
         .run();
     });
 
