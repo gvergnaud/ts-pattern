@@ -1,6 +1,6 @@
 import type { Pattern, GuardValue, ExhaustivePattern } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
-import type { InvertPattern } from './InvertPattern';
+import type { InvertNotPattern, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
 import type { UnionToIntersection } from './helpers';
 import type { FindSelected } from './FindSelected';
@@ -141,7 +141,7 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     // the distributedInput to ExhaustiveMatch, so we can compute the pattern
     // from the original input, which is much faster than computing it
     // from the distributed one.
-    DeepExclude<distributedInput, InvertPattern<p>>,
+    DeepExclude<distributedInput, InvertNotPattern<InvertPattern<p>, i>>,
     i,
     PickReturnValue<o, c>
   >;

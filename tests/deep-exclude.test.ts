@@ -38,7 +38,7 @@ describe('DeepExclude', () => {
                 },
               {
                 type: 'textWithColorAndBackground';
-                union: NotPattern<'a'>;
+                union: Exclude<BigUnion, 'a'>;
               }
             >,
             | { type: 'textWithColor'; union: BigUnion }
