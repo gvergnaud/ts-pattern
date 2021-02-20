@@ -137,6 +137,8 @@ export type FindUnions<a, p, path extends PropertyKey[] = []> = IsAny<
         path: path;
       }
     ]
+  : IsMatching<a, p> extends false
+  ? []
   : [a, p] extends [any[], any[]]
   ? [a, p] extends [
       [infer a1, infer a2, infer a3, infer a4, infer a5],
@@ -177,20 +179,18 @@ export type FindUnions<a, p, path extends PropertyKey[] = []> = IsAny<
   ? []
   : [IsPlainObject<a>, IsPlainObject<p>] extends [true, true]
   ? Flatten<
-      IsMatching<a, p> extends true
-        ? Values<
-            {
-              // we use Required to remove the optional property modifier (?:).
-              // Optional properties aren't considered as union types to avoid
-              // generating a huge union.
-              [k in keyof Required<a> & keyof p]: FindUnions<
-                NonNullable<a[k]>,
-                p[k],
-                [...path, k]
-              >;
-            }
-          >
-        : []
+      Values<
+        {
+          // we use Required to remove the optional property modifier (?:).
+          // Optional properties aren't considered as union types to avoid
+          // generating a huge union.
+          [k in keyof Required<a> & keyof p]: FindUnions<
+            NonNullable<a[k]>,
+            p[k],
+            [...path, k]
+          >;
+        }
+      >
     >
   : [];
 

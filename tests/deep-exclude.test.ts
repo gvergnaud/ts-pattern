@@ -1,6 +1,5 @@
 import { DeepExclude } from '../src/types/DeepExclude';
 import { Equal, Expect } from '../src/types/helpers';
-import { NotPattern } from '../src/types/Pattern';
 import { BigUnion, Option } from './utils';
 
 type Colors = 'pink' | 'purple' | 'red' | 'yellow' | 'blue';
@@ -66,6 +65,12 @@ describe('DeepExclude', () => {
         Equal<
           DeepExclude<{ values: [1, 2, 3] }, { values: [] }>,
           { values: [1, 2, 3] }
+        >
+      >,
+      Expect<
+        Equal<
+          DeepExclude<{ values: (1 | 2 | 3)[] }, { values: [] }>,
+          { values: (1 | 2 | 3)[] }
         >
       >
     ];

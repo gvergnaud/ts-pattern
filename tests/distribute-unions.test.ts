@@ -1,7 +1,9 @@
 import {
   FindAllUnions,
+  FindUnions,
   Distribute,
   DistributeUnions,
+  DistributeMatchingUnions,
 } from '../src/types/DistributeUnions';
 
 import { Equal, Expect } from '../src/types/helpers';
@@ -12,7 +14,7 @@ describe('FindAllUnions', () => {
     type cases = [
       Expect<
         Equal<
-          FindAllUnions<{ a: 1 | 2; b: 3 | 4 }>,
+          FindUnions<{ a: 1 | 2; b: 3 | 4; c: 6 | 7 }, { a: 1; b: 3 }>,
           [
             {
               cases:
@@ -43,7 +45,15 @@ describe('FindAllUnions', () => {
       >,
       Expect<
         Equal<
-          FindAllUnions<{ a: 1 | 2; b: 3 | 4; c: 5 | 6 }>,
+          FindUnions<
+            {
+              a: 1 | 2;
+              b: 3 | 4;
+              c: 5 | 6;
+              d: 7 | 8; // not matched
+            },
+            { a: 1; b: 3; c: 5 }
+          >,
           [
             {
               cases:
@@ -86,12 +96,21 @@ describe('FindAllUnions', () => {
       >,
       Expect<
         Equal<
-          FindAllUnions<{
-            a: 1 | 2;
-            b: 3 | 4;
-            c: 5 | 6;
-            d: { e: 7 | 8; f: 9 | 10 };
-          }>,
+          FindUnions<
+            {
+              a: 1 | 2;
+              b: 3 | 4;
+              c: 5 | 6;
+              d: { e: 7 | 8; f: 9 | 10 };
+              g: 11 | 12; // not matched by the pattern
+            },
+            {
+              a: 1;
+              b: 3;
+              c: 5;
+              d: { e: 7; f: 9 };
+            }
+          >,
           [
             {
               cases:
@@ -158,52 +177,62 @@ describe('FindAllUnions', () => {
       >,
       Expect<
         Equal<
-          FindAllUnions<{
-            a: {
-              b: {
-                e: 7 | 8;
-                f: 9 | 10;
-              };
-            };
-          }>,
+          FindUnions<
+            { a: { b: { e: 7 | 8; f: 9 | 10 } } } | { c: 11 | 12 },
+            { a: { b: { e: 7; f: 9 } } }
+          >,
           [
             {
               cases:
                 | {
-                    value: 7;
-                    subUnions: [];
+                    value: { a: { b: { e: 7 | 8; f: 9 | 10 } } };
+                    subUnions: [
+                      {
+                        cases:
+                          | {
+                              value: 7;
+                              subUnions: [];
+                            }
+                          | {
+                              value: 8;
+                              subUnions: [];
+                            };
+                        path: ['a', 'b', 'e'];
+                      },
+                      {
+                        cases:
+                          | {
+                              value: 9;
+                              subUnions: [];
+                            }
+                          | {
+                              value: 10;
+                              subUnions: [];
+                            };
+                        path: ['a', 'b', 'f'];
+                      }
+                    ];
                   }
-                | {
-                    value: 8;
-                    subUnions: [];
-                  };
-              path: ['a', 'b', 'e'];
-            },
-            {
-              cases:
-                | {
-                    value: 9;
-                    subUnions: [];
-                  }
-                | {
-                    value: 10;
-                    subUnions: [];
-                  };
-              path: ['a', 'b', 'f'];
+                | { value: { c: 11 | 12 }; subUnions: [] };
+              path: [];
             }
           ]
         >
       >,
       Expect<
         Equal<
-          FindAllUnions<{
-            e: 'not a union';
-            a: {
-              e: 7 | 8;
-              f: 9 | 10;
-            };
-            b: 2 | 3;
-          }>,
+          FindUnions<
+            {
+              e: 'not a union';
+              a: {
+                e: 7 | 8;
+                f: 9 | 10;
+                g: 11 | 12; // not matched
+              };
+              b: 2 | 3;
+            },
+            { e: 'not a union'; a: { e: 7; f: 9 }; b: 2 }
+          >,
           [
             {
               cases:
@@ -251,7 +280,7 @@ describe('FindAllUnions', () => {
     type cases = [
       Expect<
         Equal<
-          FindAllUnions<[1 | 2, 3 | 4]>,
+          FindUnions<[1 | 2, 3 | 4], [1, 3]>,
           [
             {
               cases:
@@ -282,7 +311,7 @@ describe('FindAllUnions', () => {
       >,
       Expect<
         Equal<
-          FindAllUnions<[1 | 2, 3 | 4, 5 | 6]>,
+          FindUnions<[1 | 2, 3 | 4, 5 | 6], [1, 3, 5]>,
           [
             {
               cases:
@@ -325,8 +354,9 @@ describe('FindAllUnions', () => {
       >,
       Expect<
         Equal<
-          FindAllUnions<
-            { type: 'a'; value: 1 | 2 } | { type: 'b'; value: 4 | 5 }
+          FindUnions<
+            { type: 'a'; value: 1 | 2 } | { type: 'b'; value: 4 | 5 },
+            { type: 'a'; value: 1 }
           >,
           [
             {
@@ -350,20 +380,7 @@ describe('FindAllUnions', () => {
                   }
                 | {
                     value: { type: 'b'; value: 4 | 5 };
-                    subUnions: [
-                      {
-                        cases:
-                          | {
-                              value: 4;
-                              subUnions: [];
-                            }
-                          | {
-                              value: 5;
-                              subUnions: [];
-                            };
-                        path: ['value'];
-                      }
-                    ];
+                    subUnions: [];
                   };
               path: [];
             }
@@ -524,13 +541,14 @@ describe('Distribute', () => {
   });
 });
 
-describe('DistributeUnions', () => {
-  type x = DistributeUnions<{ a: 1 | 2; b: '3' | '4'; c: '5' | '6' }>;
-
+describe('DistributeMatchingUnions', () => {
   type cases = [
     Expect<
       Equal<
-        DistributeUnions<{ a: 1 | 2; b: '3' | '4'; c: '5' | '6' }>,
+        DistributeMatchingUnions<
+          { a: 1 | 2; b: '3' | '4'; c: '5' | '6' },
+          { a: 1; b: '3'; c: '5' }
+        >,
         | { a: 1; b: '3'; c: '5' }
         | { a: 1; b: '3'; c: '6' }
         | { a: 1; b: '4'; c: '5' }
@@ -543,18 +561,21 @@ describe('DistributeUnions', () => {
     >,
     Expect<
       Equal<
-        DistributeUnions<
-          { x: 'a'; value: Option<string> } | { x: 'b'; value: Option<number> }
+        DistributeMatchingUnions<
+          { x: 'a'; value: Option<string> } | { x: 'b'; value: Option<number> },
+          { x: 'a'; value: { kind: 'none' } }
         >,
         | { x: 'a'; value: { kind: 'none' } }
         | { x: 'a'; value: { kind: 'some'; value: string } }
-        | { x: 'b'; value: { kind: 'none' } }
-        | { x: 'b'; value: { kind: 'some'; value: number } }
+        | { x: 'b'; value: Option<number> }
       >
     >,
     Expect<
       Equal<
-        DistributeUnions<[1, number] | ['two', string] | [3, boolean]>,
+        DistributeMatchingUnions<
+          [1, number] | ['two', string] | [3, boolean],
+          [3, true]
+        >,
         [1, number] | ['two', string] | [3, false] | [3, true]
       >
     >
@@ -562,9 +583,9 @@ describe('DistributeUnions', () => {
 
   it('should leave unions of literals untouched', () => {
     type cases = [
-      Expect<Equal<DistributeUnions<'a' | 'b'>, 'a' | 'b'>>,
-      Expect<Equal<DistributeUnions<1 | 2>, 1 | 2>>,
-      Expect<Equal<DistributeUnions<boolean>, false | true>>
+      Expect<Equal<DistributeMatchingUnions<'a' | 'b', 'a'>, 'a' | 'b'>>,
+      Expect<Equal<DistributeMatchingUnions<1 | 2, 1>, 1 | 2>>,
+      Expect<Equal<DistributeMatchingUnions<boolean, true>, false | true>>
     ];
   });
 
@@ -572,16 +593,24 @@ describe('DistributeUnions', () => {
     type cases = [
       Expect<
         Equal<
-          DistributeUnions<
-            [1, Option<number>] | ['two', Option<string>] | [3, Option<boolean>]
+          DistributeMatchingUnions<
+            [1, ['two', Option<string>] | [3, Option<boolean>]],
+            [1, ['two', { kind: 'some'; value: string }]]
           >,
-          | [1, { kind: 'none' }]
-          | [1, { kind: 'some'; value: number }]
-          | ['two', { kind: 'none' }]
-          | ['two', { kind: 'some'; value: string }]
-          | [3, { kind: 'none' }]
-          | [3, { kind: 'some'; value: true }]
-          | [3, { kind: 'some'; value: false }]
+          | [1, ['two', { kind: 'none' }]]
+          | [1, ['two', { kind: 'some'; value: string }]]
+          | [1, [3, Option<boolean>]]
+        >
+      >,
+      Expect<
+        Equal<
+          DistributeMatchingUnions<
+            [1, ['two', Option<string>]] | [3, Option<boolean>],
+            [1, ['two', { kind: 'some'; value: string }]]
+          >,
+          | [1, ['two', { kind: 'none' }]]
+          | [1, ['two', { kind: 'some'; value: string }]]
+          | [3, Option<boolean>]
         >
       >
     ];
@@ -705,6 +734,39 @@ describe('DistributeUnions', () => {
               type: 'b';
               items: { other: boolean; data: string }[];
             }
+        >
+      >
+    ];
+  });
+
+  it('should return the input if the inverted pattern is `unknown` (if the pattern is `__`', () => {
+    type cases = [
+      Expect<
+        Equal<
+          DistributeMatchingUnions<
+            [1, number] | ['two', string] | [3, boolean],
+            unknown
+          >,
+          [1, number] | ['two', string] | [3, boolean]
+        >
+      >,
+      Expect<
+        Equal<
+          DistributeMatchingUnions<
+            { a: 1 | 2; b: '3' | '4'; c: '5' | '6' },
+            unknown
+          >,
+          { a: 1 | 2; b: '3' | '4'; c: '5' | '6' }
+        >
+      >,
+      Expect<
+        Equal<
+          DistributeMatchingUnions<
+            | { x: 'a'; value: Option<string> }
+            | { x: 'b'; value: Option<number> },
+            unknown
+          >,
+          { x: 'a'; value: Option<string> } | { x: 'b'; value: Option<number> }
         >
       >
     ];
