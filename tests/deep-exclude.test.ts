@@ -53,6 +53,24 @@ describe('DeepExclude', () => {
     });
   });
 
+  it('should work with empty list patterns', () => {
+    type cases = [
+      Expect<Equal<DeepExclude<[] | [1, 2, 3], []>, [1, 2, 3]>>,
+      Expect<
+        Equal<
+          DeepExclude<{ values: [] | [1, 2, 3] }, { values: [] }>,
+          { values: [1, 2, 3] }
+        >
+      >,
+      Expect<
+        Equal<
+          DeepExclude<{ values: [1, 2, 3] }, { values: [] }>,
+          { values: [1, 2, 3] }
+        >
+      >
+    ];
+  });
+
   it('should work in common cases', () => {});
   type cases = [
     Expect<Equal<DeepExclude<'a' | 'b' | 'c', 'a'>, 'b' | 'c'>>,
