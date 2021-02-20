@@ -122,8 +122,8 @@ export type FindAllUnions<a, path extends PropertyKey[] = []> =
 export type FindUnions<a, p, path extends PropertyKey[] = []> = IsAny<
   p
 > extends true
-  ? [] // Don't try to find unions after 4 levels
-  : Length<path> extends 4
+  ? [] // Don't try to find unions after 5 levels
+  : Length<path> extends 5
   ? []
   : IsUnion<a> extends true
   ? [
