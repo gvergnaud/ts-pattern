@@ -32,7 +32,7 @@ export type Match<i, o> = {
     p extends Pattern<i>,
     c,
     invpattern = InvertPattern<p>,
-    value = p extends typeof __ ? i : MatchedValue<i, invpattern>
+    value = MatchedValue<i, invpattern>
   >(
     pattern: p,
     handler: (
@@ -137,7 +137,7 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     p extends ExhaustivePattern<i>,
     c,
     invpattern = InvertPattern<p>,
-    value = p extends typeof __ ? i : MatchedValue<i, invpattern>
+    value = MatchedValue<i, invpattern>
   >(
     pattern: p,
     handler: (
