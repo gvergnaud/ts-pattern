@@ -57,6 +57,15 @@ export type InvertPattern<p> = p extends typeof __.number
   ? { [k in keyof p]: InvertPattern<p[k]> }
   : p;
 
+/**
+ * ### InvertNotPattern
+ * This generic takes the inverted pattern `p` and the input `i`
+ * and eliminates `NotPattern`s from `p`.
+ *
+ * It's separated from InvertPattern<p> because it's
+ * expensive to compute, and is only required by `DeepExclude`
+ * on exhaustive pattern matching.
+ */
 export type InvertNotPattern<p, i> = p extends NotPattern<infer p1>
   ? Exclude<i, p1>
   : p extends (infer pp)[]
