@@ -4,7 +4,6 @@ import type { InvertNotPattern, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
 import type { UnionToIntersection, WithDefault } from './helpers';
 import type { FindSelected } from './FindSelected';
-import { __ } from '../PatternType';
 
 // We fall back to `a` if we weren't able to extract anything more precise
 export type MatchedValue<a, invpattern> = WithDefault<
