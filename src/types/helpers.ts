@@ -160,3 +160,5 @@ export type All<xs> = xs extends [infer head, ...(infer tail)]
     ? All<tail>
     : false
   : true;
+
+export type WithDefault<a, def> = [a] extends [never] ? def : a;

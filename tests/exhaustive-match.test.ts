@@ -3,7 +3,7 @@ import { DeepExclude } from '../src/types/DeepExclude';
 import { DistributeMatchingUnions } from '../src/types/DistributeUnions';
 import { InvertNotPattern } from '../src/types/InvertPattern';
 import { NotPattern } from '../src/types/Pattern';
-import { Option, some, none } from './utils';
+import { Option, some, none, BigUnion } from './utils';
 
 describe('exhaustive()', () => {
   it('should forbid using guard function, in pattern or as extra args', () => {
@@ -474,7 +474,7 @@ describe('exhaustive()', () => {
       expect(
         match(input)
           .exhaustive()
-          .with(new Map([['hello', 1 as const]]), (x) => x)
+          .with(new Map([['hello' as const, 1 as const]]), (x) => x)
           // @ts-expect-error
           .run()
       ).toEqual(input);
@@ -495,7 +495,7 @@ describe('exhaustive()', () => {
 
     it('should work with structures with a lot of unions', () => {
       type X = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-      // This structures has 7 ** 3 = 343 possibilities
+      // This structures has 7 ** 9 = 40353607 possibilities
       match<{
         a: X;
         b: X;
@@ -508,8 +508,6 @@ describe('exhaustive()', () => {
         i: X;
       }>({ a: 1, b: 1, c: 1, d: 1, e: 1, f: 1, g: 1, h: 1, i: 1 })
         .exhaustive()
-        .with({ a: 1 }, () => 'a = 1')
-        .with({ c: 1 }, () => 'c = 1')
         .with({ b: 1 }, () => 'otherwise')
         .with({ b: 2 }, () => 'b = 2')
         .with({ b: 3 }, () => 'otherwise')
@@ -527,6 +525,20 @@ describe('exhaustive()', () => {
         .exhaustive()
         .with({ a: not(1) }, () => 'a != 1')
         .with({ a: 1 }, () => 'a != 1')
+        .run();
+
+      match<{
+        a: BigUnion;
+        b: BigUnion;
+      }>({ a: 'a', b: 'b' })
+        .exhaustive()
+        .with({ a: 'a' }, () => 0)
+        .with({ a: 'b' }, () => 0)
+        .with({ a: 'c' }, () => 0)
+        .with({ a: 'd' }, () => 0)
+        .with({ a: 'e' }, () => 0)
+        .with({ a: 'f', b: __ }, () => 0)
+        .with({ a: __ }, () => 0)
         .run();
     });
 

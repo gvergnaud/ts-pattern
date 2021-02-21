@@ -1,4 +1,4 @@
-import type { PatternType, __ } from '../PatternType';
+import type { __ } from '../PatternType';
 import { IsPlainObject } from './helpers';
 import type {
   SelectPattern,

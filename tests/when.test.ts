@@ -100,6 +100,17 @@ describe('when', () => {
                 return true;
               }
             )
+            .with(
+              { status: 'success', data: select('data') },
+              (x) => x.data.length > 3,
+              (x) => x.data.length < 10,
+              (x) => x.data.length % 2,
+              (x) => {
+                const notNever: NotNever<typeof x> = true;
+                const inferenceCheck: { status: 'success'; data: string } = x;
+                return true;
+              }
+            )
             .otherwise(() => false)
         ).toEqual(expected);
       });
