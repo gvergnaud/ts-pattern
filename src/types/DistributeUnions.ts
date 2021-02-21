@@ -131,14 +131,14 @@ export type FindUnions<a, p, path extends PropertyKey[] = []> = IsAny<
         cases: a extends any
           ? {
               value: a;
-              subUnions: FindUnions<a, p, path>;
+              subUnions: IsMatching<a, p> extends true
+                ? FindUnions<a, p, path>
+                : [];
             }
           : never;
         path: path;
       }
     ]
-  : IsMatching<a, p> extends false
-  ? []
   : [a, p] extends [any[], any[]]
   ? [a, p] extends [
       [infer a1, infer a2, infer a3, infer a4, infer a5],
