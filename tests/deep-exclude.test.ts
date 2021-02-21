@@ -6,50 +6,48 @@ type Colors = 'pink' | 'purple' | 'red' | 'yellow' | 'blue';
 
 describe('DeepExclude', () => {
   it('should work with bug unions', () => {
-    it('should work with big unions', () => {
-      type cases = [
-        Expect<
-          Equal<
-            DeepExclude<
-              | { type: 'textWithColor'; union: BigUnion }
-              | {
-                  type: 'textWithColorAndBackground';
-                  union: BigUnion;
-                  union2: BigUnion;
-                },
-              { type: 'textWithColor' }
-            >,
-            {
-              type: 'textWithColorAndBackground';
-              union: BigUnion;
-              union2: BigUnion;
-            }
-          >
-        >,
-        Expect<
-          Equal<
-            DeepExclude<
-              | { type: 'textWithColor'; union: BigUnion }
-              | {
-                  type: 'textWithColorAndBackground';
-                  union: BigUnion;
-                  union2: BigUnion;
-                },
-              {
-                type: 'textWithColorAndBackground';
-                union: Exclude<BigUnion, 'a'>;
-              }
-            >,
+    type cases = [
+      Expect<
+        Equal<
+          DeepExclude<
             | { type: 'textWithColor'; union: BigUnion }
             | {
                 type: 'textWithColorAndBackground';
-                union: 'a';
+                union: BigUnion;
                 union2: BigUnion;
-              }
-          >
+              },
+            { type: 'textWithColor' }
+          >,
+          {
+            type: 'textWithColorAndBackground';
+            union: BigUnion;
+            union2: BigUnion;
+          }
         >
-      ];
-    });
+      >,
+      Expect<
+        Equal<
+          DeepExclude<
+            | { type: 'textWithColor'; union: BigUnion }
+            | {
+                type: 'textWithColorAndBackground';
+                union: BigUnion;
+                union2: BigUnion;
+              },
+            {
+              type: 'textWithColorAndBackground';
+              union: Exclude<BigUnion, 'a'>;
+            }
+          >,
+          | { type: 'textWithColor'; union: BigUnion }
+          | {
+              type: 'textWithColorAndBackground';
+              union: 'a';
+              union2: BigUnion;
+            }
+        >
+      >
+    ];
   });
 
   it('should work with empty list patterns', () => {
