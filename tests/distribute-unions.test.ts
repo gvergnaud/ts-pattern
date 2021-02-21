@@ -1,8 +1,6 @@
 import {
-  FindAllUnions,
   FindUnions,
   Distribute,
-  DistributeUnions,
   DistributeMatchingUnions,
 } from '../src/types/DistributeUnions';
 
@@ -612,21 +610,36 @@ describe('DistributeMatchingUnions', () => {
           | [1, ['two', { kind: 'some'; value: string }]]
           | [3, Option<boolean>]
         >
+      >,
+      Expect<
+        Equal<
+          DistributeMatchingUnions<['a' | 'b', 1 | 2], ['a', unknown]>,
+          ['a', 1 | 2] | ['b', 1 | 2]
+        >
       >
     ];
+
+    type x = DistributeMatchingUnions<['a' | 'b', 1 | 2], ['a', unknown]>;
   });
 
   it('should work for non unions', () => {
     type cases = [
-      Expect<Equal<DistributeUnions<{}>, {}>>,
-      Expect<Equal<DistributeUnions<[]>, []>>,
-      Expect<Equal<DistributeUnions<Map<string, string>>, Map<string, string>>>,
-      Expect<Equal<DistributeUnions<Set<string>>, Set<string>>>,
-      Expect<Equal<DistributeUnions<string>, string>>,
-      Expect<Equal<DistributeUnions<number>, number>>,
-      Expect<Equal<DistributeUnions<any>, any>>,
-      Expect<Equal<DistributeUnions<never>, never>>,
-      Expect<Equal<DistributeUnions<unknown>, unknown>>
+      Expect<Equal<DistributeMatchingUnions<{}, {}>, {}>>,
+      Expect<Equal<DistributeMatchingUnions<[], []>, []>>,
+      Expect<
+        Equal<
+          DistributeMatchingUnions<Map<string, string>, Map<string, string>>,
+          Map<string, string>
+        >
+      >,
+      Expect<
+        Equal<DistributeMatchingUnions<Set<string>, Set<string>>, Set<string>>
+      >,
+      Expect<Equal<DistributeMatchingUnions<string, string>, string>>,
+      Expect<Equal<DistributeMatchingUnions<number, number>, number>>,
+      Expect<Equal<DistributeMatchingUnions<any, any>, any>>,
+      Expect<Equal<DistributeMatchingUnions<never, never>, never>>,
+      Expect<Equal<DistributeMatchingUnions<unknown, unknown>, unknown>>
     ];
   });
 
@@ -651,14 +664,17 @@ describe('DistributeMatchingUnions', () => {
       >,
       Expect<
         Equal<
-          DistributeUnions<{
-            type: 'type';
-            x: undefined;
-            q: string;
-            union1: 'a' | 'b';
-            color: '3';
-            union2: '1' | '2';
-          }>,
+          DistributeMatchingUnions<
+            {
+              type: 'type';
+              x: undefined;
+              q: string;
+              union1: 'a' | 'b';
+              color: '3';
+              union2: '1' | '2';
+            },
+            { union1: 'a'; union2: '1' }
+          >,
           | {
               type: 'type';
               q: string;
@@ -696,14 +712,17 @@ describe('DistributeMatchingUnions', () => {
     ];
   });
 
-  it('should work with object optional properties', () => {
+  it('should not distribute optional properties on objects', () => {
     type cases = [
       Expect<
         Equal<
-          DistributeUnions<{
-            x: 'a' | 'b';
-            y?: string;
-          }>,
+          DistributeMatchingUnions<
+            {
+              x: 'a' | 'b';
+              y?: string;
+            },
+            { x: 'a'; y: 'hello' }
+          >,
           { x: 'a'; y?: string } | { x: 'b'; y?: string }
         >
       >
@@ -711,39 +730,51 @@ describe('DistributeMatchingUnions', () => {
   });
 
   it('should not distribute unions for lists, set and maps', () => {
-    type x = DistributeUnions<{ type: 'a' | 'b'; x: 'c' | 'd' }[]>;
-
     // The reason is that list can be heterogeneous, so
     // matching on a A[] for a in input of (A|B)[] doesn't
     // rule anything out. You can still have a (A|B)[] afterward.
     // The same logic goes for Set and Maps.
     type cases = [
-      Expect<Equal<DistributeUnions<('a' | 'b')[]>, ('a' | 'b')[]>>,
+      Expect<
+        Equal<DistributeMatchingUnions<('a' | 'b')[], 'a'[]>, ('a' | 'b')[]>
+      >,
       Expect<
         Equal<
-          DistributeUnions<{ type: 'a' | 'b'; x: 'c' | 'd' }[]>,
+          DistributeMatchingUnions<
+            { type: 'a' | 'b'; x: 'c' | 'd' }[],
+            { type: 'a'; x: 'c' }[]
+          >,
           { type: 'a' | 'b'; x: 'c' | 'd' }[]
         >
       >,
-      Expect<Equal<DistributeUnions<Set<'a' | 'b'>>, Set<'a' | 'b'>>>,
       Expect<
-        Equal<DistributeUnions<Map<string, 'a' | 'b'>>, Map<string, 'a' | 'b'>>
+        Equal<
+          DistributeMatchingUnions<Set<'a' | 'b'>, Set<'a'>>,
+          Set<'a' | 'b'>
+        >
       >,
       Expect<
         Equal<
-          DistributeUnions<
+          DistributeMatchingUnions<Map<string, 'a' | 'b'>, Map<string, 'a'>>,
+          Map<string, 'a' | 'b'>
+        >
+      >,
+      Expect<
+        Equal<
+          DistributeMatchingUnions<
             | {
                 type: 'a';
-                items: { some: string; data: number }[];
+                items: ({ t: 'x'; some: string; data: number } | { t: 'y' })[];
               }
             | {
                 type: 'b';
                 items: { other: boolean; data: string }[];
-              }
+              },
+            { type: 'a'; items: { t: 'y' }[] }
           >,
           | {
               type: 'a';
-              items: { some: string; data: number }[];
+              items: ({ t: 'x'; some: string; data: number } | { t: 'y' })[];
             }
           | {
               type: 'b';

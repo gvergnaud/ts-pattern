@@ -1,6 +1,5 @@
 import { Equal, Expect } from '../src/types/helpers';
 import { IsMatching } from '../src/types/IsMatching';
-import { NotPattern } from '../src/types/Pattern';
 import { Option } from './utils';
 
 describe('IsMatching', () => {

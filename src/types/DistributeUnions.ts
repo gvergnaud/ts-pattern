@@ -13,29 +13,32 @@ import type {
   Compute,
 } from './helpers';
 import { IsMatching } from './IsMatching';
+import { Primitives } from './Pattern';
 
 /**
- * DistributeUnions takes a data structure of type `a`
- * containing unions and turns it into a union of all possible
- * combination of each unions.
- *
- * For instance `DistributeUnions<['a' | 'b', 1 | 2]>` will
- * evaluate to `['a', 1] | ['a', 2] | ['b', 1] | ['b', 2]`.
+ * DistributeMatchingUnions takes two arguments:
+ * - a data structure of type `a` containing unions
+ * - a pattern `p`, matching this data structure
+ * and turns it into a union of all possible
+ * combination of each unions contained in `a` that matches `p`.
  *
  * It does this in 3 main steps:
- *  - 1. Find all unions contained in the data structure
- *    with `FindAllUnions<a>`, which returns a tree of [union, path] pairs.
+ *  - 1. Find all unions contained in the data structure, that matches `p`
+ *    with `FindUnions<a, p>`. It returns a tree of [union, path] pairs.
  *  - 2. this tree is passed to the `Distribute` type level function,
  *    Which turns it into a union of list of `[singleValue, path]` pairs.
  *    Each list correspond to one of the possible combination of the unions
  *    found in `a`.
  *  - 3. build a data structure with the same shape as `a` for each combination
  *    and return the union of these data structures.
+ *
+ * @example
+ * type t1 = DistributeMatchingUnions<['a' | 'b', 1 | 2], ['a', 1]>;
+ * // => ['a', 1] | ['a', 2] | ['b', 1] | ['b', 2]
+ *
+ * type t2 = DistributeMatchingUnions<['a' | 'b', 1 | 2], ['a', unknown]>;
+ * // => ['a', 1 | 2] | ['b', 1 | 2]
  */
-export type DistributeUnions<a> = IsAny<a> extends true
-  ? any
-  : BuildMany<a, Distribute<FindAllUnions<a>>>;
-
 export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
   ? any
   : BuildMany<a, Distribute<FindUnions<a, p>>>;
@@ -56,69 +59,8 @@ export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
  *  }>,
  *  path: string[]
  * }
- * FindAllUnions :: a -> UnionConfig[]
+ * FindUnions :: Pattern a p => a -> p -> UnionConfig[]
  */
-export type FindAllUnions<a, path extends PropertyKey[] = []> =
-  // Don't try to find unions after 4 levels
-  Length<path> extends 4
-    ? []
-    : IsUnion<a> extends true
-    ? [
-        {
-          cases: a extends any
-            ? {
-                value: a;
-                subUnions: FindAllUnions<a, path>;
-              }
-            : never;
-          path: path;
-        }
-      ]
-    : a extends any[]
-    ? a extends [infer a1, infer a2, infer a3, infer a4, infer a5]
-      ? [
-          ...FindAllUnions<a1, [...path, 0]>,
-          ...FindAllUnions<a2, [...path, 1]>,
-          ...FindAllUnions<a3, [...path, 2]>,
-          ...FindAllUnions<a4, [...path, 3]>,
-          ...FindAllUnions<a5, [...path, 4]>
-        ]
-      : a extends [infer a1, infer a2, infer a3, infer a4]
-      ? [
-          ...FindAllUnions<a1, [...path, 0]>,
-          ...FindAllUnions<a2, [...path, 1]>,
-          ...FindAllUnions<a3, [...path, 2]>,
-          ...FindAllUnions<a4, [...path, 3]>
-        ]
-      : a extends [infer a1, infer a2, infer a3]
-      ? [
-          ...FindAllUnions<a1, [...path, 0]>,
-          ...FindAllUnions<a2, [...path, 1]>,
-          ...FindAllUnions<a3, [...path, 2]>
-        ]
-      : a extends [infer a1, infer a2]
-      ? [...FindAllUnions<a1, [...path, 0]>, ...FindAllUnions<a2, [...path, 1]>]
-      : []
-    : a extends Set<any>
-    ? []
-    : a extends Map<any, any>
-    ? []
-    : IsPlainObject<a> extends true
-    ? Flatten<
-        Values<
-          {
-            // we use Required to remove the optional property modifier (?:).
-            // Optional properties aren't considered as union types to avoid
-            // generating a huge union.
-            [k in keyof Required<a>]: FindAllUnions<
-              NonNullable<a[k]>,
-              [...path, k]
-            >;
-          }
-        >
-      >
-    : [];
-
 export type FindUnions<a, p, path extends PropertyKey[] = []> = IsAny<
   p
 > extends true

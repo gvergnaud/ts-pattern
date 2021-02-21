@@ -1,5 +1,5 @@
 import { IsPlainObject, ValueOf, All } from './helpers';
-import { NotPattern, Primitives } from './Pattern';
+import { Primitives } from './Pattern';
 
 type Extends<a, b> = a extends b ? true : false;
 
