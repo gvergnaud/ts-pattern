@@ -13,7 +13,6 @@ import type {
   Compute,
 } from './helpers';
 import { IsMatching } from './IsMatching';
-import { Primitives } from './Pattern';
 
 /**
  * DistributeMatchingUnions takes two arguments:

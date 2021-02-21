@@ -1,12 +1,12 @@
 import type { SelectPattern } from './Pattern';
 import type { ValueOf } from './helpers';
 
-export type FindSelected<a, b> = b extends SelectPattern<infer Key>
-  ? { [k in Key]: a }
-  : [a, b] extends [(infer aa)[], [infer p]]
-  ? FindSelected<aa, p> extends infer selected
+export type FindSelected<i, p> = p extends SelectPattern<infer Key>
+  ? { [k in Key]: i }
+  : [i, p] extends [(infer i2)[], [infer p2]]
+  ? FindSelected<i2, p2> extends infer selected
     ? { [k in keyof selected]: selected[k][] }
     : never
-  : [a, b] extends [object, object]
-  ? ValueOf<{ [k in keyof a & keyof b]: FindSelected<a[k], b[k]> }>
+  : [i, p] extends [object, object]
+  ? ValueOf<{ [k in keyof i & keyof p]: FindSelected<i[k], p[k]> }>
   : never;
