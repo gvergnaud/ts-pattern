@@ -622,6 +622,54 @@ describe('DistributeMatchingUnions', () => {
     type x = DistributeMatchingUnions<['a' | 'b', 1 | 2], ['a', unknown]>;
   });
 
+  it("unknown should match but shouldn't distribute", () => {
+    type cases = [
+      Expect<
+        Equal<
+          DistributeMatchingUnions<
+            [1, ['two', Option<string>]] | [3, Option<boolean>],
+            [1, unknown]
+          >,
+          [1, ['two', Option<string>]] | [3, Option<boolean>]
+        >
+      >,
+      Expect<
+        Equal<
+          DistributeMatchingUnions<
+            { a: 1 | 2; b: '3' | '4'; c: '5' | '6' },
+            { a: 1; b: unknown; c: unknown }
+          >,
+          | { a: 1; b: '3' | '4'; c: '5' | '6' }
+          | { a: 2; b: '3' | '4'; c: '5' | '6' }
+        >
+      >,
+      Expect<
+        Equal<
+          DistributeMatchingUnions<
+            { a: 1 | 2; b: '3' | '4'; c: '5' | '6' },
+            { a: 1; b: '3'; c: unknown }
+          >,
+          | { a: 1; b: '3'; c: '5' | '6' }
+          | { a: 2; b: '3'; c: '5' | '6' }
+          | { a: 1; b: '4'; c: '5' | '6' }
+          | { a: 2; b: '4'; c: '5' | '6' }
+        >
+      >,
+      Expect<
+        Equal<
+          DistributeMatchingUnions<
+            { a: 1 | 2; b: ['3' | '4', '5' | '6'] },
+            { a: 1; b: ['3', unknown] }
+          >,
+          | { a: 1; b: ['3', '5' | '6'] }
+          | { a: 2; b: ['3', '5' | '6'] }
+          | { a: 1; b: ['4', '5' | '6'] }
+          | { a: 2; b: ['4', '5' | '6'] }
+        >
+      >
+    ];
+  });
+
   it('should work for non unions', () => {
     type cases = [
       Expect<Equal<DistributeMatchingUnions<{}, {}>, {}>>,

@@ -2,7 +2,6 @@ import type { PatternType, __ } from '../PatternType';
 import type { NotPattern, Primitives } from './Pattern';
 import type {
   ExcludeIfContainsNever,
-  IsAny,
   IsPlainObject,
   LeastUpperBound,
 } from './helpers';

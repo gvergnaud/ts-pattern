@@ -61,9 +61,13 @@ export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
  * }
  * FindUnions :: Pattern a p => a -> p -> UnionConfig[]
  */
-export type FindUnions<a, p, path extends PropertyKey[] = []> = IsAny<
-  p
-> extends true
+export type FindUnions<
+  a,
+  p,
+  path extends PropertyKey[] = []
+> = unknown extends p
+  ? []
+  : IsAny<p> extends true
   ? [] // Don't try to find unions after 5 levels
   : Length<path> extends 5
   ? []
