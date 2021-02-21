@@ -631,19 +631,34 @@ describe('DistributeMatchingUnions', () => {
   });
 
   it('should work with objects', () => {
-    type obj = {
-      type: 'type';
-      x: undefined;
-      q: string;
-      union1: 'a' | 'b';
-      color: '3';
-      union2: '1' | '2';
-    };
+    type X = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
     type cases = [
       Expect<
         Equal<
-          DistributeUnions<obj>,
+          DistributeMatchingUnions<
+            { a: X; b: X; c: X; d: X; e: X; f: X; g: X; h: X; i: X },
+            { a: 1 }
+          >,
+          | { a: 1; b: X; c: X; d: X; e: X; f: X; g: X; h: X; i: X }
+          | { a: 2; b: X; c: X; d: X; e: X; f: X; g: X; h: X; i: X }
+          | { a: 3; b: X; c: X; d: X; e: X; f: X; g: X; h: X; i: X }
+          | { a: 4; b: X; c: X; d: X; e: X; f: X; g: X; h: X; i: X }
+          | { a: 5; b: X; c: X; d: X; e: X; f: X; g: X; h: X; i: X }
+          | { a: 6; b: X; c: X; d: X; e: X; f: X; g: X; h: X; i: X }
+          | { a: 7; b: X; c: X; d: X; e: X; f: X; g: X; h: X; i: X }
+        >
+      >,
+      Expect<
+        Equal<
+          DistributeUnions<{
+            type: 'type';
+            x: undefined;
+            q: string;
+            union1: 'a' | 'b';
+            color: '3';
+            union2: '1' | '2';
+          }>,
           | {
               type: 'type';
               q: string;

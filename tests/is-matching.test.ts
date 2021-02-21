@@ -67,19 +67,23 @@ describe('IsMatching', () => {
             true
           >
         >,
-        // TODO figure out why this is matching even though it shouldn't
         Expect<
           Equal<
             IsMatching<
-              | {
-                  type: 'a';
-                  value:
-                    | { type: 'c'; value: { type: 'd' } | 2 }
-                    | { type: 'e'; value: { type: 'f' } | 3 };
-                }
-              | 12,
+              {
+                type: 'a';
+                value:
+                  | { type: 'c'; value: { type: 'd' } | 2 }
+                  | { type: 'e'; value: { type: 'f' } | 3 };
+              },
               { type: 'a'; value: { type: 'c'; value: 3 } }
             >,
+            false
+          >
+        >,
+        Expect<
+          Equal<
+            IsMatching<12, { type: 'a'; value: { type: 'c'; value: 3 } }>,
             false
           >
         >,
@@ -134,6 +138,15 @@ describe('IsMatching', () => {
               { kind: 'some'; value: { type: 'a' } }
             >,
             true
+          >
+        >,
+        Expect<
+          Equal<
+            IsMatching<
+              Option<{ type: 'a' } | { type: 'b' }>,
+              { kind: 'some'; value: { type: 'c' } }
+            >,
+            false
           >
         >,
         Expect<Equal<IsMatching<'c' | 'd', unknown>, true>>,
