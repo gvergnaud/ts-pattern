@@ -117,6 +117,8 @@ export type FindUnions<
       ]
     : [a, p] extends [[infer a1, infer a2], [infer p1, infer p2]]
     ? [...FindUnions<a1, p1, [...path, 0]>, ...FindUnions<a2, p2, [...path, 1]>]
+    : [a, p] extends [[infer a1], [infer p1]]
+    ? FindUnions<a1, p1, [...path, 0]>
     : []
   : a extends Set<any>
   ? []
