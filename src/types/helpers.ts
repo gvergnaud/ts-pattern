@@ -47,40 +47,7 @@ export type UnionToIntersection<U> = (
   ? I
   : never;
 
-type IsLiteralString<T extends string> = string extends T ? false : true;
-type IsLiteralNumber<T extends number> = number extends T ? false : true;
-type IsLiteralBoolean<T extends boolean> = boolean extends T ? false : true;
-export type IsLiteral<T> = T extends string
-  ? IsLiteralString<T>
-  : T extends number
-  ? IsLiteralNumber<T>
-  : T extends boolean
-  ? IsLiteralBoolean<T>
-  : false;
-
 export type IsUnion<a> = [a] extends [UnionToIntersection<a>] ? false : true;
-
-export type ContainsUnion<a> = IsUnion<a> extends true
-  ? true
-  : IsPlainObject<a> extends true
-  ? false extends ValueOf<{ [k in keyof a]: ContainsUnion<a[k]> }>
-    ? false
-    : true
-  : false;
-
-type NeverKeys<o> = ValueOf<
-  {
-    [k in keyof o]: [o[k]] extends [never] ? k : never;
-  }
->;
-
-type RemoveNeverKeys<o> = Omit<o, NeverKeys<o>>;
-
-export type ExcludeUnion<a> = IsUnion<a> extends true
-  ? never
-  : IsPlainObject<a> extends true
-  ? RemoveNeverKeys<{ [k in keyof a]: ExcludeUnion<a[k]> }>
-  : a;
 
 export type UnionToTuple<T> = UnionToIntersection<
   T extends any ? (t: T) => T : never
@@ -149,8 +116,6 @@ export type IsPlainObject<o> = o extends object
 export type Compute<a extends any> = a extends BuiltInObjects
   ? a
   : { [k in keyof a]: a[k] } & unknown;
-
-export type UnionLength<a> = Length<UnionToTuple<a>>;
 
 // All :: Bool[] -> Bool
 export type All<xs> = xs extends [infer head, ...(infer tail)]
