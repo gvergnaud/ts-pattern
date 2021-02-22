@@ -4,7 +4,7 @@ import { Primitives } from './Pattern';
 type Extends<a, b> = a extends b ? true : false;
 
 export type IsMatching<a, p> =
-  // Special case for unknown, because this the type
+  // Special case for unknown, because this is the type
   // of the inverted `__` wildcard pattern, which should
   // match everything.
   unknown extends p
