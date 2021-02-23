@@ -40,7 +40,9 @@ import { IsMatching } from './IsMatching';
  */
 export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
   ? any
-  : BuildMany<a, Distribute<FindUnions<a, p>>>;
+  : IsMatching<a, p> extends true
+  ? BuildMany<a, Distribute<FindUnions<a, p>>>
+  : a;
 
 /**
  * The reason we don't look further down the tree with lists,

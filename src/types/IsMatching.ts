@@ -44,6 +44,8 @@ export type IsMatching<a, p> =
       ? All<[IsMatching<a1, p1>, IsMatching<a2, p2>, IsMatching<a3, p3>]>
       : [a, p] extends [[infer a1, infer a2], [infer p1, infer p2]]
       ? All<[IsMatching<a1, p1>, IsMatching<a2, p2>]>
+      : [a, p] extends [[infer a1], [infer p1]]
+      ? All<[IsMatching<a1, p1>]>
       : Extends<p, a>
     : IsPlainObject<p> extends true
     ? true extends (

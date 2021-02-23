@@ -618,8 +618,6 @@ describe('DistributeMatchingUnions', () => {
         >
       >
     ];
-
-    type x = DistributeMatchingUnions<['a' | 'b', 1 | 2], ['a', unknown]>;
   });
 
   it("unknown should match but shouldn't distribute", () => {

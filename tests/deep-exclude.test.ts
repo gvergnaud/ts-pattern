@@ -9,7 +9,7 @@ describe('DeepExclude', () => {
   /**
    * TODO
    * all types:
-   * - data list, set, maps
+   * - data   set, maps
    * - mixed nested data structures
    *
    * case * (matching everything, matching something, matching nothing)
@@ -59,10 +59,7 @@ describe('DeepExclude', () => {
           Equal<DeepExclude<{ a: 'x' | 'y' }, { b: 'x' }>, { a: 'x' | 'y' }>
         >,
         Expect<
-          Equal<
-            DeepExclude<{ a: 'x' | 'y' }, { a: 'z' }>,
-            { a: 'x' } | { a: 'y' }
-          >
+          Equal<DeepExclude<{ a: 'x' | 'y' }, { a: 'z' }>, { a: 'x' | 'y' }>
         >
       ];
     });
@@ -122,7 +119,7 @@ describe('DeepExclude', () => {
 
     it("if it doesn't match, it should leave the data structure untouched", () => {
       type cases = [
-        Expect<Equal<DeepExclude<['x' | 'y'], ['z']>, ['x'] | ['y']>>,
+        Expect<Equal<DeepExclude<['x' | 'y'], ['z']>, ['x' | 'y']>>,
         Expect<Equal<DeepExclude<['x' | 'y'], []>, ['x' | 'y']>>,
         Expect<Equal<DeepExclude<['x' | 'y'], ['a', 'b', 'c']>, ['x' | 'y']>>
       ];
@@ -144,6 +141,41 @@ describe('DeepExclude', () => {
           Equal<
             DeepExclude<[['x' | 'y' | 'z'], 'u' | 'v'], [unknown, 'v']>,
             [['x' | 'y' | 'z'], 'u']
+          >
+        >
+      ];
+    });
+  });
+
+  describe('List', () => {
+    type cases = [
+      Expect<Equal<DeepExclude<(1 | 2 | 3)[], 1[]>, (1 | 2 | 3)[]>>,
+      Expect<Equal<DeepExclude<(1 | 2 | 3)[], (1 | 2 | 3)[]>, never>>,
+      Expect<Equal<DeepExclude<(1 | 2 | 3)[], unknown[]>, never>>,
+      Expect<
+        Equal<DeepExclude<(1 | 2 | 3)[] | string[], string[]>, (1 | 2 | 3)[]>
+      >
+    ];
+
+    it('should work with empty list patterns', () => {
+      type cases = [
+        Expect<Equal<DeepExclude<[] | [1, 2, 3], []>, [1, 2, 3]>>,
+        Expect<
+          Equal<
+            DeepExclude<{ values: [] | [1, 2, 3] }, { values: [] }>,
+            { values: [1, 2, 3] }
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<{ values: [1, 2, 3] }, { values: [] }>,
+            { values: [1, 2, 3] }
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<{ values: (1 | 2 | 3)[] }, { values: [] }>,
+            { values: (1 | 2 | 3)[] }
           >
         >
       ];
@@ -190,30 +222,6 @@ describe('DeepExclude', () => {
               union: 'a';
               union2: BigUnion;
             }
-        >
-      >
-    ];
-  });
-
-  it('should work with empty list patterns', () => {
-    type cases = [
-      Expect<Equal<DeepExclude<[] | [1, 2, 3], []>, [1, 2, 3]>>,
-      Expect<
-        Equal<
-          DeepExclude<{ values: [] | [1, 2, 3] }, { values: [] }>,
-          { values: [1, 2, 3] }
-        >
-      >,
-      Expect<
-        Equal<
-          DeepExclude<{ values: [1, 2, 3] }, { values: [] }>,
-          { values: [1, 2, 3] }
-        >
-      >,
-      Expect<
-        Equal<
-          DeepExclude<{ values: (1 | 2 | 3)[] }, { values: [] }>,
-          { values: (1 | 2 | 3)[] }
         >
       >
     ];
