@@ -16,23 +16,22 @@ import type {
 } from './types/Match';
 
 import { __, PatternType } from './PatternType';
-import { DistributeUnions } from './types/DistributeUnions';
 
 export const when = <a, b extends a = a>(
   predicate: GuardFunction<a, b>
 ): GuardPattern<a, b> => ({
-  __patternKind: PatternType.Guard,
-  __when: predicate,
+  '@ts-pattern/__patternKind': PatternType.Guard,
+  '@ts-pattern/__when': predicate,
 });
 
 export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
-  __patternKind: PatternType.Not,
-  __pattern: pattern,
+  '@ts-pattern/__patternKind': PatternType.Not,
+  '@ts-pattern/__pattern': pattern,
 });
 
 export const select = <k extends string>(key: k): SelectPattern<k> => ({
-  __patternKind: PatternType.Select,
-  __key: key,
+  '@ts-pattern/__patternKind': PatternType.Select,
+  '@ts-pattern/__key': key,
 });
 
 /**
@@ -132,8 +131,7 @@ const builder = <a, b>(
    * that **all cases are handled**. `when` predicates
    * aren't supported on exhaustive matches.
    **/
-  exhaustive: (): ExhaustiveMatch<DistributeUnions<a>, a, b> =>
-    builder(value, patterns) as any,
+  exhaustive: (): ExhaustiveMatch<a, a, b> => builder(value, patterns) as any,
 });
 
 const isObject = (value: unknown): value is Object =>
@@ -145,19 +143,19 @@ const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
   const pattern = x as GuardPattern<unknown>;
   return (
     pattern &&
-    pattern.__patternKind === PatternType.Guard &&
-    typeof pattern.__when === 'function'
+    pattern['@ts-pattern/__patternKind'] === PatternType.Guard &&
+    typeof pattern['@ts-pattern/__when'] === 'function'
   );
 };
 
 const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
   const pattern = x as NotPattern<unknown>;
-  return pattern && pattern.__patternKind === PatternType.Not;
+  return pattern && pattern['@ts-pattern/__patternKind'] === PatternType.Not;
 };
 
 const isSelectPattern = (x: unknown): x is SelectPattern<string> => {
   const pattern = x as SelectPattern<string>;
-  return pattern && pattern.__patternKind === PatternType.Select;
+  return pattern && pattern['@ts-pattern/__patternKind'] === PatternType.Select;
 };
 
 const isListPattern = (x: unknown): x is [Pattern<unknown>] => {
@@ -175,8 +173,10 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
   if (pattern === __.number) {
     return typeof value === 'number' && !Number.isNaN(value);
   }
-  if (isGuardPattern(pattern)) return Boolean(pattern.__when(value));
-  if (isNotPattern(pattern)) return !matchPattern(pattern.__pattern)(value);
+  if (isGuardPattern(pattern))
+    return Boolean(pattern['@ts-pattern/__when'](value));
+  if (isNotPattern(pattern))
+    return !matchPattern(pattern['@ts-pattern/__pattern'])(value);
   if (isListPattern(pattern) && isArray(value))
     return value.every((v) => matchPattern(pattern[0])(v));
 
@@ -220,7 +220,8 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
 const selectWithPattern = <a, p extends Pattern<a>>(pattern: p) => (
   value: a
 ): Record<string, unknown> => {
-  if (isSelectPattern(pattern)) return { [pattern.__key]: value };
+  if (isSelectPattern(pattern))
+    return { [pattern['@ts-pattern/__key']]: value };
 
   if (isListPattern(pattern) && isArray(value))
     return value

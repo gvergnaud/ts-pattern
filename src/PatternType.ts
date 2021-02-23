@@ -1,10 +1,10 @@
 export enum PatternType {
-  String = '@match/string',
-  Number = '@match/number',
-  Boolean = '@match/boolean',
-  Guard = '@match/guard',
-  Not = '@match/not',
-  Select = '@match/select',
+  String = '@ts-pattern/string',
+  Number = '@ts-pattern/number',
+  Boolean = '@ts-pattern/boolean',
+  Guard = '@ts-pattern/guard',
+  Not = '@ts-pattern/not',
+  Select = '@ts-pattern/select',
 }
 
 /**

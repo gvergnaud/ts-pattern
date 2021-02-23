@@ -12,28 +12,37 @@ import type {
   Length,
   Compute,
 } from './helpers';
+import { IsMatching } from './IsMatching';
 
 /**
- * DistributeUnions takes a data structure of type `a`
- * containing unions and turns it into a union of all possible
- * combination of each unions.
- *
- * For instance `DistributeUnions<['a' | 'b', 1 | 2]>` will
- * evaluate to `['a', 1] | ['a', 2] | ['b', 1] | ['b', 2]`.
+ * DistributeMatchingUnions takes two arguments:
+ * - a data structure of type `a` containing unions
+ * - a pattern `p`, matching this data structure
+ * and turns it into a union of all possible
+ * combination of each unions contained in `a` that matches `p`.
  *
  * It does this in 3 main steps:
- *  - 1. Find all unions contained in the data structure
- *    with `FindUnions<a>`, which returns a tree of [union, path] pairs.
+ *  - 1. Find all unions contained in the data structure, that matches `p`
+ *    with `FindUnions<a, p>`. It returns a tree of [union, path] pairs.
  *  - 2. this tree is passed to the `Distribute` type level function,
  *    Which turns it into a union of list of `[singleValue, path]` pairs.
  *    Each list correspond to one of the possible combination of the unions
  *    found in `a`.
  *  - 3. build a data structure with the same shape as `a` for each combination
  *    and return the union of these data structures.
+ *
+ * @example
+ * type t1 = DistributeMatchingUnions<['a' | 'b', 1 | 2], ['a', 1]>;
+ * // => ['a', 1] | ['a', 2] | ['b', 1] | ['b', 2]
+ *
+ * type t2 = DistributeMatchingUnions<['a' | 'b', 1 | 2], ['a', unknown]>;
+ * // => ['a', 1 | 2] | ['b', 1 | 2]
  */
-export type DistributeUnions<a> = IsAny<a> extends true
+export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
   ? any
-  : BuildMany<a, Distribute<FindUnions<a>>>;
+  : IsMatching<a, p> extends true
+  ? BuildMany<a, Distribute<FindUnions<a, p>>>
+  : a;
 
 /**
  * The reason we don't look further down the tree with lists,
@@ -51,68 +60,88 @@ export type DistributeUnions<a> = IsAny<a> extends true
  *  }>,
  *  path: string[]
  * }
- * FindUnions :: a -> UnionConfig[]
+ * FindUnions :: Pattern a p => a -> p -> UnionConfig[]
  */
-export type FindUnions<a, path extends PropertyKey[] = []> =
-  // Don't try to find unions after 4 levels
-  Length<path> extends 4
-    ? []
-    : IsUnion<a> extends true
+export type FindUnions<
+  a,
+  p,
+  path extends PropertyKey[] = []
+> = unknown extends p
+  ? []
+  : IsAny<p> extends true
+  ? [] // Don't try to find unions after 5 levels
+  : Length<path> extends 5
+  ? []
+  : IsUnion<a> extends true
+  ? [
+      {
+        cases: a extends any
+          ? {
+              value: a;
+              subUnions: IsMatching<a, p> extends true
+                ? FindUnions<a, p, path>
+                : [];
+            }
+          : never;
+        path: path;
+      }
+    ]
+  : [a, p] extends [any[], any[]]
+  ? [a, p] extends [
+      [infer a1, infer a2, infer a3, infer a4, infer a5],
+      [infer p1, infer p2, infer p3, infer p4, infer p5]
+    ]
     ? [
-        {
-          cases: a extends any
-            ? {
-                value: a;
-                subUnions: FindUnions<a, path>;
-              }
-            : never;
-          path: path;
-        }
+        ...FindUnions<a1, p1, [...path, 0]>,
+        ...FindUnions<a2, p2, [...path, 1]>,
+        ...FindUnions<a3, p3, [...path, 2]>,
+        ...FindUnions<a4, p4, [...path, 3]>,
+        ...FindUnions<a5, p5, [...path, 4]>
       ]
-    : a extends any[]
-    ? a extends [infer a1, infer a2, infer a3, infer a4, infer a5]
-      ? [
-          ...FindUnions<a1, [...path, 0]>,
-          ...FindUnions<a2, [...path, 1]>,
-          ...FindUnions<a3, [...path, 2]>,
-          ...FindUnions<a4, [...path, 3]>,
-          ...FindUnions<a5, [...path, 4]>
-        ]
-      : a extends [infer a1, infer a2, infer a3, infer a4]
-      ? [
-          ...FindUnions<a1, [...path, 0]>,
-          ...FindUnions<a2, [...path, 1]>,
-          ...FindUnions<a3, [...path, 2]>,
-          ...FindUnions<a4, [...path, 3]>
-        ]
-      : a extends [infer a1, infer a2, infer a3]
-      ? [
-          ...FindUnions<a1, [...path, 0]>,
-          ...FindUnions<a2, [...path, 1]>,
-          ...FindUnions<a3, [...path, 2]>
-        ]
-      : a extends [infer a1, infer a2]
-      ? [...FindUnions<a1, [...path, 0]>, ...FindUnions<a2, [...path, 1]>]
-      : []
-    : a extends Set<any>
-    ? []
-    : a extends Map<any, any>
-    ? []
-    : IsPlainObject<a> extends true
-    ? Flatten<
-        Values<
-          {
-            // we use Required to remove the optional property modifier (?:).
-            // Optional properties aren't considered as union types to avoid
-            // generating a huge union.
-            [k in keyof Required<a>]: FindUnions<
-              NonNullable<a[k]>,
-              [...path, k]
-            >;
-          }
-        >
+    : [a, p] extends [
+        [infer a1, infer a2, infer a3, infer a4],
+        [infer p1, infer p2, infer p3, infer p4]
+      ]
+    ? [
+        ...FindUnions<a1, p1, [...path, 0]>,
+        ...FindUnions<a2, p2, [...path, 1]>,
+        ...FindUnions<a3, p3, [...path, 2]>,
+        ...FindUnions<a4, p4, [...path, 3]>
+      ]
+    : [a, p] extends [
+        [infer a1, infer a2, infer a3],
+        [infer p1, infer p2, infer p3]
+      ]
+    ? [
+        ...FindUnions<a1, p1, [...path, 0]>,
+        ...FindUnions<a2, p2, [...path, 1]>,
+        ...FindUnions<a3, p3, [...path, 2]>
+      ]
+    : [a, p] extends [[infer a1, infer a2], [infer p1, infer p2]]
+    ? [...FindUnions<a1, p1, [...path, 0]>, ...FindUnions<a2, p2, [...path, 1]>]
+    : [a, p] extends [[infer a1], [infer p1]]
+    ? FindUnions<a1, p1, [...path, 0]>
+    : []
+  : a extends Set<any>
+  ? []
+  : a extends Map<any, any>
+  ? []
+  : [IsPlainObject<a>, IsPlainObject<p>] extends [true, true]
+  ? Flatten<
+      Values<
+        {
+          // we use Required to remove the optional property modifier (?:).
+          // Optional properties aren't considered as union types to avoid
+          // generating a huge union.
+          [k in keyof Required<a> & keyof p]: FindUnions<
+            NonNullable<a[k]>,
+            p[k],
+            [...path, k]
+          >;
+        }
       >
-    : [];
+    >
+  : [];
 
 // Distribute :: UnionConfig[] -> Union<[a, path][]>
 export type Distribute<unions extends any[]> = unions extends [

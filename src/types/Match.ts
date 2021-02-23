@@ -1,23 +1,19 @@
 import type { Pattern, GuardValue, ExhaustivePattern } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
-import type { InvertPattern } from './InvertPattern';
-import type { DistributeUnions } from './DistributeUnions';
-import type { UnionToIntersection } from './helpers';
+import type { InvertNotPattern, InvertPattern } from './InvertPattern';
+import type { DeepExclude } from './DeepExclude';
+import type { UnionToIntersection, WithDefault } from './helpers';
 import type { FindSelected } from './FindSelected';
 
 // We fall back to `a` if we weren't able to extract anything more precise
-export type MatchedValue<a, p extends Pattern<a>> = ExtractPreciseValue<
-  a,
-  InvertPattern<p>
-> extends never
-  ? a
-  : ExtractPreciseValue<a, InvertPattern<p>>;
-
-export type ExtractSelections<a, p extends Pattern<a>> = UnionToIntersection<
-  FindSelected<MatchedValue<a, p>, p>
+export type MatchedValue<a, invpattern> = WithDefault<
+  ExtractPreciseValue<a, invpattern>,
+  a
 >;
 
-export type Unset = '@match/unset';
+export type ExtractSelections<a, p> = UnionToIntersection<FindSelected<a, p>>;
+
+export type Unset = '@ts-pattern/unset';
 
 export type PickReturnValue<a, b> = a extends Unset ? b : a;
 
@@ -31,16 +27,21 @@ export type Match<i, o> = {
    * If the data matches the pattern provided as first argument,
    * use this branch and execute the handler function.
    **/
-  with<p extends Pattern<i>, c>(
+  with<
+    p extends Pattern<i>,
+    c,
+    invpattern = InvertPattern<p>,
+    value = MatchedValue<i, invpattern>
+  >(
     pattern: p,
     handler: (
-      value: MatchedValue<i, p>,
-      selections: ExtractSelections<i, p>
+      value: value,
+      selections: ExtractSelections<value, p>
     ) => PickReturnValue<o, c>
   ): Match<i, PickReturnValue<o, c>>;
   with<
     pat extends Pattern<i>,
-    pred extends (value: MatchedValue<i, pat>) => unknown,
+    pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
     c
   >(
     pattern: pat,
@@ -53,7 +54,7 @@ export type Match<i, o> = {
 
   with<
     pat extends Pattern<i>,
-    pred extends (value: MatchedValue<i, pat>) => unknown,
+    pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
     pred2 extends (value: GuardValue<pred>) => unknown,
     c
   >(
@@ -68,7 +69,7 @@ export type Match<i, o> = {
 
   with<
     pat extends Pattern<i>,
-    pred extends (value: MatchedValue<i, pat>) => unknown,
+    pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
     pred2 extends (value: GuardValue<pred>) => unknown,
     pred3 extends (value: GuardValue<pred2>) => unknown,
     c
@@ -116,7 +117,7 @@ export type EmptyMatch<i, o> = Match<i, o> & {
    * that **all cases are handled**. `when` predicates
    * aren't supported on exhaustive matches.
    **/
-  exhaustive: () => ExhaustiveMatch<DistributeUnions<i>, i, o>;
+  exhaustive: () => ExhaustiveMatch<i, i, o>;
 };
 
 type NonExhaustivePattern<i> = { __nonExhaustive: never } & i;
@@ -131,18 +132,22 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
    * If the data matches the pattern provided as first argument,
    * use this branch and execute the handler function.
    **/
-  with<p extends ExhaustivePattern<i>, c>(
+  with<
+    p extends ExhaustivePattern<i>,
+    c,
+    invpattern = InvertPattern<p>,
+    value = MatchedValue<i, invpattern>
+  >(
     pattern: p,
     handler: (
-      value: MatchedValue<i, p>,
-      selections: ExtractSelections<i, p>
+      value: value,
+      selections: ExtractSelections<value, p>
     ) => PickReturnValue<o, c>
   ): ExhaustiveMatch<
-    // For performances, we pass both the original input and
-    // the distributedInput to ExhaustiveMatch, so we can compute the pattern
-    // from the original input, which is much faster than computing it
-    // from the distributed one.
-    Exclude<distributedInput, ExtractPreciseValue<i, InvertPattern<p>>>,
+    // For performances, keep the origin input `i` even after we call DeepExclude
+    // in it, because Pattern<i> is generally mucb easier to compute than
+    // the Pattern<distributedInput>.
+    DeepExclude<distributedInput, InvertNotPattern<invpattern, value>>,
     i,
     PickReturnValue<o, c>
   >;

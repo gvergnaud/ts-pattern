@@ -23,19 +23,30 @@ export type GuardFunction<a, b extends a> =
   | ((value: a) => value is b)
   | ((value: a) => boolean);
 
+/**
+ * Using @deprecated here to dissuade people from using them inside there patterns.
+ * Theses properties should be used by ts-pattern's internals only.
+ */
+
 export type GuardPattern<a, b extends a = a> = {
-  __patternKind: PatternType.Guard;
-  __when: GuardFunction<a, b>;
+  /** @deprecated This property should only be used by ts-pattern's internals. */
+  '@ts-pattern/__patternKind': PatternType.Guard;
+  /** @deprecated This property should only be used by ts-pattern's internals. */
+  '@ts-pattern/__when': GuardFunction<a, b>;
 };
 
 export type NotPattern<a> = {
-  __patternKind: PatternType.Not;
-  __pattern: Pattern<a>;
+  /** @deprecated This property should only be used by ts-pattern's internals. */
+  '@ts-pattern/__patternKind': PatternType.Not;
+  /** @deprecated This property should only be used by ts-pattern's internals. */
+  '@ts-pattern/__pattern': Pattern<a>;
 };
 
 export type SelectPattern<k extends string> = {
-  __patternKind: PatternType.Select;
-  __key: k;
+  /** @deprecated This property should only be used by ts-pattern's internals. */
+  '@ts-pattern/__patternKind': PatternType.Select;
+  /** @deprecated This property should only be used by ts-pattern's internals. */
+  '@ts-pattern/__key': k;
 };
 
 type WildCardPattern<a> = a extends number
