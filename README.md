@@ -92,12 +92,12 @@ yarn add ts-pattern
 
 ## Code Sandbox Examples
 
-- [Basic Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/basic.ts)
+- [Basic Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/basic.tsx)
 - [Reducer Demo (with React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
-- [Untyped Input (API response) Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/api.ts)
-- [`when` Guard Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/when.ts)
-- [`not` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.ts)
-- [`select` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.ts)
+- [Untyped Input (API response) Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/api.tsx)
+- [`when` Guard Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/when.tsx)
+- [`not` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.tsx)
+- [`select` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.tsx)
 
 ## Getting Started
 
