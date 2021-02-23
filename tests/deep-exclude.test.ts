@@ -6,15 +6,6 @@ import { BigUnion, Option } from './utils';
 type Colors = 'pink' | 'purple' | 'red' | 'yellow' | 'blue';
 
 describe('DeepExclude', () => {
-  /**
-   * TODO
-   * all types:
-   * - data   set, maps
-   * - mixed nested data structures
-   *
-   * case * (matching everything, matching something, matching nothing)
-   */
-
   it('Primitives', () => {
     type cases = [
       Expect<Equal<DeepExclude<string, 'hello'>, string>>,
@@ -180,6 +171,49 @@ describe('DeepExclude', () => {
         >
       ];
     });
+  });
+
+  describe('Sets', () => {
+    type cases = [
+      Expect<Equal<DeepExclude<Set<1 | 2 | 3>, Set<1>>, Set<1 | 2 | 3>>>,
+      Expect<Equal<DeepExclude<Set<1 | 2 | 3>, Set<1 | 2 | 3>>, never>>,
+      Expect<Equal<DeepExclude<Set<1 | 2 | 3>, Set<unknown>>, never>>,
+      Expect<
+        Equal<
+          DeepExclude<Set<1 | 2 | 3> | Set<string>, Set<string>>,
+          Set<1 | 2 | 3>
+        >
+      >
+    ];
+  });
+
+  describe('Maps', () => {
+    type cases = [
+      Expect<
+        Equal<
+          DeepExclude<Map<string, 1 | 2 | 3>, Map<string, 1>>,
+          Map<string, 1 | 2 | 3>
+        >
+      >,
+      Expect<
+        Equal<
+          DeepExclude<Map<string, 1 | 2 | 3>, Map<string, 1 | 2 | 3>>,
+          never
+        >
+      >,
+      Expect<
+        Equal<DeepExclude<Map<string, 1 | 2 | 3>, Map<string, unknown>>, never>
+      >,
+      Expect<
+        Equal<
+          DeepExclude<
+            Map<string, 1 | 2 | 3> | Map<string, string>,
+            Map<string, string>
+          >,
+          Map<string, 1 | 2 | 3>
+        >
+      >
+    ];
   });
 
   it('should work with bug unions', () => {
