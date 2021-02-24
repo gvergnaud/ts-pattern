@@ -1,6 +1,7 @@
 import type { NotPattern, Primitives } from './Pattern';
 import type {
   ExcludeIfContainsNever,
+  IsAny,
   IsPlainObject,
   LeastUpperBound,
 } from './helpers';
@@ -16,6 +17,8 @@ export type ExtractPreciseValue<a, b> =
    */
   unknown extends b
     ? a
+    : IsAny<a> extends true
+    ? b
     : ExcludeIfContainsNever<
         b extends []
           ? []
