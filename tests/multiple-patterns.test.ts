@@ -1,5 +1,6 @@
 import { match, not, when, __ } from '../src';
 import { Option, some, none, BigUnion } from './utils';
+import { Expect, Equal } from '../src/types/helpers';
 
 describe('Multiple patterns', () => {
   it('should match if one of the patterns match', () => {
@@ -7,12 +8,27 @@ describe('Multiple patterns', () => {
       match(input)
         .exhaustive()
         .with(
-          { kind: 'some', value: 2 },
-          { kind: 'some', value: 3 },
-          { kind: 'some', value: 4 },
-          (x) => true
+          { kind: 'some', value: 2 as const },
+          { kind: 'some', value: 3 as const },
+          { kind: 'some', value: 4 as const },
+          (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                | { kind: 'some'; value: 2 }
+                | { kind: 'some'; value: 3 }
+                | { kind: 'some'; value: 4 }
+              >
+            >;
+            return true;
+          }
         )
-        .with({ kind: 'none' }, { kind: 'some' }, () => false)
+        .with({ kind: 'none' }, { kind: 'some' }, (x) => {
+          type t = Expect<
+            Equal<typeof x, { kind: 'some'; value: number } | { kind: 'none' }>
+          >;
+          return false;
+        })
         .run();
 
     const cases = [
@@ -29,18 +45,34 @@ describe('Multiple patterns', () => {
   });
 
   it("no patterns shouldn't typecheck", () => {
-    const testFn = (input: Option<number>) =>
-      match(input)
-        .exhaustive()
-        .with(
-          { kind: 'some', value: 2 },
-          { kind: 'some', value: 3 },
-          { kind: 'some', value: 4 },
-          (x) => true
-        )
-        .with({ kind: 'none' }, { kind: 'some' }, () => false)
-        // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
-        .with(() => false)
-        .run();
+    const input = { kind: 'none' } as Option<number>;
+    match(input)
+      .exhaustive()
+      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
+      .with(() => false)
+      .run();
+
+    match(input)
+      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
+      .with(() => false)
+      .run();
+
+    match(input)
+      .exhaustive()
+      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
+      .with(() => false)
+      .with(
+        { kind: 'some', value: 2 as const },
+        { kind: 'some', value: 3 as const },
+        { kind: 'some', value: 4 as const },
+        (x) => true
+      )
+      .with({ kind: 'none' }, { kind: 'some' }, () => false)
+
+      .run();
+  });
+
+  it('should work with all types of input', () => {
+    // TODO
   });
 });
