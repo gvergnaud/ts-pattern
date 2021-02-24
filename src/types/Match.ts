@@ -39,6 +39,19 @@ export type Match<i, o> = {
   ): Match<i, PickReturnValue<o, c>>;
 
   with<
+    ps extends ExhaustivePattern<i>[],
+    c,
+    value = ps[number] extends infer p
+      ? p extends any 
+        ? MatchedValue<i, InvertPattern<p>>
+        : never
+      : never
+  >(...args: [
+    ...patterns: ps,
+    handler: (value: value) => PickReturnValue<o, c>
+  ]): Match<i, PickReturnValue<o, c>>;
+
+  with<
     pat extends Pattern<i>,
     pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
     c
@@ -147,6 +160,32 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     // in it, because Pattern<i> is generally mucb easier to compute than
     // the Pattern<distributedInput>.
     DeepExclude<distributedInput, InvertNotPattern<invpattern, value>>,
+    i,
+    PickReturnValue<o, c>
+  >;
+  with<
+    ps extends [ExhaustivePattern<i>, ...ExhaustivePattern<i>[]],
+    c,
+    value = ps[number] extends infer p
+      ? p extends any 
+        ? MatchedValue<i, InvertPattern<p>>
+        : never
+      : never
+  >(...args: [
+    ...patterns: ps,
+    handler: (value: value) => PickReturnValue<o, c>
+  ]): ExhaustiveMatch<
+    // For performances, keep the origin input `i` even after we call DeepExclude
+    // in it, because Pattern<i> is generally mucb easier to compute than
+    // the Pattern<distributedInput>.
+    DeepExclude<
+      distributedInput,
+      ps[number] extends infer p
+        ? p extends any
+          ? InvertNotPattern<InvertPattern<p>, value>
+          : never
+        : never
+    >,
     i,
     PickReturnValue<o, c>
   >;

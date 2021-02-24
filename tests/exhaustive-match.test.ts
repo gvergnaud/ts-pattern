@@ -8,7 +8,7 @@ describe('exhaustive()', () => {
       .with(
         {
           kind: 'some',
-          // @ts-expect-error
+          // @ts-expect-error: x is unknown
           value: when((x) => x > 2),
         },
         () => true
@@ -19,11 +19,10 @@ describe('exhaustive()', () => {
       .exhaustive()
       .with(
         { kind: 'some' },
+        // @ts-expect-error: value is unknown
         ({ value }) => value > 2,
-        // @ts-expect-error
         () => true
       )
-      // @ts-expect-error
       .run();
   });
 
@@ -239,6 +238,13 @@ describe('exhaustive()', () => {
         .exhaustive()
         .with({ kind: 'some' }, ({ value }) => value)
         .with({ kind: 'none' }, () => 0)
+        .run();
+
+      match<Option<number>>({ kind: 'some', value: 3 })
+        .exhaustive()
+        .with({ kind: 'some', value: 3 as const }, ({ value }): number => value)
+        .with({ kind: 'none' }, () => 0)
+        // @ts-expect-error: missing {kind: 'some', value: number}
         .run();
     });
 

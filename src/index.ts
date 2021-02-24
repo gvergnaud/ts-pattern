@@ -57,31 +57,37 @@ export const match = <a, b = Unset>(value: a): EmptyMatch<a, b> =>
  */
 const builder = <a, b>(
   value: a,
-  patterns: {
+  cases: {
     test: (value: a) => unknown;
     select: (value: a) => object;
     handler: (...args: any) => any;
   }[]
 ): EmptyMatch<a, b> => ({
-  with<p extends Pattern<a>, c>(
-    pattern: p,
-    ...args: any[]
-  ): Match<a, PickReturnValue<b, c>> {
+  with<c>(...args: any[]): Match<a, PickReturnValue<b, c>> {
+    const [patterns, predicates] = args
+      .slice(0, -1)
+      .reduce<[Pattern<a>[], ((value: a) => unknown)[]]>(
+        ([patterns, predicates], arg) =>
+          typeof arg === 'function'
+            ? [patterns, [...predicates, arg]]
+            : [[...patterns, arg], predicates],
+        [[], []]
+      );
     const handler = args[args.length - 1];
-    const predicates = args.slice(0, -1);
 
     const doesMatch = (value: a) =>
       Boolean(
-        matchPattern<a, p>(pattern)(value) &&
+        patterns.some((pattern) => matchPattern(pattern)(value)) &&
           predicates.every((predicate) => predicate(value as any))
       );
 
     return builder<a, PickReturnValue<b, c>>(value, [
-      ...patterns,
+      ...cases,
       {
         test: doesMatch,
         handler,
-        select: selectWithPattern<a, p>(pattern),
+        select: (value) =>
+          patterns.length === 1 ? selectWithPattern(patterns[0])(value) : {},
       },
     ]);
   },
@@ -91,7 +97,7 @@ const builder = <a, b>(
     handler: (value: GuardValue<p>) => PickReturnValue<b, c>
   ): Match<a, PickReturnValue<b, c>> =>
     builder<a, PickReturnValue<b, c>>(value, [
-      ...patterns,
+      ...cases,
       {
         test: predicate,
         handler,
@@ -101,7 +107,7 @@ const builder = <a, b>(
 
   otherwise: <c>(handler: () => PickReturnValue<b, c>): PickReturnValue<b, c> =>
     builder<a, PickReturnValue<b, c>>(value, [
-      ...patterns,
+      ...cases,
       {
         test: matchPattern<a, Pattern<a>>(__ as Pattern<a>),
         handler,
@@ -110,7 +116,7 @@ const builder = <a, b>(
     ]).run(),
 
   run: (): b => {
-    const entry = patterns.find(({ test }) => test(value));
+    const entry = cases.find(({ test }) => test(value));
     if (!entry) {
       let displayedValue;
       try {
@@ -131,7 +137,7 @@ const builder = <a, b>(
    * that **all cases are handled**. `when` predicates
    * aren't supported on exhaustive matches.
    **/
-  exhaustive: (): ExhaustiveMatch<a, a, b> => builder(value, patterns) as any,
+  exhaustive: (): ExhaustiveMatch<a, a, b> => builder(value, cases) as any,
 });
 
 const isObject = (value: unknown): value is Object =>
