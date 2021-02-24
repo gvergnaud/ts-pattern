@@ -1,5 +1,5 @@
+import { Expect, Equal } from '../src/types/helpers';
 import { match, __ } from '../src';
-import { NotNever } from './utils';
 
 describe('Records ({})', () => {
   it('Should match records', () => {
@@ -17,18 +17,15 @@ describe('Records ({})', () => {
     expect(
       match<Vector, string>(vector)
         .with({ x: 1, y: 1, z: 1 }, (x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: Vector3 = x;
+          type t = Expect<Equal<typeof x, Vector3>>;
           return 'vector3';
         })
         .with({ x: 2, y: 1 }, (x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: Vector2 = x;
+          type t = Expect<Equal<typeof x, Vector3 | Vector2>>;
           return 'vector2';
         })
         .with({ x: 1 }, (x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: Vector1 = x;
+          type t = Expect<Equal<typeof x, Vector3 | Vector2 | Vector1>>;
           return 'vector1';
         })
         .otherwise(() => 'no match')

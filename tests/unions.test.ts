@@ -1,5 +1,6 @@
+import { Expect, Equal } from '../src/types/helpers';
 import { match, __ } from '../src';
-import { Option, NotNever } from './utils';
+import { Option } from './utils';
 
 describe('Unions (a | b)', () => {
   it('should match discriminated unions', () => {
@@ -10,14 +11,13 @@ describe('Unions (a | b)', () => {
 
     const res = match(val as Option<string>)
       .with({ kind: 'some' }, (o) => {
-        const notNever: NotNever<typeof o> = true;
-        const inferenceCheck: { kind: 'some'; value: string } = o;
+        type t = Expect<Equal<typeof o, { kind: 'some'; value: string }>>;
         return o.value;
       })
       .with({ kind: 'none' }, () => 'no value')
       .run();
 
-    const inferenceCheck: [NotNever<typeof res>, string] = [true, res];
+    type t = Expect<Equal<typeof res, string>>;
 
     expect(res).toEqual('hello');
   });
@@ -39,23 +39,19 @@ describe('Unions (a | b)', () => {
       content: { body: 'yo' },
     })
       .with({ type: 'post', content: __ }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Post = x;
+        type t = Expect<Equal<typeof x, Post>>;
         return 1;
       })
       .with({ type: 'post', id: 7 }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Post = x;
+        type t = Expect<Equal<typeof x, Post>>;
         return 1;
       })
       .with({ type: 'video', content: { src: __.string } }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Video = x;
+        type t = Expect<Equal<typeof x, Video>>;
         return 2;
       })
       .with({ type: 'image' }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Image = x;
+        type t = Expect<Equal<typeof x, Image>>;
         return 3;
       })
       .run();
@@ -88,23 +84,19 @@ describe('Unions (a | b)', () => {
 
     const ouput = match(result)
       .with({ type: 'ok', data: { type: 'text' } }, (res) => {
-        const notNever: NotNever<typeof res> = true;
-        const inferenceCheck: Ok<Text> = res;
+        type t = Expect<Equal<typeof res, Ok<Text>>>;
         return `<p>${res.data.content}</p>`;
       })
       .with({ type: 'ok', data: { type: 'img' } }, (res) => {
-        const notNever: NotNever<typeof res> = true;
-        const inferenceCheck: Ok<Img> = res;
+        type t = Expect<Equal<typeof res, Ok<Img>>>;
         return `<img src="${res.data.src}" />`;
       })
       .with({ type: 'ok', data: { type: 'story', likes: 10 } }, (res) => {
-        const notNever: NotNever<typeof res> = true;
-        const inferenceCheck: Ok<Story> = res;
+        type t = Expect<Equal<typeof res, Ok<Story>>>;
         return `<div>story with ${res.data.likes} likes</div>`;
       })
       .with({ type: 'error' }, (res) => {
-        const notNever: NotNever<typeof res> = true;
-        const inferenceCheck: ResError<Error> = res;
+        type t = Expect<Equal<typeof res, ResError<Error>>>;
         return '<p>Oups! An error occured</p>';
       })
       .otherwise(() => '<p>everything else</p>');

@@ -1,6 +1,6 @@
-import { match, Pattern, __ } from '../src';
-import { IsPlainObject } from '../src/types/helpers';
-import { Option, NotNever, Blog } from './utils';
+import { match, __ } from '../src';
+import { Expect, Equal } from '../src/types/helpers';
+import { Option, Blog } from './utils';
 
 describe('List ([a])', () => {
   it('should match list patterns', () => {
@@ -9,22 +9,19 @@ describe('List ([a])', () => {
       title: 'hellooo',
     };
     const res = match<any, Option<Blog[]>>([httpResult])
-      .with([], (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: never[] = x;
+      .with([] as const, (x) => {
+        type t = Expect<Equal<typeof x, readonly []>>;
         return { kind: 'some', value: [{ id: 0, title: 'LOlol' }] };
       })
       .with([{ id: __.number, title: __.string }], (blogs) => {
-        const notNever: NotNever<typeof blogs> = true;
-        const inferenceCheck: { id: number; title: string }[] = blogs;
+        type t = Expect<Equal<typeof blogs, { id: number; title: string }[]>>;
         return {
           kind: 'some',
           value: blogs,
         };
       })
       .with(20, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: number = x;
+        type t = Expect<Equal<typeof x, number>>;
         return { kind: 'none' };
       })
       .otherwise(() => ({ kind: 'none' }));

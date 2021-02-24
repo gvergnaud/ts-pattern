@@ -1,12 +1,12 @@
+import { Expect, Equal } from '../src/types/helpers';
 import { match, __, not } from '../src';
-import { Blog, NotNever } from './utils';
+import { Blog } from './utils';
 
 describe('wildcards', () => {
   it('should match String wildcards', () => {
     const res = match<string | number | boolean>('')
       .with(__.string, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: string = x;
+        type t = Expect<Equal<typeof x, string>>;
         return true;
       })
       .otherwise(() => false);
@@ -17,8 +17,7 @@ describe('wildcards', () => {
   it('should match Number wildcards', () => {
     const res = match<string | number | boolean>(2)
       .with(__.number, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: number = x;
+        type t = Expect<Equal<typeof x, number>>;
         return true;
       })
       .otherwise(() => false);
@@ -29,8 +28,7 @@ describe('wildcards', () => {
   it('should match Boolean wildcards', () => {
     const res = match<string | number | boolean>(true)
       .with(__.boolean, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: boolean = x;
+        type t = Expect<Equal<typeof x, boolean>>;
         return true;
       })
       .otherwise(() => false);
@@ -62,8 +60,7 @@ describe('wildcards', () => {
   it('should infer correctly negated String wildcards', () => {
     const res = match<string | number | boolean>('')
       .with(not(__.string), (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: number | boolean = x;
+        type t = Expect<Equal<typeof x, number | boolean>>;
         return true;
       })
       .otherwise(() => false);
@@ -74,8 +71,7 @@ describe('wildcards', () => {
   it('should infer correctly negated Number wildcards', () => {
     const res = match<string | number | boolean>(2)
       .with(not(__.number), (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: string | boolean = x;
+        type t = Expect<Equal<typeof x, string | boolean>>;
         return true;
       })
       .otherwise(() => false);
@@ -86,8 +82,7 @@ describe('wildcards', () => {
   it('should infer correctly negated Boolean wildcards', () => {
     const res = match<string | number | boolean>(true)
       .with(not(__.boolean), (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: string | number = x;
+        type t = Expect<Equal<typeof x, string | number>>;
         return true;
       })
       .otherwise(() => false);

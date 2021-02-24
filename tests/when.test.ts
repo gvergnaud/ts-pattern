@@ -1,5 +1,6 @@
+import { Expect, Equal } from '../src/types/helpers';
 import { match, __, when, select } from '../src';
-import { Option, State, NotNever } from './utils';
+import { Option, State } from './utils';
 
 describe('when', () => {
   it('should work for simple cases', () => {
@@ -30,15 +31,13 @@ describe('when', () => {
       .with(
         when((x): x is 13 => x === 13),
         (x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: 13 = x;
+          type t = Expect<Equal<typeof x, 13>>;
           return true;
         }
       )
       .otherwise(() => false);
 
-    const notNever: NotNever<typeof res> = true;
-    const inferenceCheck: boolean = res;
+    type t = Expect<Equal<typeof res, boolean>>;
   });
 
   it('should be able to correcly narrow a generic types', () => {
@@ -63,8 +62,7 @@ describe('when', () => {
 
     const res = map(input, (x) => `number is ${x}`);
 
-    const notNever: NotNever<typeof res> = true;
-    const inferenceCheck: Option<string> = res;
+    type t = Expect<Equal<typeof res, Option<string>>>;
 
     expect(res).toEqual(expectedOutput);
   });
@@ -85,8 +83,9 @@ describe('when', () => {
               { status: 'success' },
               (x) => x.data.length > 3,
               (x) => {
-                const notNever: NotNever<typeof x> = true;
-                const inferenceCheck: { status: 'success'; data: string } = x;
+                type t = Expect<
+                  Equal<typeof x, { status: 'success'; data: string }>
+                >;
                 return true;
               }
             )
@@ -95,8 +94,9 @@ describe('when', () => {
               (x) => x.data.length > 3,
               (x) => x.data.length < 10,
               (x) => {
-                const notNever: NotNever<typeof x> = true;
-                const inferenceCheck: { status: 'success'; data: string } = x;
+                type t = Expect<
+                  Equal<typeof x, { status: 'success'; data: string }>
+                >;
                 return true;
               }
             )
@@ -106,8 +106,9 @@ describe('when', () => {
               (x) => x.data.length < 10,
               (x) => x.data.length % 2,
               (x) => {
-                const notNever: NotNever<typeof x> = true;
-                const inferenceCheck: { status: 'success'; data: string } = x;
+                type t = Expect<
+                  Equal<typeof x, { status: 'success'; data: string }>
+                >;
                 return true;
               }
             )

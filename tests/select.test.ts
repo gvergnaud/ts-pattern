@@ -1,12 +1,13 @@
+import { Expect, Equal } from '../src/types/helpers';
 import { match, __, select, not } from '../src';
-import { State, Event, NotNever } from './utils';
+import { State, Event } from './utils';
 
 describe('select', () => {
   it('should work with tuples', () => {
     expect(
       match<[string, number], number>(['get', 2])
         .with(['get', select('y')], (_, { y }) => {
-          const inferenceCheck: [NotNever<typeof y>, number] = [true, y];
+          type t = Expect<Equal<typeof y, number>>;
           return y;
         })
         .run()
@@ -17,11 +18,8 @@ describe('select', () => {
     expect(
       match<string[], string[]>(['you', 'hello'])
         .with([select('texts')], (xs, { texts }) => {
-          const inferenceCheck2: [NotNever<typeof xs>, string[]] = [true, xs];
-          const inferenceCheck: [NotNever<typeof texts>, string[]] = [
-            true,
-            texts,
-          ];
+          type t = Expect<Equal<typeof xs, string[]>>;
+          type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
         })
         .run()
@@ -30,14 +28,8 @@ describe('select', () => {
     expect(
       match<{ text: string }[], string[]>([{ text: 'you' }, { text: 'hello' }])
         .with([{ text: select('texts') }], (xs, { texts }) => {
-          const inferenceCheck2: [NotNever<typeof xs>, { text: string }[]] = [
-            true,
-            xs,
-          ];
-          const inferenceCheck: [NotNever<typeof texts>, string[]] = [
-            true,
-            texts,
-          ];
+          type t = Expect<Equal<typeof xs, { text: string }[]>>;
+          type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
         })
         .run()
@@ -49,10 +41,7 @@ describe('select', () => {
         { text: { content: 'hello' } },
       ])
         .with([{ text: { content: select('texts') } }], (xs, { texts }) => {
-          const inferenceCheck: [NotNever<typeof texts>, string[]] = [
-            true,
-            texts,
-          ];
+          type t = Expect<Equal<typeof texts, string[]>>;
           return texts;
         })
         .run()
@@ -69,14 +58,8 @@ describe('select', () => {
         .with(
           { status: 'success', data: select('data'), other: select('other') },
           (_, { data, other }) => {
-            const inferenceCheck: [NotNever<typeof data>, string] = [
-              true,
-              data,
-            ];
-            const inferenceCheck2: [NotNever<typeof other>, number] = [
-              true,
-              other,
-            ];
+            type t = Expect<Equal<typeof data, string>>;
+            type t2 = Expect<Equal<typeof other, number>>;
             return data + other.toString();
           }
         )
@@ -88,7 +71,7 @@ describe('select', () => {
     expect(
       match<string, string>('hello')
         .with(select('x'), (_, { x }) => {
-          const inferenceCheck: [NotNever<typeof x>, string] = [true, x];
+          type t = Expect<Equal<typeof x, string>>;
           return x;
         })
         .run()
@@ -112,10 +95,7 @@ describe('select', () => {
             },
           ],
           (_, { data, time }) => {
-            const inferenceCheck: [
-              NotNever<typeof time>,
-              number | undefined
-            ] = [true, time];
+            type t = Expect<Equal<typeof time, number | undefined>>;
 
             return {
               status: 'success',
@@ -142,11 +122,8 @@ describe('select', () => {
           status: 'loading',
         }))
         .with([select('state'), select('event')], (_, { state, event }) => {
-          const inferenceCheck: [NotNever<typeof state>, State] = [true, state];
-          const inferenceCheck2: [NotNever<typeof event>, Event] = [
-            true,
-            event,
-          ];
+          type t = Expect<Equal<typeof state, State>>;
+          type t2 = Expect<Equal<typeof event, Event>>;
           return state;
         })
         .run();

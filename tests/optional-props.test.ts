@@ -1,5 +1,5 @@
+import { Expect, Equal } from '../src/types/helpers';
 import { match, __ } from '../src';
-import { NotNever } from './utils';
 
 describe('optional properties', () => {
   it('matching on optional properties should work', () => {
@@ -15,18 +15,17 @@ describe('optional properties', () => {
       body: 'az',
     })
       .with({ type: 'post', id: 2 as const }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Post & { id: 2 } = x;
+        type t = Expect<Equal<typeof x, { type: 'post'; id: 2; body: string }>>;
         return 100;
       })
       .with({ type: 'post', id: __.number }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Post = x;
+        type t = Expect<
+          Equal<typeof x, { type: 'post'; id: number; body: string }>
+        >;
         return 10;
       })
       .with({ type: 'post' }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Post = x;
+        type t = Expect<Equal<typeof x, Post>>;
         // id is still nullable
         x.id = undefined;
         return 1;

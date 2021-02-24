@@ -1,5 +1,5 @@
+import { Expect, Equal } from '../src/types/helpers';
 import { match, select, __ } from '../src';
-import { NotNever } from './utils';
 
 describe('Nesting', () => {
   describe('deeply nested objects', () => {
@@ -22,14 +22,13 @@ describe('Nesting', () => {
         .with(
           { type: 'post', content: { video: { id: 2, content: { src: '' } } } },
           (x) => {
-            const notNever: NotNever<typeof x> = true;
-            const inferenceCheck: Post = x;
+            type t = Expect<Equal<typeof x, Post>>;
             return 1;
           }
         )
         .run();
 
-      const inferenceCheck: number = res;
+      type t = Expect<Equal<typeof res, number>>;
 
       expect(res).toEqual(1);
     });

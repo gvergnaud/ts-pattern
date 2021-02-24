@@ -1,5 +1,5 @@
+import { Expect, Equal } from '../src/types/helpers';
 import { match, __, not } from '../src';
-import { NotNever } from './utils';
 
 describe('not', () => {
   describe('pattern containing a not clause', () => {
@@ -7,13 +7,11 @@ describe('not', () => {
       const get = (x: unknown): string =>
         match(x)
           .with(not(__.number), (x) => {
-            const notNever: NotNever<typeof x> = true;
-            const inferenceCheck: unknown = x;
+            type t = Expect<Equal<typeof x, unknown>>;
             return 'not a number';
           })
           .with(not(__.string), (x) => {
-            const notNever: NotNever<typeof x> = true;
-            const inferenceCheck: unknown = x;
+            type t = Expect<Equal<typeof x, unknown>>;
             return 'not a string';
           })
           .run();
@@ -27,8 +25,7 @@ describe('not', () => {
       const get = (x: DS) =>
         match(x)
           .with({ y: __.number, x: not(__.string) }, (x) => {
-            const notNever: NotNever<typeof x> = true;
-            const inferenceCheck: { x: number; y: number } = x;
+            type t = Expect<Equal<typeof x, { x: number; y: number }>>;
             return 'yes';
           })
           .with(__, () => 'no')
@@ -45,13 +42,11 @@ describe('not', () => {
       const get = (x: 'one' | 'two') =>
         match(x)
           .with(not(one), (x) => {
-            const notNever: NotNever<typeof x> = true;
-            const inferenceCheck: 'two' = x;
+            type t = Expect<Equal<typeof x, 'two'>>;
             return 'not 1';
           })
           .with(not(two), (x) => {
-            const notNever: NotNever<typeof x> = true;
-            const inferenceCheck: 'one' = x;
+            type t = Expect<Equal<typeof x, 'one'>>;
             return 'not 2';
           })
           .run();
@@ -70,13 +65,11 @@ describe('not', () => {
       const get = (x: Input) =>
         match(x)
           .with({ type: not('success') }, (x) => {
-            const notNever: NotNever<typeof x> = true;
-            const inferenceCheck: { type: 'error' } = x;
+            type t = Expect<Equal<typeof x, { type: 'error' }>>;
             return 'error';
           })
           .with({ type: not('error') }, (x) => {
-            const notNever: NotNever<typeof x> = true;
-            const inferenceCheck: { type: 'success' } = x;
+            type t = Expect<Equal<typeof x, { type: 'success' }>>;
             return 'success';
           })
           .run();

@@ -1,28 +1,24 @@
+import { Expect, Equal } from '../src/types/helpers';
 import { match, __ } from '../src';
-import { NotNever } from './utils';
 
 describe('Set', () => {
   it('should match Set patterns', () => {
     const containsGabAndYo = (set: Set<string | number>) =>
       match<Set<string | number>, [boolean, boolean]>(set)
         .with(new Set(['gab', 'yo']), (x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: Set<string> = x;
+          type t = Expect<Equal<typeof x, Set<string>>>;
           return [true, true];
         })
         .with(new Set(['gab']), (x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: Set<string> = x;
+          type t = Expect<Equal<typeof x, Set<string>>>;
           return [true, false];
         })
         .with(new Set(['yo']), (x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: Set<string> = x;
+          type t = Expect<Equal<typeof x, Set<string>>>;
           return [false, true];
         })
         .with(__, (x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: Set<string | number> = x;
+          type t = Expect<Equal<typeof x, Set<string | number>>>;
           return [false, false];
         })
         .run();

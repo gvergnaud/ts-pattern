@@ -1,5 +1,5 @@
+import { Expect, Equal } from '../src/types/helpers';
 import { match, __ } from '../src';
-import { NotNever } from './utils';
 
 describe('Map', () => {
   it('should match Map patterns', () => {
@@ -28,10 +28,7 @@ describe('Map', () => {
       .with(__, () => ({ name: 'unknown' }))
       .run();
 
-    const inferenceCheck: [NotNever<typeof res>, { name: string }] = [
-      true,
-      res,
-    ];
+    type t = Expect<Equal<typeof res, { name: string }>>;
 
     expect(res).toEqual({ name: 'angéline gabriel' });
   });

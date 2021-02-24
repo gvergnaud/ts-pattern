@@ -1,5 +1,6 @@
+import { Expect, Equal } from '../src/types/helpers';
 import { match, __ } from '../src';
-import { State, Event, NotNever } from './utils';
+import { State, Event } from './utils';
 
 describe('tuple ([a, b])', () => {
   it('should match tuple patterns', () => {
@@ -26,20 +27,17 @@ describe('tuple ([a, b])', () => {
 
     const res = match<Input, number>(['-', 2])
       .with(['+', __.number, __.number], (value) => {
-        const notNever: NotNever<typeof value> = true;
-        const inferenceCheck: ['+', number, number] = value;
+        type t = Expect<Equal<typeof value, ['+', number, number]>>;
         const [, x, y] = value;
         return x + y;
       })
       .with(['*', __.number, __.number], (value) => {
-        const notNever: NotNever<typeof value> = true;
-        const inferenceCheck: ['*', number, number] = value;
+        type t = Expect<Equal<typeof value, ['*', number, number]>>;
         const [, x, y] = value;
         return x * y;
       })
       .with(['-', __.number], (value) => {
-        const notNever: NotNever<typeof value> = true;
-        const inferenceCheck: ['-', number] = value;
+        type t = Expect<Equal<typeof value, ['-', number]>>;
         const [, x] = value;
         return -x;
       })
@@ -47,20 +45,17 @@ describe('tuple ([a, b])', () => {
 
     const res2 = match<Input, number>(['-', 2])
       .with(['+', __, __], (value) => {
-        const notNever: NotNever<typeof value> = true;
-        const inferenceCheck: ['+', number, number] = value;
+        type t = Expect<Equal<typeof value, ['+', number, number]>>;
         const [, x, y] = value;
         return x + y;
       })
       .with(['*', __, __], (value) => {
-        const notNever: NotNever<typeof value> = true;
-        const inferenceCheck: ['*', number, number] = value;
+        type t = Expect<Equal<typeof value, ['*', number, number]>>;
         const [, x, y] = value;
         return x * y;
       })
       .with(['-', __], (value) => {
-        const notNever: NotNever<typeof value> = true;
-        const inferenceCheck: ['-', number] = value;
+        type t = Expect<Equal<typeof value, ['-', number]>>;
         const [, x] = value;
         return -x;
       })
@@ -83,33 +78,27 @@ describe('tuple ([a, b])', () => {
         expect(
           match<[string, number], string>(tuple)
             .with(['hello', 20], (x) => {
-              const notNever: NotNever<typeof x> = true;
-              const inferenceCheck: [string, number] = x;
+              type t = Expect<Equal<typeof x, [string, number]>>;
               return `perfect match`;
             })
             .with(['hello', __], (x) => {
-              const notNever: NotNever<typeof x> = true;
-              const inferenceCheck: [string, number] = x;
+              type t = Expect<Equal<typeof x, [string, number]>>;
               return `string match`;
             })
             .with([__, 20], (x) => {
-              const notNever: NotNever<typeof x> = true;
-              const inferenceCheck: [string, number] = x;
+              type t = Expect<Equal<typeof x, [string, number]>>;
               return `number match`;
             })
             .with([__.string, __.number], (x) => {
-              const notNever: NotNever<typeof x> = true;
-              const inferenceCheck: [string, number] = x;
+              type t = Expect<Equal<typeof x, [string, number]>>;
               return `not matching`;
             })
             .with([__, __], (x) => {
-              const notNever: NotNever<typeof x> = true;
-              const inferenceCheck: [string, number] = x;
+              type t = Expect<Equal<typeof x, [string, number]>>;
               return `can't happen`;
             })
             .with(__, (x) => {
-              const notNever: NotNever<typeof x> = true;
-              const inferenceCheck: [string, number] = x;
+              type t = Expect<Equal<typeof x, [string, number]>>;
               return `can't happen`;
             })
             .run()
@@ -126,10 +115,7 @@ describe('tuple ([a, b])', () => {
     const reducer = (state: State, event: Event): State =>
       match<[State, Event], State>([state, event])
         .with([__, { type: 'fetch' }], (x) => {
-          const inferenceCheck: [
-            [State, { type: 'fetch' }],
-            NotNever<typeof x>
-          ] = [x, true];
+          type t = Expect<Equal<typeof x, [State, { type: 'fetch' }]>>;
 
           return {
             status: 'loading',
@@ -137,10 +123,15 @@ describe('tuple ([a, b])', () => {
         })
 
         .with([{ status: 'loading' }, { type: 'success' }], (x) => {
-          const inferenceCheck: [
-            [{ status: 'loading' }, { type: 'success'; data: string }],
-            NotNever<typeof x>
-          ] = [x, true];
+          type t = Expect<
+            Equal<
+              typeof x,
+              [
+                { status: 'loading' },
+                { type: 'success'; data: string; requestTime?: number }
+              ]
+            >
+          >;
 
           return {
             status: 'success',
@@ -149,10 +140,12 @@ describe('tuple ([a, b])', () => {
         })
 
         .with([{ status: 'loading' }, { type: 'error' }], (x) => {
-          const inferenceCheck: [
-            [{ status: 'loading' }, { type: 'error'; error: Error }],
-            NotNever<typeof x>
-          ] = [x, true];
+          type t = Expect<
+            Equal<
+              typeof x,
+              [{ status: 'loading' }, { type: 'error'; error: Error }]
+            >
+          >;
 
           return {
             status: 'error',
@@ -161,10 +154,9 @@ describe('tuple ([a, b])', () => {
         })
 
         .with([{ status: 'loading' }, { type: 'cancel' }], (x) => {
-          const inferenceCheck: [
-            [{ status: 'loading' }, { type: 'cancel' }],
-            NotNever<typeof x>
-          ] = [x, true];
+          type t = Expect<
+            Equal<typeof x, [{ status: 'loading' }, { type: 'cancel' }]>
+          >;
 
           return initState;
         })

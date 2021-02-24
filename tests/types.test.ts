@@ -1,5 +1,6 @@
+import { Expect, Equal } from '../src/types/helpers';
 import { match, __, when, not, Pattern } from '../src';
-import { State, Event, NotNever } from './utils';
+import { State, Event } from './utils';
 
 describe('types', () => {
   type Input = [State, Event];
@@ -22,20 +23,17 @@ describe('types', () => {
   it('guard patterns should typecheck', () => {
     const pattern1: Pattern<Input> = when(() => true);
     const pattern2: Pattern<Input> = when((x) => {
-      const notNever: NotNever<typeof x> = true;
-      const inferenceCheck: Input = x;
+      type t = Expect<Equal<typeof x, Input>>;
       return true;
     });
 
     const pattern3: Pattern<Input> = [
       when((state) => {
-        const notNever: NotNever<typeof state> = true;
-        const inferenceCheck: State = state;
+        type t = Expect<Equal<typeof state, State>>;
         return !!state;
       }),
       when((event) => {
-        const notNever: NotNever<typeof event> = true;
-        const inferenceCheck: Event = event;
+        type t = Expect<Equal<typeof event, Event>>;
         return !!event;
       }),
     ];
@@ -49,8 +47,7 @@ describe('types', () => {
       {
         status: 'success',
         data: when((d) => {
-          const notNever: NotNever<typeof d> = true;
-          const inferenceCheck: string = d;
+          type t = Expect<Equal<typeof d, string>>;
           return true;
         }),
       },
@@ -70,8 +67,7 @@ describe('types', () => {
 
     const pattern7: Pattern<{ x: string }> = {
       x: when((x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: string = x;
+        type t = Expect<Equal<typeof x, string>>;
         return true;
       }),
     };
@@ -79,8 +75,7 @@ describe('types', () => {
     const pattern8: Pattern<[{ x: string }]> = [
       {
         x: when((x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: string = x;
+          type t = Expect<Equal<typeof x, string>>;
           return true;
         }),
       },
@@ -89,23 +84,20 @@ describe('types', () => {
     const pattern9: Pattern<[{ x: string }, { y: number }]> = [
       {
         x: when((x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: string = x;
+          type t = Expect<Equal<typeof x, string>>;
           return true;
         }),
       },
       {
         y: when((y) => {
-          const notNever: NotNever<typeof y> = true;
-          const inferenceCheck: number = y;
+          type t = Expect<Equal<typeof y, number>>;
           return true;
         }),
       },
     ];
 
     const pattern10: Pattern<string | number> = when((x) => {
-      const notNever: NotNever<typeof x> = true;
-      const inferenceCheck: string | number = x;
+      type t = Expect<Equal<typeof x, string | number>>;
       return true;
     });
   });
@@ -115,88 +107,104 @@ describe('types', () => {
 
     const res = match<Input>({ type: 'hello' })
       .with(__, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Input = x;
+        type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
       .with(__.string, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: string = x;
+        type t = Expect<Equal<typeof x, string>>;
         return 'ok';
       })
       .with(
         when((x) => true),
         (x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: Input = x;
+          type t = Expect<Equal<typeof x, Input>>;
           return 'ok';
         }
       )
       .with(
         when<Input>((x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: Input = x;
+          type t = Expect<Equal<typeof x, Input>>;
           return true;
         }),
         (x) => {
-          const notNever: NotNever<typeof x> = true;
-          const inferenceCheck: Input = x;
+          type t = Expect<Equal<typeof x, Input>>;
           return 'ok';
         }
       )
       .with(not('hello'), (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Input = x;
+        type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
       .with(not(__.string), (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: { type: string } = x;
+        type t = Expect<
+          Equal<
+            typeof x,
+            {
+              type: string;
+              hello?: {
+                yo: number;
+              };
+            }
+          >
+        >;
         return 'ok';
       })
       .with(not(when((x) => true)), (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Input = x;
+        type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
       .with({ type: __ }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: { type: string } = x;
+        type t = Expect<
+          Equal<
+            typeof x,
+            {
+              type: string;
+              hello?: {
+                yo: number;
+              };
+            }
+          >
+        >;
         return 'ok';
       })
       .with({ type: __.string }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: { type: string } = x;
+        type t = Expect<Equal<typeof x, { type: string }>>;
         return 'ok';
       })
       .with({ type: when((x) => true) }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: { type: string } = x;
+        type t = Expect<Equal<typeof x, { type: string }>>;
         return 'ok';
       })
       .with({ type: not('hello' as 'hello') }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: { type: string } = x;
+        type t = Expect<
+          Equal<
+            typeof x,
+            {
+              type: string;
+              hello:
+                | {
+                    yo: number;
+                  }
+                | undefined;
+            }
+          >
+        >;
         return 'ok';
       })
       .with({ type: not(__.string) }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Input = x;
+        type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
       .with({ type: not(when((x) => true)) }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Input = x;
+        type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
       .with(not({ type: when((x: string) => true) }), (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: Input = x;
+        type t = Expect<Equal<typeof x, string>>;
         return 'ok';
       })
       .with(not({ type: __.string }), (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: string = x;
+        type t = Expect<Equal<typeof x, string>>;
         return 'ok';
       })
       .run();
@@ -215,38 +223,31 @@ describe('types', () => {
 
     match<Input>({ type: 'hello' })
       .with({ type: __ }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: { type: string } = x;
+        type t = Expect<Equal<typeof x, { type: string }>>;
         return 'ok';
       })
       .with(__.string, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: string = x;
+        type t = Expect<Equal<typeof x, string>>;
         return 'ok';
       })
       .with(__.number, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: number = x;
+        type t = Expect<Equal<typeof x, number>>;
         return 'ok';
       })
       .with(__.boolean, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: boolean = x;
+        type t = Expect<Equal<typeof x, boolean>>;
         return 'ok';
       })
       .with({ type: __.string }, (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: { type: string } = x;
+        type t = Expect<Equal<typeof x, { type: string }>>;
         return 'ok';
       })
       .with([__.string], (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: string[] = x;
+        type t = Expect<Equal<typeof x, string[]>>;
         return 'ok';
       })
       .with([__.number, __.number], (x) => {
-        const notNever: NotNever<typeof x> = true;
-        const inferenceCheck: [number, number] = x;
+        type t = Expect<Equal<typeof x, [number, number]>>;
         return 'ok';
       })
       .run();
