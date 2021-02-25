@@ -1,6 +1,6 @@
 ### Roadmap
 
-- [ ] add a `oneOf(...Pattern<a>[])` pattern (or `or`?)
+- [ ] add support matching again several patterns in a single `.with()` clause.
 - [ ] add a lightweight `select` API for single values
 - [ ] add a `rest` (maybe `rest(Pattern<a>)`) pattern for list. Example of using `rest`:
 
