@@ -39,32 +39,6 @@ export type Match<i, o> = {
   ): Match<i, PickReturnValue<o, c>>;
 
   with<
-    p1 extends ExhaustivePattern<i>,
-    p2 extends ExhaustivePattern<i>,
-    c,
-    p = p1 | p2,
-    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
-  >(
-    pattern1: p1,
-    pattern2: p2,
-    handler: (value: value) => PickReturnValue<o, c>
-  ): Match<i, PickReturnValue<o, c>>;
-
-  with<
-    p1 extends ExhaustivePattern<i>,
-    p2 extends ExhaustivePattern<i>,
-    p3 extends ExhaustivePattern<i>,
-    c,
-    p = p1 | p2 | p3,
-    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
-  >(
-    pattern1: p1,
-    pattern2: p2,
-    pattern3: p3,
-    handler: (value: value) => PickReturnValue<o, c>
-  ): Match<i, PickReturnValue<o, c>>;
-
-  with<
     ps extends [ExhaustivePattern<i>, ...ExhaustivePattern<i>[]],
     c,
     p = ps[number],
@@ -182,46 +156,6 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     // in it, because Pattern<i> is generally mucb easier to compute than
     // the Pattern<distributedInput>.
     DeepExclude<distributedInput, InvertNotPattern<invpattern, value>>,
-    i,
-    PickReturnValue<o, c>
-  >;
-
-  with<
-    p1 extends ExhaustivePattern<i>,
-    p2 extends ExhaustivePattern<i>,
-    c,
-    p = p1 | p2,
-    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
-  >(
-    pattern1: p1,
-    pattern2: p2,
-    handler: (value: value) => PickReturnValue<o, c>
-  ): ExhaustiveMatch<
-    DeepExclude<
-      distributedInput,
-      p extends any ? InvertNotPattern<InvertPattern<p>, value> : never
-    >,
-    i,
-    PickReturnValue<o, c>
-  >;
-
-  with<
-    p1 extends ExhaustivePattern<i>,
-    p2 extends ExhaustivePattern<i>,
-    p3 extends ExhaustivePattern<i>,
-    c,
-    p = p1 | p2 | p3,
-    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
-  >(
-    pattern1: p1,
-    pattern2: p2,
-    pattern3: p3,
-    handler: (value: value) => PickReturnValue<o, c>
-  ): ExhaustiveMatch<
-    DeepExcludeMany<
-      distributedInput,
-      p extends any ? InvertNotPattern<InvertPattern<p>, value> : never
-    >,
     i,
     PickReturnValue<o, c>
   >;
