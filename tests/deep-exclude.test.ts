@@ -1,4 +1,4 @@
-import { DeepExclude } from '../src/types/DeepExclude';
+import { DeepExclude, DeepExcludeMany } from '../src/types/DeepExclude';
 import { Equal, Expect } from '../src/types/helpers';
 import { Primitives } from '../src/types/Pattern';
 import { BigUnion, Option } from './utils';
@@ -267,69 +267,95 @@ describe('DeepExclude', () => {
     ];
   });
 
-  it('should work in common cases', () => {});
-  type cases = [
-    Expect<Equal<DeepExclude<'a' | 'b' | 'c', 'a'>, 'b' | 'c'>>,
-    Expect<
-      Equal<
-        DeepExclude<
-          | { type: 'textWithColor'; color: Colors }
-          | {
-              type: 'textWithColorAndBackground';
-              color: Colors;
-              backgroundColor: Colors;
-            },
-          { type: 'textWithColor' }
-        >,
-        {
-          type: 'textWithColorAndBackground';
-          color: Colors;
-          backgroundColor: Colors;
-        }
-      >
-    >,
-    Expect<
-      Equal<
-        DeepExclude<
-          | { type: 'textWithColor'; color: Colors }
-          | {
-              type: 'textWithColorAndBackground';
-              color: Colors;
-              backgroundColor: Colors;
-            },
-          { type: 'textWithColor'; color: 'pink' }
-        >,
-        | {
+  it('should work in common cases', () => {
+    type cases = [
+      Expect<Equal<DeepExclude<'a' | 'b' | 'c', 'a'>, 'b' | 'c'>>,
+      Expect<
+        Equal<
+          DeepExclude<
+            | { type: 'textWithColor'; color: Colors }
+            | {
+                type: 'textWithColorAndBackground';
+                color: Colors;
+                backgroundColor: Colors;
+              },
+            { type: 'textWithColor' }
+          >,
+          {
             type: 'textWithColorAndBackground';
             color: Colors;
             backgroundColor: Colors;
           }
-        | { type: 'textWithColor'; color: 'purple' }
-        | { type: 'textWithColor'; color: 'red' }
-        | { type: 'textWithColor'; color: 'yellow' }
-        | { type: 'textWithColor'; color: 'blue' }
+        >
+      >,
+      Expect<
+        Equal<
+          DeepExclude<
+            | { type: 'textWithColor'; color: Colors }
+            | {
+                type: 'textWithColorAndBackground';
+                color: Colors;
+                backgroundColor: Colors;
+              },
+            { type: 'textWithColor'; color: 'pink' }
+          >,
+          | {
+              type: 'textWithColorAndBackground';
+              color: Colors;
+              backgroundColor: Colors;
+            }
+          | { type: 'textWithColor'; color: 'purple' }
+          | { type: 'textWithColor'; color: 'red' }
+          | { type: 'textWithColor'; color: 'yellow' }
+          | { type: 'textWithColor'; color: 'blue' }
+        >
+      >,
+      Expect<
+        Equal<
+          DeepExclude<
+            [Option<{ type: 'a' } | { type: 'b' }>, 'c' | 'd'],
+            [{ kind: 'some'; value: { type: 'a' } }, any]
+          >,
+          | [{ kind: 'none' }, 'c' | 'd']
+          | [{ kind: 'some'; value: { type: 'b' } }, 'c' | 'd']
+        >
+      >,
+      Expect<
+        Equal<
+          DeepExclude<
+            { x: 'a' | 'b'; y: 'c' | 'd'; z: 'e' | 'f' },
+            { x: 'a'; y: 'c' }
+          >,
+          | { x: 'b'; y: 'c'; z: 'e' | 'f' }
+          | { x: 'b'; y: 'd'; z: 'e' | 'f' }
+          | { x: 'a'; y: 'd'; z: 'e' | 'f' }
+        >
       >
-    >,
-    Expect<
-      Equal<
-        DeepExclude<
-          [Option<{ type: 'a' } | { type: 'b' }>, 'c' | 'd'],
-          [{ kind: 'some'; value: { type: 'a' } }, any]
+    ];
+  });
+
+  describe('Multiple patterns', () => {
+    it('should work when pattern is a union', () => {
+      type cases = [
+        Expect<
+          Equal<
+            DeepExcludeMany<
+              { x: 'a' | 'b'; y: 'c' | 'd'; z: 'e' | 'f' },
+              { x: 'a'; y: 'c' } | { x: 'b'; y: 'c' }
+            >,
+            { x: 'b'; y: 'd'; z: 'e' | 'f' } | { x: 'a'; y: 'd'; z: 'e' | 'f' }
+          >
         >,
-        | [{ kind: 'none' }, 'c' | 'd']
-        | [{ kind: 'some'; value: { type: 'b' } }, 'c' | 'd']
-      >
-    >,
-    Expect<
-      Equal<
-        DeepExclude<
-          { x: 'a' | 'b'; y: 'c' | 'd'; z: 'e' | 'f' },
-          { x: 'a'; y: 'c' }
-        >,
-        | { x: 'b'; y: 'c'; z: 'e' | 'f' }
-        | { x: 'b'; y: 'd'; z: 'e' | 'f' }
-        | { x: 'a'; y: 'd'; z: 'e' | 'f' }
-      >
-    >
-  ];
+        Expect<
+          Equal<
+            DeepExcludeMany<
+              { a: { b: 'x' | 'y' | 'z' }; c: 'u' | 'v' },
+              { c: 'u' } | { a: { b: 'x' } }
+            >,
+            { a: { b: 'y' }; c: 'v' } | { a: { b: 'z' }; c: 'v' }
+          >
+        >
+      ];
+    });
+  });
 });
