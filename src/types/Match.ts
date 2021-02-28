@@ -39,7 +39,7 @@ export type Match<i, o> = {
   ): Match<i, PickReturnValue<o, c>>;
 
   with<
-    ps extends [ExhaustivePattern<i>, ...ExhaustivePattern<i>[]],
+    ps extends [Pattern<i>, ...Pattern<i>[]],
     c,
     p = ps[number],
     value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
