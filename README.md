@@ -363,22 +363,21 @@ switch (type) {
 ```
 
 Similarly, ts-pattern lets you pass several patterns to `.with()` and if
-one of these patterns matches your input, the branch will be used:
+one of these patterns matches your input, the branch will be chosen:
 
 ```ts
-const sanitize = (type: string) =>
-  match(type)
+const sanitize = (name: string) =>
+  match(name)
     .with('text', 'span', 'p', () => 'text')
     .with('btn', 'button', () => 'button')
-    .otherwise(() => type);
+    .otherwise(() => name);
 
 sanitize('span'); // 'text'
 sanitize('p'); // 'text'
 sanitize('button'); // 'button'
 ```
 
-Obviously, you can provide several complex patterns that aren't possible to express
-with regular switch statements. Exhaustive matching also works as expected.
+Obviously, you can still provide patterns that are more complex than strings, and aren't possible to express with regular switch statements. Exhaustive matching also works as you would expect.
 
 ## API Reference
 
