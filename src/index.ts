@@ -177,24 +177,29 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
     return Boolean(pattern['@ts-pattern/__when'](value));
   if (isNotPattern(pattern))
     return !matchPattern(pattern['@ts-pattern/__pattern'])(value);
-  if (isListPattern(pattern) && isArray(value))
-    return value.every((v) => matchPattern(pattern[0])(v));
+  if (isListPattern(pattern))
+    return isArray(value)
+      ? value.every((v) => matchPattern(pattern[0])(v))
+      : false;
 
   if (typeof pattern !== typeof value) return false;
 
-  if (isArray(pattern) && isArray(value)) {
-    return pattern.length === value.length
+  if (isArray(pattern)) {
+    return isArray(value) && pattern.length === value.length
       ? pattern.every((subPattern, i) => matchPattern(subPattern)(value[i]))
       : false;
   }
 
-  if (value instanceof Map && pattern instanceof Map) {
+  if (pattern instanceof Map) {
+    if (!(value instanceof Map)) return false;
     return [...pattern.keys()].every((key) =>
       matchPattern(pattern.get(key))(value.get(key))
     );
   }
 
-  if (value instanceof Set && pattern instanceof Set) {
+  if (pattern instanceof Set) {
+    if (!(value instanceof Set)) return false;
+
     const patternValues = [...pattern.values()];
     const allValues = [...value.values()];
     return patternValues.length === 0
@@ -208,7 +213,9 @@ const matchPattern = <a, p extends Pattern<a>>(pattern: p) => (
       : patternValues.every((subPattern) => value.has(subPattern));
   }
 
-  if (isObject(value) && isObject(pattern)) {
+  if (isObject(pattern)) {
+    if (!isObject(value)) return false;
+
     return Object.keys(pattern).every((k: string): boolean =>
       // @ts-ignore
       matchPattern(pattern[k])(value[k])
