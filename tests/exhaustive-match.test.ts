@@ -557,23 +557,21 @@ describe('exhaustive()', () => {
 
     it('should work with inputs of varying shapes', () => {
       type Input = { type: 'test' } | ['hello', Option<string>] | 'hello'[];
-      type Output = ['hello', Option<string>];
       const input = { type: 'test' } as Input;
 
-      const output = match(input)
-        .exhaustive()
-        .with(
-          ['hello', { kind: 'some' }],
-          (x): Output => {
-            return x;
-          }
-        )
-        .with(['hello'], (x) => {
-          return ['hello', none];
-        })
-        .with({ type: __ }, () => ['hello', none])
-        .with([__], () => ['hello', none])
-        .run();
+      expect(
+        match(input)
+          .exhaustive()
+          .with(['hello', { kind: 'some' }], ([, { value }]) => {
+            return value;
+          })
+          .with(['hello'], ([str]) => {
+            return str;
+          })
+          .with({ type: __ }, (x) => x.type)
+          .with([__], (x) => `("hello" | Option<string>)[] | "hello"[]`)
+          .run()
+      ).toEqual('test');
     });
   });
 });
