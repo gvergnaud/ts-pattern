@@ -109,6 +109,65 @@ describe('Multiple patterns', () => {
   });
 
   it('should work with all types of input', () => {
-    // TODO
+    type Input =
+      | null
+      | undefined
+      | number
+      | string
+      | boolean
+      | { a: string; b: number }
+      | [boolean, number]
+      | Map<string, { x: number }>
+      | Set<number>;
+
+    const nonExhaustive = (input: Input) =>
+      match<Input>(input)
+        .with(null, undefined, (x) => 'Nullable')
+        .with(__.boolean, __.number, __.string, (x) => 'primitive')
+        .with(
+          { a: __.string },
+          [true, 2],
+          new Map([['key', __]]),
+          new Set([__.number]),
+          (x) => 'Object'
+        )
+        .with([false, 2] as const, (x) => '[false, 2]')
+        .with([false, __.number] as const, (x) => '[false, number]')
+        .run();
+
+    const exhaustive = (input: Input) =>
+      match<Input>(input)
+        .exhaustive()
+        .with(null, undefined, (x) => 'Nullable')
+        .with(__.boolean, __.number, __.string, (x) => 'primitive')
+        .with(
+          { a: __.string },
+          [true, 2],
+          new Map([['key', __]]),
+          new Set([__.number]),
+          (x) => 'Object'
+        )
+        .with([false, 2] as const, (x) => '[false, 2]')
+        .with([false, __.number] as const, (x) => '[false, number]')
+        .run();
+
+    const cases: { input: Input; expected: string }[] = [
+      { input: null, expected: 'Nullable' },
+      { input: undefined, expected: 'Nullable' },
+      { input: true, expected: 'primitive' },
+      { input: 2, expected: 'primitive' },
+      { input: 'string', expected: 'primitive' },
+      { input: { a: 'hello', b: 2 }, expected: 'Object' },
+      { input: [true, 2], expected: 'Object' },
+      { input: new Map([['key', { x: 2 }]]), expected: 'Object' },
+      { input: new Set([2]), expected: 'Object' },
+      { input: [false, 2], expected: '[false, 2]' },
+      { input: [false, 3], expected: '[false, number]' },
+    ];
+
+    cases.forEach(({ input, expected }) => {
+      expect(nonExhaustive(input)).toEqual(expected);
+      expect(exhaustive(input)).toEqual(expected);
+    });
   });
 });
