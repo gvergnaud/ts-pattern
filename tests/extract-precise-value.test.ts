@@ -38,4 +38,44 @@ describe('ExtractPreciseValue', () => {
       >
     ];
   });
+
+  it('should return the correct branch a union based on the pattern', () => {
+    type x = ExtractPreciseValue<
+      { a: string; b: number } | [boolean, number],
+      readonly [true, 2]
+    >;
+    type cases = [Expect<Equal<x, [true, 2]>>];
+  });
+
+  it('should support readonly input types', () => {
+    type cases = [
+      Expect<
+        Equal<
+          ExtractPreciseValue<
+            { readonly a: string; b: number } | [boolean, number],
+            readonly [true, 2]
+          >,
+          [true, 2]
+        >
+      >,
+      Expect<
+        Equal<
+          ExtractPreciseValue<
+            { readonly a: string; b: number } | [boolean, number],
+            { b: number }
+          >,
+          { readonly a: string; b: number }
+        >
+      >,
+      Expect<
+        Equal<
+          ExtractPreciseValue<
+            { readonly a: string; b: number } | [boolean, number],
+            { readonly a: string }
+          >,
+          { readonly a: string; b: number }
+        >
+      >
+    ];
+  });
 });

@@ -104,7 +104,13 @@ describe('DeepExclude', () => {
     it('should correctly exclude when it matches', () => {
       type cases = [
         Expect<Equal<DeepExclude<['x' | 'y'], [string]>, never>>,
-        Expect<Equal<DeepExclude<['x' | 'y'], ['x']>, ['y']>>
+        Expect<Equal<DeepExclude<['x' | 'y'], ['x']>, ['y']>>,
+        Expect<
+          Equal<
+            DeepExclude<[string, string], readonly [unknown, unknown]>,
+            never
+          >
+        >
       ];
     });
 

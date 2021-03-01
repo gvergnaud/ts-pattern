@@ -28,8 +28,8 @@ export type InvertPattern<p> = p extends typeof __.number
   ? NotPattern<InvertPattern<a1>>
   : p extends Primitives
   ? p
-  : p extends (infer pp)[]
-  ? p extends [infer p1, infer p2, infer p3, infer p4, infer p5]
+  : p extends readonly (infer pp)[]
+  ? p extends readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
     ? [
         InvertPattern<p1>,
         InvertPattern<p2>,
@@ -37,16 +37,16 @@ export type InvertPattern<p> = p extends typeof __.number
         InvertPattern<p4>,
         InvertPattern<p5>
       ]
-    : p extends [infer p1, infer p2, infer p3, infer p4]
+    : p extends readonly [infer p1, infer p2, infer p3, infer p4]
     ? [
         InvertPattern<p1>,
         InvertPattern<p2>,
         InvertPattern<p3>,
         InvertPattern<p4>
       ]
-    : p extends [infer p1, infer p2, infer p3]
+    : p extends readonly [infer p1, infer p2, infer p3]
     ? [InvertPattern<p1>, InvertPattern<p2>, InvertPattern<p3>]
-    : p extends [infer p1, infer p2]
+    : p extends readonly [infer p1, infer p2]
     ? [InvertPattern<p1>, InvertPattern<p2>]
     : InvertPattern<pp>[]
   : p extends Map<infer pk, infer pv>
@@ -68,10 +68,10 @@ export type InvertPattern<p> = p extends typeof __.number
  */
 export type InvertNotPattern<p, i> = p extends NotPattern<infer p1>
   ? Exclude<i, p1>
-  : p extends (infer pp)[]
-  ? i extends (infer ii)[]
-    ? p extends [infer p1, infer p2, infer p3, infer p4, infer p5]
-      ? i extends [infer i1, infer i2, infer i3, infer i4, infer i5]
+  : p extends readonly (infer pp)[]
+  ? i extends readonly (infer ii)[]
+    ? p extends readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
+      ? i extends readonly [infer i1, infer i2, infer i3, infer i4, infer i5]
         ? [
             InvertNotPattern<p1, i1>,
             InvertNotPattern<p2, i2>,
@@ -80,8 +80,8 @@ export type InvertNotPattern<p, i> = p extends NotPattern<infer p1>
             InvertNotPattern<p5, i5>
           ]
         : p
-      : p extends [infer p1, infer p2, infer p3, infer p4]
-      ? i extends [infer i1, infer i2, infer i3, infer i4]
+      : p extends readonly [infer p1, infer p2, infer p3, infer p4]
+      ? i extends readonly [infer i1, infer i2, infer i3, infer i4]
         ? [
             InvertNotPattern<p1, i1>,
             InvertNotPattern<p2, i2>,
@@ -89,16 +89,16 @@ export type InvertNotPattern<p, i> = p extends NotPattern<infer p1>
             InvertNotPattern<p4, i4>
           ]
         : p
-      : p extends [infer p1, infer p2, infer p3]
-      ? i extends [infer i1, infer i2, infer i3]
+      : p extends readonly [infer p1, infer p2, infer p3]
+      ? i extends readonly [infer i1, infer i2, infer i3]
         ? [
             InvertNotPattern<p1, i1>,
             InvertNotPattern<p2, i2>,
             InvertNotPattern<p3, i3>
           ]
         : p
-      : p extends [infer p1, infer p2]
-      ? i extends [infer i1, infer i2]
+      : p extends readonly [infer p1, infer p2]
+      ? i extends readonly [infer i1, infer i2]
         ? [InvertNotPattern<p1, i1>, InvertNotPattern<p2, i2>]
         : p
       : InvertNotPattern<pp, ii>[]

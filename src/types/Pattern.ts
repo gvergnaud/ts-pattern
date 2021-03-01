@@ -72,13 +72,13 @@ export type Pattern<a> =
       ? a
       : a extends (infer b)[]
       ? a extends [infer b, infer c, infer d, infer e, infer f]
-        ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>]
+        ? readonly [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>]
         : a extends [infer b, infer c, infer d, infer e]
-        ? [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>]
+        ? readonly [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>]
         : a extends [infer b, infer c, infer d]
-        ? [Pattern<b>, Pattern<c>, Pattern<d>]
+        ? readonly [Pattern<b>, Pattern<c>, Pattern<d>]
         : a extends [infer b, infer c]
-        ? [Pattern<b>, Pattern<c>]
+        ? readonly [Pattern<b>, Pattern<c>]
         :
             | []
             | [Pattern<b>]
@@ -91,7 +91,7 @@ export type Pattern<a> =
       : a extends Set<infer v>
       ? Set<Pattern<v>>
       : IsPlainObject<a> extends true
-      ? { [k in keyof a]?: Pattern<a[k]> }
+      ? { readonly [k in keyof a]?: Pattern<a[k]> }
       : a);
 
 /**
@@ -105,38 +105,46 @@ export type ExhaustivePattern<a> =
   | WildCardPattern<a>
   | (a extends Primitives
       ? a
-      : a extends (infer b)[]
-      ? a extends [infer b, infer c, infer d, infer e, infer f]
-        ? [
+      : a extends readonly (infer b)[]
+      ? a extends readonly [infer b, infer c, infer d, infer e, infer f]
+        ? readonly [
             ExhaustivePattern<b>,
             ExhaustivePattern<c>,
             ExhaustivePattern<d>,
             ExhaustivePattern<e>,
             ExhaustivePattern<f>
           ]
-        : a extends [infer b, infer c, infer d, infer e]
-        ? [
+        : a extends readonly [infer b, infer c, infer d, infer e]
+        ? readonly [
             ExhaustivePattern<b>,
             ExhaustivePattern<c>,
             ExhaustivePattern<d>,
             ExhaustivePattern<e>
           ]
-        : a extends [infer b, infer c, infer d]
-        ? [ExhaustivePattern<b>, ExhaustivePattern<c>, ExhaustivePattern<d>]
-        : a extends [infer b, infer c]
-        ? [ExhaustivePattern<b>, ExhaustivePattern<c>]
+        : a extends readonly [infer b, infer c, infer d]
+        ? readonly [
+            ExhaustivePattern<b>,
+            ExhaustivePattern<c>,
+            ExhaustivePattern<d>
+          ]
+        : a extends readonly [infer b, infer c]
+        ? readonly [ExhaustivePattern<b>, ExhaustivePattern<c>]
         :
-            | []
-            | [ExhaustivePattern<b>]
-            | [ExhaustivePattern<b>, ExhaustivePattern<b>]
-            | [ExhaustivePattern<b>, ExhaustivePattern<b>, ExhaustivePattern<b>]
-            | [
+            | readonly []
+            | readonly [ExhaustivePattern<b>]
+            | readonly [ExhaustivePattern<b>, ExhaustivePattern<b>]
+            | readonly [
+                ExhaustivePattern<b>,
+                ExhaustivePattern<b>,
+                ExhaustivePattern<b>
+              ]
+            | readonly [
                 ExhaustivePattern<b>,
                 ExhaustivePattern<b>,
                 ExhaustivePattern<b>,
                 ExhaustivePattern<b>
               ]
-            | [
+            | readonly [
                 ExhaustivePattern<b>,
                 ExhaustivePattern<b>,
                 ExhaustivePattern<b>,
@@ -148,5 +156,5 @@ export type ExhaustivePattern<a> =
       : a extends Set<infer v>
       ? Set<ExhaustivePattern<v>>
       : IsPlainObject<a> extends true
-      ? { [k in keyof a]?: ExhaustivePattern<a[k]> }
+      ? { readonly [k in keyof a]?: ExhaustivePattern<a[k]> }
       : a);

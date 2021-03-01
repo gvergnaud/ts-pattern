@@ -10,7 +10,7 @@ describe('List ([a])', () => {
     };
     const res = match<any, Option<Blog[]>>([httpResult])
       .with([] as const, (x) => {
-        type t = Expect<Equal<typeof x, readonly []>>;
+        type t = Expect<Equal<typeof x, never[]>>;
         return { kind: 'some', value: [{ id: 0, title: 'LOlol' }] };
       })
       .with([{ id: __.number, title: __.string }], (blogs) => {
