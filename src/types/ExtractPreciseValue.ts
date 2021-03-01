@@ -80,19 +80,21 @@ export type ExtractPreciseValue<a, b> =
             ? Set<ExtractPreciseValue<av, bv>>
             : LeastUpperBound<a, b>
           : IsPlainObject<b> extends true
-          ? a extends any[] | Set<any> | Map<any, any> | Primitives
-            ? LeastUpperBound<a, b>
-            : b extends a
-            ? b
-            : a extends b
-            ? a
-            : {
-                // we use Required to remove the optional property modifier (?:).
-                // since we use a[k] after that, optional properties will stay
-                // optional if no pattern was more precise.
-                [k in keyof Required<a>]: k extends keyof b
-                  ? ExtractPreciseValue<a[k], b[k]>
-                  : a[k];
-              }
+          ? a extends object
+            ? b extends a
+              ? b
+              : a extends b
+              ? a
+              : [keyof a & keyof b] extends [never]
+              ? never
+              : {
+                  // we use Required to remove the optional property modifier (?:).
+                  // since we use a[k] after that, optional properties will stay
+                  // optional if no pattern was more precise.
+                  [k in keyof Required<a>]: k extends keyof b
+                    ? ExtractPreciseValue<a[k], b[k]>
+                    : a[k];
+                }
+            : LeastUpperBound<a, b>
           : LeastUpperBound<a, b>
       >;

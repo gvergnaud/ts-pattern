@@ -13,6 +13,58 @@ describe('ExtractPreciseValue', () => {
           >,
           ['hello', { kind: 'some'; value: string }]
         >
+      >,
+      Expect<
+        Equal<
+          ExtractPreciseValue<
+            | { type: 'a'; message: string }
+            | { type: 'b'; count: number }
+            | { type: 'c'; count: number },
+            { count: number }
+          >,
+          { type: 'b'; count: number } | { type: 'c'; count: number }
+        >
+      >,
+      Expect<
+        Equal<
+          ExtractPreciseValue<
+            | {
+                type: 'a';
+                x: { type: 'b'; count: number } | { type: 'c'; count: number };
+                y: 'other';
+              }
+            | { type: 'b'; count: number }
+            | { type: 'c'; count: number },
+            { type: 'a'; x: { type: 'b' } }
+          >,
+          {
+            type: 'a';
+            x: { type: 'b'; count: number };
+            y: 'other';
+          }
+        >
+      >,
+      Expect<
+        Equal<
+          ExtractPreciseValue<
+            | {
+                type: 'a';
+                x:
+                  | { type: 'b'; count: number }
+                  | { type: 'c'; count: number }
+                  | { type: 'd' };
+                y: 'other';
+              }
+            | { type: 'b'; count: number }
+            | { type: 'c'; count: number },
+            { type: 'a'; x: { count: number } }
+          >,
+          {
+            type: 'a';
+            x: { type: 'b'; count: number } | { type: 'c'; count: number };
+            y: 'other';
+          }
+        >
       >
     ];
   });
