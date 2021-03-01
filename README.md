@@ -344,6 +344,41 @@ the `pattern` and the `handler` callback:
   )
 ```
 
+### Matching several patterns
+
+As you may know, `switch` statements allow handling several cases with
+the same code block:
+
+```ts
+switch (type) {
+  case 'text':
+  case 'span':
+  case 'p':
+    return 'text';
+
+  case 'btn':
+  case 'button':
+    return 'button';
+}
+```
+
+Similarly, ts-pattern lets you pass several patterns to `.with()` and if
+one of these patterns matches your input, the branch will be chosen:
+
+```ts
+const sanitize = (name: string) =>
+  match(name)
+    .with('text', 'span', 'p', () => 'text')
+    .with('btn', 'button', () => 'button')
+    .otherwise(() => name);
+
+sanitize('span'); // 'text'
+sanitize('p'); // 'text'
+sanitize('button'); // 'button'
+```
+
+Obviously, you can still provide patterns that are more complex than strings, and aren't possible to express with regular switch statements. Exhaustive matching also works as you would expect.
+
 ## API Reference
 
 ### match
@@ -370,7 +405,7 @@ function match<TInput, TOutput>(input: TInput): Match<TInput, TOutput>;
 
 ```ts
 match(...)
-  .with(pattern, [, when, when, when], handler)
+  .with(pattern, [...patterns], handler)
 ```
 
 #### Signature
@@ -378,10 +413,22 @@ match(...)
 ```ts
 function with(
   pattern: Pattern<TInput>,
-  [, when: (value: TInput) => unknown,
-     when: (value: TInput) => unknown,
-     when: (value: TInput) => unknown],
-  handler: (value: TInput, selections?: Selections<TInput>) => TOutput
+  handler: (value: TInput, selections: Selections<TInput>) => TOutput
+): Match<TInput, TOutput>;
+
+// Overload for multiple patterns
+function with(
+  pattern1: Pattern<TInput>,
+  ...patterns: Pattern<TInput>[],
+  // no selection object is provided when using multiple patterns
+  handler: (value: TInput) => TOutput
+): Match<TInput, TOutput>;
+
+// Overload for guard functions
+function with(
+  pattern: Pattern<TInput>[],
+  ...guardFunctions: ((value: TInput) => unknown)[],
+  handler: (value: TInput, selections: Selections<TInput>) => TOutput
 ): Match<TInput, TOutput>;
 ```
 
@@ -391,6 +438,7 @@ function with(
   - **Required**
   - The pattern your input must match for the handler to be called.
   - [See all valid patterns bellow](#patterns)
+  - If you provide several patterns before providing the `handler`, the `with` clause will match if one of the patterns matches.
 - `when: (value: TInput) => unknown`
   - Optional
   - Additional condition the input must satisfy for the handler to be called.

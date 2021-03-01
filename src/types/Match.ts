@@ -1,7 +1,7 @@
 import type { Pattern, GuardValue, ExhaustivePattern } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertNotPattern, InvertPattern } from './InvertPattern';
-import type { DeepExclude } from './DeepExclude';
+import type { DeepExclude, DeepExcludeMany } from './DeepExclude';
 import type { WithDefault } from './helpers';
 import type { FindSelected } from './FindSelected';
 
@@ -36,6 +36,66 @@ export type Match<i, o> = {
       value: value,
       selections: FindSelected<value, p>
     ) => PickReturnValue<o, c>
+  ): Match<i, PickReturnValue<o, c>>;
+
+  with<
+    p1 extends Pattern<i>,
+    p2 extends Pattern<i>,
+    c,
+    p = p1 | p2,
+    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
+  >(
+    pattern1: p1,
+    pattern2: p2,
+    handler: (value: value) => PickReturnValue<o, c>
+  ): Match<i, PickReturnValue<o, c>>;
+
+  with<
+    p1 extends Pattern<i>,
+    p2 extends Pattern<i>,
+    p3 extends Pattern<i>,
+    c,
+    p = p1 | p2 | p3,
+    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
+  >(
+    pattern1: p1,
+    pattern2: p2,
+    pattern3: p3,
+    handler: (value: value) => PickReturnValue<o, c>
+  ): Match<i, PickReturnValue<o, c>>;
+
+  with<
+    p1 extends Pattern<i>,
+    p2 extends Pattern<i>,
+    p3 extends Pattern<i>,
+    p4 extends Pattern<i>,
+    c,
+    p = p1 | p2 | p3 | p4,
+    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
+  >(
+    pattern1: p1,
+    pattern2: p2,
+    pattern3: p3,
+    pattern4: p4,
+    handler: (value: value) => PickReturnValue<o, c>
+  ): Match<i, PickReturnValue<o, c>>;
+
+  with<
+    p1 extends Pattern<i>,
+    p2 extends Pattern<i>,
+    p3 extends Pattern<i>,
+    p4 extends Pattern<i>,
+    p5 extends Pattern<i>,
+    c,
+    p = p1 | p2 | p3 | p4 | p5,
+    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
+  >(
+    pattern1: p1,
+    pattern2: p2,
+    pattern3: p3,
+    pattern4: p4,
+    pattern5: p5,
+    handler: (value: value) => PickReturnValue<o, c>
   ): Match<i, PickReturnValue<o, c>>;
 
   with<
@@ -147,6 +207,94 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     // in it, because Pattern<i> is generally mucb easier to compute than
     // the Pattern<distributedInput>.
     DeepExclude<distributedInput, InvertNotPattern<invpattern, value>>,
+    i,
+    PickReturnValue<o, c>
+  >;
+
+  with<
+    p1 extends ExhaustivePattern<i>,
+    p2 extends ExhaustivePattern<i>,
+    c,
+    p = p1 | p2,
+    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
+  >(
+    pattern1: p1,
+    pattern2: p2,
+    handler: (value: value) => PickReturnValue<o, c>
+  ): ExhaustiveMatch<
+    DeepExcludeMany<
+      distributedInput,
+      p extends any ? InvertNotPattern<InvertPattern<p>, value> : never
+    >,
+    i,
+    PickReturnValue<o, c>
+  >;
+
+  with<
+    p1 extends ExhaustivePattern<i>,
+    p2 extends ExhaustivePattern<i>,
+    p3 extends ExhaustivePattern<i>,
+    c,
+    p = p1 | p2 | p3,
+    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
+  >(
+    pattern1: p1,
+    pattern2: p2,
+    pattern3: p3,
+    handler: (value: value) => PickReturnValue<o, c>
+  ): ExhaustiveMatch<
+    DeepExcludeMany<
+      distributedInput,
+      p extends any ? InvertNotPattern<InvertPattern<p>, value> : never
+    >,
+    i,
+    PickReturnValue<o, c>
+  >;
+
+  with<
+    p1 extends ExhaustivePattern<i>,
+    p2 extends ExhaustivePattern<i>,
+    p3 extends ExhaustivePattern<i>,
+    p4 extends ExhaustivePattern<i>,
+    c,
+    p = p1 | p2 | p3 | p4,
+    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
+  >(
+    pattern1: p1,
+    pattern2: p2,
+    pattern3: p3,
+    pattern4: p4,
+    handler: (value: value) => PickReturnValue<o, c>
+  ): ExhaustiveMatch<
+    DeepExcludeMany<
+      distributedInput,
+      p extends any ? InvertNotPattern<InvertPattern<p>, value> : never
+    >,
+    i,
+    PickReturnValue<o, c>
+  >;
+
+  with<
+    p1 extends ExhaustivePattern<i>,
+    p2 extends ExhaustivePattern<i>,
+    p3 extends ExhaustivePattern<i>,
+    p4 extends ExhaustivePattern<i>,
+    p5 extends ExhaustivePattern<i>,
+    c,
+    p = p1 | p2 | p3 | p4 | p5,
+    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
+  >(
+    pattern1: p1,
+    pattern2: p2,
+    pattern3: p3,
+    pattern4: p4,
+    pattern5: p5,
+    handler: (value: value) => PickReturnValue<o, c>
+  ): ExhaustiveMatch<
+    DeepExcludeMany<
+      distributedInput,
+      p extends any ? InvertNotPattern<InvertPattern<p>, value> : never
+    >,
     i,
     PickReturnValue<o, c>
   >;

@@ -1,8 +1,7 @@
 ### Roadmap
 
-- [ ] add support matching again several patterns in a single `.with()` clause.
-- [ ] add a lightweight `select` API for single values
 - [ ] add a `rest` (maybe `rest(Pattern<a>)`) pattern for list. Example of using `rest`:
+- [ ] maybe add a lightweight `select` API for single values
 
 ```ts
 const reverse2 = <T>(xs: T[]): T[] => {
@@ -14,6 +13,7 @@ const reverse2 = <T>(xs: T[]): T[] => {
 
 - [ ] When not provided, maybe compute the output type from all branches
 - [ ] Maybe change the syntax for list, and provide a `__.list` pattern, so we can support unary tuples
+- [x] add support matching again several patterns in a single `.with()` clause.
 - [x] Find a way to enforce exhaustive pattern matching
 - [x] Several pattern/when clauses if necessary, with refined type inference from one to the other
 - [x] Find a way to make the full type inference work
