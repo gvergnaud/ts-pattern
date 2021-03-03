@@ -57,7 +57,7 @@ export type UnionToTuple<T> = UnionToIntersection<
 
 export type Cast<a, b> = a extends b ? a : never;
 
-export type Flatten<xs extends any[]> = xs extends [infer head, ...(infer tail)]
+export type Flatten<xs extends any[]> = xs extends [infer head, ...infer tail]
   ? [...Cast<head, any[]>, ...Flatten<tail>]
   : [];
 
@@ -79,7 +79,7 @@ export type Iterator<
 > = it['length'] extends n ? it : Iterator<n, [any, ...it]>;
 
 export type Next<it extends any[]> = [any, ...it];
-export type Prev<it extends any[]> = it extends [any, ...(infer tail)]
+export type Prev<it extends any[]> = it extends [any, ...infer tail]
   ? tail
   : [];
 
@@ -89,13 +89,13 @@ export type Slice<
   output extends any[] = []
 > = Length<it> extends 0
   ? output
-  : xs extends [infer head, ...(infer tail)]
+  : xs extends [infer head, ...infer tail]
   ? Slice<tail, Prev<it>, [...output, head]>
   : output;
 
 export type Drop<xs extends any[], n extends any[]> = Length<n> extends 0
   ? xs
-  : xs extends [any, ...(infer tail)]
+  : xs extends [any, ...infer tail]
   ? Drop<tail, Prev<n>>
   : [];
 
@@ -118,7 +118,7 @@ export type Compute<a extends any> = a extends BuiltInObjects
   : { [k in keyof a]: a[k] } & unknown;
 
 // All :: Bool[] -> Bool
-export type All<xs> = xs extends [infer head, ...(infer tail)]
+export type All<xs> = xs extends [infer head, ...infer tail]
   ? boolean extends head
     ? false
     : head extends true

@@ -108,6 +108,23 @@ describe('Multiple patterns', () => {
       .with({ kind: 'none' }, { kind: 'some' }, () => false);
   });
 
+  it('should work with literal types', () => {
+    type Country = 'France' | 'Germany' | 'Spain' | 'USA';
+
+    match<Country>('France')
+      .exhaustive()
+      .with('France', 'Germany', 'Spain', () => 'Europe')
+      .with('USA', () => 'America')
+      .run();
+
+    match<Country>('France')
+      .exhaustive()
+      .with('Germany', 'Spain', () => 'Europe')
+      .with('USA', () => 'America')
+      // @ts-expect-error: 'France' is missing
+      .run();
+  });
+
   it('should work with all types of input', () => {
     type Input =
       | null
@@ -122,17 +139,41 @@ describe('Multiple patterns', () => {
 
     const nonExhaustive = (input: Input) =>
       match<Input>(input)
-        .with(null, undefined, (x) => 'Nullable')
-        .with(__.boolean, __.number, __.string, (x) => 'primitive')
+        .with(null, undefined, (x) => {
+          type t = Expect<Equal<typeof x, null | undefined>>;
+          return 'Nullable';
+        })
+        .with(__.boolean, __.number, __.string, (x) => {
+          type t = Expect<Equal<typeof x, boolean | number | string>>;
+          return 'primitive';
+        })
         .with(
           { a: __.string },
           [true, 2],
           new Map([['key', __]]),
           new Set([__.number]),
-          (x) => 'Object'
+          (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                | { a: string; b: number }
+                | [true, number]
+                | Map<string, { x: number }>
+                | Set<number>
+              >
+            >;
+
+            return 'Object';
+          }
         )
-        .with([false, 2] as const, (x) => '[false, 2]')
-        .with([false, __.number] as const, (x) => '[false, number]')
+        .with([false, 2] as const, (x) => {
+          type t = Expect<Equal<typeof x, [false, 2]>>;
+          return '[false, 2]';
+        })
+        .with([false, __.number] as const, (x) => {
+          type t = Expect<Equal<typeof x, [false, number]>>;
+          return '[false, number]';
+        })
         .run();
 
     const exhaustive = (input: Input) =>

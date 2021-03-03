@@ -573,5 +573,22 @@ describe('exhaustive()', () => {
           .run()
       ).toEqual('test');
     });
+
+    it('should infer literals as literal types', () => {
+      type Input = { type: 'video'; duration: number };
+
+      match<Input>({ type: 'video', duration: 10 })
+        .exhaustive()
+        .with({ type: 'video', duration: 10 }, (x) => '')
+        // @ts-expect-error
+        .run();
+
+      let n: number = 10;
+      match<number>(n)
+        .exhaustive()
+        .with(10, (x) => '')
+        // @ts-expect-error
+        .run();
+    });
   });
 });
