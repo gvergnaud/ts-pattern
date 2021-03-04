@@ -1,5 +1,7 @@
+import { PatternType } from '../src/PatternType';
 import {
   FindSelected,
+  FindSelectionUnion,
   SeveralAnonymousSelectError,
 } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
@@ -176,6 +178,38 @@ describe('FindSelected', () => {
               }
             >,
             [SeveralAnonymousSelectError]
+          >
+        >
+      ];
+    });
+
+    describe('Mix of named and unnamed selections', () => {
+      type Input =
+        | { type: 'text'; text: string; author: { name: string } }
+        | { type: 'video'; duration: number; src: string }
+        | {
+            type: 'movie';
+            duration: number;
+            author: { name: string };
+            src: string;
+            title: string;
+          }
+        | { type: 'picture'; src: string };
+
+      type cases = [
+        Expect<
+          Equal<
+            FindSelected<
+              Input,
+              {
+                type: 'text';
+                text: AnonymousSelectPattern;
+                author: {
+                  name: NamedSelectPattern<'authorName'>;
+                };
+              }
+            >,
+            [string, { authorName: string }]
           >
         >
       ];

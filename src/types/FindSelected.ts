@@ -8,47 +8,51 @@ import type {
 } from './helpers';
 import type { NamedSelectPattern, AnonymousSelectPattern } from './Pattern';
 
-type FindSelectionUnion<i, p> = p extends NamedSelectPattern<infer k>
+export type FindSelectionUnion<i, p> = p extends NamedSelectPattern<infer k>
   ? [k, i]
   : p extends AnonymousSelectPattern
   ? [PatternType.AnonymousSelect, i]
-  : [i, p] extends [(infer ii)[], (infer pp)[]]
-  ? [i, p] extends [
-      [infer i1, infer i2, infer i3, infer i4, infer i5],
-      [infer p1, infer p2, infer p3, infer p4, infer p5]
-    ]
-    ?
-        | FindSelectionUnion<i1, p1>
-        | FindSelectionUnion<i2, p2>
-        | FindSelectionUnion<i3, p3>
-        | FindSelectionUnion<i4, p4>
-        | FindSelectionUnion<i5, p5>
-    : [i, p] extends [
-        [infer i1, infer i2, infer i3, infer i4],
-        [infer p1, infer p2, infer p3, infer p4]
+  : p extends (infer pp)[]
+  ? i extends (infer ii)[]
+    ? [i, p] extends [
+        [infer i1, infer i2, infer i3, infer i4, infer i5],
+        [infer p1, infer p2, infer p3, infer p4, infer p5]
       ]
-    ?
-        | FindSelectionUnion<i1, p1>
-        | FindSelectionUnion<i2, p2>
-        | FindSelectionUnion<i3, p3>
-        | FindSelectionUnion<i4, p4>
-    : [i, p] extends [
-        [infer i1, infer i2, infer i3],
-        [infer p1, infer p2, infer p3]
-      ]
-    ?
-        | FindSelectionUnion<i1, p1>
-        | FindSelectionUnion<i2, p2>
-        | FindSelectionUnion<i3, p3>
-    : [i, p] extends [[infer i1, infer i2], [infer p1, infer p2]]
-    ? FindSelectionUnion<i1, p1> | FindSelectionUnion<i2, p2>
-    : FindSelectionUnion<ii, pp> extends infer selectionUnion
-    ? selectionUnion extends [infer k, infer v]
-      ? [k, v[]]
+      ?
+          | FindSelectionUnion<i1, p1>
+          | FindSelectionUnion<i2, p2>
+          | FindSelectionUnion<i3, p3>
+          | FindSelectionUnion<i4, p4>
+          | FindSelectionUnion<i5, p5>
+      : [i, p] extends [
+          [infer i1, infer i2, infer i3, infer i4],
+          [infer p1, infer p2, infer p3, infer p4]
+        ]
+      ?
+          | FindSelectionUnion<i1, p1>
+          | FindSelectionUnion<i2, p2>
+          | FindSelectionUnion<i3, p3>
+          | FindSelectionUnion<i4, p4>
+      : [i, p] extends [
+          [infer i1, infer i2, infer i3],
+          [infer p1, infer p2, infer p3]
+        ]
+      ?
+          | FindSelectionUnion<i1, p1>
+          | FindSelectionUnion<i2, p2>
+          | FindSelectionUnion<i3, p3>
+      : [i, p] extends [[infer i1, infer i2], [infer p1, infer p2]]
+      ? FindSelectionUnion<i1, p1> | FindSelectionUnion<i2, p2>
+      : FindSelectionUnion<ii, pp> extends infer selectionUnion
+      ? selectionUnion extends [infer k, infer v]
+        ? [k, v[]]
+        : never
       : never
     : never
-  : [IsPlainObject<i>, IsPlainObject<p>] extends [true, true]
-  ? ValueOf<{ [k in keyof i & keyof p]: FindSelectionUnion<i[k], p[k]> }>
+  : IsPlainObject<p> extends true
+  ? i extends object
+    ? ValueOf<{ [k in keyof i & keyof p]: FindSelectionUnion<i[k], p[k]> }>
+    : never
   : never;
 
 export type SeveralAnonymousSelectError = {

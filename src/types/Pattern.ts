@@ -45,7 +45,6 @@ export type NotPattern<a> = {
 export type AnonymousSelectPattern = {
   /** @deprecated This property should only be used by ts-pattern's internals. */
   '@ts-pattern/__patternKind': PatternType.AnonymousSelect;
-  as: <k extends string>(key: k) => NamedSelectPattern<k>;
 };
 
 export type NamedSelectPattern<k extends string> = {

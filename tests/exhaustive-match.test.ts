@@ -516,59 +516,120 @@ describe('exhaustive()', () => {
     });
   });
 
-  it('v3', () => {
-    type Input =
-      | { type: 'text'; text: string; author: { name: string } }
-      | { type: 'video'; duration: number; src: string }
-      | {
-          type: 'movie';
-          duration: number;
-          author: { name: string };
-          src: string;
-          title: string;
-        }
-      | { type: 'picture'; src: string };
+  describe('v3', () => {
+    it('test api', () => {
+      type Input =
+        | { type: 'text'; text: string; author: { name: string } }
+        | { type: 'video'; duration: number; src: string }
+        | {
+            type: 'movie';
+            duration: number;
+            author: { name: string };
+            src: string;
+            title: string;
+          }
+        | { type: 'picture'; src: string };
 
-    match<Input>({ type: 'text', text: 'Hello', author: { name: 'Gabriel' } })
-      .with(
-        {
-          type: 'text',
-          text: select,
-          author: { name: select.as('authorName') },
-        },
-        (text, { authorName }) => `${text} from ${authorName}`
-      )
-      // if when isn't a type guard, this pattern is ignored, we don't exclude
-      .with({ type: 'video', duration: when((x) => x > 10) }, () => '')
-      // this catches every number
-      .with(
-        {
-          type: 'video',
-          duration: when((x): x is number => typeof x === 'number'),
-        },
-        () => ''
-      )
-      // if a property is a literal but the input type for this property
-      // is not a literal type, ignore this pattern because we can't narrow the type
-      .with({ type: 'movie', duration: 10 }, () => '')
-      // with `as const` we can narrow the type, so this pattern isn't ignored
-      .with({ type: 'movie', duration: 10 as const }, () => '')
+      match<Input>({ type: 'text', text: 'Hello', author: { name: 'Gabriel' } })
+        .with(
+          {
+            type: 'text',
+            text: select(),
+            author: { name: select('authorName') },
+          },
+          (text, { authorName }) => `${text} from ${authorName}`
+        )
+        // if when isn't a type guard, this pattern is ignored, we don't exclude
+        .with({ type: 'video', duration: when((x) => x > 10) }, () => '')
+        // this catches every number
+        .with(
+          {
+            type: 'video',
+            duration: when((x): x is number => typeof x === 'number'),
+          },
+          () => ''
+        )
+        // if a property is a literal but the input type for this property
+        // is not a literal type, ignore this pattern because we can't narrow the type
+        .with({ type: 'movie', duration: 10 }, () => '')
+        // with `as const` we can narrow the type, so this pattern isn't ignored
+        .with({ type: 'movie', duration: 10 as const }, () => '')
 
-      //  Selection API:
-      // I think this is a the best options: number literals for arguments position, and strings for kwargs
-      .with(
-        { type: 'movie', duration: 10, author: select(0), title: select(1) },
-        (author, title) => ''
-      )
-      // by default, select the first arg
-      .with(
-        { type: 'video', duration: when((x) => x > 10), title: select },
-        (title) => ''
-      )
-      .with({ type: 'picture' }, () => '')
-      // This is a type error, because `type picture` has already been handled
-      .with({ type: 'picture' }, () => '')
-      // this replaces run()
-      .exhaustive();
+        //  Selection API:
+        // I think this is a the best options: number literals for arguments position, and strings for kwargs
+        .with(
+          {
+            type: 'movie',
+            duration: 10,
+            author: select('author'),
+            title: select('title'),
+          },
+          ({ author, title }) => ''
+        )
+        // by default, select the first arg
+        .with(
+          { type: 'video', duration: when((x) => x > 10), title: select },
+          (title) => ''
+        )
+        .with({ type: 'picture' }, () => '')
+        // This is a type error, because `type picture` has already been handled
+        .with({ type: 'picture' }, () => '')
+        // this replaces run()
+        .exhaustive();
+    });
+
+    it('reducer', () => {
+      type State<T = string> =
+        | { status: 'idle' }
+        | { status: 'loading' }
+        | { status: 'success'; data: T }
+        | { status: 'error'; error: Error };
+
+      type Event<T = string> =
+        | { type: 'fetch' }
+        | { type: 'success'; data: T }
+        | { type: 'error'; error: Error }
+        | { type: 'cancel' };
+
+      const initState: State = {
+        status: 'idle',
+      };
+
+      const reducer = (state: State, event: Event): State =>
+        // Sometimes you want to match on two values at once.
+        // Here we pattern match both on the state and the event
+        // and return a new state.
+        match<[State, Event], State>([state, event])
+          // the first argument is the pattern : the shape of the value
+          // you expect for this branch.
+          .with(
+            [{ status: 'loading' }, { type: 'success', data: select() }],
+            (data) => ({ status: 'success', data })
+          )
+          // The second argument is the function that will be called if
+          // the data matches the given pattern.
+          // The type of the data structure is narrowed down to
+          // what is permitted by the pattern.
+          .with(
+            [{ status: 'loading' }, { type: 'error', error: select() }],
+            (error) => ({ status: 'error', error })
+          )
+          .with([{ status: 'loading' }, { type: 'cancel' }], () => initState)
+          // if you need to exclude a value, you can use
+          // a `not` pattern. it's a function taking a pattern
+          // and returning its opposite.
+          .with([{ status: not('loading') }, { type: 'fetch' }], (value) => ({
+            // The loading state is correctly removed from the type of `value`
+            status: 'loading',
+          }))
+          // `__` is a wildcard, it will match any value.
+          // You can use it at the top level, or inside a data structure.
+          .with(__, () => state)
+          // `run` execute the match clause, and returns the value
+          // .run();
+          // You can also use `otherwise`, which take an handler returning
+          // a default value. It is equivalent to `with(__, handler).run()`.
+          .exhaustive();
+    });
   });
 });

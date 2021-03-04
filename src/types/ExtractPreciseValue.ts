@@ -1,4 +1,4 @@
-import type { NotPattern, Primitives } from './Pattern';
+import type { NotPattern } from './Pattern';
 import type {
   ExcludeIfContainsNever,
   IsAny,

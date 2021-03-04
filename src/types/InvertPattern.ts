@@ -1,7 +1,8 @@
 import type { __ } from '../PatternType';
 import { IsPlainObject } from './helpers';
 import type {
-  SelectPattern,
+  NamedSelectPattern,
+  AnonymousSelectPattern,
   GuardPattern,
   NotPattern,
   Primitives,
@@ -18,9 +19,7 @@ export type InvertPattern<p> = p extends typeof __.number
   ? string
   : p extends typeof __.boolean
   ? boolean
-  : p extends SelectPattern<any>
-  ? unknown
-  : p extends typeof __
+  : p extends NamedSelectPattern<any> | AnonymousSelectPattern | typeof __
   ? unknown
   : p extends GuardPattern<any, infer p1>
   ? p1

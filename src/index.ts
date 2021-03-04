@@ -24,15 +24,20 @@ export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
   '@ts-pattern/__pattern': pattern,
 });
 
-const as = <k extends string>(key: k): NamedSelectPattern<k> => ({
-  '@ts-pattern/__patternKind': PatternType.NamedSelect,
-  '@ts-pattern/__key': key,
-});
-
-export const select = {
-  '@ts-pattern/__patternKind': PatternType.AnonymousSelect,
-  as,
-};
+export function select(): AnonymousSelectPattern;
+export function select<k extends string>(key: k): NamedSelectPattern<k>;
+export function select<k extends string>(
+  key?: k
+): AnonymousSelectPattern | NamedSelectPattern<k> {
+  return key === undefined
+    ? {
+        '@ts-pattern/__patternKind': PatternType.AnonymousSelect,
+      }
+    : {
+        '@ts-pattern/__patternKind': PatternType.NamedSelect,
+        '@ts-pattern/__key': key,
+      };
+}
 
 /**
  * # Pattern matching
