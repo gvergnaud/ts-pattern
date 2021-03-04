@@ -1,4 +1,5 @@
 import { match, not, Pattern, select, when, __ } from '../src';
+import { Equal, Expect } from '../src/types/helpers';
 import { Option, some, none, BigUnion } from './utils';
 
 describe('exhaustive()', () => {
@@ -514,6 +515,58 @@ describe('exhaustive()', () => {
         // @ts-expect-error
         .exhaustive();
     });
+
+    it('should correctly exclude cases if when pattern contains a type guard', () => {
+      match<{ x: 1 | 2 | 3 }>({ x: 2 })
+        .with({ x: when((x): x is 1 => x === 1) }, (x) => {
+          type t = Expect<Equal<typeof x, { x: 1 }>>;
+          return '';
+        })
+        .with({ x: when((x): x is 2 => x === 2) }, (x) => {
+          type t = Expect<Equal<typeof x, { x: 2 }>>;
+          return '';
+        })
+        .with({ x: when((x): x is 3 => x === 3) }, (x) => {
+          type t = Expect<Equal<typeof x, { x: 3 }>>;
+          return '';
+        })
+        .exhaustive();
+    });
+
+    it('should correctly exclude cases if the pattern is a literal type', () => {});
+
+    it('should not exclude cases if the pattern is a literal type and the value is not', () => {
+      match({ x: 2 })
+        .with({ x: 2 }, ({ x }) => {
+          type t = Expect<Equal<typeof x, number>>;
+          return '';
+        })
+        // @ts-expect-error
+        .exhaustive();
+
+      match<1 | 2 | 3>(2)
+        .with(2, (x) => {
+          type t = Expect<Equal<typeof x, 2>>;
+          return '';
+        })
+        // @ts-expect-error
+        .exhaustive();
+
+      match<1 | 2 | 3>(2)
+        .with(1, (x) => {
+          type t = Expect<Equal<typeof x, 1>>;
+          return '';
+        })
+        .with(2, (x) => {
+          type t = Expect<Equal<typeof x, 2>>;
+          return '';
+        })
+        .with(3, (x) => {
+          type t = Expect<Equal<typeof x, 3>>;
+          return '';
+        })
+        .exhaustive();
+    });
   });
 
   describe('v3', () => {
@@ -530,6 +583,8 @@ describe('exhaustive()', () => {
           }
         | { type: 'picture'; src: string };
 
+      const isNumber = (x: unknown): x is number => typeof x === 'number';
+
       match<Input>({ type: 'text', text: 'Hello', author: { name: 'Gabriel' } })
         .with(
           {
@@ -545,16 +600,13 @@ describe('exhaustive()', () => {
         .with(
           {
             type: 'video',
-            duration: when((x): x is number => typeof x === 'number'),
+            duration: when(isNumber),
           },
           () => ''
         )
         // if a property is a literal but the input type for this property
         // is not a literal type, ignore this pattern because we can't narrow the type
         .with({ type: 'movie', duration: 10 }, () => '')
-        // with `as const` we can narrow the type, so this pattern isn't ignored
-        .with({ type: 'movie', duration: 10 as const }, () => '')
-
         //  Selection API:
         // I think this is a the best options: number literals for arguments position, and strings for kwargs
         .with(
@@ -575,6 +627,7 @@ describe('exhaustive()', () => {
         // This is a type error, because `type picture` has already been handled
         .with({ type: 'picture' }, () => '')
         // this replaces run()
+        .with({ type: 'movie', duration: when(isNumber) }, () => '')
         .exhaustive();
     });
 

@@ -28,7 +28,7 @@ export type GuardFunction<a, b extends a> =
  * Theses properties should be used by ts-pattern's internals only.
  */
 
-export type GuardPattern<a, b extends a = a> = {
+export type GuardPattern<a, b extends a = never> = {
   /** @deprecated This property should only be used by ts-pattern's internals. */
   '@ts-pattern/__patternKind': PatternType.Guard;
   /** @deprecated This property should only be used by ts-pattern's internals. */

@@ -20,12 +20,12 @@ export type LeastUpperBound<a, b> = b extends a ? b : a extends b ? a : never;
 export type ExcludeIfContainsNever<a> = a extends Map<any, any> | Set<any>
   ? a
   : a extends any[]
-  ? ExcludeNeverArray<a>
+  ? ExcludeNeverTuple<a>
   : IsPlainObject<a> extends true
   ? ExcludeNeverObject<Cast<a, object>>
   : a;
 
-type ExcludeNeverArray<a extends any[]> =
+type ExcludeNeverTuple<a extends any[]> =
   | (a[0] extends never ? false : true)
   | (a[1] extends never ? false : true)
   | (a[2] extends never ? false : true)

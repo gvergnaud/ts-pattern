@@ -46,7 +46,6 @@ describe('Multiple patterns', () => {
   it('exhaustive patterns should match if one of the patterns matches', () => {
     const testFn = (input: Option<number>) =>
       match(input)
-        .exhaustive()
         .with(
           { kind: 'some', value: 2 as const },
           { kind: 'some', value: 3 as const },
@@ -69,7 +68,7 @@ describe('Multiple patterns', () => {
           >;
           return false;
         })
-        .run();
+        .exhaustive();
 
     const cases = [
       { input: { kind: 'some', value: 3 }, expected: true },
@@ -87,16 +86,15 @@ describe('Multiple patterns', () => {
   it("no patterns shouldn't typecheck", () => {
     const input = { kind: 'none' } as Option<number>;
     match(input)
-      .exhaustive()
       // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
-      .with(() => false);
+      .with(() => false)
+      .exhaustive();
 
     match(input)
       // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
       .with(() => false);
 
     match(input)
-      .exhaustive()
       // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
       .with(() => false)
       .with(
@@ -105,24 +103,23 @@ describe('Multiple patterns', () => {
         { kind: 'some', value: 4 as const },
         (x) => true
       )
-      .with({ kind: 'none' }, { kind: 'some' }, () => false);
+      .with({ kind: 'none' }, { kind: 'some' }, () => false)
+      .exhaustive();
   });
 
   it('should work with literal types', () => {
     type Country = 'France' | 'Germany' | 'Spain' | 'USA';
 
     match<Country>('France')
-      .exhaustive()
       .with('France', 'Germany', 'Spain', () => 'Europe')
       .with('USA', () => 'America')
-      .run();
+      .exhaustive();
 
     match<Country>('France')
-      .exhaustive()
       .with('Germany', 'Spain', () => 'Europe')
       .with('USA', () => 'America')
       // @ts-expect-error: 'France' is missing
-      .run();
+      .exhaustive();
   });
 
   it('should work with all types of input', () => {
@@ -178,7 +175,6 @@ describe('Multiple patterns', () => {
 
     const exhaustive = (input: Input) =>
       match<Input>(input)
-        .exhaustive()
         .with(null, undefined, (x) => 'Nullable')
         .with(__.boolean, __.number, __.string, (x) => 'primitive')
         .with(
@@ -190,7 +186,7 @@ describe('Multiple patterns', () => {
         )
         .with([false, 2] as const, (x) => '[false, 2]')
         .with([false, __.number] as const, (x) => '[false, number]')
-        .run();
+        .exhaustive();
 
     const cases: { input: Input; expected: string }[] = [
       { input: null, expected: 'Nullable' },

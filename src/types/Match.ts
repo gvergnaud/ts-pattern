@@ -1,6 +1,6 @@
 import type { Pattern } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
-import type { InvertNotPattern, InvertPattern } from './InvertPattern';
+import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { ReduceDeepExclude } from './DeepExclude';
 import type { WithDefault } from './helpers';
 import type { FindSelected } from './FindSelected';
@@ -15,16 +15,13 @@ export type Unset = '@ts-pattern/unset';
 
 export type PickReturnValue<a, b> = a extends Unset ? b : a;
 
-type NonExhaustivePattern<i> = { __nonExhaustive: never } & i;
+type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 
 type MapInvertPattern<ps extends any[], value> = ps extends [
   infer p,
   ...infer rest
 ]
-  ? [
-      InvertNotPattern<InvertPattern<p>, value>,
-      ...MapInvertPattern<rest, value>
-    ]
+  ? [InvertPatternForExclude<p, value>, ...MapInvertPattern<rest, value>]
   : [];
 
 /**
@@ -50,7 +47,7 @@ export type Match<i, o, patterns extends any[]> = {
   ): Match<
     i,
     PickReturnValue<o, c>,
-    [...patterns, InvertNotPattern<invpattern, value>]
+    [...patterns, InvertPatternForExclude<p, value>]
   >;
 
   with<
@@ -63,7 +60,7 @@ export type Match<i, o, patterns extends any[]> = {
   ): Match<
     i,
     PickReturnValue<o, c>,
-    [...patterns, MapInvertPattern<ps, value>]
+    [...patterns, ...MapInvertPattern<ps, value>]
   >;
 
   /**
@@ -79,14 +76,14 @@ export type Match<i, o, patterns extends any[]> = {
    * ### Match.exhaustive
    * Runs the pattern matching and return a value.
    *
-   * If this is of type `NonExhaustivePattern`, it means you aren't matching
+   * If this is of type `NonExhaustiveError`, it means you aren't matching
    * every cases, and you should probably add a  another `.with(...)` clause
    * to prevent potential runtime errors.
    * */
   exhaustive: ReduceDeepExclude<i, patterns> extends infer remainingCases
     ? [remainingCases] extends [never]
       ? () => o
-      : NonExhaustivePattern<remainingCases>
+      : NonExhaustiveError<remainingCases>
     : never;
 
   /**
