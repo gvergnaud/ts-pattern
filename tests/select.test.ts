@@ -6,7 +6,7 @@ describe('select', () => {
   it('should work with tuples', () => {
     expect(
       match<[string, number], number>(['get', 2])
-        .with(['get', select('y')], (_, { y }) => {
+        .with(['get', select.as('y')], ({ y }) => {
           type t = Expect<Equal<typeof y, number>>;
           return y;
         })
@@ -17,7 +17,7 @@ describe('select', () => {
   it('should work with array', () => {
     expect(
       match<string[], string[]>(['you', 'hello'])
-        .with([select('texts')], (xs, { texts }) => {
+        .with([select.as('texts')], ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, string[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -27,7 +27,7 @@ describe('select', () => {
 
     expect(
       match<{ text: string }[], string[]>([{ text: 'you' }, { text: 'hello' }])
-        .with([{ text: select('texts') }], (xs, { texts }) => {
+        .with([{ text: select.as('texts') }], ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, { text: string }[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -40,7 +40,7 @@ describe('select', () => {
         { text: { content: 'you' } },
         { text: { content: 'hello' } },
       ])
-        .with([{ text: { content: select('texts') } }], (xs, { texts }) => {
+        .with([{ text: { content: select.as('texts') } }], ({ texts }, xs) => {
           type t = Expect<Equal<typeof texts, string[]>>;
           return texts;
         })
@@ -56,8 +56,12 @@ describe('select', () => {
         other: 20,
       })
         .with(
-          { status: 'success', data: select('data'), other: select('other') },
-          (_, { data, other }) => {
+          {
+            status: 'success',
+            data: select.as('data'),
+            other: select.as('other'),
+          },
+          ({ data, other }) => {
             type t = Expect<Equal<typeof data, string>>;
             type t2 = Expect<Equal<typeof other, number>>;
             return data + other.toString();
@@ -70,7 +74,7 @@ describe('select', () => {
   it('should work with primitive types', () => {
     expect(
       match<string, string>('hello')
-        .with(select('x'), (_, { x }) => {
+        .with(select.as('x'), ({ x }) => {
           type t = Expect<Equal<typeof x, string>>;
           return x;
         })
@@ -90,11 +94,11 @@ describe('select', () => {
             { status: 'loading' },
             {
               type: 'success',
-              data: select('data'),
-              requestTime: select('time'),
+              data: select.as('data'),
+              requestTime: select.as('time'),
             },
           ],
-          (_, { data, time }) => {
+          ({ data, time }) => {
             type t = Expect<Equal<typeof time, number | undefined>>;
 
             return {
@@ -104,15 +108,15 @@ describe('select', () => {
           }
         )
         .with(
-          [{ status: 'loading' }, { type: 'success', data: select('data') }],
-          (_, { data }) => ({
+          [{ status: 'loading' }, { type: 'success', data: select.as('data') }],
+          ({ data }) => ({
             status: 'success',
             data,
           })
         )
         .with(
-          [{ status: 'loading' }, { type: 'error', error: select('error') }],
-          (_, { error }) => ({
+          [{ status: 'loading' }, { type: 'error', error: select.as('error') }],
+          ({ error }) => ({
             status: 'error',
             error,
           })
@@ -121,7 +125,7 @@ describe('select', () => {
         .with([{ status: not('loading') }, { type: 'fetch' }], () => ({
           status: 'loading',
         }))
-        .with([select('state'), select('event')], (_, { state, event }) => {
+        .with([select.as('state'), select.as('event')], ({ state, event }) => {
           type t = Expect<Equal<typeof state, State>>;
           type t2 = Expect<Equal<typeof event, Event>>;
           return state;

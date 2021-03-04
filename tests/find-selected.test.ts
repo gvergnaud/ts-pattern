@@ -1,19 +1,25 @@
-import { FindSelected } from '../src/types/FindSelected';
+import {
+  FindSelected,
+  SeveralAnonymousSelectError,
+} from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
-import { SelectPattern } from '../src/types/Pattern';
+import {
+  AnonymousSelectPattern,
+  NamedSelectPattern,
+} from '../src/types/Pattern';
 import { Event, State } from './utils';
 
 describe('FindSelected', () => {
-  describe('should correctly return a Union of all selected values', () => {
+  describe('should correctly return kwargs', () => {
     it('Tuples', () => {
       type cases = [
         Expect<
           Equal<
             FindSelected<
               [State, Event],
-              [SelectPattern<'state'>, SelectPattern<'event'>]
+              [NamedSelectPattern<'state'>, NamedSelectPattern<'event'>]
             >,
-            { state: State; event: Event }
+            [{ state: State; event: Event }]
           >
         >,
         Expect<
@@ -21,12 +27,12 @@ describe('FindSelected', () => {
             FindSelected<
               [1, 2, 3],
               [
-                SelectPattern<'first'>,
-                SelectPattern<'second'>,
-                SelectPattern<'third'>
+                NamedSelectPattern<'first'>,
+                NamedSelectPattern<'second'>,
+                NamedSelectPattern<'third'>
               ]
             >,
-            { first: 1; second: 2; third: 3 }
+            [{ first: 1; second: 2; third: 3 }]
           >
         >,
         Expect<
@@ -34,13 +40,13 @@ describe('FindSelected', () => {
             FindSelected<
               [1, 2, 3, 4],
               [
-                SelectPattern<'1'>,
-                SelectPattern<'2'>,
-                SelectPattern<'3'>,
-                SelectPattern<'4'>
+                NamedSelectPattern<'1'>,
+                NamedSelectPattern<'2'>,
+                NamedSelectPattern<'3'>,
+                NamedSelectPattern<'4'>
               ]
             >,
-            { '1': 1; '2': 2; '3': 3; '4': 4 }
+            [{ '1': 1; '2': 2; '3': 3; '4': 4 }]
           >
         >,
         Expect<
@@ -48,14 +54,14 @@ describe('FindSelected', () => {
             FindSelected<
               [1, 2, 3, 4, 5],
               [
-                SelectPattern<'1'>,
-                SelectPattern<'2'>,
-                SelectPattern<'3'>,
-                SelectPattern<'4'>,
-                SelectPattern<'5'>
+                NamedSelectPattern<'1'>,
+                NamedSelectPattern<'2'>,
+                NamedSelectPattern<'3'>,
+                NamedSelectPattern<'4'>,
+                NamedSelectPattern<'5'>
               ]
             >,
-            { '1': 1; '2': 2; '3': 3; '4': 4; '5': 5 }
+            [{ '1': 1; '2': 2; '3': 3; '4': 4; '5': 5 }]
           >
         >
       ];
@@ -65,20 +71,20 @@ describe('FindSelected', () => {
       type cases = [
         Expect<
           Equal<
-            FindSelected<State[], [SelectPattern<'state'>]>,
-            { state: State[] }
+            FindSelected<State[], [NamedSelectPattern<'state'>]>,
+            [{ state: State[] }]
           >
         >,
         Expect<
           Equal<
-            FindSelected<State[][], [[SelectPattern<'state'>]]>,
-            { state: State[][] }
+            FindSelected<State[][], [[NamedSelectPattern<'state'>]]>,
+            [{ state: State[][] }]
           >
         >,
         Expect<
           Equal<
-            FindSelected<State[][][], [[[SelectPattern<'state'>]]]>,
-            { state: State[][][] }
+            FindSelected<State[][][], [[[NamedSelectPattern<'state'>]]]>,
+            [{ state: State[][][] }]
           >
         >
       ];
@@ -90,9 +96,9 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               { a: { b: { c: 3 } } },
-              { a: { b: { c: SelectPattern<'c'> } } }
+              { a: { b: { c: NamedSelectPattern<'c'> } } }
             >,
-            { c: 3 }
+            [{ c: 3 }]
           >
         >,
         Expect<
@@ -101,12 +107,12 @@ describe('FindSelected', () => {
               { a: { b: { c: 3 }; d: { e: 7 } } },
               {
                 a: {
-                  b: { c: SelectPattern<'c'> };
-                  d: { e: SelectPattern<'e'> };
+                  b: { c: NamedSelectPattern<'c'> };
+                  d: { e: NamedSelectPattern<'e'> };
                 };
               }
             >,
-            { c: 3; e: 7 }
+            [{ c: 3; e: 7 }]
           >
         >
       ];
@@ -118,9 +124,9 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               { a: { b: { c: [3, 4] } } },
-              { a: { b: { c: [SelectPattern<'c'>, unknown] } } }
+              { a: { b: { c: [NamedSelectPattern<'c'>, unknown] } } }
             >,
-            { c: 3 }
+            [{ c: 3 }]
           >
         >,
         Expect<
@@ -128,11 +134,48 @@ describe('FindSelected', () => {
             FindSelected<
               { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
               {
-                a: [{ c: SelectPattern<'c'> }, { e: 7 }];
-                b: { d: SelectPattern<'d'> }[];
+                a: [{ c: NamedSelectPattern<'c'> }, { e: 7 }];
+                b: { d: NamedSelectPattern<'d'> }[];
               }
             >,
-            { c: 3; d: string[] }
+            [{ c: 3; d: string[] }]
+          >
+        >
+      ];
+    });
+  });
+
+  describe('Anonymous selections', () => {
+    it('should correctly return a positional argument', () => {
+      type cases = [
+        Expect<
+          Equal<
+            FindSelected<
+              { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
+              {
+                a: [{ c: AnonymousSelectPattern }, { e: 7 }];
+              }
+            >,
+            [3]
+          >
+        >
+      ];
+    });
+
+    it('should return an error when trying to use several anonymous select', () => {
+      type cases = [
+        Expect<
+          Equal<
+            FindSelected<
+              { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
+              {
+                a: [
+                  { c: AnonymousSelectPattern },
+                  { e: AnonymousSelectPattern }
+                ];
+              }
+            >,
+            [SeveralAnonymousSelectError]
           >
         >
       ];

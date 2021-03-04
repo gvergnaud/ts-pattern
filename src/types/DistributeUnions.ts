@@ -146,7 +146,7 @@ export type FindUnions<
 // Distribute :: UnionConfig[] -> Union<[a, path][]>
 export type Distribute<unions extends any[]> = unions extends [
   { cases: infer cases; path: infer path },
-  ...(infer tail)
+  ...infer tail
 ]
   ? cases extends { value: infer value; subUnions: infer subUnions }
     ? [
@@ -167,7 +167,7 @@ type BuildMany<data, xs extends any[]> = xs extends any
 // -> DataStructure
 type BuildOne<data, xs extends any[]> = xs extends [
   [infer value, infer path],
-  ...(infer tail)
+  ...infer tail
 ]
   ? BuildOne<Update<data, value, Cast<path, PropertyKey[]>>, tail>
   : data;
@@ -179,7 +179,7 @@ type SafeGet<data, k extends PropertyKey, def> = k extends keyof data
 // Update :: a -> b -> PropertyKey[] -> a
 type Update<data, value, path extends PropertyKey[]> = path extends [
   infer head,
-  ...(infer tail)
+  ...infer tail
 ]
   ? data extends [any, ...any]
     ? head extends number

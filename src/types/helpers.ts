@@ -127,3 +127,14 @@ export type All<xs> = xs extends [infer head, ...infer tail]
   : true;
 
 export type WithDefault<a, def> = [a] extends [never] ? def : a;
+
+type IsLiteralString<T extends string> = string extends T ? false : true;
+type IsLiteralNumber<T extends number> = number extends T ? false : true;
+type IsLiteralBoolean<T extends boolean> = boolean extends T ? false : true;
+export type IsLiteral<T> = T extends string
+  ? IsLiteralString<T>
+  : T extends number
+  ? IsLiteralNumber<T>
+  : T extends boolean
+  ? IsLiteralBoolean<T>
+  : false;

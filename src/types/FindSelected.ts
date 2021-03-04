@@ -1,13 +1,17 @@
+import { PatternType } from '../PatternType';
 import type {
+  Cast,
   Compute,
   IsPlainObject,
-  UnionToIntersection,
+  UnionToTuple,
   ValueOf,
 } from './helpers';
-import type { SelectPattern } from './Pattern';
+import type { NamedSelectPattern, AnonymousSelectPattern } from './Pattern';
 
-type FindSelectionUnion<i, p> = p extends SelectPattern<infer Key>
-  ? { [k in Key]: i }
+type FindSelectionUnion<i, p> = p extends NamedSelectPattern<infer k>
+  ? [k, i]
+  : p extends AnonymousSelectPattern
+  ? [PatternType.AnonymousSelect, i]
   : [i, p] extends [(infer ii)[], (infer pp)[]]
   ? [i, p] extends [
       [infer i1, infer i2, infer i3, infer i4, infer i5],
@@ -38,13 +42,68 @@ type FindSelectionUnion<i, p> = p extends SelectPattern<infer Key>
         | FindSelectionUnion<i3, p3>
     : [i, p] extends [[infer i1, infer i2], [infer p1, infer p2]]
     ? FindSelectionUnion<i1, p1> | FindSelectionUnion<i2, p2>
-    : FindSelectionUnion<ii, pp> extends infer selected
-    ? { [k in keyof selected]: selected[k][] }
+    : FindSelectionUnion<ii, pp> extends infer selectionUnion
+    ? selectionUnion extends [infer k, infer v]
+      ? [k, v[]]
+      : never
     : never
   : [IsPlainObject<i>, IsPlainObject<p>] extends [true, true]
   ? ValueOf<{ [k in keyof i & keyof p]: FindSelectionUnion<i[k], p[k]> }>
   : never;
 
-export type FindSelected<i, p> = Compute<
-  UnionToIntersection<FindSelectionUnion<i, p>>
+export type SeveralAnonymousSelectError = {
+  __error: never;
+  description: 'You can only used `select` once in your pattern. If you need to select multiple values, use `select.as(<name>)` instead';
+};
+
+type OrderSelections<
+  selections,
+  output extends { positional: any; kwargs: {} } = {
+    positional: '@ts-pattern/empty';
+    kwargs: {};
+  }
+> = selections extends [infer head, ...infer tail]
+  ? head extends [infer key, infer value]
+    ? key extends PatternType.AnonymousSelect
+      ? OrderSelections<
+          tail,
+          {
+            positional: output['positional'] extends '@ts-pattern/empty'
+              ? value
+              : '@ts-pattern/error';
+            kwargs: output['kwargs'];
+          }
+        >
+      : OrderSelections<
+          tail,
+          {
+            positional: output['positional'];
+            kwargs: output['kwargs'] & { [k in Cast<key, string>]: value };
+          }
+        >
+    : never
+  : output;
+
+// SelectionTuplesToArgs :: [number | string, value][] -> [...args]
+type SelectionTuplesToArgs<selections> = OrderSelections<selections> extends {
+  positional: infer positional;
+  kwargs: infer kwargs;
+}
+  ? [
+      ...(positional extends '@ts-pattern/error'
+        ? [SeveralAnonymousSelectError]
+        : positional extends '@ts-pattern/empty'
+        ? []
+        : [positional]),
+      ...([keyof kwargs] extends [never] ? [] : [Compute<kwargs>])
+    ]
+  : [];
+
+export type FindSelected<i, p> = SelectionTuplesToArgs<
+  UnionToTuple<FindSelectionUnion<i, p>>
+>;
+
+type t = FindSelected<
+  { type: 'text'; text: string; x: number },
+  { type: 'text'; text: NamedSelectPattern<'test'>; x: AnonymousSelectPattern }
 >;

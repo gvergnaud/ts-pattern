@@ -42,9 +42,15 @@ export type NotPattern<a> = {
   '@ts-pattern/__pattern': Pattern<a>;
 };
 
-export type SelectPattern<k extends string> = {
+export type AnonymousSelectPattern = {
   /** @deprecated This property should only be used by ts-pattern's internals. */
-  '@ts-pattern/__patternKind': PatternType.Select;
+  '@ts-pattern/__patternKind': PatternType.AnonymousSelect;
+  as: <k extends string>(key: k) => NamedSelectPattern<k>;
+};
+
+export type NamedSelectPattern<k extends string> = {
+  /** @deprecated This property should only be used by ts-pattern's internals. */
+  '@ts-pattern/__patternKind': PatternType.NamedSelect;
   /** @deprecated This property should only be used by ts-pattern's internals. */
   '@ts-pattern/__key': k;
 };
@@ -64,7 +70,8 @@ type WildCardPattern<a> = a extends number
  */
 export type Pattern<a> =
   | typeof __
-  | SelectPattern<string>
+  | NamedSelectPattern<string>
+  | AnonymousSelectPattern
   | GuardPattern<a>
   | NotPattern<a | any>
   | WildCardPattern<a>
@@ -92,69 +99,4 @@ export type Pattern<a> =
       ? Set<Pattern<v>>
       : IsPlainObject<a> extends true
       ? { readonly [k in keyof a]?: Pattern<a[k]> }
-      : a);
-
-/**
- * ### ExhaustivePattern
- * Just like the Pattern type, excluding when clauses.
- */
-export type ExhaustivePattern<a> =
-  | typeof __
-  | SelectPattern<string>
-  | NotPattern<a | any>
-  | WildCardPattern<a>
-  | (a extends Primitives
-      ? a
-      : a extends readonly (infer b)[]
-      ? a extends readonly [infer b, infer c, infer d, infer e, infer f]
-        ? readonly [
-            ExhaustivePattern<b>,
-            ExhaustivePattern<c>,
-            ExhaustivePattern<d>,
-            ExhaustivePattern<e>,
-            ExhaustivePattern<f>
-          ]
-        : a extends readonly [infer b, infer c, infer d, infer e]
-        ? readonly [
-            ExhaustivePattern<b>,
-            ExhaustivePattern<c>,
-            ExhaustivePattern<d>,
-            ExhaustivePattern<e>
-          ]
-        : a extends readonly [infer b, infer c, infer d]
-        ? readonly [
-            ExhaustivePattern<b>,
-            ExhaustivePattern<c>,
-            ExhaustivePattern<d>
-          ]
-        : a extends readonly [infer b, infer c]
-        ? readonly [ExhaustivePattern<b>, ExhaustivePattern<c>]
-        :
-            | readonly []
-            | readonly [ExhaustivePattern<b>]
-            | readonly [ExhaustivePattern<b>, ExhaustivePattern<b>]
-            | readonly [
-                ExhaustivePattern<b>,
-                ExhaustivePattern<b>,
-                ExhaustivePattern<b>
-              ]
-            | readonly [
-                ExhaustivePattern<b>,
-                ExhaustivePattern<b>,
-                ExhaustivePattern<b>,
-                ExhaustivePattern<b>
-              ]
-            | readonly [
-                ExhaustivePattern<b>,
-                ExhaustivePattern<b>,
-                ExhaustivePattern<b>,
-                ExhaustivePattern<b>,
-                ExhaustivePattern<b>
-              ]
-      : a extends Map<infer k, infer v>
-      ? Map<k, ExhaustivePattern<v>>
-      : a extends Set<infer v>
-      ? Set<ExhaustivePattern<v>>
-      : IsPlainObject<a> extends true
-      ? { readonly [k in keyof a]?: ExhaustivePattern<a[k]> }
       : a);

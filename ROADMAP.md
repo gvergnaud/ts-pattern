@@ -45,13 +45,17 @@ match(Input)
   .with({ type: 'movie', duration: 10 as const }, () => ...)
 
   //  Selection API:
+  .with({ type: 'movie', duration: 10, author: select }, (author) => ...)
+  .with({ type: 'movie', duration: 10, author: select, title: select.as('title') }, (author, { title }) => ...)
+  .with({ type: 'movie', duration: 10, author: select.as('author'), title: select.as('title') }, ({ author, title }) => ...)
+  // I think this is a the best options: number literals for positional arguments, and strings for kwargs
+  .with({ type: 'movie', duration: 10, author: select(0), title: select(1) }, (author,  title) => ...)
   // by default, select the first arg
   .with({ type: 'video', duration: when(x => x > 10), title: select }, (title) => ...)
   // is it possible to use proxies, and extract the type of the key?
   .with({ type: 'movie', duration: 10, author: select.author, title: select.title }, ({ title, author }) => ...)
   .with({ type: 'movie', duration: 10, author: select.n('author'), title: select.n('author') }, ({ title, author }) => ...)
   .with({ type: 'movie', duration: 10, author: select.arg0, title: select.arg1 }, (author,  title) => ...)
-  .with({ type: 'movie', duration: 10, author: select[0], title: select[1] }, (author,  title) => ...)
   // can we just use the order in which keys are define? can we ensure the order is consistent between types and values?
   .with({ type: 'movie', duration: 10, author: select, title: select }, (author, title) => ...)
 
