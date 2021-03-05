@@ -73,7 +73,9 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
   : p extends GuardPattern<any, infer p1>
   ? p1
   : p extends Primitives
-  ? Or<IsLiteral<p>, IsLiteral<i>> extends true
+  ? IsLiteral<p> extends true
+    ? p
+    : IsLiteral<i> extends true
     ? p
     : never
   : p extends readonly (infer pp)[]

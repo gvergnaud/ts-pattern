@@ -1,6 +1,4 @@
-import { Primitives, IsPlainObject, ValueOf, All } from './helpers';
-
-type Extends<a, b> = a extends b ? true : false;
+import { Primitives, IsPlainObject, All } from './helpers';
 
 export type IsMatching<a, p> =
   // Special case for unknown, because this is the type
@@ -9,7 +7,9 @@ export type IsMatching<a, p> =
   unknown extends p
     ? true
     : p extends Primitives
-    ? Extends<p, a>
+    ? p extends a
+      ? true
+      : false
     : [a, p] extends [any[], any[]]
     ? [a, p] extends [
         [infer a1, infer a2, infer a3, infer a4, infer a5],
@@ -45,20 +45,27 @@ export type IsMatching<a, p> =
       ? All<[IsMatching<a1, p1>, IsMatching<a2, p2>]>
       : [a, p] extends [[infer a1], [infer p1]]
       ? All<[IsMatching<a1, p1>]>
-      : Extends<p, a>
+      : p extends a
+      ? true
+      : false
     : IsPlainObject<p> extends true
     ? true extends (
         // `true extends union` means "if some cases of the a union are matching"
         a extends any // loop over the `a` union
           ? [keyof p & keyof a] extends [never] // if no common keys
             ? false
-            : ValueOf<
-                { [k in keyof p & keyof a]: IsMatching<a[k], p[k]> }
-              > extends true
+            : /**
+             * Intentionally not using ValueOf, to avoid reaching the
+             * 'type instanciation is too deep error'.
+             */
+            { [k in keyof p & keyof a]: IsMatching<a[k], p[k]> }[keyof p &
+                keyof a] extends true
             ? true // all values are matching
             : false
           : never
       )
       ? true
       : false
-    : Extends<p, a>;
+    : p extends a
+    ? true
+    : false;
