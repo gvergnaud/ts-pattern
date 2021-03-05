@@ -50,7 +50,7 @@ export { Pattern, __ };
  * Entry point to create pattern matching code branches. It returns an
  * empty Match case.
  */
-export const match = <a, b = Unset>(value: a): Match<a, b, []> =>
+export const match = <a, b = Unset>(value: a): Match<a, b> =>
   builder(value, []) as any;
 
 /**

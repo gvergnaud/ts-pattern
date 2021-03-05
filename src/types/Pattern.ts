@@ -60,8 +60,8 @@ type WildCardPattern<a> = a extends number
  */
 export type Pattern<a> =
   | typeof __
-  | NamedSelectPattern<string>
   | AnonymousSelectPattern
+  | NamedSelectPattern<string>
   | GuardPattern<a>
   | NotPattern<a | any>
   | WildCardPattern<a>

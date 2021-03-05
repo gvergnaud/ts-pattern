@@ -139,27 +139,41 @@ describe('exhaustive()', () => {
     });
 
     it('union of objects', () => {
+      type letter =
+        | 'a'
+        | 'b'
+        | 'c'
+        | 'd'
+        | 'e'
+        | 'f'
+        | 'g'
+        | 'h'
+        | 'i'
+        | 'j'
+        | 'k'
+        | 'l'
+        | 'm'
+        | 'n'
+        | 'o'
+        | 'p'
+        | 'q'
+        | 'r'
+        | 's'
+        | 't'
+        | 'u'
+        | 'v'
+        | 'w'
+        | 'x'
+        | 'y'
+        | 'z';
+
       type Input =
         | { type: 1; data: number }
         | { type: 'two'; data: string }
         | { type: 3; data: boolean }
         | { type: 4 }
-        | { type: 'a' }
-        | { type: 'b' }
-        | { type: 'c' }
-        | { type: 'd' }
-        | { type: 'e' }
-        | { type: 'f' }
-        | { type: 'g' }
-        | { type: 'h' }
-        | { type: 'i' }
-        | { type: 'j' }
-        | { type: 'k' }
-        | { type: 'l' }
-        | { type: 'm' }
-        | { type: 'n' }
-        | { type: 'o' }
-        | { type: 'p' };
+        | (letter extends any ? { type: letter } : never);
+
       const input = { type: 1, data: 2 } as Input;
 
       match(input)
@@ -174,9 +188,20 @@ describe('exhaustive()', () => {
         .exhaustive();
 
       match(input)
-        .with({ type: 1 }, (x) => 1)
-        .with({ type: 'two' }, ({ data }) => data.length)
-        .with({ type: 3 }, () => 3)
+        .with({ type: 1, data: select() }, (data) => {
+          type t = Expect<Equal<typeof data, number>>;
+          return 1;
+        })
+        .with({ type: 'two', data: select() }, (data) => data.length)
+        .with({ type: 3, data: true }, ({ data }) => {
+          type t = Expect<Equal<typeof data, true>>;
+          return 3;
+        })
+
+        .with({ type: 3, data: __ }, ({ data }) => {
+          type t = Expect<Equal<typeof data, boolean>>;
+          return 3;
+        })
         .with({ type: 4 }, () => 3)
         .with({ type: 'a' }, () => 0)
         .with({ type: 'b' }, () => 0)
@@ -194,6 +219,16 @@ describe('exhaustive()', () => {
         .with({ type: 'n' }, () => 0)
         .with({ type: 'o' }, () => 0)
         .with({ type: 'p' }, () => 0)
+        .with({ type: 'q' }, () => 0)
+        .with({ type: 'r' }, () => 0)
+        .with({ type: 's' }, () => 0)
+        .with({ type: 't' }, () => 0)
+        .with({ type: 'u' }, () => 0)
+        .with({ type: 'v' }, () => 0)
+        .with({ type: 'w' }, () => 0)
+        .with({ type: 'x' }, () => 0)
+        .with({ type: 'y' }, () => 0)
+        .with({ type: 'z' }, () => 0)
         .exhaustive();
 
       match<Option<number>>({ kind: 'some', value: 3 })
@@ -202,9 +237,15 @@ describe('exhaustive()', () => {
         .exhaustive();
 
       match<Option<number>>({ kind: 'some', value: 3 })
-        .with({ kind: 'some', value: 3 as const }, ({ value }): number => value)
+        .with({ kind: 'some', value: 3 }, ({ value }): number => value)
         .with({ kind: 'none' }, () => 0)
         // @ts-expect-error: missing {kind: 'some', value: number}
+        .exhaustive();
+
+      match<Option<number>>({ kind: 'some', value: 3 })
+        .with({ kind: 'some', value: 3 }, ({ value }): number => value)
+        .with({ kind: 'some', value: __.number }, ({ value }): number => value)
+        .with({ kind: 'none' }, () => 0)
         .exhaustive();
     });
 
@@ -478,7 +519,6 @@ describe('exhaustive()', () => {
         match<a[], Option<a>>(xs)
           .with([], () => none)
           .with(__, (xs) => some(xs[xs.length - 1]))
-          // @ts-expect-error: TODO fix generics
           .exhaustive();
 
       expect(last([1, 2, 3])).toEqual(some(3));
@@ -502,7 +542,6 @@ describe('exhaustive()', () => {
             (option): option is { kind: 'none' } => option.kind === 'none',
             (option) => option
           )
-          // @ts-expect-error: TODO fix generics
           .exhaustive();
 
       const res = map(
@@ -668,12 +707,10 @@ describe('exhaustive()', () => {
           ({ author, title }) => ''
         )
         // by default, select the first arg
-        .with(
-          { type: 'video', duration: when((x) => x > 10), title: select },
-          (title) => ''
-        )
-        .with({ type: 'picture' }, () => '')
-        // This is a type error, because `type picture` has already been handled
+        // .with(
+        //   { type: 'video', duration: when((x) => x > 10), title: select },
+        //   (title) => ''
+        // )
         .with({ type: 'picture' }, () => '')
         // this replaces run()
         .with({ type: 'movie', duration: when(isNumber) }, () => '')
@@ -732,6 +769,28 @@ describe('exhaustive()', () => {
           // You can also use `otherwise`, which take an handler returning
           // a default value. It is equivalent to `with(__, handler).run()`.
           .exhaustive();
+    });
+
+    it('select should always match', () => {
+      type Input = { type: 3; data: number };
+
+      const input = { type: 3, data: 2 } as Input;
+
+      match<Input>(input)
+        .with({ type: 3, data: select() }, (data) => {
+          type t = Expect<Equal<typeof data, number>>;
+          return 3;
+        })
+        .exhaustive();
+
+      type Input2 = { type: 3; data: true } | 2;
+      match<Input2>(2)
+        .with({ type: 3, data: select() }, (data) => {
+          type t = Expect<Equal<typeof data, true>>;
+          return 3;
+        })
+        .with(2, () => 2)
+        .exhaustive();
     });
   });
 });

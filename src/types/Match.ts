@@ -1,7 +1,7 @@
-import type { Pattern, GuardValue } from './Pattern';
+import type { Pattern, GuardValue, AnonymousSelectPattern } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
-import type { ReduceDeepExclude } from './DeepExclude';
+import type { DeepExclude, ReduceDeepExclude } from './DeepExclude';
 import type { WithDefault } from './helpers';
 import type { FindSelected } from './FindSelected';
 
@@ -28,18 +28,13 @@ type MapInvertPattern<ps extends any[], value> = ps extends [
  * ### Match
  * An interface to create a pattern matching clause.
  */
-export type Match<i, o, patterns extends any[]> = {
+export type Match<i, o, remainingCases = i> = {
   /**
    * ### Match.with
    * If the data matches the pattern provided as first argument,
    * use this branch and execute the handler function.
    **/
-  with<
-    p extends Pattern<i>,
-    c,
-    invpattern = InvertPattern<p>,
-    value = MatchedValue<i, invpattern>
-  >(
+  with<p extends Pattern<i>, c, value = MatchedValue<i, InvertPattern<p>>>(
     pattern: p,
     handler: (
       ...args: [...selections: FindSelected<value, p>, value: value]
@@ -47,11 +42,11 @@ export type Match<i, o, patterns extends any[]> = {
   ): Match<
     i,
     PickReturnValue<o, c>,
-    [...patterns, InvertPatternForExclude<p, value>]
+    DeepExclude<remainingCases, InvertPatternForExclude<p, value>>
   >;
 
   with<
-    ps extends [Pattern<i>, ...Pattern<i>[]],
+    ps extends [Pattern<i>, Pattern<i>, ...Pattern<i>[]],
     c,
     p = ps[number],
     value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
@@ -60,7 +55,7 @@ export type Match<i, o, patterns extends any[]> = {
   ): Match<
     i,
     PickReturnValue<o, c>,
-    [...patterns, ...MapInvertPattern<ps, value>]
+    ReduceDeepExclude<remainingCases, MapInvertPattern<ps, value>>
   >;
 
   with<
@@ -77,12 +72,9 @@ export type Match<i, o, patterns extends any[]> = {
   ): Match<
     i,
     PickReturnValue<o, c>,
-    [
-      ...patterns,
-      ...(pred extends (value: any) => value is infer narrowed
-        ? [narrowed]
-        : [])
-    ]
+    pred extends (value: any) => value is infer narrowed
+      ? DeepExclude<remainingCases, narrowed>
+      : remainingCases
   >;
 
   /**
@@ -96,12 +88,9 @@ export type Match<i, o, patterns extends any[]> = {
   ) => Match<
     i,
     PickReturnValue<o, c>,
-    [
-      ...patterns,
-      ...(pred extends (value: any) => value is infer narrowed
-        ? [narrowed]
-        : [])
-    ]
+    pred extends (value: any) => value is infer narrowed
+      ? DeepExclude<remainingCases, narrowed>
+      : remainingCases
   >;
 
   /**
@@ -121,11 +110,9 @@ export type Match<i, o, patterns extends any[]> = {
    * every cases, and you should probably add a  another `.with(...)` clause
    * to prevent potential runtime errors.
    * */
-  exhaustive: ReduceDeepExclude<i, patterns> extends infer remainingCases
-    ? [remainingCases] extends [never]
-      ? () => o
-      : NonExhaustiveError<remainingCases>
-    : never;
+  exhaustive: [remainingCases] extends [never]
+    ? () => o
+    : NonExhaustiveError<remainingCases>;
 
   /**
    * ### Match.run
