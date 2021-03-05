@@ -478,9 +478,41 @@ describe('exhaustive()', () => {
         match<a[], Option<a>>(xs)
           .with([], () => none)
           .with(__, (xs) => some(xs[xs.length - 1]))
+          // @ts-expect-error: TODO fix generics
           .exhaustive();
 
       expect(last([1, 2, 3])).toEqual(some(3));
+    });
+
+    it('should work with generics in type guards', () => {
+      const map = <A, B>(
+        option: Option<A>,
+        mapper: (value: A) => B
+      ): Option<B> =>
+        match<Option<A>, Option<B>>(option)
+          .when(
+            (option): option is { kind: 'some'; value: A } =>
+              option.kind === 'some',
+            (option) => ({
+              kind: 'some',
+              value: mapper(option.value),
+            })
+          )
+          .when(
+            (option): option is { kind: 'none' } => option.kind === 'none',
+            (option) => option
+          )
+          // @ts-expect-error: TODO fix generics
+          .exhaustive();
+
+      const res = map(
+        { kind: 'some' as const, value: 20 },
+        (x) => `number is ${x}`
+      );
+
+      type t = Expect<Equal<typeof res, Option<string>>>;
+
+      expect(res).toEqual({ kind: 'some' as const, value: `number is 20` });
     });
 
     it('should work with inputs of varying shapes', () => {
@@ -530,6 +562,23 @@ describe('exhaustive()', () => {
           type t = Expect<Equal<typeof x, { x: 3 }>>;
           return '';
         })
+        .exhaustive();
+    });
+
+    it('should correctly exclude cases if .when is a type guard', () => {
+      match<Option<string>, Option<number>>({ kind: 'none' })
+        .when(
+          (option): option is { kind: 'some'; value: string } =>
+            option.kind === 'some',
+          (option) => ({
+            kind: 'some',
+            value: option.value.length,
+          })
+        )
+        .when(
+          (option): option is { kind: 'none' } => option.kind === 'none',
+          (option) => option
+        )
         .exhaustive();
     });
 
@@ -631,7 +680,7 @@ describe('exhaustive()', () => {
         .exhaustive();
     });
 
-    it('reducer', () => {
+    it('reducer example', () => {
       type State<T = string> =
         | { status: 'idle' }
         | { status: 'loading' }

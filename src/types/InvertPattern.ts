@@ -1,11 +1,10 @@
 import type { __ } from '../PatternType';
-import { IsPlainObject, ExcludeIfContainsNever, IsLiteral } from './helpers';
+import { IsPlainObject, Primitives, IsLiteral, Or } from './helpers';
 import type {
   NamedSelectPattern,
   AnonymousSelectPattern,
   GuardPattern,
   NotPattern,
-  Primitives,
 } from './Pattern';
 
 /**
@@ -74,9 +73,7 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
   : p extends GuardPattern<any, infer p1>
   ? p1
   : p extends Primitives
-  ? IsLiteral<p> extends true
-    ? p
-    : IsLiteral<i> extends true
+  ? Or<IsLiteral<p>, IsLiteral<i>> extends true
     ? p
     : never
   : p extends readonly (infer pp)[]
@@ -90,7 +87,7 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
             InvertPatternForExclude<p4, i4>,
             InvertPatternForExclude<p5, i5>
           ]
-        : p
+        : never
       : p extends readonly [infer p1, infer p2, infer p3, infer p4]
       ? i extends readonly [infer i1, infer i2, infer i3, infer i4]
         ? [
@@ -99,7 +96,7 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
             InvertPatternForExclude<p3, i3>,
             InvertPatternForExclude<p4, i4>
           ]
-        : p
+        : never
       : p extends readonly [infer p1, infer p2, infer p3]
       ? i extends readonly [infer i1, infer i2, infer i3]
         ? [
@@ -107,27 +104,27 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
             InvertPatternForExclude<p2, i2>,
             InvertPatternForExclude<p3, i3>
           ]
-        : p
+        : never
       : p extends readonly [infer p1, infer p2]
       ? i extends readonly [infer i1, infer i2]
         ? [InvertPatternForExclude<p1, i1>, InvertPatternForExclude<p2, i2>]
-        : p
+        : never
       : InvertPatternForExclude<pp, ii>[]
-    : p
+    : never
   : p extends Map<infer pk, infer pv>
   ? i extends Map<any, infer iv>
     ? Map<pk, InvertPatternForExclude<pv, iv>>
-    : p
+    : never
   : p extends Set<infer pv>
   ? i extends Set<infer iv>
     ? Set<InvertPatternForExclude<pv, iv>>
-    : p
+    : never
   : IsPlainObject<p> extends true
-  ? IsPlainObject<i> extends true
-    ? {
-        [k in keyof p]: k extends keyof i
-          ? InvertPatternForExclude<p[k], i[k]>
-          : p[k];
-      }
-    : p
-  : p;
+  ? i extends object
+    ? [keyof p & keyof i] extends [never]
+      ? never
+      : {
+          [k in keyof p & keyof i]: InvertPatternForExclude<p[k], i[k]>;
+        }
+    : never
+  : never;

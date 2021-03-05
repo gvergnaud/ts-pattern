@@ -1,4 +1,4 @@
-import type { Pattern } from './Pattern';
+import type { Pattern, GuardValue } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { ReduceDeepExclude } from './DeepExclude';
@@ -61,6 +61,47 @@ export type Match<i, o, patterns extends any[]> = {
     i,
     PickReturnValue<o, c>,
     [...patterns, ...MapInvertPattern<ps, value>]
+  >;
+
+  with<
+    pat extends Pattern<i>,
+    pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
+    c
+  >(
+    pattern: pat,
+    predicate: pred,
+    handler: (
+      value: GuardValue<pred>,
+      selections: FindSelected<i, pat>
+    ) => PickReturnValue<o, c>
+  ): Match<
+    i,
+    PickReturnValue<o, c>,
+    [
+      ...patterns,
+      ...(pred extends (value: any) => value is infer narrowed
+        ? [narrowed]
+        : [])
+    ]
+  >;
+
+  /**
+   * ### Match.when
+   * When the first function returns a truthy value,
+   * use this branch and execute the handler function.
+   **/
+  when: <pred extends (value: i) => unknown, c>(
+    predicate: pred,
+    handler: (value: GuardValue<pred>) => PickReturnValue<o, c>
+  ) => Match<
+    i,
+    PickReturnValue<o, c>,
+    [
+      ...patterns,
+      ...(pred extends (value: any) => value is infer narrowed
+        ? [narrowed]
+        : [])
+    ]
   >;
 
   /**

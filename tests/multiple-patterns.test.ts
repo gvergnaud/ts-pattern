@@ -87,8 +87,7 @@ describe('Multiple patterns', () => {
     const input = { kind: 'none' } as Option<number>;
     match(input)
       // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
-      .with(() => false)
-      .exhaustive();
+      .with(() => false);
 
     match(input)
       // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
@@ -103,8 +102,7 @@ describe('Multiple patterns', () => {
         { kind: 'some', value: 4 as const },
         (x) => true
       )
-      .with({ kind: 'none' }, { kind: 'some' }, () => false)
-      .exhaustive();
+      .with({ kind: 'none' }, { kind: 'some' }, () => false);
   });
 
   it('should work with literal types', () => {
@@ -115,10 +113,27 @@ describe('Multiple patterns', () => {
       .with('USA', () => 'America')
       .exhaustive();
 
-    match<Country>('France')
+    match<Country>('Germany')
       .with('Germany', 'Spain', () => 'Europe')
       .with('USA', () => 'America')
       // @ts-expect-error: 'France' is missing
+      .exhaustive();
+  });
+
+  it('should work with nullables', () => {
+    match<null | undefined>(null)
+      .with(null, undefined, (x) => 'Nullable')
+      .exhaustive();
+  });
+
+  it('should work with objects', () => {
+    match<{ a: string; b: number } | [1, 2]>({ a: '', b: 2 })
+      .with({ a: __.string }, (x) => 'obj')
+      .with([1, 2], (x) => 'tuple')
+      .exhaustive();
+
+    match<{ a: string; b: number } | [1, 2]>({ a: '', b: 2 })
+      .with({ a: __.string }, [1, 2], (x) => 'obj')
       .exhaustive();
   });
 
@@ -184,8 +199,9 @@ describe('Multiple patterns', () => {
           new Set([__.number]),
           (x) => 'Object'
         )
-        .with([false, 2] as const, (x) => '[false, 2]')
-        .with([false, __.number] as const, (x) => '[false, number]')
+        .with([false, 2], (x) => '[false, 2]')
+        .with([false, __.number], (x) => '[false, number]')
+        .with([true, __.number], (x) => '[true, number]')
         .exhaustive();
 
     const cases: { input: Input; expected: string }[] = [

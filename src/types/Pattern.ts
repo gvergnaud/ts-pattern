@@ -1,14 +1,5 @@
 import type { __, PatternType } from '../PatternType';
-import { IsPlainObject } from './helpers';
-
-export type Primitives =
-  | number
-  | boolean
-  | string
-  | undefined
-  | null
-  | symbol
-  | bigint;
+import { Primitives, IsPlainObject } from './helpers';
 
 /**
  * GuardValue returns the value guarded by a type guard function.

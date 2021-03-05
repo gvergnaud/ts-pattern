@@ -126,15 +126,36 @@ export type All<xs> = xs extends [infer head, ...infer tail]
     : false
   : true;
 
+export type Or<a extends boolean, b extends boolean> = true extends a | b
+  ? true
+  : false;
+
 export type WithDefault<a, def> = [a] extends [never] ? def : a;
 
 type IsLiteralString<T extends string> = string extends T ? false : true;
 type IsLiteralNumber<T extends number> = number extends T ? false : true;
 type IsLiteralBoolean<T extends boolean> = boolean extends T ? false : true;
-export type IsLiteral<T> = T extends string
+type IsLiteralBigInt<T extends bigint> = bigint extends T ? false : true;
+type IsLiteralSymbol<T extends symbol> = symbol extends T ? false : true;
+export type IsLiteral<T> = T extends null | undefined
+  ? true
+  : T extends string
   ? IsLiteralString<T>
   : T extends number
   ? IsLiteralNumber<T>
   : T extends boolean
   ? IsLiteralBoolean<T>
+  : T extends symbol
+  ? IsLiteralSymbol<T>
+  : T extends bigint
+  ? IsLiteralBigInt<T>
   : false;
+
+export type Primitives =
+  | number
+  | boolean
+  | string
+  | undefined
+  | null
+  | symbol
+  | bigint;
