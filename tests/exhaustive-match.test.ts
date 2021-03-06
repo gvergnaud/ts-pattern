@@ -163,9 +163,7 @@ describe('exhaustive()', () => {
         | 'u'
         | 'v'
         | 'w'
-        | 'x'
-        | 'y'
-        | 'z';
+        | 'x';
 
       type Input =
         | { type: 1; data: number }
@@ -197,7 +195,6 @@ describe('exhaustive()', () => {
           type t = Expect<Equal<typeof data, true>>;
           return 3;
         })
-
         .with({ type: 3, data: __ }, ({ data }) => {
           type t = Expect<Equal<typeof data, boolean>>;
           return 3;
@@ -227,8 +224,6 @@ describe('exhaustive()', () => {
         .with({ type: 'v' }, () => 0)
         .with({ type: 'w' }, () => 0)
         .with({ type: 'x' }, () => 0)
-        .with({ type: 'y' }, () => 0)
-        .with({ type: 'z' }, () => 0)
         .exhaustive();
 
       match<Option<number>>({ kind: 'some', value: 3 })
@@ -518,8 +513,7 @@ describe('exhaustive()', () => {
       const last = <a>(xs: a[]) =>
         match<a[], Option<a>>(xs)
           .with([], () => none)
-          .with(__, (xs) => some(xs[xs.length - 1]))
-          .exhaustive();
+          .otherwise(() => some(xs[xs.length - 1]));
 
       expect(last([1, 2, 3])).toEqual(some(3));
     });
@@ -538,11 +532,7 @@ describe('exhaustive()', () => {
               value: mapper(option.value),
             })
           )
-          .when(
-            (option): option is { kind: 'none' } => option.kind === 'none',
-            (option) => option
-          )
-          .exhaustive();
+          .otherwise(() => ({ kind: 'none' }));
 
       const res = map(
         { kind: 'some' as const, value: 20 },
