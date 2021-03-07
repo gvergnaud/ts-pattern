@@ -11,6 +11,7 @@ import type {
   IsPlainObject,
   Length,
   Compute,
+  UnionToTuple,
 } from './helpers';
 import { IsMatching } from './IsMatching';
 
@@ -40,10 +41,21 @@ import { IsMatching } from './IsMatching';
  */
 export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
   ? any
-  : IsMatching<a, p> extends true
-  ? BuildMany<a, Distribute<FindUnions<a, p>>>
-  : a;
+  : BuildMany<a, Distribute<FindUnionsMany<a, p>>>;
 
+type FindUnionsMany<a, p, path extends PropertyKey[] = []> = ConcatAll<
+  UnionToTuple<
+    p extends any
+      ? IsMatching<a, p> extends true
+        ? FindUnions<a, p, path>
+        : []
+      : never
+  >
+>;
+
+type ConcatAll<xs> = xs extends [infer head, ...infer tail]
+  ? [...Cast<head, any[]>, ...ConcatAll<tail>]
+  : [];
 /**
  * The reason we don't look further down the tree with lists,
  * Set and Maps is that they can be heterogeneous,
@@ -78,9 +90,7 @@ export type FindUnions<
         cases: a extends any
           ? {
               value: a;
-              subUnions: IsMatching<a, p> extends true
-                ? FindUnions<a, p, path>
-                : [];
+              subUnions: FindUnionsMany<a, p, path>;
             }
           : never;
         path: path;

@@ -4,6 +4,7 @@ import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
 import type { WithDefault } from './helpers';
 import type { FindSelected } from './FindSelected';
+import { DistributeMatchingUnions } from './DistributeUnions';
 
 // We fall back to `a` if we weren't able to extract anything more precise
 export type MatchedValue<a, invpattern> = WithDefault<
@@ -21,7 +22,7 @@ type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
  * ### Match
  * An interface to create a pattern matching clause.
  */
-export type Match<i, o, patternValueTuples extends any[] = []> = {
+export type Match<i, o, patternValueTuples extends [any, any] = never> = {
   /**
    * ### Match.with
    * If the data matches the pattern provided as first argument,
@@ -32,7 +33,7 @@ export type Match<i, o, patternValueTuples extends any[] = []> = {
     handler: (
       ...args: [...selections: FindSelected<value, p>, value: value]
     ) => PickReturnValue<o, c>
-  ): Match<i, PickReturnValue<o, c>, [...patternValueTuples, [p, value]]>;
+  ): Match<i, PickReturnValue<o, c>, patternValueTuples | [p, value]>;
 
   with<
     ps extends [Pattern<i>, Pattern<i>, ...Pattern<i>[]],
@@ -44,7 +45,7 @@ export type Match<i, o, patternValueTuples extends any[] = []> = {
   ): Match<
     i,
     PickReturnValue<o, c>,
-    [...patternValueTuples, ...MapPatternToTuple<ps, value>]
+    patternValueTuples | (p extends any ? [p, value] : never)
   >;
 
   with<
@@ -62,9 +63,10 @@ export type Match<i, o, patternValueTuples extends any[] = []> = {
   ): Match<
     i,
     PickReturnValue<o, c>,
-    pred extends (value: any) => value is infer narrowed
-      ? [...patternValueTuples, [GuardPattern<unknown, narrowed>, value]]
-      : patternValueTuples
+    | patternValueTuples
+    | (pred extends (value: any) => value is infer narrowed
+        ? [GuardPattern<unknown, narrowed>, value]
+        : never)
   >;
 
   /**
@@ -78,9 +80,10 @@ export type Match<i, o, patternValueTuples extends any[] = []> = {
   ) => Match<
     i,
     PickReturnValue<o, c>,
-    pred extends (value: any) => value is infer narrowed
-      ? [...patternValueTuples, [GuardPattern<unknown, narrowed>, value]]
-      : patternValueTuples
+    | patternValueTuples
+    | (pred extends (value: any) => value is infer narrowed
+        ? [GuardPattern<unknown, narrowed>, value]
+        : never)
   >;
 
   /**
@@ -113,17 +116,7 @@ export type Match<i, o, patternValueTuples extends any[] = []> = {
   run: () => o;
 };
 
-type DeepExcludeAll<a, tuples extends any[]> = tuples extends [
-  [infer p, infer value],
-  ...infer rest
-]
-  ? DeepExcludeAll<DeepExclude<a, InvertPatternForExclude<p, value>>, rest>
-  : a;
-
-type MapPatternToTuple<
-  ps extends any[],
-  value,
-  output extends any[] = []
-> = ps extends [infer p, ...infer rest]
-  ? MapPatternToTuple<rest, value, [...output, [p, value]]>
-  : output;
+type DeepExcludeAll<a, tuple extends [any, any]> = DeepExclude<
+  a,
+  tuple extends any ? InvertPatternForExclude<tuple[0], tuple[1]> : never
+>;

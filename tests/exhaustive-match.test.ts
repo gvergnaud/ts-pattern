@@ -1,6 +1,6 @@
 import { match, not, Pattern, select, when, __ } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
-import { Option, some, none, BigUnion } from './utils';
+import { Option, some, none, BigUnion, State, Event } from './utils';
 
 describe('exhaustive()', () => {
   describe('should exclude matched patterns from subsequent `.with()` clauses', () => {
@@ -163,7 +163,9 @@ describe('exhaustive()', () => {
         | 'u'
         | 'v'
         | 'w'
-        | 'x';
+        | 'x'
+        | 'y'
+        | 'z';
 
       type Input =
         | { type: 1; data: number }
@@ -224,6 +226,8 @@ describe('exhaustive()', () => {
         .with({ type: 'v' }, () => 0)
         .with({ type: 'w' }, () => 0)
         .with({ type: 'x' }, () => 0)
+        .with({ type: 'y' }, () => 0)
+        .with({ type: 'z' }, () => 0)
         .exhaustive();
 
       match<Option<number>>({ kind: 'some', value: 3 })
@@ -708,18 +712,6 @@ describe('exhaustive()', () => {
     });
 
     it('reducer example', () => {
-      type State<T = string> =
-        | { status: 'idle' }
-        | { status: 'loading' }
-        | { status: 'success'; data: T }
-        | { status: 'error'; error: Error };
-
-      type Event<T = string> =
-        | { type: 'fetch' }
-        | { type: 'success'; data: T }
-        | { type: 'error'; error: Error }
-        | { type: 'cancel' };
-
       const initState: State = {
         status: 'idle',
       };
