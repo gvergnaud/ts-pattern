@@ -65,6 +65,9 @@ when we know we can't make any predicion on the excluded cases.
 
 TODO:
 
-- [x] Fix generic support
+- [ ] Fix exhaustive on any
+- [x] Fix exhaustive on patterns that contain several `not` sub patterns
 - [ ] Fix readonly support
 - [ ] Update docs
+- [ ] Fix invalid patterns regression
+- [/] Won't do, not sure it's really possible.

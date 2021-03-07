@@ -774,5 +774,29 @@ describe('exhaustive()', () => {
         .with(2, () => 2)
         .exhaustive();
     });
+
+    it('should work well with not patterns', () => {
+      const reducer1 = (state: State, event: Event): State =>
+        match<[State, Event], State>([state, event])
+          .with([{ status: not('loading') }, __], (x) => state)
+          .with([{ status: 'loading' }, { type: 'fetch' }], () => state)
+          // @ts-expect-error
+          .exhaustive();
+
+      const reducer3 = (state: State, event: Event): State =>
+        match<[State, Event], State>([state, event])
+          .with([{ status: not('loading') }, __], (x) => state)
+          .with([{ status: 'loading' }, __], () => state)
+          .exhaustive();
+
+      const reducer2 = (state: State, event: Event): State =>
+        match<[State, Event], State>([state, event])
+          .with(
+            [{ status: not('loading') }, { type: not('fetch') }],
+            (x) => state
+          )
+          .with([{ status: 'loading' }, { type: 'fetch' }], () => state)
+          .exhaustive();
+    });
   });
 });

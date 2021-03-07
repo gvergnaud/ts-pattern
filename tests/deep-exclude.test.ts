@@ -1,4 +1,4 @@
-import { DeepExclude, DeepExcludeMany } from '../src/types/DeepExclude';
+import { DeepExclude } from '../src/types/DeepExclude';
 import { Primitives, Equal, Expect } from '../src/types/helpers';
 import { BigUnion, Option } from './utils';
 
@@ -338,7 +338,7 @@ describe('DeepExclude', () => {
       type cases = [
         Expect<
           Equal<
-            DeepExcludeMany<
+            DeepExclude<
               { x: 'a' | 'b'; y: 'c' | 'd'; z: 'e' | 'f' },
               { x: 'a'; y: 'c' } | { x: 'b'; y: 'c' }
             >,
@@ -347,11 +347,27 @@ describe('DeepExclude', () => {
         >,
         Expect<
           Equal<
-            DeepExcludeMany<
+            DeepExclude<
               { a: { b: 'x' | 'y' | 'z' }; c: 'u' | 'v' },
               { c: 'u' } | { a: { b: 'x' } }
             >,
             { a: { b: 'y' }; c: 'v' } | { a: { b: 'z' }; c: 'v' }
+          >
+        >
+      ];
+    });
+  });
+
+  describe('Excluding nested unions', () => {
+    it('should correctly exclude', () => {
+      type cases = [
+        Expect<
+          Equal<
+            DeepExclude<
+              ['sa' | 'sb' | 'sc', 'ea' | 'eb' | 'ec'],
+              ['sb' | 'sc', 'eb' | 'ec']
+            >,
+            ['sa', 'ea']
           >
         >
       ];

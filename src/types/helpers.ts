@@ -103,6 +103,15 @@ export type ConcatAll<xs> = xs extends [infer head, ...infer tail]
   ? [...Cast<head, any[]>, ...ConcatAll<tail>]
   : [];
 
+// WithIndex :: a[] -> [a, Iterator][]
+export type WithIndex<
+  xs,
+  n extends any[] = Iterator<0>,
+  output extends any[] = []
+> = xs extends [infer head, ...infer tail]
+  ? WithIndex<tail, Next<n>, [...output, [head, n]]>
+  : output;
+
 type BuiltInObjects =
   | Function
   | Error
