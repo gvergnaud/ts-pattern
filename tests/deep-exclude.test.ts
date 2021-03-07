@@ -364,10 +364,54 @@ describe('DeepExclude', () => {
         Expect<
           Equal<
             DeepExclude<
-              ['sa' | 'sb' | 'sc', 'ea' | 'eb' | 'ec'],
-              ['sb' | 'sc', 'eb' | 'ec']
+              ['a' | 'b' | 'c', 'a' | 'b' | 'c'],
+              ['b' | 'c', 'b' | 'c']
             >,
-            ['sa', 'ea']
+            ['a', 'a'] | ['a', 'b'] | ['a', 'c'] | ['b', 'a'] | ['c', 'a']
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<
+              ['a' | 'b' | 'c', { type: 'a' | 'b' | 'c' }],
+              ['b' | 'c', { type: 'c' }]
+            >,
+            | ['a', { type: 'c' }]
+            | ['a', { type: 'a' }]
+            | ['a', { type: 'b' }]
+            | ['b', { type: 'a' }]
+            | ['b', { type: 'b' }]
+            | ['c', { type: 'a' }]
+            | ['c', { type: 'b' }]
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<
+              ['a' | 'b' | 'c', { type: 'a' | 'b' | 'c' }],
+              ['b' | 'c', { type: 'b' | 'c' }]
+            >,
+            | ['a', { type: 'a' }]
+            | ['a', { type: 'b' }]
+            | ['a', { type: 'c' }]
+            | ['b', { type: 'a' }]
+            | ['c', { type: 'a' }]
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<
+              ['a' | 'b' | 'c', { type: 'a' | 'b' | 'c' | 'd' }],
+              ['b' | 'c', { type: 'b' | 'c' }]
+            >,
+            | ['a', { type: 'a' }]
+            | ['a', { type: 'b' }]
+            | ['a', { type: 'c' }]
+            | ['a', { type: 'd' }]
+            | ['b', { type: 'a' }]
+            | ['b', { type: 'd' }]
+            | ['c', { type: 'a' }]
+            | ['c', { type: 'd' }]
           >
         >
       ];

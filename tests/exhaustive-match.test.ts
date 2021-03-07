@@ -615,7 +615,20 @@ describe('exhaustive()', () => {
         .exhaustive();
     });
 
-    it('should correctly exclude cases if the pattern is a literal type', () => {});
+    it('should correctly exclude cases if the pattern is a literal type', () => {
+      const input = { kind: 'none' } as Option<string>;
+      match(input)
+        .with({ kind: 'some', value: 'hello' }, (option) => '')
+        .with({ kind: 'none' }, (option) => '')
+        // @ts-expect-error: handled { kind: 'some', value: string }
+        .exhaustive();
+
+      match(input)
+        .with({ kind: 'some', value: 'hello' }, (option) => '')
+        .with({ kind: 'none' }, (option) => '')
+        .with({ kind: 'some' }, (option) => '')
+        .exhaustive();
+    });
 
     it('should not exclude cases if the pattern is a literal type and the value is not', () => {
       match({ x: 2 })
@@ -651,131 +664,101 @@ describe('exhaustive()', () => {
     });
   });
 
-  describe('v3', () => {
-    it('test api', () => {
-      type Input =
-        | { type: 'text'; text: string; author: { name: string } }
-        | { type: 'video'; duration: number; src: string }
-        | {
-            type: 'movie';
-            duration: number;
-            author: { name: string };
-            src: string;
-            title: string;
-          }
-        | { type: 'picture'; src: string };
+  it('real world example', () => {
+    type Input =
+      | { type: 'text'; text: string; author: { name: string } }
+      | { type: 'video'; duration: number; src: string }
+      | {
+          type: 'movie';
+          duration: number;
+          author: { name: string };
+          src: string;
+          title: string;
+        }
+      | { type: 'picture'; src: string };
 
-      const isNumber = (x: unknown): x is number => typeof x === 'number';
+    const isNumber = (x: unknown): x is number => typeof x === 'number';
 
-      match<Input>({ type: 'text', text: 'Hello', author: { name: 'Gabriel' } })
+    match<Input>({ type: 'text', text: 'Hello', author: { name: 'Gabriel' } })
+      .with(
+        {
+          type: 'text',
+          text: select(),
+          author: { name: select('authorName') },
+        },
+        (text, { authorName }) => `${text} from ${authorName}`
+      )
+      .with({ type: 'video', duration: when((x) => x > 10) }, () => '')
+      .with(
+        {
+          type: 'video',
+          duration: when(isNumber),
+        },
+        () => ''
+      )
+      .with({ type: 'movie', duration: 10 }, () => '')
+      .with(
+        {
+          type: 'movie',
+          duration: 10,
+          author: select('author'),
+          title: select('title'),
+        },
+        ({ author, title }) => ''
+      )
+      .with({ type: 'picture' }, () => '')
+      .with({ type: 'movie', duration: when(isNumber) }, () => '')
+      .exhaustive();
+  });
+
+  it('reducer example', () => {
+    const initState: State = {
+      status: 'idle',
+    };
+
+    const reducer = (state: State, event: Event): State =>
+      match<[State, Event], State>([state, event])
         .with(
-          {
-            type: 'text',
-            text: select(),
-            author: { name: select('authorName') },
-          },
-          (text, { authorName }) => `${text} from ${authorName}`
+          [{ status: 'loading' }, { type: 'success', data: select() }],
+          (data) => ({ status: 'success', data })
         )
-        // if when isn't a type guard, this pattern is ignored, we don't exclude
-        .with({ type: 'video', duration: when((x) => x > 10) }, () => '')
-        // this catches every number
         .with(
-          {
-            type: 'video',
-            duration: when(isNumber),
-          },
-          () => ''
+          [{ status: 'loading' }, { type: 'error', error: select() }],
+          (error) => ({ status: 'error', error })
         )
-        // if a property is a literal but the input type for this property
-        // is not a literal type, ignore this pattern because we can't narrow the type
-        .with({ type: 'movie', duration: 10 }, () => '')
-        //  Selection API:
-        // I think this is a the best options: number literals for arguments position, and strings for kwargs
-        .with(
-          {
-            type: 'movie',
-            duration: 10,
-            author: select('author'),
-            title: select('title'),
-          },
-          ({ author, title }) => ''
-        )
-        // by default, select the first arg
-        // .with(
-        //   { type: 'video', duration: when((x) => x > 10), title: select },
-        //   (title) => ''
-        // )
-        .with({ type: 'picture' }, () => '')
-        // this replaces run()
-        .with({ type: 'movie', duration: when(isNumber) }, () => '')
+        .with([{ status: 'loading' }, { type: 'cancel' }], () => initState)
+
+        .with([{ status: not('loading') }, { type: 'fetch' }], (value) => ({
+          status: 'loading',
+        }))
+        .with(__, () => state)
         .exhaustive();
-    });
+  });
 
-    it('reducer example', () => {
-      const initState: State = {
-        status: 'idle',
-      };
+  it('select should always match', () => {
+    type Input = { type: 3; data: number };
 
-      const reducer = (state: State, event: Event): State =>
-        // Sometimes you want to match on two values at once.
-        // Here we pattern match both on the state and the event
-        // and return a new state.
-        match<[State, Event], State>([state, event])
-          // the first argument is the pattern : the shape of the value
-          // you expect for this branch.
-          .with(
-            [{ status: 'loading' }, { type: 'success', data: select() }],
-            (data) => ({ status: 'success', data })
-          )
-          // The second argument is the function that will be called if
-          // the data matches the given pattern.
-          // The type of the data structure is narrowed down to
-          // what is permitted by the pattern.
-          .with(
-            [{ status: 'loading' }, { type: 'error', error: select() }],
-            (error) => ({ status: 'error', error })
-          )
-          .with([{ status: 'loading' }, { type: 'cancel' }], () => initState)
-          // if you need to exclude a value, you can use
-          // a `not` pattern. it's a function taking a pattern
-          // and returning its opposite.
-          .with([{ status: not('loading') }, { type: 'fetch' }], (value) => ({
-            // The loading state is correctly removed from the type of `value`
-            status: 'loading',
-          }))
-          // `__` is a wildcard, it will match any value.
-          // You can use it at the top level, or inside a data structure.
-          .with(__, () => state)
-          // `run` execute the match clause, and returns the value
-          // .run();
-          // You can also use `otherwise`, which take an handler returning
-          // a default value. It is equivalent to `with(__, handler).run()`.
-          .exhaustive();
-    });
+    const input = { type: 3, data: 2 } as Input;
 
-    it('select should always match', () => {
-      type Input = { type: 3; data: number };
+    match<Input>(input)
+      .with({ type: 3, data: select() }, (data) => {
+        type t = Expect<Equal<typeof data, number>>;
+        return 3;
+      })
+      .exhaustive();
 
-      const input = { type: 3, data: 2 } as Input;
+    type Input2 = { type: 3; data: true } | 2;
+    match<Input2>(2)
+      .with({ type: 3, data: select() }, (data) => {
+        type t = Expect<Equal<typeof data, true>>;
+        return 3;
+      })
+      .with(2, () => 2)
+      .exhaustive();
+  });
 
-      match<Input>(input)
-        .with({ type: 3, data: select() }, (data) => {
-          type t = Expect<Equal<typeof data, number>>;
-          return 3;
-        })
-        .exhaustive();
-
-      type Input2 = { type: 3; data: true } | 2;
-      match<Input2>(2)
-        .with({ type: 3, data: select() }, (data) => {
-          type t = Expect<Equal<typeof data, true>>;
-          return 3;
-        })
-        .with(2, () => 2)
-        .exhaustive();
-    });
-
-    it('should work well with not patterns', () => {
+  describe('Exhaustive match and `not` patterns', () => {
+    it('should work with a single not pattern', () => {
       const reducer1 = (state: State, event: Event): State =>
         match<[State, Event], State>([state, event])
           .with([{ status: not('loading') }, __], (x) => state)
@@ -788,14 +771,58 @@ describe('exhaustive()', () => {
           .with([{ status: not('loading') }, __], (x) => state)
           .with([{ status: 'loading' }, __], () => state)
           .exhaustive();
+    });
 
-      const reducer2 = (state: State, event: Event): State =>
+    it('should work with several not patterns', () => {
+      const reducer = (state: State, event: Event): State =>
         match<[State, Event], State>([state, event])
           .with(
             [{ status: not('loading') }, { type: not('fetch') }],
             (x) => state
           )
-          .with([{ status: 'loading' }, { type: 'fetch' }], () => state)
+          .with([{ status: 'loading' }, { type: __ }], () => state)
+          .with([{ status: __ }, { type: 'fetch' }], () => state)
+          .exhaustive();
+
+      const f = (input: [1 | 2 | 3, 1 | 2 | 3, 1 | 2 | 3]) =>
+        match(input)
+          .with([not(1), not(1), not(1)], (x) => 'ok')
+          .with([1, __, __], () => 'ok')
+          .with([__, 1, __], () => 'ok')
+          .with([__, __, 1], () => 'ok')
+          .exhaustive();
+
+      const range = [1, 2, 3] as const;
+      const flatMap = <A, B>(
+        xs: readonly A[],
+        f: (x: A) => readonly B[]
+      ): B[] => xs.reduce((acc: B[], x) => acc.concat(f(x)), []);
+
+      const allPossibleCases = flatMap(range, (x) =>
+        flatMap(range, (y) =>
+          flatMap(range, (z) => [
+            [x, y, z] as [1 | 2 | 3, 1 | 2 | 3, 1 | 2 | 3],
+          ])
+        )
+      );
+
+      allPossibleCases.forEach((x) => expect(f(x)).toBe('ok'));
+
+      const f2 = (input: [1 | 2 | 3, 1 | 2 | 3, 1 | 2 | 3]) =>
+        match(input)
+          .with([not(1), not(1), not(1)], (x) => 'ok')
+          .with([1, __, __], () => 'ok')
+          .with([__, 1, __], () => 'ok')
+          // @ts-expect-error : NonExhaustiveError<[3, 3, 1] | [3, 2, 1] | [2, 3, 1] | [2, 2, 1]>
+          .exhaustive();
+    });
+
+    it('should work with not patterns and lists', () => {
+      const f = (input: (1 | 2 | 3)[]) =>
+        match(input)
+          .with([not(1)], (x) => 'ok')
+          .with([1], (x) => 'ok')
+          // @ts-expect-error: NonExhaustiveError<(1 | 2 | 3)[]>, because lists can be heterogenous
           .exhaustive();
     });
   });
