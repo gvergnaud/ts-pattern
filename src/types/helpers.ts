@@ -99,6 +99,10 @@ export type Drop<xs extends any[], n extends any[]> = Length<n> extends 0
   ? Drop<tail, Prev<n>>
   : [];
 
+export type ConcatAll<xs> = xs extends [infer head, ...infer tail]
+  ? [...Cast<head, any[]>, ...ConcatAll<tail>]
+  : [];
+
 type BuiltInObjects =
   | Function
   | Error

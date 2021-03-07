@@ -12,6 +12,7 @@ import type {
   Length,
   Compute,
   UnionToTuple,
+  ConcatAll,
 } from './helpers';
 import { IsMatching } from './IsMatching';
 
@@ -43,6 +44,7 @@ export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
   ? any
   : BuildMany<a, Distribute<FindUnionsMany<a, p>>>;
 
+// FindUnionsMany :: a -> Union<a> -> PropertyKey[] -> UnionConfig[]
 type FindUnionsMany<a, p, path extends PropertyKey[] = []> = ConcatAll<
   UnionToTuple<
     p extends any
@@ -53,9 +55,6 @@ type FindUnionsMany<a, p, path extends PropertyKey[] = []> = ConcatAll<
   >
 >;
 
-type ConcatAll<xs> = xs extends [infer head, ...infer tail]
-  ? [...Cast<head, any[]>, ...ConcatAll<tail>]
-  : [];
 /**
  * The reason we don't look further down the tree with lists,
  * Set and Maps is that they can be heterogeneous,
