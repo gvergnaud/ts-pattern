@@ -1,6 +1,7 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, __, select, not } from '../src';
 import { State, Event } from './utils';
+import { SeveralAnonymousSelectError } from '../src/types/FindSelected';
 
 describe('select', () => {
   it('should work with tuples', () => {
@@ -148,5 +149,14 @@ describe('select', () => {
     expect(reducer({ status: 'loading' }, { type: 'cancel' })).toEqual({
       status: 'idle',
     });
+  });
+
+  it('should infer the selection to an error when using several anonymous selection', () => {
+    match({ type: 'point', x: 2, y: 3 })
+      .with({ type: 'point', x: select(), y: select() }, (x) => {
+        type t = Expect<Equal<typeof x, SeveralAnonymousSelectError>>;
+        return 'ok';
+      })
+      .run();
   });
 });

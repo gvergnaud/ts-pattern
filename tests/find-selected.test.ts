@@ -179,6 +179,58 @@ describe('FindSelected', () => {
             >,
             [SeveralAnonymousSelectError]
           >
+        >,
+        Expect<
+          Equal<
+            FindSelected<
+              { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
+              {
+                a: [unknown, { e: AnonymousSelectPattern }];
+                b: AnonymousSelectPattern;
+              }
+            >,
+            [SeveralAnonymousSelectError]
+          >
+        >,
+        Expect<
+          Equal<
+            FindSelected<
+              [{ c: 3 }, { e: 7 }],
+              [{ c: AnonymousSelectPattern }, { e: AnonymousSelectPattern }]
+            >,
+            [SeveralAnonymousSelectError]
+          >
+        >,
+        Expect<
+          Equal<
+            FindSelected<
+              [{ c: 3 }, { e: 7 }],
+              [AnonymousSelectPattern, { e: AnonymousSelectPattern }]
+            >,
+            [SeveralAnonymousSelectError]
+          >
+        >,
+        Expect<
+          Equal<
+            FindSelected<
+              [{ c: 3 }, { e: 7 }],
+              [AnonymousSelectPattern, AnonymousSelectPattern]
+            >,
+            [SeveralAnonymousSelectError]
+          >
+        >,
+        Expect<
+          Equal<
+            FindSelected<
+              { type: 'point'; x: number; y: number },
+              {
+                type: 'point';
+                x: AnonymousSelectPattern;
+                y: AnonymousSelectPattern;
+              }
+            >,
+            [SeveralAnonymousSelectError]
+          >
         >
       ];
     });
