@@ -17,25 +17,26 @@ export type LeastUpperBound<a, b> = b extends a ? b : a extends b ? a : never;
  * if a key of an object has the never type,
  * returns never, otherwise returns the type of object
  **/
+
 export type ExcludeIfContainsNever<a> = a extends Map<any, any> | Set<any>
   ? a
   : a extends any[]
-  ? ExcludeNeverArray<a>
+  ? ExcludeNeverTuple<a>
   : IsPlainObject<a> extends true
   ? ExcludeNeverObject<Cast<a, object>>
   : a;
 
-type ExcludeNeverArray<a extends any[]> =
-  | (a[0] extends never ? false : true)
-  | (a[1] extends never ? false : true)
-  | (a[2] extends never ? false : true)
-  | (a[3] extends never ? false : true)
-  | (a[4] extends never ? false : true) extends true
+type ExcludeNeverTuple<a extends any[]> =
+  | ([a[0]] extends [never] ? false : true)
+  | ([a[1]] extends [never] ? false : true)
+  | ([a[2]] extends [never] ? false : true)
+  | ([a[3]] extends [never] ? false : true)
+  | ([a[4]] extends [never] ? false : true) extends true
   ? a
   : never;
 
 type ExcludeNeverObject<a extends object> = {
-  [k in keyof a]-?: a[k] extends never ? 'exclude' : 'include';
+  [k in keyof a]-?: [a[k]] extends [never] ? 'exclude' : 'include';
 }[keyof a] extends 'include'
   ? a
   : never;
@@ -84,7 +85,7 @@ export type Prev<it extends any[]> = it extends [any, ...infer tail]
   : [];
 
 export type Slice<
-  xs extends any[],
+  xs extends readonly any[],
   it extends any[],
   output extends any[] = []
 > = Length<it> extends 0
@@ -93,10 +94,17 @@ export type Slice<
   ? Slice<tail, Prev<it>, [...output, head]>
   : output;
 
-export type Drop<xs extends any[], n extends any[]> = Length<n> extends 0
+export type Drop<
+  xs extends readonly any[],
+  n extends any[]
+> = Length<n> extends 0
   ? xs
   : xs extends [any, ...infer tail]
   ? Drop<tail, Prev<n>>
+  : [];
+
+export type ConcatAll<xs> = xs extends [infer head, ...infer tail]
+  ? [...Cast<head, any[]>, ...ConcatAll<tail>]
   : [];
 
 type BuiltInObjects =
@@ -126,4 +134,36 @@ export type All<xs> = xs extends [infer head, ...infer tail]
     : false
   : true;
 
+export type Or<a extends boolean, b extends boolean> = true extends a | b
+  ? true
+  : false;
+
 export type WithDefault<a, def> = [a] extends [never] ? def : a;
+
+type IsLiteralString<T extends string> = string extends T ? false : true;
+type IsLiteralNumber<T extends number> = number extends T ? false : true;
+type IsLiteralBoolean<T extends boolean> = boolean extends T ? false : true;
+type IsLiteralBigInt<T extends bigint> = bigint extends T ? false : true;
+type IsLiteralSymbol<T extends symbol> = symbol extends T ? false : true;
+export type IsLiteral<T> = T extends null | undefined
+  ? true
+  : T extends string
+  ? IsLiteralString<T>
+  : T extends number
+  ? IsLiteralNumber<T>
+  : T extends boolean
+  ? IsLiteralBoolean<T>
+  : T extends symbol
+  ? IsLiteralSymbol<T>
+  : T extends bigint
+  ? IsLiteralBigInt<T>
+  : false;
+
+export type Primitives =
+  | number
+  | boolean
+  | string
+  | undefined
+  | null
+  | symbol
+  | bigint;

@@ -1,7 +1,7 @@
 import type { Pattern, GuardValue, ExhaustivePattern } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
-import type { InvertNotPattern, InvertPattern } from './InvertPattern';
-import type { DeepExclude, DeepExcludeMany } from './DeepExclude';
+import type { InvertPattern, InvertPatternForExclude } from './InvertPattern';
+import type { DeepExclude } from './DeepExclude';
 import type { WithDefault } from './helpers';
 import type { FindSelected } from './FindSelected';
 
@@ -179,7 +179,7 @@ export type EmptyMatch<i, o> = Match<i, o> & {
   exhaustive: () => ExhaustiveMatch<i, i, o>;
 };
 
-type NonExhaustivePattern<i> = { __nonExhaustive: never } & i;
+type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 
 /**
  * ### ExhaustiveMatch
@@ -206,7 +206,7 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     // For performances, keep the origin input `i` even after we call DeepExclude
     // in it, because Pattern<i> is generally mucb easier to compute than
     // the Pattern<distributedInput>.
-    DeepExclude<distributedInput, InvertNotPattern<invpattern, value>>,
+    DeepExclude<distributedInput, InvertPatternForExclude<p, value>>,
     i,
     PickReturnValue<o, c>
   >;
@@ -222,9 +222,9 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     pattern2: p2,
     handler: (value: value) => PickReturnValue<o, c>
   ): ExhaustiveMatch<
-    DeepExcludeMany<
+    DeepExclude<
       distributedInput,
-      p extends any ? InvertNotPattern<InvertPattern<p>, value> : never
+      p extends any ? InvertPatternForExclude<p, value> : never
     >,
     i,
     PickReturnValue<o, c>
@@ -243,9 +243,9 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     pattern3: p3,
     handler: (value: value) => PickReturnValue<o, c>
   ): ExhaustiveMatch<
-    DeepExcludeMany<
+    DeepExclude<
       distributedInput,
-      p extends any ? InvertNotPattern<InvertPattern<p>, value> : never
+      p extends any ? InvertPatternForExclude<p, value> : never
     >,
     i,
     PickReturnValue<o, c>
@@ -266,9 +266,9 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     pattern4: p4,
     handler: (value: value) => PickReturnValue<o, c>
   ): ExhaustiveMatch<
-    DeepExcludeMany<
+    DeepExclude<
       distributedInput,
-      p extends any ? InvertNotPattern<InvertPattern<p>, value> : never
+      p extends any ? InvertPatternForExclude<p, value> : never
     >,
     i,
     PickReturnValue<o, c>
@@ -291,9 +291,9 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
     pattern5: p5,
     handler: (value: value) => PickReturnValue<o, c>
   ): ExhaustiveMatch<
-    DeepExcludeMany<
+    DeepExclude<
       distributedInput,
-      p extends any ? InvertNotPattern<InvertPattern<p>, value> : never
+      p extends any ? InvertPatternForExclude<p, value> : never
     >,
     i,
     PickReturnValue<o, c>
@@ -312,11 +312,11 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
    * ### Match.run
    * Runs the pattern matching and return a value.
    *
-   * If this is of type `NonExhaustivePattern`, it means you aren't matching
+   * If this is of type `NonExhaustiveError`, it means you aren't matching
    * every cases, and you should probably add a  another `.with(...)` clause
    * to prevent potential runtime errors.
    * */
   run: [distributedInput] extends [never]
     ? () => o
-    : NonExhaustivePattern<distributedInput>;
+    : NonExhaustiveError<distributedInput>;
 };

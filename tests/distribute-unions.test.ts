@@ -384,6 +384,37 @@ describe('FindAllUnions', () => {
             }
           ]
         >
+      >,
+      Expect<
+        Equal<
+          FindUnions<readonly ['a' | 'b', 'c' | 'd'], ['a', 'c']>,
+          [
+            {
+              cases:
+                | {
+                    value: 'a';
+                    subUnions: [];
+                  }
+                | {
+                    value: 'b';
+                    subUnions: [];
+                  };
+              path: [0];
+            },
+            {
+              cases:
+                | {
+                    value: 'c';
+                    subUnions: [];
+                  }
+                | {
+                    value: 'd';
+                    subUnions: [];
+                  };
+              path: [1];
+            }
+          ]
+        >
       >
     ];
   });
@@ -859,6 +890,17 @@ describe('DistributeMatchingUnions', () => {
             unknown
           >,
           { x: 'a'; value: Option<string> } | { x: 'b'; value: Option<number> }
+        >
+      >
+    ];
+  });
+
+  it('should work with readonly inputs', () => {
+    type cases = [
+      Expect<
+        Equal<
+          DistributeMatchingUnions<readonly ['a' | 'b', 'c' | 'd'], ['a', 'c']>,
+          ['a', 'c'] | ['a', 'd'] | ['b', 'c'] | ['b', 'd']
         >
       >
     ];

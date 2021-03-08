@@ -1,6 +1,5 @@
-import { DeepExclude, DeepExcludeMany } from '../src/types/DeepExclude';
-import { Equal, Expect } from '../src/types/helpers';
-import { Primitives } from '../src/types/Pattern';
+import { DeepExclude } from '../src/types/DeepExclude';
+import { Equal, Expect, Primitives } from '../src/types/helpers';
 import { BigUnion, Option } from './utils';
 
 type Colors = 'pink' | 'purple' | 'red' | 'yellow' | 'blue';
@@ -339,7 +338,7 @@ describe('DeepExclude', () => {
       type cases = [
         Expect<
           Equal<
-            DeepExcludeMany<
+            DeepExclude<
               { x: 'a' | 'b'; y: 'c' | 'd'; z: 'e' | 'f' },
               { x: 'a'; y: 'c' } | { x: 'b'; y: 'c' }
             >,
@@ -348,7 +347,7 @@ describe('DeepExclude', () => {
         >,
         Expect<
           Equal<
-            DeepExcludeMany<
+            DeepExclude<
               { a: { b: 'x' | 'y' | 'z' }; c: 'u' | 'v' },
               { c: 'u' } | { a: { b: 'x' } }
             >,
@@ -357,5 +356,80 @@ describe('DeepExclude', () => {
         >
       ];
     });
+  });
+
+  describe('Excluding nested unions', () => {
+    it('should correctly exclude', () => {
+      type cases = [
+        Expect<
+          Equal<
+            DeepExclude<
+              ['a' | 'b' | 'c', 'a' | 'b' | 'c'],
+              ['b' | 'c', 'b' | 'c']
+            >,
+            ['a', 'a'] | ['a', 'b'] | ['a', 'c'] | ['b', 'a'] | ['c', 'a']
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<
+              ['a' | 'b' | 'c', { type: 'a' | 'b' | 'c' }],
+              ['b' | 'c', { type: 'c' }]
+            >,
+            | ['a', { type: 'c' }]
+            | ['a', { type: 'a' }]
+            | ['a', { type: 'b' }]
+            | ['b', { type: 'a' }]
+            | ['b', { type: 'b' }]
+            | ['c', { type: 'a' }]
+            | ['c', { type: 'b' }]
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<
+              ['a' | 'b' | 'c', { type: 'a' | 'b' | 'c' }],
+              ['b' | 'c', { type: 'b' | 'c' }]
+            >,
+            | ['a', { type: 'a' }]
+            | ['a', { type: 'b' }]
+            | ['a', { type: 'c' }]
+            | ['b', { type: 'a' }]
+            | ['c', { type: 'a' }]
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<
+              ['a' | 'b' | 'c', { type: 'a' | 'b' | 'c' | 'd' }],
+              ['b' | 'c', { type: 'b' | 'c' }]
+            >,
+            | ['a', { type: 'a' }]
+            | ['a', { type: 'b' }]
+            | ['a', { type: 'c' }]
+            | ['a', { type: 'd' }]
+            | ['b', { type: 'a' }]
+            | ['b', { type: 'd' }]
+            | ['c', { type: 'a' }]
+            | ['c', { type: 'd' }]
+          >
+        >
+      ];
+    });
+  });
+
+  describe('readonly', () => {
+    type Input = readonly ['a' | 'b', 'c' | 'd'];
+    type p = ['a', 'c'] | ['a', 'd'] | ['b', 'c'] | ['b', 'd'];
+
+    type cases = [
+      Expect<
+        Equal<
+          DeepExclude<Input, ['a', 'c']>,
+          ['a', 'd'] | ['b', 'c'] | ['b', 'd']
+        >
+      >,
+      Expect<Equal<DeepExclude<Input, p>, never>>
+    ];
   });
 });

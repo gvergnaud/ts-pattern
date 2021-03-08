@@ -1,16 +1,14 @@
+import { BuildMany } from './BuildMany';
 import type {
   IsAny,
   Cast,
   Values,
   Flatten,
   IsUnion,
-  Slice,
-  Drop,
-  Iterator,
-  Next,
   IsPlainObject,
   Length,
-  Compute,
+  UnionToTuple,
+  ConcatAll,
 } from './helpers';
 import { IsMatching } from './IsMatching';
 
@@ -40,9 +38,18 @@ import { IsMatching } from './IsMatching';
  */
 export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
   ? any
-  : IsMatching<a, p> extends true
-  ? BuildMany<a, Distribute<FindUnions<a, p>>>
-  : a;
+  : BuildMany<a, Distribute<FindUnionsMany<a, p>>>;
+
+// FindUnionsMany :: a -> Union<a> -> PropertyKey[] -> UnionConfig[]
+export type FindUnionsMany<a, p, path extends PropertyKey[] = []> = ConcatAll<
+  UnionToTuple<
+    p extends any
+      ? IsMatching<a, p> extends true
+        ? FindUnions<a, p, path>
+        : []
+      : never
+  >
+>;
 
 /**
  * The reason we don't look further down the tree with lists,
@@ -78,18 +85,16 @@ export type FindUnions<
         cases: a extends any
           ? {
               value: a;
-              subUnions: IsMatching<a, p> extends true
-                ? FindUnions<a, p, path>
-                : [];
+              subUnions: FindUnionsMany<a, p, path>;
             }
           : never;
         path: path;
       }
     ]
-  : [a, p] extends [any[], any[]]
+  : [a, p] extends [readonly any[], readonly any[]]
   ? [a, p] extends [
-      [infer a1, infer a2, infer a3, infer a4, infer a5],
-      [infer p1, infer p2, infer p3, infer p4, infer p5]
+      readonly [infer a1, infer a2, infer a3, infer a4, infer a5],
+      readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
     ]
     ? [
         ...FindUnions<a1, p1, [...path, 0]>,
@@ -99,8 +104,8 @@ export type FindUnions<
         ...FindUnions<a5, p5, [...path, 4]>
       ]
     : [a, p] extends [
-        [infer a1, infer a2, infer a3, infer a4],
-        [infer p1, infer p2, infer p3, infer p4]
+        readonly [infer a1, infer a2, infer a3, infer a4],
+        readonly [infer p1, infer p2, infer p3, infer p4]
       ]
     ? [
         ...FindUnions<a1, p1, [...path, 0]>,
@@ -109,17 +114,20 @@ export type FindUnions<
         ...FindUnions<a4, p4, [...path, 3]>
       ]
     : [a, p] extends [
-        [infer a1, infer a2, infer a3],
-        [infer p1, infer p2, infer p3]
+        readonly [infer a1, infer a2, infer a3],
+        readonly [infer p1, infer p2, infer p3]
       ]
     ? [
         ...FindUnions<a1, p1, [...path, 0]>,
         ...FindUnions<a2, p2, [...path, 1]>,
         ...FindUnions<a3, p3, [...path, 2]>
       ]
-    : [a, p] extends [[infer a1, infer a2], [infer p1, infer p2]]
+    : [a, p] extends [
+        readonly [infer a1, infer a2],
+        readonly [infer p1, infer p2]
+      ]
     ? [...FindUnions<a1, p1, [...path, 0]>, ...FindUnions<a2, p2, [...path, 1]>]
-    : [a, p] extends [[infer a1], [infer p1]]
+    : [a, p] extends [readonly [infer a1], readonly [infer p1]]
     ? FindUnions<a1, p1, [...path, 0]>
     : []
   : a extends Set<any>
@@ -146,7 +154,7 @@ export type FindUnions<
 // Distribute :: UnionConfig[] -> Union<[a, path][]>
 export type Distribute<unions extends any[]> = unions extends [
   { cases: infer cases; path: infer path },
-  ...(infer tail)
+  ...infer tail
 ]
   ? cases extends { value: infer value; subUnions: infer subUnions }
     ? [
@@ -156,53 +164,3 @@ export type Distribute<unions extends any[]> = unions extends [
       ]
     : never
   : [];
-
-// BuildMany :: DataStructure -> Union<[value, path][]> -> Union<DataStructure>
-type BuildMany<data, xs extends any[]> = xs extends any
-  ? BuildOne<data, xs>
-  : never;
-
-// BuildOne :: DataStructure
-// -> [value, path][]
-// -> DataStructure
-type BuildOne<data, xs extends any[]> = xs extends [
-  [infer value, infer path],
-  ...(infer tail)
-]
-  ? BuildOne<Update<data, value, Cast<path, PropertyKey[]>>, tail>
-  : data;
-
-type SafeGet<data, k extends PropertyKey, def> = k extends keyof data
-  ? data[k]
-  : def;
-
-// Update :: a -> b -> PropertyKey[] -> a
-type Update<data, value, path extends PropertyKey[]> = path extends [
-  infer head,
-  ...(infer tail)
-]
-  ? data extends [any, ...any]
-    ? head extends number
-      ? [
-          ...Slice<data, Iterator<head>>,
-          Update<data[head], value, Cast<tail, PropertyKey[]>>,
-          ...Drop<data, Next<Iterator<head>>>
-        ]
-      : never
-    : data extends (infer a)[]
-    ? Update<a, value, Cast<tail, PropertyKey[]>>[]
-    : data extends Set<infer a>
-    ? Set<Update<a, value, Cast<tail, PropertyKey[]>>>
-    : data extends Map<infer k, infer v>
-    ? Map<k, Update<v, value, Cast<tail, PropertyKey[]>>>
-    : Compute<
-        Omit<data, Cast<head, PropertyKey>> &
-          {
-            [k in Cast<head, PropertyKey>]: Update<
-              SafeGet<data, k, {}>,
-              value,
-              Cast<tail, PropertyKey[]>
-            >;
-          }
-      >
-  : value;

@@ -117,7 +117,7 @@ describe('Multiple patterns', () => {
       .with('USA', () => 'America')
       .run();
 
-    match<Country>('France')
+    match<Country>('Germany')
       .exhaustive()
       .with('Germany', 'Spain', () => 'Europe')
       .with('USA', () => 'America')
@@ -174,6 +174,10 @@ describe('Multiple patterns', () => {
           type t = Expect<Equal<typeof x, [false, number]>>;
           return '[false, number]';
         })
+        .with([true, __.number] as const, (x) => {
+          type t = Expect<Equal<typeof x, [true, number]>>;
+          return '[true, number]';
+        })
         .run();
 
     const exhaustive = (input: Input) =>
@@ -190,6 +194,7 @@ describe('Multiple patterns', () => {
         )
         .with([false, 2] as const, (x) => '[false, 2]')
         .with([false, __.number] as const, (x) => '[false, number]')
+        .with([true, __.number] as const, (x) => '[true, number]')
         .run();
 
     const cases: { input: Input; expected: string }[] = [
