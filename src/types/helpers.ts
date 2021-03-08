@@ -26,16 +26,16 @@ export type ExcludeIfContainsNever<a> = a extends Map<any, any> | Set<any>
   : a;
 
 type ExcludeNeverTuple<a extends any[]> =
-  | (a[0] extends never ? false : true)
-  | (a[1] extends never ? false : true)
-  | (a[2] extends never ? false : true)
-  | (a[3] extends never ? false : true)
-  | (a[4] extends never ? false : true) extends true
+  | ([a[0]] extends [never] ? false : true)
+  | ([a[1]] extends [never] ? false : true)
+  | ([a[2]] extends [never] ? false : true)
+  | ([a[3]] extends [never] ? false : true)
+  | ([a[4]] extends [never] ? false : true) extends true
   ? a
   : never;
 
 type ExcludeNeverObject<a extends object> = {
-  [k in keyof a]-?: a[k] extends never ? 'exclude' : 'include';
+  [k in keyof a]-?: [a[k]] extends [never] ? 'exclude' : 'include';
 }[keyof a] extends 'include'
   ? a
   : never;

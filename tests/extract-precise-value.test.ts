@@ -130,4 +130,44 @@ describe('ExtractPreciseValue', () => {
       >
     ];
   });
+
+  it('should work if the input type contains anys', () => {
+    type Input = { t: 'a'; data: 'string'; x: any } | { t: 'b' };
+
+    type cases = [
+      Expect<
+        Equal<
+          ExtractPreciseValue<Input, { t: 'a' }>,
+          { t: 'a'; data: 'string'; x: any }
+        >
+      >,
+      Expect<Equal<ExtractPreciseValue<Input, { t: 'b' }>, { t: 'b' }>>,
+
+      Expect<
+        Equal<
+          ExtractPreciseValue<[string | number, any], [string, unknown]>,
+          [string, any]
+        >
+      >,
+      Expect<
+        Equal<
+          ExtractPreciseValue<[number, any] | ['t', 2], ['t', unknown]>,
+          ['t', 2]
+        >
+      >,
+
+      Expect<
+        Equal<
+          ExtractPreciseValue<
+            [
+              { t: 'a' } | { t: 'b'; data: any },
+              { t: 'a'; x: boolean } | { t: 'b' }
+            ],
+            [{ t: 'b' }, { t: 'a' }]
+          >,
+          [{ t: 'b'; data: any }, { t: 'a'; x: boolean }]
+        >
+      >
+    ];
+  });
 });

@@ -826,4 +826,28 @@ describe('exhaustive()', () => {
           .exhaustive();
     });
   });
+
+  describe('exhaustive and any', () => {
+    const f = (input: { t: 'a'; x: any } | { t: 'b' }) =>
+      match(input)
+        .with({ t: 'a' }, (x) => {
+          type t = Expect<Equal<typeof x, { t: 'a'; x: any }>>;
+          return 'ok';
+        })
+        .with({ t: 'b' }, (x) => 'ok')
+        .exhaustive();
+
+    const f2 = (input: { t: 'a'; x: any } | { t: 'b' }) =>
+      match(input)
+        .with({ t: 'a', x: 'hello' }, (x) => 'ok')
+        .with({ t: 'b' }, (x) => 'ok')
+        // @ts-expect-error
+        .exhaustive();
+
+    const f3 = (input: { t: 'a'; x: any } | { t: 'b' }) =>
+      match(input)
+        .with({ t: 'a', x: __ }, (x) => 'ok')
+        .with({ t: 'b' }, (x) => 'ok')
+        .exhaustive();
+  });
 });

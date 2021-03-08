@@ -223,4 +223,13 @@ describe('Multiple patterns', () => {
       expect(exhaustive(input)).toEqual(expected);
     });
   });
+
+  it("when 2 returned values don't match, the error should be at the second returned value", () => {
+    const f = (input: { t: 'a'; x: any } | { t: 'b' }) =>
+      match(input)
+        .with({ t: 'a', x: 'hello' }, { t: 'a' }, (x) => 'ok')
+        // @ts-expect-error
+        .with({ t: 'b' }, (x) => 2)
+        .run();
+  });
 });
