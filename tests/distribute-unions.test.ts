@@ -897,8 +897,6 @@ describe('DistributeMatchingUnions', () => {
   });
 
   it('should work with readonly inputs', () => {
-    type Input = readonly ['a' | 'b', 'c' | 'd'];
-    type x3 = FindUnionsMany<Input, ['a', 'c']>;
     type cases = [
       Expect<
         Equal<

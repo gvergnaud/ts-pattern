@@ -17,11 +17,11 @@ export type FindSelectionUnion<
   ? [k, i, path]
   : p extends AnonymousSelectPattern
   ? [PatternType.AnonymousSelect, i, path]
-  : p extends (infer pp)[]
-  ? i extends (infer ii)[]
+  : p extends readonly (infer pp)[]
+  ? i extends readonly (infer ii)[]
     ? [i, p] extends [
-        [infer i1, infer i2, infer i3, infer i4, infer i5],
-        [infer p1, infer p2, infer p3, infer p4, infer p5]
+        readonly [infer i1, infer i2, infer i3, infer i4, infer i5],
+        readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
       ]
       ?
           | FindSelectionUnion<i1, p1, [...path, 1]>
@@ -30,8 +30,8 @@ export type FindSelectionUnion<
           | FindSelectionUnion<i4, p4, [...path, 4]>
           | FindSelectionUnion<i5, p5, [...path, 5]>
       : [i, p] extends [
-          [infer i1, infer i2, infer i3, infer i4],
-          [infer p1, infer p2, infer p3, infer p4]
+          readonly [infer i1, infer i2, infer i3, infer i4],
+          readonly [infer p1, infer p2, infer p3, infer p4]
         ]
       ?
           | FindSelectionUnion<i1, p1, [...path, 1]>
@@ -39,14 +39,17 @@ export type FindSelectionUnion<
           | FindSelectionUnion<i3, p3, [...path, 3]>
           | FindSelectionUnion<i4, p4, [...path, 4]>
       : [i, p] extends [
-          [infer i1, infer i2, infer i3],
-          [infer p1, infer p2, infer p3]
+          readonly [infer i1, infer i2, infer i3],
+          readonly [infer p1, infer p2, infer p3]
         ]
       ?
           | FindSelectionUnion<i1, p1, [...path, 1]>
           | FindSelectionUnion<i2, p2, [...path, 2]>
           | FindSelectionUnion<i3, p3, [...path, 3]>
-      : [i, p] extends [[infer i1, infer i2], [infer p1, infer p2]]
+      : [i, p] extends [
+          readonly [infer i1, infer i2],
+          readonly [infer p1, infer p2]
+        ]
       ?
           | FindSelectionUnion<i1, p1, [...path, 1]>
           | FindSelectionUnion<i2, p2, [...path, 2]>

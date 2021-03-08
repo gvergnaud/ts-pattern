@@ -186,6 +186,10 @@ describe('Multiple patterns', () => {
           type t = Expect<Equal<typeof x, [false, number]>>;
           return '[false, number]';
         })
+        .with([true, __.number] as const, (x) => {
+          type t = Expect<Equal<typeof x, [true, number]>>;
+          return '[true, number]';
+        })
         .run();
 
     const exhaustive = (input: Input) =>

@@ -17,6 +17,7 @@ export type LeastUpperBound<a, b> = b extends a ? b : a extends b ? a : never;
  * if a key of an object has the never type,
  * returns never, otherwise returns the type of object
  **/
+
 export type ExcludeIfContainsNever<a> = a extends Map<any, any> | Set<any>
   ? a
   : a extends any[]
@@ -105,15 +106,6 @@ export type Drop<
 export type ConcatAll<xs> = xs extends [infer head, ...infer tail]
   ? [...Cast<head, any[]>, ...ConcatAll<tail>]
   : [];
-
-// WithIndex :: a[] -> [a, Iterator][]
-export type WithIndex<
-  xs,
-  n extends any[] = Iterator<0>,
-  output extends any[] = []
-> = xs extends [infer head, ...infer tail]
-  ? WithIndex<tail, Next<n>, [...output, [head, n]]>
-  : output;
 
 type BuiltInObjects =
   | Function
