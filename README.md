@@ -231,9 +231,21 @@ In the second `with` clause, we use the `select` function:
   )
 ```
 
-Since we didn't pass any name to `select()`, It will inject the `event.error` property as first argument to the handler function. Note that you can still access the full datastructure with its type narrowed by your pattern as second argument of the handler function: `(error, stateAndEvent) => {...}`.
+`select` let you extract a piece of your input data structure and inject it into your handler. It is pretty useful when pattern matching on deep data structures because it avoids the hassle of destructuring your input in your handler.
 
-You can only have a single unnamed selection. If you need to select more properties on your input data structure, you will need to give them names:
+Since we didn't pass any name to `select()`, It will inject the `event.error` property as first argument to the handler function. Note that you can still access **the full input data structure** with its type narrowed by your pattern as **second argument** of the handler function:
+
+```ts
+  .with(
+    [{ status: 'loading' }, { type: 'error', error: select() }],
+    (error, stateAndEvent) => {
+      // error: Error
+      // stateAndEvent: [{ status: 'loading' }, { type: 'error', error: Error }]
+    }
+  )
+```
+
+You can only have a **single** unnamed selection. If you need to select more properties on your input data structure, you will need to give them **names**:
 
 ```ts
 .with(
@@ -245,9 +257,6 @@ You can only have a single unnamed selection. If you need to select more propert
 ```
 
 Each selection will be injected inside a `selections` object passed as first argument to the handler function. Names can be any strings.
-
-It is pretty useful when pattern matching on deep data structures because it avoids
-the hassle of destructuring it in your handler.
 
 ### not(pattern)
 
@@ -314,11 +323,6 @@ With `ts-pattern` you have two options to use a guard function:
 
 - use `when(<guard function>)` inside your pattern
 - pass it as second parameter to `.with(...)`
-
-**Note**: to use this feature, you will need to **disable exhaustive matching**
-by removing `.exhaustive()` if you were using it. That's because with guard functions,
-there is no way to know if the pattern is going to match or not at compile time,
-making exhaustive matching impossible.
 
 #### when(predicate)
 
@@ -441,8 +445,12 @@ function with(
 // Overload for guard functions
 function with(
   pattern: Pattern<TInput>[],
-  ...guardFunctions: ((value: TInput) => unknown)[],
-  handler: (value: TInput, selections: Selections<TInput>) => TOutput
+  when: (value: TInput) => unknown,
+  handler: (
+    [unnamedSelection: Selection<TInput>, ]
+    [namedSelections: Selections<TInput>, ]
+    value: TInput
+  ) => TOutput
 ): Match<TInput, TOutput>;
 ```
 
@@ -456,7 +464,7 @@ function with(
 - `when: (value: TInput) => unknown`
   - Optional
   - Additional condition the input must satisfy for the handler to be called.
-  - You can add up to 3 when functions. The input will match if they all return truthy values.
+  - The input will match if your guard function returns a truthy value.
   - `TInput` might be narrowed to a more precise type using the `pattern`.
 - `handler: (value: TInput, selections: Selections<TInput>) => TOutput`
   - **Required**
@@ -495,17 +503,17 @@ function when(
 
 ```ts
 match(...)
-  .exhaustive()
   .with(...)
+  .exhaustive()
 ```
 
-Enable exhaustive pattern matching, making sure at compile time that
+Executes the match case, return its result, and enable exhaustive pattern matching, making sure at compile time that
 all possible cases are handled.
 
 #### Signature
 
 ```ts
-function exhaustive(): ExhaustiveMatch<TInput, IOutput>;
+function exhaustive(): IOutput;
 ```
 
 ### .otherwise
