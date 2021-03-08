@@ -47,8 +47,6 @@ match(Input)
   .with({ type: 'movie', duration: 10, author: select() }, (author) => ...)
 
   .with({ type: 'picture' }, () => ...)
-  // This is a type error, because `type picture` has already been handled
-  .with({ type: 'picture' }, () => ...)
    // this replaces run()
   .exhaustive()
   // OR: no exhaustive check
@@ -57,13 +55,6 @@ match(Input)
   .otherwise()
 ```
 
-To make this work we will need A `CombineUnions` type, so that the input type doesn't get larger
-as we exclude cases from it.
-
-We will need to change the way `when` and literal patterns are handled, and have an aborting mecanism
-when we know we can't make any predicion on the excluded cases.
-
 TODO:
 
-- [ ] Fix readonly support
 - [ ] Update docs

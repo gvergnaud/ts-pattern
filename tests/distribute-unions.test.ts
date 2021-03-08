@@ -2,6 +2,7 @@ import {
   FindUnions,
   Distribute,
   DistributeMatchingUnions,
+  FindUnionsMany,
 } from '../src/types/DistributeUnions';
 
 import { Equal, Expect } from '../src/types/helpers';
@@ -381,6 +382,37 @@ describe('FindAllUnions', () => {
                     subUnions: [];
                   };
               path: [];
+            }
+          ]
+        >
+      >,
+      Expect<
+        Equal<
+          FindUnions<readonly ['a' | 'b', 'c' | 'd'], ['a', 'c']>,
+          [
+            {
+              cases:
+                | {
+                    value: 'a';
+                    subUnions: [];
+                  }
+                | {
+                    value: 'b';
+                    subUnions: [];
+                  };
+              path: [0];
+            },
+            {
+              cases:
+                | {
+                    value: 'c';
+                    subUnions: [];
+                  }
+                | {
+                    value: 'd';
+                    subUnions: [];
+                  };
+              path: [1];
             }
           ]
         >
@@ -859,6 +891,19 @@ describe('DistributeMatchingUnions', () => {
             unknown
           >,
           { x: 'a'; value: Option<string> } | { x: 'b'; value: Option<number> }
+        >
+      >
+    ];
+  });
+
+  it('should work with readonly inputs', () => {
+    type Input = readonly ['a' | 'b', 'c' | 'd'];
+    type x3 = FindUnionsMany<Input, ['a', 'c']>;
+    type cases = [
+      Expect<
+        Equal<
+          DistributeMatchingUnions<readonly ['a' | 'b', 'c' | 'd'], ['a', 'c']>,
+          ['a', 'c'] | ['a', 'd'] | ['b', 'c'] | ['b', 'd']
         >
       >
     ];

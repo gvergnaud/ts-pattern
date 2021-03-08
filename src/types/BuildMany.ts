@@ -24,7 +24,7 @@ type Update<data, value, path extends PropertyKey[]> = path extends [
   infer head,
   ...infer tail
 ]
-  ? data extends [any, ...any]
+  ? data extends readonly [any, ...any]
     ? head extends number
       ? [
           ...Slice<data, Iterator<head>>,
@@ -32,7 +32,7 @@ type Update<data, value, path extends PropertyKey[]> = path extends [
           ...Drop<data, Next<Iterator<head>>>
         ]
       : never
-    : data extends (infer a)[]
+    : data extends readonly (infer a)[]
     ? Update<a, value, Cast<tail, PropertyKey[]>>[]
     : data extends Set<infer a>
     ? Set<Update<a, value, Cast<tail, PropertyKey[]>>>

@@ -41,7 +41,7 @@ export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
   : BuildMany<a, Distribute<FindUnionsMany<a, p>>>;
 
 // FindUnionsMany :: a -> Union<a> -> PropertyKey[] -> UnionConfig[]
-type FindUnionsMany<a, p, path extends PropertyKey[] = []> = ConcatAll<
+export type FindUnionsMany<a, p, path extends PropertyKey[] = []> = ConcatAll<
   UnionToTuple<
     p extends any
       ? IsMatching<a, p> extends true
@@ -91,10 +91,10 @@ export type FindUnions<
         path: path;
       }
     ]
-  : [a, p] extends [any[], any[]]
+  : [a, p] extends [readonly any[], readonly any[]]
   ? [a, p] extends [
-      [infer a1, infer a2, infer a3, infer a4, infer a5],
-      [infer p1, infer p2, infer p3, infer p4, infer p5]
+      readonly [infer a1, infer a2, infer a3, infer a4, infer a5],
+      readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
     ]
     ? [
         ...FindUnions<a1, p1, [...path, 0]>,
@@ -104,8 +104,8 @@ export type FindUnions<
         ...FindUnions<a5, p5, [...path, 4]>
       ]
     : [a, p] extends [
-        [infer a1, infer a2, infer a3, infer a4],
-        [infer p1, infer p2, infer p3, infer p4]
+        readonly [infer a1, infer a2, infer a3, infer a4],
+        readonly [infer p1, infer p2, infer p3, infer p4]
       ]
     ? [
         ...FindUnions<a1, p1, [...path, 0]>,
@@ -114,17 +114,20 @@ export type FindUnions<
         ...FindUnions<a4, p4, [...path, 3]>
       ]
     : [a, p] extends [
-        [infer a1, infer a2, infer a3],
-        [infer p1, infer p2, infer p3]
+        readonly [infer a1, infer a2, infer a3],
+        readonly [infer p1, infer p2, infer p3]
       ]
     ? [
         ...FindUnions<a1, p1, [...path, 0]>,
         ...FindUnions<a2, p2, [...path, 1]>,
         ...FindUnions<a3, p3, [...path, 2]>
       ]
-    : [a, p] extends [[infer a1, infer a2], [infer p1, infer p2]]
+    : [a, p] extends [
+        readonly [infer a1, infer a2],
+        readonly [infer p1, infer p2]
+      ]
     ? [...FindUnions<a1, p1, [...path, 0]>, ...FindUnions<a2, p2, [...path, 1]>]
-    : [a, p] extends [[infer a1], [infer p1]]
+    : [a, p] extends [readonly [infer a1], readonly [infer p1]]
     ? FindUnions<a1, p1, [...path, 0]>
     : []
   : a extends Set<any>

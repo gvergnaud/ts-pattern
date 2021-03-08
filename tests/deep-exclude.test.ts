@@ -1,5 +1,6 @@
 import { DeepExclude } from '../src/types/DeepExclude';
 import { Primitives, Equal, Expect } from '../src/types/helpers';
+import { InvertPatternForExclude } from '../src/types/InvertPattern';
 import { BigUnion, Option } from './utils';
 
 type Colors = 'pink' | 'purple' | 'red' | 'yellow' | 'blue';
@@ -416,5 +417,20 @@ describe('DeepExclude', () => {
         >
       ];
     });
+  });
+
+  describe('readonly', () => {
+    type Input = readonly ['a' | 'b', 'c' | 'd'];
+    type p = ['a', 'c'] | ['a', 'd'] | ['b', 'c'] | ['b', 'd'];
+
+    type cases = [
+      Expect<
+        Equal<
+          DeepExclude<Input, ['a', 'c']>,
+          ['a', 'd'] | ['b', 'c'] | ['b', 'd']
+        >
+      >,
+      Expect<Equal<DeepExclude<Input, p>, never>>
+    ];
   });
 });

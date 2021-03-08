@@ -84,7 +84,7 @@ export type Prev<it extends any[]> = it extends [any, ...infer tail]
   : [];
 
 export type Slice<
-  xs extends any[],
+  xs extends readonly any[],
   it extends any[],
   output extends any[] = []
 > = Length<it> extends 0
@@ -93,7 +93,10 @@ export type Slice<
   ? Slice<tail, Prev<it>, [...output, head]>
   : output;
 
-export type Drop<xs extends any[], n extends any[]> = Length<n> extends 0
+export type Drop<
+  xs extends readonly any[],
+  n extends any[]
+> = Length<n> extends 0
   ? xs
   : xs extends [any, ...infer tail]
   ? Drop<tail, Prev<n>>
