@@ -12,12 +12,11 @@ with smart type inference.
 </p>
 
 ```ts
-import { match } from 'ts-pattern';
+import { match, select } from 'ts-pattern';
 
 type Data =
   | { type: 'text'; content: string }
-  | { type: 'img'; src: string }
-  | ...; // Imagine this union is huge!
+  | { type: 'img'; src: string };
 
 type Result =
   | { type: 'ok'; data: Data }
@@ -26,10 +25,10 @@ type Result =
 const result: Result = ...;
 
 return match(result)
-  .with({ type: 'ok', data: { type: 'text' } }, (res) => `<p>${res.data.content}</p>`)
-  .with({ type: 'ok', data: { type: 'img' } }, (res) => `<img src=${res.data.src} />`)
   .with({ type: 'error' }, (res) => `<p>Oups! An error occured</p>`)
-  .otherwise(() => `<p>everything else</p>`);
+  .with({ type: 'ok', data: { type: 'text' } }, (res) => `<p>${res.data.content}</p>`)
+  .with({ type: 'ok', data: { type: 'img', src: select() } }, (src) => `<img src=${src} />`)
+  .exhaustive();
 ```
 
 ## Features
@@ -39,14 +38,14 @@ return match(result)
 - Optional **exhaustive matching**, enforcing that you are matching every possible case with `.exhaustive()`.
 - **Expressive API**, with catch-all and type specific **wildcards**: `__`.
 - Supports `when(<predicate>)` and `not(<pattern>)` patterns for complex cases.
-- Supports properties selection, via the `select(<name>)` function.
+- Supports properties selection, via the `select(<name?>)` function.
 - Tiny bundle footprint (**only 1kb**).
 
 ## What is Pattern Matching?
 
-Pattern Matching is a technique coming from Functional Programming languages to declaratively write conditional code branches based on the structure of one or several values. This technique has proven itself to be much more powerful and much less verbose than imperative alternatives (if/else/switch statements) especially when branching on complex data structures or on several values.
+Pattern Matching is a technique coming from Functional Programming languages to declaratively write conditional code branches based on the structure of you values. This technique has proven itself to be much more powerful and much less verbose than imperative alternatives (if/else/switch statements) especially when branching on complex data structures or on several values.
 
-Pattern Matching is implemented in Elixir, Rust, Haskell, Swift and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years (if ever). Luckily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
+Pattern Matching is implemented in Haskell, Rust, Swift, Elixir and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years (if ever). Luckily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
 
 ## Installation
 
@@ -62,7 +61,13 @@ Via yarn
 yarn add ts-pattern
 ```
 
-⚠️ `ts-pattern@2` requires TypeScript >= v4. If you are using TypeScript v3, please install `ts-pattern@1.1.0`.
+### compatibility with different TypeScript versions
+
+| ts-pattern | TypeScript v4.2+ | TypeScript v4.1+ | TypeScript v3.x- |
+| ---------- | ---------------- | ---------------- | ---------------- |
+| v3.x       | ✅               | ❌               | ❌               |
+| v2.x       | ✅               | ✅               | ❌               |
+| v1.x       | ✅               | ✅               | ✅               |
 
 # Documentation
 
@@ -143,18 +148,16 @@ import { match, __, not, select, when } from 'ts-pattern';
 
 const reducer = (state: State, event: Event): State =>
   match<[State, Event], State>([state, event])
-    .exhaustive()
-
     .with([{ status: 'loading' }, { type: 'success' }], ([, event]) => ({
       status: 'success',
       data: event.data,
     }))
 
     .with(
-      [{ status: 'loading' }, { type: 'error', error: select('err') }],
-      (_, { err }) => ({
+      [{ status: 'loading' }, { type: 'error', error: select() }],
+      (error) => ({
         status: 'error',
-        error: err,
+        error,
       })
     )
 
@@ -169,7 +172,7 @@ const reducer = (state: State, event: Event): State =>
 
     .with(__, () => state)
 
-    .run();
+    .exhaustive();
 ```
 
 **Let's go through this bit by bit:**
@@ -191,17 +194,6 @@ can match on each value separately.
 Most of the time, you don't need to specify the type of input
 and output with `match<Input, Output>(...)` because `match` is able to
 infer both of these types.
-
-### .exhaustive()
-
-`.exhaustive()` enables **exhaustive matching**, making sure we don't forget
-any possible case in our input data. This extra type safety is very nice
-because forgetting a case is an easy mistake to make, especially in an
-evolving code-base.
-
-Note that exhaustive pattern matching is **optional**. It comes with the trade-off
-of **disabling guard functions** (`when(...)`) and having **longer compilation times**.
-If you are using `.otherwise()`, you probably don't need to use `.exhaustive()`.
 
 ### .with(pattern, handler)
 
@@ -225,23 +217,34 @@ the data matches the given pattern.
 The **type** of the data structure is **narrowed down** to
 what is permitted by the pattern.
 
-### select(name)
+### select(name?)
 
 In the second `with` clause, we use the `select` function:
 
 ```ts
   .with(
-    [{ status: 'loading' }, { type: 'error', error: select('err') }],
-    (_, { err }) => ({
+    [{ status: 'loading' }, { type: 'error', error: select() }],
+    (error) => ({
       status: 'error',
-      error: err,
+      error,
     })
   )
 ```
 
-It will inject the `event.error` property inside a `selections` object given as
-second argument to the handler function. The `select` function takes the **name** of
-the selection, which can be whatever you like.
+Since we didn't pass any name to `select()`, It will inject the `event.error` property as first argument to the handler function. Note that you can still access the full datastructure with its type narrowed by your pattern as second argument of the handler function: `(error, stateAndEvent) => {...}`.
+
+You can only have a single unnamed selection. If you need to select more properties on your input data structure, you will need to give them names:
+
+```ts
+.with(
+    [{ status: 'success', data: select('prevData') }, { type: 'error', error: select('err') }],
+    ({ prevData, err }) => {
+      // Do something with (prevData: string) and (err: Error).
+    }
+  )
+```
+
+Each selection will be injected inside a `selections` object passed as first argument to the handler function. Names can be any strings.
 
 It is pretty useful when pattern matching on deep data structures because it avoids
 the hassle of destructuring it in your handler.
@@ -274,20 +277,31 @@ You can use it at the top level, or inside your pattern.
 
 ```
 
-### .run() and .otherwise()
+### .exhaustive(), .otherwise() and .run()
+
+```ts
+  .exhaustive();
+```
+
+`.exhaustive()` execute the pattern matching expression, and **returns the result**. It also enables **exhaustive matching**, making sure we don't forget any possible case in our input data. This extra type safety is very nice because forgetting a case is an easy mistake to make, especially in an evolving code-base.
+
+Note that exhaustive pattern matching is **optional**. It comes with the trade-off
+of having **longer compilation times**.
+
+Alternatively you can use `.otherwise()`, which take an handler returning
+a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).exhaustive()`.
+
+```ts
+  .otherwise(() => state);
+```
+
+If you don't want to use `.exhaustive()` and also don't want to provide a default value with `.otherwise()`, you can use `.run()` instead:
 
 ```ts
   .run();
 ```
 
-`run()` execute the pattern matching, and **returns the result**.
-
-Alternatively you can use `otherwise`, which take an handler returning
-a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).run()`.
-
-```ts
-  .otherwise(() => state);
-```
+It's just like `.exhaustive()`, but it's **unsafe** and might throw at runtime if no branch of your pattern matching expression matches your input.
 
 ### Guard functions
 
