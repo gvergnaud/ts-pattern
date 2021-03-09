@@ -1,31 +1,8 @@
 import { match, not, when, __ } from '../src';
+import { Equal, Expect } from '../src/types/helpers';
 import { Option, some, none, BigUnion } from './utils';
 
 describe('exhaustive()', () => {
-  it('should forbid using guard function, in pattern or as extra args', () => {
-    match<Option<number>>({ kind: 'some', value: 3 })
-      .exhaustive()
-      .with(
-        {
-          kind: 'some',
-          // @ts-expect-error: x is unknown
-          value: when((x) => x > 2),
-        },
-        () => true
-      )
-      .run();
-
-    match<Option<number>>({ kind: 'some', value: 3 })
-      .exhaustive()
-      .with(
-        { kind: 'some' },
-        // @ts-expect-error: value is unknown
-        ({ value }) => value > 2,
-        () => true
-      )
-      .run();
-  });
-
   describe('should exclude matched patterns from subsequent `.with()` clauses', () => {
     it('string literals', () => {
       type Input = 'a' | 'b' | 'c';
@@ -242,7 +219,7 @@ describe('exhaustive()', () => {
 
       match<Option<number>>({ kind: 'some', value: 3 })
         .exhaustive()
-        .with({ kind: 'some', value: 3 as const }, ({ value }): number => value)
+        .with({ kind: 'some', value: 3 }, ({ value }): number => value)
         .with({ kind: 'none' }, () => 0)
         // @ts-expect-error: missing {kind: 'some', value: number}
         .run();
@@ -588,6 +565,42 @@ describe('exhaustive()', () => {
         .exhaustive()
         .with(10, (x) => '')
         // @ts-expect-error
+        .run();
+    });
+
+    it('should correctly exclude cases if when pattern contains a type guard', () => {
+      match<{ x: 1 | 2 | 3 }>({ x: 2 })
+        .exhaustive()
+        .with({ x: when((x): x is 1 => x === 1) }, (x) => {
+          type t = Expect<Equal<typeof x, { x: 1 }>>;
+          return '';
+        })
+        .with({ x: when((x): x is 2 => x === 2) }, (x) => {
+          type t = Expect<Equal<typeof x, { x: 2 }>>;
+          return '';
+        })
+        .with({ x: when((x): x is 3 => x === 3) }, (x) => {
+          type t = Expect<Equal<typeof x, { x: 3 }>>;
+          return '';
+        })
+        .run();
+    });
+
+    it('should correctly exclude cases if .when is a type guard', () => {
+      match<Option<string>, Option<number>>({ kind: 'none' })
+        .exhaustive()
+        .when(
+          (option): option is { kind: 'some'; value: string } =>
+            option.kind === 'some',
+          (option) => ({
+            kind: 'some',
+            value: option.value.length,
+          })
+        )
+        .when(
+          (option): option is { kind: 'none' } => option.kind === 'none',
+          (option) => option
+        )
         .run();
     });
   });

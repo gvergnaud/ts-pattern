@@ -1,4 +1,4 @@
-import type { Pattern, GuardValue, ExhaustivePattern } from './Pattern';
+import type { Pattern, GuardValue, GuardPattern } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPattern, InvertPatternForExclude } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
@@ -192,7 +192,7 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
    * use this branch and execute the handler function.
    **/
   with<
-    p extends ExhaustivePattern<i>,
+    p extends Pattern<i>,
     c,
     invpattern = InvertPattern<p>,
     value = MatchedValue<i, invpattern>
@@ -212,8 +212,8 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
   >;
 
   with<
-    p1 extends ExhaustivePattern<i>,
-    p2 extends ExhaustivePattern<i>,
+    p1 extends Pattern<i>,
+    p2 extends Pattern<i>,
     c,
     p = p1 | p2,
     value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
@@ -231,9 +231,9 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
   >;
 
   with<
-    p1 extends ExhaustivePattern<i>,
-    p2 extends ExhaustivePattern<i>,
-    p3 extends ExhaustivePattern<i>,
+    p1 extends Pattern<i>,
+    p2 extends Pattern<i>,
+    p3 extends Pattern<i>,
     c,
     p = p1 | p2 | p3,
     value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
@@ -252,10 +252,10 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
   >;
 
   with<
-    p1 extends ExhaustivePattern<i>,
-    p2 extends ExhaustivePattern<i>,
-    p3 extends ExhaustivePattern<i>,
-    p4 extends ExhaustivePattern<i>,
+    p1 extends Pattern<i>,
+    p2 extends Pattern<i>,
+    p3 extends Pattern<i>,
+    p4 extends Pattern<i>,
     c,
     p = p1 | p2 | p3 | p4,
     value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
@@ -275,11 +275,11 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
   >;
 
   with<
-    p1 extends ExhaustivePattern<i>,
-    p2 extends ExhaustivePattern<i>,
-    p3 extends ExhaustivePattern<i>,
-    p4 extends ExhaustivePattern<i>,
-    p5 extends ExhaustivePattern<i>,
+    p1 extends Pattern<i>,
+    p2 extends Pattern<i>,
+    p3 extends Pattern<i>,
+    p4 extends Pattern<i>,
+    p5 extends Pattern<i>,
     c,
     p = p1 | p2 | p3 | p4 | p5,
     value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
@@ -295,6 +295,22 @@ export type ExhaustiveMatch<distributedInput, i, o> = {
       distributedInput,
       p extends any ? InvertPatternForExclude<p, value> : never
     >,
+    i,
+    PickReturnValue<o, c>
+  >;
+
+  /**
+   * ### Match.when
+   * When the first function returns a truthy value,
+   * use this branch and execute the handler function.
+   **/
+  when: <pred extends (value: i) => unknown, c, value = GuardValue<pred>>(
+    predicate: pred,
+    handler: (value: value) => PickReturnValue<o, c>
+  ) => ExhaustiveMatch<
+    pred extends (value: any) => value is infer narrowed
+      ? DeepExclude<distributedInput, narrowed>
+      : distributedInput,
     i,
     PickReturnValue<o, c>
   >;

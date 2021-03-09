@@ -200,7 +200,7 @@ because forgetting a case is an easy mistake to make, especially in an
 evolving code-base.
 
 Note that exhaustive pattern matching is **optional**. It comes with the trade-off
-of **disabling guard functions** (`when(...)`) and having **longer compilation times**.
+of having **longer compilation times**.
 If you are using `.otherwise()`, you probably don't need to use `.exhaustive()`.
 
 ### .with(pattern, handler)
@@ -300,11 +300,6 @@ With `ts-pattern` you have two options to use a guard function:
 
 - use `when(<guard function>)` inside your pattern
 - pass it as second parameter to `.with(...)`
-
-**Note**: to use this feature, you will need to **disable exhaustive matching**
-by removing `.exhaustive()` if you were using it. That's because with guard functions,
-there is no way to know if the pattern is going to match or not at compile time,
-making exhaustive matching impossible.
 
 #### when(predicate)
 
