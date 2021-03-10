@@ -2,6 +2,7 @@ import { PatternType } from '../src/PatternType';
 import {
   FindSelected,
   FindSelectionUnion,
+  MixedNamedAndUnnamedSelectError,
   SeveralAnonymousSelectError,
 } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
@@ -21,7 +22,7 @@ describe('FindSelected', () => {
               [State, Event],
               [NamedSelectPattern<'state'>, NamedSelectPattern<'event'>]
             >,
-            [{ state: State; event: Event }]
+            { state: State; event: Event }
           >
         >,
         Expect<
@@ -34,7 +35,7 @@ describe('FindSelected', () => {
                 NamedSelectPattern<'third'>
               ]
             >,
-            [{ first: 1; second: 2; third: 3 }]
+            { first: 1; second: 2; third: 3 }
           >
         >,
         Expect<
@@ -48,7 +49,7 @@ describe('FindSelected', () => {
                 NamedSelectPattern<'4'>
               ]
             >,
-            [{ '1': 1; '2': 2; '3': 3; '4': 4 }]
+            { '1': 1; '2': 2; '3': 3; '4': 4 }
           >
         >,
         Expect<
@@ -63,7 +64,7 @@ describe('FindSelected', () => {
                 NamedSelectPattern<'5'>
               ]
             >,
-            [{ '1': 1; '2': 2; '3': 3; '4': 4; '5': 5 }]
+            { '1': 1; '2': 2; '3': 3; '4': 4; '5': 5 }
           >
         >
       ];
@@ -74,19 +75,19 @@ describe('FindSelected', () => {
         Expect<
           Equal<
             FindSelected<State[], [NamedSelectPattern<'state'>]>,
-            [{ state: State[] }]
+            { state: State[] }
           >
         >,
         Expect<
           Equal<
             FindSelected<State[][], [[NamedSelectPattern<'state'>]]>,
-            [{ state: State[][] }]
+            { state: State[][] }
           >
         >,
         Expect<
           Equal<
             FindSelected<State[][][], [[[NamedSelectPattern<'state'>]]]>,
-            [{ state: State[][][] }]
+            { state: State[][][] }
           >
         >
       ];
@@ -100,7 +101,7 @@ describe('FindSelected', () => {
               { a: { b: { c: 3 } } },
               { a: { b: { c: NamedSelectPattern<'c'> } } }
             >,
-            [{ c: 3 }]
+            { c: 3 }
           >
         >,
         Expect<
@@ -114,7 +115,7 @@ describe('FindSelected', () => {
                 };
               }
             >,
-            [{ c: 3; e: 7 }]
+            { c: 3; e: 7 }
           >
         >
       ];
@@ -128,7 +129,7 @@ describe('FindSelected', () => {
               { a: { b: { c: [3, 4] } } },
               { a: { b: { c: [NamedSelectPattern<'c'>, unknown] } } }
             >,
-            [{ c: 3 }]
+            { c: 3 }
           >
         >,
         Expect<
@@ -140,7 +141,7 @@ describe('FindSelected', () => {
                 b: { d: NamedSelectPattern<'d'> }[];
               }
             >,
-            [{ c: 3; d: string[] }]
+            { c: 3; d: string[] }
           >
         >
       ];
@@ -158,7 +159,7 @@ describe('FindSelected', () => {
                 a: [{ c: AnonymousSelectPattern }, { e: 7 }];
               }
             >,
-            [3]
+            3
           >
         >
       ];
@@ -177,7 +178,7 @@ describe('FindSelected', () => {
                 ];
               }
             >,
-            [SeveralAnonymousSelectError]
+            SeveralAnonymousSelectError
           >
         >,
         Expect<
@@ -189,7 +190,7 @@ describe('FindSelected', () => {
                 b: AnonymousSelectPattern;
               }
             >,
-            [SeveralAnonymousSelectError]
+            SeveralAnonymousSelectError
           >
         >,
         Expect<
@@ -198,7 +199,7 @@ describe('FindSelected', () => {
               [{ c: 3 }, { e: 7 }],
               [{ c: AnonymousSelectPattern }, { e: AnonymousSelectPattern }]
             >,
-            [SeveralAnonymousSelectError]
+            SeveralAnonymousSelectError
           >
         >,
         Expect<
@@ -207,7 +208,7 @@ describe('FindSelected', () => {
               [{ c: 3 }, { e: 7 }],
               [AnonymousSelectPattern, { e: AnonymousSelectPattern }]
             >,
-            [SeveralAnonymousSelectError]
+            SeveralAnonymousSelectError
           >
         >,
         Expect<
@@ -216,7 +217,7 @@ describe('FindSelected', () => {
               [{ c: 3 }, { e: 7 }],
               [AnonymousSelectPattern, AnonymousSelectPattern]
             >,
-            [SeveralAnonymousSelectError]
+            SeveralAnonymousSelectError
           >
         >,
         Expect<
@@ -229,7 +230,7 @@ describe('FindSelected', () => {
                 y: AnonymousSelectPattern;
               }
             >,
-            [SeveralAnonymousSelectError]
+            SeveralAnonymousSelectError
           >
         >
       ];
@@ -261,10 +262,20 @@ describe('FindSelected', () => {
                 };
               }
             >,
-            [string, { authorName: string }]
+            MixedNamedAndUnnamedSelectError
           >
         >
       ];
+    });
+
+    describe('No selection', () => {
+      it('should return the input type', () => {
+        type Input = { type: 'text'; text: string; author: { name: string } };
+
+        type cases = [
+          Expect<Equal<FindSelected<Input, { type: 'text' }>, Input>>
+        ];
+      });
     });
   });
 });

@@ -683,10 +683,10 @@ describe('exhaustive()', () => {
       .with(
         {
           type: 'text',
-          text: select(),
+          text: select('text'),
           author: { name: select('authorName') },
         },
-        (text, { authorName }) => `${text} from ${authorName}`
+        ({ text, authorName }) => `${text} from ${authorName}`
       )
       .with({ type: 'video', duration: when((x) => x > 10) }, () => '')
       .with(

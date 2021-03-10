@@ -1,7 +1,10 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, __, select, not } from '../src';
 import { State, Event } from './utils';
-import { SeveralAnonymousSelectError } from '../src/types/FindSelected';
+import {
+  MixedNamedAndUnnamedSelectError,
+  SeveralAnonymousSelectError,
+} from '../src/types/FindSelected';
 
 describe('select', () => {
   it('should work with tuples', () => {
@@ -155,6 +158,15 @@ describe('select', () => {
     match({ type: 'point', x: 2, y: 3 })
       .with({ type: 'point', x: select(), y: select() }, (x) => {
         type t = Expect<Equal<typeof x, SeveralAnonymousSelectError>>;
+        return 'ok';
+      })
+      .run();
+  });
+
+  it('should infer the selection to an error when using mixed named and unnamed selections', () => {
+    match({ type: 'point', x: 2, y: 3 })
+      .with({ type: 'point', x: select(), y: select('y') }, (x) => {
+        type t = Expect<Equal<typeof x, MixedNamedAndUnnamedSelectError>>;
         return 'ok';
       })
       .run();

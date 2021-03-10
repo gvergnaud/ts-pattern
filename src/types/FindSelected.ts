@@ -77,10 +77,17 @@ export type FindSelectionUnion<
     : never
   : never;
 
-export type SeveralAnonymousSelectError = {
+export type SeveralAnonymousSelectError<
+  a = 'You can only use a single anonymous selection (with `select()`) in your pattern. If you need to select multiple values, give them names with `select(<name>)` instead'
+> = {
   __error: never;
-  description: 'You can only used `select` once in your pattern. If you need to select multiple values, use `select.as(<name>)` instead';
-};
+} & a;
+
+export type MixedNamedAndUnnamedSelectError<
+  a = 'Mixing named selection (`select("name")`) and anonymous selection (`select()`) is forbiden. Please you only named selections'
+> = {
+  __error: never;
+} & a;
 
 type OrderSelections<
   selections,
@@ -111,22 +118,27 @@ type OrderSelections<
   : output;
 
 // SelectionTuplesToArgs :: [number | string, value][] -> [...args]
-type SelectionTuplesToArgs<selections> = OrderSelections<selections> extends {
+type SelectionTuplesToArgs<
+  selections,
+  i
+> = OrderSelections<selections> extends {
   positional: infer positional;
   kwargs: infer kwargs;
 }
-  ? [
-      ...(positional extends '@ts-pattern/error'
-        ? [SeveralAnonymousSelectError]
-        : positional extends '@ts-pattern/empty'
-        ? []
-        : [positional]),
-      ...([keyof kwargs] extends [never] ? [] : [Compute<kwargs>])
-    ]
-  : [];
+  ? positional extends '@ts-pattern/error'
+    ? SeveralAnonymousSelectError
+    : positional extends '@ts-pattern/empty'
+    ? [keyof kwargs] extends [never]
+      ? i
+      : Compute<kwargs>
+    : [keyof kwargs] extends [never]
+    ? positional
+    : MixedNamedAndUnnamedSelectError
+  : i;
 
 export type FindSelected<i, p> = SelectionTuplesToArgs<
-  UnionToTuple<FindSelectionUnion<i, p>>
+  UnionToTuple<FindSelectionUnion<i, p>>,
+  i
 >;
 
 type t = FindSelected<

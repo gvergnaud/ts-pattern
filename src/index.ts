@@ -64,7 +64,7 @@ const builder = <a, b>(
   value: a,
   cases: {
     test: (value: a) => unknown;
-    select: (value: a) => any[];
+    select: (value: a) => any;
     handler: (...args: any) => any;
   }[]
 ) => {
@@ -81,7 +81,7 @@ const builder = <a, b>(
         `Pattern matching error: no pattern matches value ${displayedValue}`
       );
     }
-    return entry.handler(...entry.select(value), value);
+    return entry.handler(entry.select(value), value);
   };
 
   return {
@@ -114,7 +114,9 @@ const builder = <a, b>(
           test: doesMatch,
           handler,
           select: (value) =>
-            patterns.length === 1 ? selectWithPattern(patterns[0], value) : [],
+            patterns.length === 1
+              ? selectWithPattern(patterns[0], value)
+              : value,
         },
       ]);
     },
@@ -128,7 +130,7 @@ const builder = <a, b>(
         {
           test: predicate,
           handler,
-          select: () => [],
+          select: (value) => value,
         },
       ]),
 
@@ -141,7 +143,7 @@ const builder = <a, b>(
           test: (value: a) =>
             matchPattern<a, Pattern<a>>(__ as Pattern<a>, value),
           handler,
-          select: () => [],
+          select: (value) => value,
         },
       ]).exhaustive(),
 
@@ -260,10 +262,12 @@ const matchPattern = <a, p extends Pattern<a>>(
 const selectWithPattern = <a, p extends Pattern<a>>(pattern: p, value: a) => {
   const positional = selectPositionalWithPattern(pattern, value);
   const kwargs = selectKwargsWithPattern(pattern, value);
-  const selections = [];
-  if (positional.kind === 'some') selections.push(positional.value);
-  if (Object.keys(kwargs).length) selections.push(kwargs);
-  return selections;
+
+  return positional.kind === 'some'
+    ? positional.value
+    : Object.keys(kwargs).length
+    ? kwargs
+    : value;
 };
 
 type Option<T> = { kind: 'some'; value: T } | { kind: 'none' };

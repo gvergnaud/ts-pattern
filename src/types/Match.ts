@@ -30,7 +30,8 @@ export type Match<i, o, patternValueTuples extends [any, any] = never> = {
   with<p extends Pattern<i>, c, value = MatchedValue<i, InvertPattern<p>>>(
     pattern: p,
     handler: (
-      ...args: [...selections: FindSelected<value, p>, value: value]
+      selections: FindSelected<value, p>,
+      value: value
     ) => PickReturnValue<o, c>
   ): Match<i, PickReturnValue<o, c>, patternValueTuples | [p, value]>;
 
