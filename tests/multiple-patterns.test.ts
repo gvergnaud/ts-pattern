@@ -1,5 +1,5 @@
-import { match, not, when, __ } from '../src';
-import { Option, some, none, BigUnion } from './utils';
+import { match, __ } from '../src';
+import { Option } from './utils';
 import { Expect, Equal } from '../src/types/helpers';
 
 describe('Multiple patterns', () => {
@@ -90,7 +90,7 @@ describe('Multiple patterns', () => {
       .with(() => false);
 
     match(input)
-      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
+      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'Pattern<Option<number>>'
       .with(() => false);
 
     match(input)
