@@ -517,7 +517,8 @@ describe('exhaustive()', () => {
       const last = <a>(xs: a[]) =>
         match<a[], Option<a>>(xs)
           .with([], () => none)
-          .otherwise(() => some(xs[xs.length - 1]));
+          .with(__, (x, y) => some(xs[xs.length - 1]))
+          .exhaustive();
 
       expect(last([1, 2, 3])).toEqual(some(3));
     });
@@ -535,6 +536,10 @@ describe('exhaustive()', () => {
               kind: 'some',
               value: mapper(option.value),
             })
+          )
+          .when(
+            (option): option is { kind: 'none' } => option.kind === 'none',
+            (option) => option
           )
           .otherwise(() => ({ kind: 'none' }));
 

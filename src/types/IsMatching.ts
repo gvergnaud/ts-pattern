@@ -10,10 +10,10 @@ export type IsMatching<a, p> =
     ? p extends a
       ? true
       : false
-    : [a, p] extends [any[], any[]]
-    ? [a, p] extends [
-        [infer a1, infer a2, infer a3, infer a4, infer a5],
-        [infer p1, infer p2, infer p3, infer p4, infer p5]
+    : [p, a] extends [readonly any[], readonly any[]]
+    ? [p, a] extends [
+        readonly [infer p1, infer p2, infer p3, infer p4, infer p5],
+        readonly [infer a1, infer a2, infer a3, infer a4, infer a5]
       ]
       ? All<
           [
@@ -24,9 +24,9 @@ export type IsMatching<a, p> =
             IsMatching<a5, p5>
           ]
         >
-      : [a, p] extends [
-          [infer a1, infer a2, infer a3, infer a4],
-          [infer p1, infer p2, infer p3, infer p4]
+      : [p, a] extends [
+          readonly [infer p1, infer p2, infer p3, infer p4],
+          readonly [infer a1, infer a2, infer a3, infer a4]
         ]
       ? All<
           [
@@ -36,15 +36,18 @@ export type IsMatching<a, p> =
             IsMatching<a4, p4>
           ]
         >
-      : [a, p] extends [
-          [infer a1, infer a2, infer a3],
-          [infer p1, infer p2, infer p3]
+      : [p, a] extends [
+          readonly [infer p1, infer p2, infer p3],
+          readonly [infer a1, infer a2, infer a3]
         ]
       ? All<[IsMatching<a1, p1>, IsMatching<a2, p2>, IsMatching<a3, p3>]>
-      : [a, p] extends [[infer a1, infer a2], [infer p1, infer p2]]
+      : [p, a] extends [
+          readonly [infer p1, infer p2],
+          readonly [infer a1, infer a2]
+        ]
       ? All<[IsMatching<a1, p1>, IsMatching<a2, p2>]>
-      : [a, p] extends [[infer a1], [infer p1]]
-      ? All<[IsMatching<a1, p1>]>
+      : [p, a] extends [readonly [infer p1], readonly [infer a1]]
+      ? IsMatching<a1, p1>
       : p extends a
       ? true
       : false

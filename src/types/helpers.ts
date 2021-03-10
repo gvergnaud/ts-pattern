@@ -18,27 +18,30 @@ export type LeastUpperBound<a, b> = b extends a ? b : a extends b ? a : never;
  * returns never, otherwise returns the type of object
  **/
 
-export type ExcludeIfContainsNever<a> = a extends Map<any, any> | Set<any>
+export type ExcludeIfContainsNever<a, b> = b extends Map<any, any> | Set<any>
   ? a
-  : a extends any[]
-  ? ExcludeNeverTuple<a>
-  : IsPlainObject<a> extends true
-  ? ExcludeNeverObject<Cast<a, object>>
-  : a;
+  : b extends [any, ...any]
+  ? ExcludeNeverObject<a, b, '0' | '1' | '2' | '3' | '4'>
+  : b extends any[]
+  ? ExcludeNeverObject<a, b, number>
+  : ExcludeNeverObject<a, b, string>;
 
-type ExcludeNeverTuple<a extends any[]> =
-  | ([a[0]] extends [never] ? false : true)
-  | ([a[1]] extends [never] ? false : true)
-  | ([a[2]] extends [never] ? false : true)
-  | ([a[3]] extends [never] ? false : true)
-  | ([a[4]] extends [never] ? false : true) extends true
-  ? a
-  : never;
-
-type ExcludeNeverObject<a extends object> = {
-  [k in keyof a]-?: [a[k]] extends [never] ? 'exclude' : 'include';
-}[keyof a] extends 'include'
-  ? a
+type ExcludeNeverObject<a, b, keyConstraint = unknown> = a extends any
+  ? {
+      [k in keyConstraint & keyof b & keyof a]-?: [a[k]] extends [never]
+        ? 'exclude'
+        : 'include';
+    }[keyConstraint & keyof b & keyof a] extends infer includeOrExclude
+    ? (
+        includeOrExclude extends 'include'
+          ? 'include' extends includeOrExclude
+            ? true
+            : false
+          : false
+      ) extends true
+      ? a
+      : never
+    : never
   : never;
 
 // from https://stackoverflow.com/questions/50374908/transform-union-type-to-intersection-type/50375286#50375286
