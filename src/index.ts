@@ -108,44 +108,49 @@ const builder = <a, b>(
             predicates.every((predicate) => predicate(value as any))
         );
 
-      return builder(value, [
-        ...cases,
-        {
-          test: doesMatch,
-          handler,
-          select: (value) =>
-            patterns.length === 1
-              ? selectWithPattern(patterns[0], value)
-              : value,
-        },
-      ]);
+      return builder(
+        value,
+        cases.concat([
+          {
+            test: doesMatch,
+            handler,
+            select: (value) =>
+              patterns.length === 1
+                ? selectWithPattern(patterns[0], value)
+                : value,
+          },
+        ])
+      );
     },
 
     when: <p extends (value: a) => unknown, c>(
       predicate: p,
       handler: (value: GuardValue<p>) => PickReturnValue<b, c>
     ) =>
-      builder<a, PickReturnValue<b, c>>(value, [
-        ...cases,
-        {
-          test: predicate,
-          handler,
-          select: (value) => value,
-        },
-      ]),
+      builder<a, PickReturnValue<b, c>>(
+        value,
+        cases.concat([
+          {
+            test: predicate,
+            handler,
+            select: (value) => value,
+          },
+        ])
+      ),
 
     otherwise: <c>(
       handler: () => PickReturnValue<b, c>
     ): PickReturnValue<b, c> =>
-      builder<a, PickReturnValue<b, c>>(value, [
-        ...cases,
-        {
-          test: (value: a) =>
-            matchPattern<a, Pattern<a>>(__ as Pattern<a>, value),
-          handler,
-          select: (value) => value,
-        },
-      ]).exhaustive(),
+      builder<a, PickReturnValue<b, c>>(
+        value,
+        cases.concat([
+          {
+            test: (value: a) => true,
+            handler,
+            select: (value) => value,
+          },
+        ])
+      ).exhaustive(),
 
     exhaustive: () => run(),
 
@@ -271,6 +276,7 @@ const selectWithPattern = <a, p extends Pattern<a>>(pattern: p, value: a) => {
 };
 
 type Option<T> = { kind: 'some'; value: T } | { kind: 'none' };
+const none: Option<never> = { kind: 'none' };
 
 const selectPositionalWithPattern = <a, p extends Pattern<a>>(
   pattern: p,
@@ -285,37 +291,28 @@ const selectPositionalWithPattern = <a, p extends Pattern<a>>(
         (selection): selection is { kind: 'some'; value: unknown } =>
           selection.kind === 'some'
       )
-      .reduce<Option<unknown[]>>(
-        (acc, selection) => {
-          return acc.kind === 'none'
-            ? { kind: 'some', value: [selection.value] }
-            : { kind: 'some', value: acc.value.concat([selection.value]) };
-        },
-        { kind: 'none' }
-      );
+      .reduce<Option<unknown[]>>((acc, selection) => {
+        return acc.kind === 'none'
+          ? { kind: 'some', value: [selection.value] }
+          : { kind: 'some', value: acc.value.concat([selection.value]) };
+      }, none);
 
   if (isArray(pattern) && isArray(value))
     return pattern.length <= value.length
-      ? pattern.reduce<Option<unknown>>(
-          (acc, subPattern, i) => {
-            if (acc.kind === 'some') return acc;
-            return selectPositionalWithPattern(subPattern, value[i]);
-          },
-          { kind: 'none' }
-        )
-      : { kind: 'none' };
+      ? pattern.reduce<Option<unknown>>((acc, subPattern, i) => {
+          if (acc.kind === 'some') return acc;
+          return selectPositionalWithPattern(subPattern, value[i]);
+        }, none)
+      : none;
 
   if (isObject(pattern) && isObject(value))
-    return Object.keys(pattern).reduce<Option<unknown>>(
-      (acc, k: string) => {
-        if (acc.kind === 'some') return acc;
-        // @ts-ignore
-        return selectPositionalWithPattern(pattern[k], value[k]);
-      },
-      { kind: 'none' }
-    );
+    return Object.keys(pattern).reduce<Option<unknown>>((acc, k: string) => {
+      if (acc.kind === 'some') return acc;
+      // @ts-ignore
+      return selectPositionalWithPattern(pattern[k], value[k]);
+    }, none);
 
-  return { kind: 'none' };
+  return none;
 };
 
 const selectKwargsWithPattern = <a, p extends Pattern<a>>(
