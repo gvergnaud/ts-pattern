@@ -140,8 +140,3 @@ export type FindSelected<i, p> = SelectionTuplesToArgs<
   UnionToTuple<FindSelectionUnion<i, p>>,
   i
 >;
-
-type t = FindSelected<
-  { type: 'text'; text: string; x: number },
-  { type: 'text'; text: NamedSelectPattern<'test'>; x: AnonymousSelectPattern }
->;

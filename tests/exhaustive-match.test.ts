@@ -789,7 +789,7 @@ describe('exhaustive()', () => {
           .with([{ status: __ }, { type: 'fetch' }], () => state)
           .exhaustive();
 
-      const f = (input: [1 | 2 | 3, 1 | 2 | 3, 1 | 2 | 3]) =>
+      const f = (input: readonly [1 | 2 | 3, 1 | 2 | 3, 1 | 2 | 3]) =>
         match(input)
           .with([not(1), not(1), not(1)], (x) => 'ok')
           .with([1, __, __], () => 'ok')
@@ -801,14 +801,10 @@ describe('exhaustive()', () => {
       const flatMap = <A, B>(
         xs: readonly A[],
         f: (x: A) => readonly B[]
-      ): B[] => xs.reduce((acc: B[], x) => acc.concat(f(x)), []);
+      ): B[] => xs.reduce<B[]>((acc, x) => acc.concat(f(x)), []);
 
       const allPossibleCases = flatMap(range, (x) =>
-        flatMap(range, (y) =>
-          flatMap(range, (z) => [
-            [x, y, z] as [1 | 2 | 3, 1 | 2 | 3, 1 | 2 | 3],
-          ])
-        )
+        flatMap(range, (y) => flatMap(range, (z) => [[x, y, z]] as const))
       );
 
       allPossibleCases.forEach((x) => expect(f(x)).toBe('ok'));
