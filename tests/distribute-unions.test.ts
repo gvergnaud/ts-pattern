@@ -419,6 +419,52 @@ describe('FindAllUnions', () => {
       >
     ];
   });
+
+  it('should avoid duplicating the unions, even if the pattern matches the same path twice', () => {
+    type cases = [
+      Expect<
+        Equal<
+          FindUnionsMany<
+            { type: { x: 'a'; y: 1 | 2 } | { x: 'b'; y: 3 | 4 } },
+            { type: { x: 'a'; y: 1 } } | { type: { x: 'a'; y: 2 } }
+          >,
+          [
+            {
+              cases:
+                | {
+                    value: {
+                      x: 'a';
+                      y: 1 | 2;
+                    };
+                    subUnions: [
+                      {
+                        cases:
+                          | {
+                              value: 1;
+                              subUnions: [];
+                            }
+                          | {
+                              value: 2;
+                              subUnions: [];
+                            };
+                        path: ['type', 'y'];
+                      }
+                    ];
+                  }
+                | {
+                    value: {
+                      x: 'b';
+                      y: 3 | 4;
+                    };
+                    subUnions: [];
+                  };
+              path: ['type'];
+            }
+          ]
+        >
+      >
+    ];
+  });
 });
 
 describe('Distribute', () => {
