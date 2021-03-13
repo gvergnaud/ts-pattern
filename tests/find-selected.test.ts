@@ -1,7 +1,5 @@
-import { PatternType } from '../src/PatternType';
 import {
   FindSelected,
-  FindSelectionUnion,
   MixedNamedAndUnnamedSelectError,
   SeveralAnonymousSelectError,
 } from '../src/types/FindSelected';

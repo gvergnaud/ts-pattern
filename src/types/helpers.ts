@@ -106,10 +106,6 @@ export type Drop<
   ? Drop<tail, Prev<n>>
   : [];
 
-export type ConcatAll<xs> = xs extends [infer head, ...infer tail]
-  ? [...Cast<head, any[]>, ...ConcatAll<tail>]
-  : [];
-
 type BuiltInObjects =
   | Function
   | Error

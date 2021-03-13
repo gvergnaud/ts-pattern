@@ -1,4 +1,4 @@
-import { Primitives, IsPlainObject, All } from './helpers';
+import { Primitives, IsPlainObject } from './helpers';
 
 export type IsMatching<a, p> =
   // Special case for unknown, because this is the type
@@ -15,37 +15,45 @@ export type IsMatching<a, p> =
         readonly [infer p1, infer p2, infer p3, infer p4, infer p5],
         readonly [infer a1, infer a2, infer a3, infer a4, infer a5]
       ]
-      ? All<
-          [
-            IsMatching<a1, p1>,
-            IsMatching<a2, p2>,
-            IsMatching<a3, p3>,
-            IsMatching<a4, p4>,
-            IsMatching<a5, p5>
-          ]
-        >
+      ? [
+          IsMatching<a1, p1>,
+          IsMatching<a2, p2>,
+          IsMatching<a3, p3>,
+          IsMatching<a4, p4>,
+          IsMatching<a5, p5>
+        ] extends [true, true, true, true, true]
+        ? true
+        : false
       : [p, a] extends [
           readonly [infer p1, infer p2, infer p3, infer p4],
           readonly [infer a1, infer a2, infer a3, infer a4]
         ]
-      ? All<
-          [
-            IsMatching<a1, p1>,
-            IsMatching<a2, p2>,
-            IsMatching<a3, p3>,
-            IsMatching<a4, p4>
-          ]
-        >
+      ? [
+          IsMatching<a1, p1>,
+          IsMatching<a2, p2>,
+          IsMatching<a3, p3>,
+          IsMatching<a4, p4>
+        ] extends [true, true, true, true]
+        ? true
+        : false
       : [p, a] extends [
           readonly [infer p1, infer p2, infer p3],
           readonly [infer a1, infer a2, infer a3]
         ]
-      ? All<[IsMatching<a1, p1>, IsMatching<a2, p2>, IsMatching<a3, p3>]>
+      ? [IsMatching<a1, p1>, IsMatching<a2, p2>, IsMatching<a3, p3>] extends [
+          true,
+          true,
+          true
+        ]
+        ? true
+        : false
       : [p, a] extends [
           readonly [infer p1, infer p2],
           readonly [infer a1, infer a2]
         ]
-      ? All<[IsMatching<a1, p1>, IsMatching<a2, p2>]>
+      ? [IsMatching<a1, p1>, IsMatching<a2, p2>] extends [true, true]
+        ? true
+        : false
       : [p, a] extends [readonly [infer p1], readonly [infer a1]]
       ? IsMatching<a1, p1>
       : p extends a
