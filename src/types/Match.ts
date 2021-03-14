@@ -52,19 +52,6 @@ export type Match<i, o, patternValueTuples extends [any, any] = never> = {
   >;
 
   with<
-    ps extends [Pattern<i>, ...Pattern<i>[]],
-    c,
-    p = ps[number],
-    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
-  >(
-    ...args: [...patterns: ps, handler: (value: value) => PickReturnValue<o, c>]
-  ): Match<
-    i,
-    PickReturnValue<o, c>,
-    patternValueTuples | (p extends any ? [p, value] : never)
-  >;
-
-  with<
     pat extends Pattern<i>,
     pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
     c,
@@ -83,6 +70,19 @@ export type Match<i, o, patternValueTuples extends [any, any] = never> = {
     | (pred extends (value: any) => value is infer narrowed
         ? [GuardPattern<unknown, narrowed>, value]
         : never)
+  >;
+
+  with<
+    ps extends [Pattern<i>, ...Pattern<i>[]],
+    c,
+    p = ps[number],
+    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
+  >(
+    ...args: [...patterns: ps, handler: (value: value) => PickReturnValue<o, c>]
+  ): Match<
+    i,
+    PickReturnValue<o, c>,
+    patternValueTuples | (p extends any ? [p, value] : never)
   >;
 
   /**
