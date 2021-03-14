@@ -168,9 +168,15 @@ const reducer = (state: State, event: Event): State =>
       startTime: Date.now(),
     }))
 
-    .with([{ status: 'loading' }, { type: 'cancel' }], () => ({
-      status: 'idle',
-    }))
+    .with(
+      [
+        { status: 'loading', startTime: when((t) => t < Date.now() - 2000) },
+        { type: 'cancel' },
+      ],
+      () => ({
+        status: 'idle',
+      })
+    )
 
     .with(__, () => state)
 
@@ -258,7 +264,7 @@ You can only have a **single** unnamed selection. If you need to select more pro
   )
 ```
 
-Each selection will be injected inside a `selections` object passed as first argument to the handler function. Names can be any strings.
+Each named selection will be injected inside a `selections` object passed as first argument to the handler function. Names can be any strings.
 
 ### not(pattern)
 
@@ -270,6 +276,55 @@ and returning its opposite:
   .with([{ status: not('loading') }, { type: 'fetch' }], () => ({
     status: 'loading',
   }))
+```
+
+### `when()` and guard functions
+
+Sometimes, we need to make sure our input data respects a condition
+that can't be expressed by a pattern. Imagine if we wanted to check that a number
+is positive for instance. In this case, we can use **guard functions**:
+functions taking some data and returning a `boolean`.
+
+With `ts-pattern` there are two options to use a guard function:
+
+- use `when(<guard function>)` inside your pattern
+- pass it as second parameter to `.with(...)`
+
+#### when(predicate)
+
+The `when` function lets you **add a guard** to your pattern.
+Your pattern will not match **unless your predicate (guard) function returns `true`**.
+It might be handy if you need to make a dynamic checks on
+your data structure.
+
+```ts
+  .with(
+    [
+      {
+        status: 'loading',
+        startTime: when((t) => t < Date.now() - 2000),
+      },
+      { type: 'cancel' },
+    ],
+    () => ({
+      status: 'idle',
+    })
+  )
+```
+
+#### Passing a guard function to `.with(...)`
+
+`.with` optionally accepts a guard function as second parameter, between
+the `pattern` and the `handler` callback:
+
+```ts
+  .with(
+    [{ status: 'loading' },{ type: 'cancel' }],
+    ([state, event]) => state.startTime < Date.now() - 2000,
+    () => ({
+      status: 'idle'
+    })
+  )
 ```
 
 ### the `__` wildcard
@@ -294,7 +349,7 @@ You can use it at the top level, or inside your pattern.
   .exhaustive();
 ```
 
-`.exhaustive()` execute the pattern matching expression, and **returns the result**. It also enables **exhaustive matching**, making sure we don't forget any possible case in our input data. This extra type safety is very nice because forgetting a case is an easy mistake to make, especially in an evolving code-base.
+`.exhaustive()` execute the pattern matching expression, and **returns the result**. It also enables **exhaustiveness checking**, making sure we don't forget any possible case in our input data. This extra type safety is very nice because forgetting a case is an easy mistake to make, especially in an evolving code-base.
 
 Note that exhaustive pattern matching is **optional**. It comes with the trade-off
 of having **longer compilation times**.
@@ -313,56 +368,6 @@ If you don't want to use `.exhaustive()` and also don't want to provide a defaul
 ```
 
 It's just like `.exhaustive()`, but it's **unsafe** and might throw at runtime if no branch of your pattern matching expression matches your input.
-
-### Guard functions
-
-Sometimes, we need to make sure our input data respects a condition
-that can't be expressed by a pattern. Imagine if we wanted to check that a number
-is positive for instance. In this case, we can use **guard functions**:
-functions taking some data and returning a `boolean`.
-
-With `ts-pattern` you have two options to use a guard function:
-
-- use `when(<guard function>)` inside your pattern
-- pass it as second parameter to `.with(...)`
-
-#### when(predicate)
-
-The `when` function lets you **add a guard** to your pattern.
-Your pattern will not match **unless your predicate (guard) function returns `true`**.
-It might be handy if you need to make a dynamic checks on
-your data structure.
-
-```ts
-  .with(
-    [
-      {
-        status: 'loading',
-        startTime: when((startTime) => Date.now() > startTime + 1000),
-      },
-      { type: 'cancel' },
-    ],
-    () => ({
-      status: 'idle',
-    })
-  )
-```
-
-#### Passing a guard function to `.with(...)`
-
-`.with` optionally accepts up to 3 guard functions parameters between
-the `pattern` and the `handler` callback:
-
-```ts
-  .with(
-    [{ status: 'loading' },{ type: 'cancel' }],
-    ([state, event]) => Date.now() > state.startTime + 1000,
-    // you can add up to 2 other guard functions here
-    () => ({
-      status: 'idle'
-    })
-  )
-```
 
 ### Matching several patterns
 
@@ -718,7 +723,7 @@ console.log(output);
 
 In TypeScript, [Tuples](https://en.wikipedia.org/wiki/Tuple) are arrays with a fixed
 number of elements which can be of different types. You can pattern match on tuples
-with a tuple pattern matching your value in length and shape.
+with a tuple pattern, matching your value in length and shape.
 
 ```ts
 import { match, __ } from 'ts-pattern';
