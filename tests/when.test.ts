@@ -93,9 +93,7 @@ describe('when', () => {
               { status: 'success', data: select('data') },
               (x) => x.data.length > 3 && x.data.length < 10,
               (x) => {
-                type t = Expect<
-                  Equal<typeof x, { status: 'success'; data: string }>
-                >;
+                type t = Expect<Equal<typeof x, { data: string }>>;
                 return true;
               }
             )
@@ -104,9 +102,7 @@ describe('when', () => {
               (x) =>
                 x.data.length > 3 && x.data.length < 10 && x.data.length % 2,
               (x) => {
-                type t = Expect<
-                  Equal<typeof x, { status: 'success'; data: string }>
-                >;
+                type t = Expect<Equal<typeof x, { data: string }>>;
                 return true;
               }
             )
