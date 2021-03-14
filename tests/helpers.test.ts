@@ -1,4 +1,9 @@
-import { All, Equal, Expect } from '../src/types/helpers';
+import {
+  All,
+  Equal,
+  ExcludeIfContainsNever,
+  Expect,
+} from '../src/types/helpers';
 
 describe('helpers', () => {
   describe('All', () => {
@@ -22,6 +27,40 @@ describe('helpers', () => {
       type cases = [
         Expect<Equal<All<[true, boolean, true]>, false>>,
         Expect<Equal<All<[boolean]>, false>>
+      ];
+    });
+  });
+
+  describe('ExcludeIfContainsNever', () => {
+    it('should work with objects and tuples', () => {
+      type cases = [
+        Expect<
+          Equal<
+            ExcludeIfContainsNever<
+              { kind: 'some'; value: string } | { kind: never },
+              { kind: 'some' }
+            >,
+            { kind: 'some'; value: string }
+          >
+        >,
+        Expect<
+          Equal<
+            ExcludeIfContainsNever<
+              [{ kind: 'some'; value: string } | never],
+              [{ kind: 'some' }]
+            >,
+            [{ kind: 'some'; value: string }]
+          >
+        >,
+        Expect<
+          Equal<
+            ExcludeIfContainsNever<
+              [{ kind: 'some'; value: string }, never],
+              [{ kind: 'some' }, unknown]
+            >,
+            never
+          >
+        >
       ];
     });
   });

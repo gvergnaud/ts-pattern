@@ -15,7 +15,7 @@ describe('Unions (a | b)', () => {
         return o.value;
       })
       .with({ kind: 'none' }, () => 'no value')
-      .run();
+      .exhaustive();
 
     type t = Expect<Equal<typeof res, string>>;
 
@@ -54,7 +54,7 @@ describe('Unions (a | b)', () => {
         type t = Expect<Equal<typeof x, Image>>;
         return 3;
       })
-      .run();
+      .exhaustive();
 
     expect(res).toEqual(1);
   });

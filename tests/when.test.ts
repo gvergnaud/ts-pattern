@@ -91,24 +91,18 @@ describe('when', () => {
             )
             .with(
               { status: 'success', data: select('data') },
-              (x) => x.data.length > 3,
-              (x) => x.data.length < 10,
+              (x) => x.data.length > 3 && x.data.length < 10,
               (x) => {
-                type t = Expect<
-                  Equal<typeof x, { status: 'success'; data: string }>
-                >;
+                type t = Expect<Equal<typeof x, { data: string }>>;
                 return true;
               }
             )
             .with(
               { status: 'success', data: select('data') },
-              (x) => x.data.length > 3,
-              (x) => x.data.length < 10,
-              (x) => x.data.length % 2,
+              (x) =>
+                x.data.length > 3 && x.data.length < 10 && x.data.length % 2,
               (x) => {
-                type t = Expect<
-                  Equal<typeof x, { status: 'success'; data: string }>
-                >;
+                type t = Expect<Equal<typeof x, { data: string }>>;
                 return true;
               }
             )
@@ -118,37 +112,45 @@ describe('when', () => {
     });
 
     it('type should be refined in each guard clause', () => {
-      const values: { value: number | string; expected: boolean }[] = [
-        { value: -1, expected: false },
-        { value: 2, expected: true },
-        { value: 20, expected: false },
-        { value: 100, expected: false },
+      const values: { value: number | string; expected: string }[] = [
+        { value: -1, expected: 'x: number' },
+        { value: 2, expected: '2' },
+        { value: 5, expected: '2 < x < 10' },
+        { value: 100, expected: 'x: number' },
+        { value: '100', expected: '2 < x.length < 10' },
+        { value: 'Gabriel Vergnaud', expected: 'x: string' },
       ];
 
       values.forEach(({ value, expected }) => {
         const res = match(value)
           .with(
             __,
-            (x): x is number => {
-              const inferenceCheck: string | number = x;
-              return typeof x === 'number';
-            },
-            (x): x is 2 => {
-              const inferenceCheck: number = x;
-              return x === 2;
-            },
+            (x): x is 2 => x === 2,
             (x) => {
               const inferenceCheck: 2 = x;
-              return true;
+              return '2';
             }
           )
           .with(
             __.string,
-            (x) => x.length > 2,
-            (x) => x.length < 10,
-            (x) => true
+            (x) => x.length > 2 && x.length < 10,
+            () => '2 < x.length < 10'
           )
-          .otherwise(() => false);
+          .with(
+            __.number,
+            (x) => x > 2 && x < 10,
+            () => '2 < x < 10'
+          )
+          .with(
+            __,
+            (x): x is number => typeof x === 'number',
+            (x) => {
+              const inferenceCheck: number = x;
+              return 'x: number';
+            }
+          )
+          .with(__.string, () => 'x: string')
+          .exhaustive();
 
         expect(res).toEqual(expected);
       });

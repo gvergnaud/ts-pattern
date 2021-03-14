@@ -170,4 +170,15 @@ describe('ExtractPreciseValue', () => {
       >
     ];
   });
+
+  it('should work with arrays', () => {
+    type cases = [
+      Expect<
+        Equal<
+          ExtractPreciseValue<boolean | { type: string } | string[], string[]>,
+          string[]
+        >
+      >
+    ];
+  });
 });

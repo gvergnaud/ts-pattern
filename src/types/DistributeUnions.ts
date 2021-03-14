@@ -8,7 +8,6 @@ import type {
   IsPlainObject,
   Length,
   UnionToTuple,
-  ConcatAll,
 } from './helpers';
 import { IsMatching } from './IsMatching';
 
@@ -41,14 +40,16 @@ export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
   : BuildMany<a, Distribute<FindUnionsMany<a, p>>>;
 
 // FindUnionsMany :: a -> Union<a> -> PropertyKey[] -> UnionConfig[]
-export type FindUnionsMany<a, p, path extends PropertyKey[] = []> = ConcatAll<
-  UnionToTuple<
-    p extends any
-      ? IsMatching<a, p> extends true
-        ? FindUnions<a, p, path>
-        : []
-      : never
-  >
+export type FindUnionsMany<
+  a,
+  p,
+  path extends PropertyKey[] = []
+> = UnionToTuple<
+  (p extends any
+    ? IsMatching<a, p> extends true
+      ? FindUnions<a, p, path>
+      : []
+    : never)[number] // using [number] to flatten everything to the same level
 >;
 
 /**

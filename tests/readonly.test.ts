@@ -6,7 +6,6 @@ describe('readonly', () => {
     it('tuples', () => {
       const f = (input: readonly ['a' | 'b', 'c' | 'd']) =>
         match(input)
-          .exhaustive()
           .with(['a', 'c'], (x) => {
             type t = Expect<Equal<typeof x, ['a', 'c']>>;
             return 'ok';
@@ -23,7 +22,7 @@ describe('readonly', () => {
             type t = Expect<Equal<typeof x, ['b', 'd']>>;
             return 'ok';
           })
-          .run();
+          .exhaustive();
     });
 
     it('objects', () => {
@@ -31,7 +30,6 @@ describe('readonly', () => {
         input: Readonly<{ t: 'a'; x: number }> | Readonly<{ t: 'b'; x: string }>
       ) =>
         match(input)
-          .exhaustive()
           .with({ t: 'a' }, (x) => {
             type t = Expect<Equal<typeof x, Readonly<{ t: 'a'; x: number }>>>;
             return 'ok';
@@ -40,7 +38,7 @@ describe('readonly', () => {
             type t = Expect<Equal<typeof x, Readonly<{ t: 'b'; x: string }>>>;
             return 'ok';
           })
-          .run();
+          .exhaustive();
     });
 
     it('mixed', () => {
@@ -50,7 +48,6 @@ describe('readonly', () => {
           | Readonly<{ t: 'b'; x: string }>
       ) =>
         match(input)
-          .exhaustive()
           .with({ t: 'a', x: [2, 'hello', 2] }, (x) => {
             type t = Expect<
               Equal<typeof x, { t: 'a'; x: [number, string, 2] }>
@@ -74,7 +71,7 @@ describe('readonly', () => {
             type t = Expect<Equal<typeof x, Readonly<{ t: 'b'; x: string }>>>;
             return 'ok';
           })
-          .run();
+          .exhaustive();
     });
   });
 });

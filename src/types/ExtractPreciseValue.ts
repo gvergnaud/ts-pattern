@@ -96,5 +96,6 @@ export type ExtractPreciseValue<a, b> =
                     : a[k];
                 }
             : LeastUpperBound<a, b>
-          : LeastUpperBound<a, b>
+          : LeastUpperBound<a, b>,
+        b
       >;

@@ -1,5 +1,5 @@
 import type { __, PatternType } from '../PatternType';
-import { IsPlainObject, Primitives } from './helpers';
+import { Primitives, IsPlainObject } from './helpers';
 
 /**
  * GuardValue returns the value guarded by a type guard function.
@@ -19,7 +19,7 @@ export type GuardFunction<a, b extends a> =
  * Theses properties should be used by ts-pattern's internals only.
  */
 
-export type GuardPattern<a, b extends a = a> = {
+export type GuardPattern<a, b extends a = never> = {
   /** @deprecated This property should only be used by ts-pattern's internals. */
   '@ts-pattern/__patternKind': PatternType.Guard;
   /** @deprecated This property should only be used by ts-pattern's internals. */
@@ -33,9 +33,14 @@ export type NotPattern<a> = {
   '@ts-pattern/__pattern': Pattern<a>;
 };
 
-export type SelectPattern<k extends string> = {
+export type AnonymousSelectPattern = {
   /** @deprecated This property should only be used by ts-pattern's internals. */
-  '@ts-pattern/__patternKind': PatternType.Select;
+  '@ts-pattern/__patternKind': PatternType.AnonymousSelect;
+};
+
+export type NamedSelectPattern<k extends string> = {
+  /** @deprecated This property should only be used by ts-pattern's internals. */
+  '@ts-pattern/__patternKind': PatternType.NamedSelect;
   /** @deprecated This property should only be used by ts-pattern's internals. */
   '@ts-pattern/__key': k;
 };
@@ -55,7 +60,8 @@ type WildCardPattern<a> = a extends number
  */
 export type Pattern<a> =
   | typeof __
-  | SelectPattern<string>
+  | AnonymousSelectPattern
+  | NamedSelectPattern<string>
   | GuardPattern<a>
   | NotPattern<a | any>
   | WildCardPattern<a>

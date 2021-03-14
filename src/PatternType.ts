@@ -4,7 +4,8 @@ export enum PatternType {
   Boolean = '@ts-pattern/boolean',
   Guard = '@ts-pattern/guard',
   Not = '@ts-pattern/not',
-  Select = '@ts-pattern/select',
+  NamedSelect = '@ts-pattern/named-select',
+  AnonymousSelect = '@ts-pattern/anonymous-select',
 }
 
 /**

@@ -1,6 +1,6 @@
-import { match, not, when, __ } from '../src';
+import { match, not, Pattern, select, when, __ } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
-import { Option, some, none, BigUnion } from './utils';
+import { Option, some, none, BigUnion, State, Event } from './utils';
 
 describe('exhaustive()', () => {
   describe('should exclude matched patterns from subsequent `.with()` clauses', () => {
@@ -9,23 +9,20 @@ describe('exhaustive()', () => {
       const input = 'b' as Input;
 
       match(input)
-        .exhaustive()
         .with('b', (x) => {
           const check: 'b' = x;
           return 1;
         })
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with('a', (x) => 1)
         .with('b', (x) => 1)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with('a', (x) => {
           const check: 'a' = x;
           return 1;
@@ -35,10 +32,9 @@ describe('exhaustive()', () => {
           return 2;
         })
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with('a', (x) => {
           const check: 'a' = x;
           return 1;
@@ -51,7 +47,7 @@ describe('exhaustive()', () => {
           const check: 'c' = x;
           return 2;
         })
-        .run();
+        .exhaustive();
     });
 
     it('number literals', () => {
@@ -59,23 +55,20 @@ describe('exhaustive()', () => {
       const input = 2 as Input;
 
       match(input)
-        .exhaustive()
         .with(2, (x) => {
           const check: 2 = x;
           return 2;
         })
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with(1, (x) => 1)
         .with(2, () => 3)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with(1, (x) => {
           const check: 1 = x;
           return 1;
@@ -85,10 +78,9 @@ describe('exhaustive()', () => {
           return 2;
         })
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with(1, (x) => {
           const check: 1 = x;
           return 1;
@@ -101,7 +93,7 @@ describe('exhaustive()', () => {
           const check: 3 = x;
           return 2;
         })
-        .run();
+        .exhaustive();
     });
 
     it('boolean literals', () => {
@@ -113,20 +105,18 @@ describe('exhaustive()', () => {
       const input = [true, true] as Input;
 
       match(input)
-        .exhaustive()
         .with([true, true], () => true)
         .with([false, true], () => false)
         .with([true, false], () => false)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with([true, true], () => true)
         .with([false, true], () => false)
         .with([true, false], () => false)
         .with([false, false], () => false)
-        .run();
+        .exhaustive();
     });
 
     it('boolean literals', () => {
@@ -134,64 +124,83 @@ describe('exhaustive()', () => {
       const input = [true, true] as Input;
 
       match(input)
-        .exhaustive()
         .with([true, true], () => true)
         .with([false, true], () => false)
         .with([true, false], () => false)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with([true, true], () => true)
         .with([false, true], () => false)
         .with([true, false], () => false)
         .with([false, false], () => false)
-        .run();
+        .exhaustive();
     });
 
     it('union of objects', () => {
+      type letter =
+        | 'a'
+        | 'b'
+        | 'c'
+        | 'd'
+        | 'e'
+        | 'f'
+        | 'g'
+        | 'h'
+        | 'i'
+        | 'j'
+        | 'k'
+        | 'l'
+        | 'm'
+        | 'n'
+        | 'o'
+        | 'p'
+        | 'q'
+        | 'r'
+        | 's'
+        | 't'
+        | 'u'
+        | 'v'
+        | 'w'
+        | 'x'
+        | 'y'
+        | 'z';
+
       type Input =
         | { type: 1; data: number }
         | { type: 'two'; data: string }
         | { type: 3; data: boolean }
         | { type: 4 }
-        | { type: 'a' }
-        | { type: 'b' }
-        | { type: 'c' }
-        | { type: 'd' }
-        | { type: 'e' }
-        | { type: 'f' }
-        | { type: 'g' }
-        | { type: 'h' }
-        | { type: 'i' }
-        | { type: 'j' }
-        | { type: 'k' }
-        | { type: 'l' }
-        | { type: 'm' }
-        | { type: 'n' }
-        | { type: 'o' }
-        | { type: 'p' };
+        | (letter extends any ? { type: letter } : never);
+
       const input = { type: 1, data: 2 } as Input;
 
       match(input)
-        .exhaustive()
         .with({ type: 1 }, (x) => 1)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with({ type: 1 }, (x) => 1)
         .with({ type: 'two' }, (x) => 2)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
-        .with({ type: 1 }, (x) => 1)
-        .with({ type: 'two' }, ({ data }) => data.length)
-        .with({ type: 3 }, () => 3)
+        .with({ type: 1, data: select() }, (data) => {
+          type t = Expect<Equal<typeof data, number>>;
+          return 1;
+        })
+        .with({ type: 'two', data: select() }, (data) => data.length)
+        .with({ type: 3, data: true }, ({ data }) => {
+          type t = Expect<Equal<typeof data, true>>;
+          return 3;
+        })
+        .with({ type: 3, data: __ }, ({ data }) => {
+          type t = Expect<Equal<typeof data, boolean>>;
+          return 3;
+        })
         .with({ type: 4 }, () => 3)
         .with({ type: 'a' }, () => 0)
         .with({ type: 'b' }, () => 0)
@@ -209,20 +218,34 @@ describe('exhaustive()', () => {
         .with({ type: 'n' }, () => 0)
         .with({ type: 'o' }, () => 0)
         .with({ type: 'p' }, () => 0)
-        .run();
+        .with({ type: 'q' }, () => 0)
+        .with({ type: 'r' }, () => 0)
+        .with({ type: 's' }, () => 0)
+        .with({ type: 't' }, () => 0)
+        .with({ type: 'u' }, () => 0)
+        .with({ type: 'v' }, () => 0)
+        .with({ type: 'w' }, () => 0)
+        .with({ type: 'x' }, () => 0)
+        .with({ type: 'y' }, () => 0)
+        .with({ type: 'z' }, () => 0)
+        .exhaustive();
 
       match<Option<number>>({ kind: 'some', value: 3 })
-        .exhaustive()
         .with({ kind: 'some' }, ({ value }) => value)
         .with({ kind: 'none' }, () => 0)
-        .run();
+        .exhaustive();
 
       match<Option<number>>({ kind: 'some', value: 3 })
-        .exhaustive()
         .with({ kind: 'some', value: 3 }, ({ value }): number => value)
         .with({ kind: 'none' }, () => 0)
         // @ts-expect-error: missing {kind: 'some', value: number}
-        .run();
+        .exhaustive();
+
+      match<Option<number>>({ kind: 'some', value: 3 })
+        .with({ kind: 'some', value: 3 }, ({ value }): number => value)
+        .with({ kind: 'some', value: __.number }, ({ value }): number => value)
+        .with({ kind: 'none' }, () => 0)
+        .exhaustive();
     });
 
     it('union of tuples', () => {
@@ -230,32 +253,28 @@ describe('exhaustive()', () => {
       const input = [1, 3] as Input;
 
       match(input)
-        .exhaustive()
         .with([1, __], (x) => 1)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with([1, __], (x) => 1)
         .with(['two', __], (x) => 2)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with([1, __], (x) => 1)
         .with(['two', __], ([_, data]) => data.length)
         .with([3, __], () => 3)
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with([1, __], (x) => 1)
         .with(['two', 'Hey'], ([_, data]) => data.length)
         .with(['two', __], ([_, data]) => data.length)
         .with([3, __], () => 3)
-        .run();
+        .exhaustive();
     });
 
     it('deeply nested 1', () => {
@@ -266,33 +285,29 @@ describe('exhaustive()', () => {
       const input = [1, { kind: 'some', value: 3 }] as Input;
 
       match(input)
-        .exhaustive()
         .with([1, { kind: 'some' }], (x) => 1)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with([1, __], (x) => 1)
         .with(['two', __], (x) => 2)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with([1, __], (x) => 1)
         .with(['two', { kind: 'some' }], ([_, { value }]) => value.length)
         .with([3, __], () => 3)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with(['two', { kind: 'some' }], ([_, { value }]) => value.length)
         .with(['two', { kind: 'none' }], () => 4)
         .with([1, __], () => 3)
         .with([3, __], () => 3)
-        .run();
+        .exhaustive();
     });
 
     it('deeply nested 2', () => {
@@ -300,40 +315,35 @@ describe('exhaustive()', () => {
       const input = ['two', { kind: 'some', value: 'hello' }] as Input;
 
       match(input)
-        .exhaustive()
         .with(['two', { kind: 'some' }], ([_, { value }]) => value.length)
         .with(['two', { kind: 'none' }], () => 4)
-        .run();
+        .exhaustive();
     });
 
     it('should work with non-unions', () => {
       match<number>(2)
-        .exhaustive()
         .with(2, () => 'two')
         .with(3, () => 'three')
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match<number>(2)
-        .exhaustive()
         .with(2, () => 'two')
         .with(3, () => 'three')
         .with(__.number, () => 'something else')
-        .run();
+        .exhaustive();
 
       match<string>('Hello')
-        .exhaustive()
         .with('Hello', () => 'english')
         .with('Bonjour', () => 'french')
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match<string>('Hello')
-        .exhaustive()
         .with('Hello', () => 'english')
         .with('Bonjour', () => 'french')
         .with(__, (c) => 'something else')
-        .run();
+        .exhaustive();
     });
 
     it('should work with object properties union', () => {
@@ -341,21 +351,18 @@ describe('exhaustive()', () => {
       const input = { value: 'a' } as Input;
 
       match(input)
-        .exhaustive()
         .with({ value: 'a' }, (x) => 1)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with({ value: __ }, (x) => 1)
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with({ value: 'a' }, (x) => 1)
         .with({ value: 'b' }, (x) => 1)
-        .run();
+        .exhaustive();
     });
 
     it('should work with lists', () => {
@@ -375,29 +382,25 @@ describe('exhaustive()', () => {
       } as Input;
 
       match(input)
-        .exhaustive()
         .with({ type: 'a' }, (x) => x.items)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with({ type: 'a' }, (x) => x.items)
         .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with({ type: 'a', items: [__] }, (x) => x.items)
         .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
-        .run();
+        .exhaustive();
 
       match<Input>(input)
-        .exhaustive()
         .with({ type: 'a', items: [{ some: __ }] }, (x) => x.items)
         .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
         // @ts-expect-error
-        .run();
+        .exhaustive();
     });
 
     it('should work with Sets', () => {
@@ -405,16 +408,14 @@ describe('exhaustive()', () => {
       const input = new Set(['']) as Input;
 
       match(input)
-        .exhaustive()
         .with(new Set([__.string]), (x) => x)
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       match(input)
-        .exhaustive()
         .with(new Set([__.string]), (x) => x)
         .with(new Set([__.number]), (x) => new Set([]))
-        .run();
+        .exhaustive();
     });
 
     it('should work with Sets', () => {
@@ -423,18 +424,16 @@ describe('exhaustive()', () => {
 
       expect(
         match(input)
-          .exhaustive()
           .with(new Set([__.string]), (x) => x)
           // @ts-expect-error
-          .run()
+          .exhaustive()
       ).toEqual(input);
 
       expect(
         match(input)
-          .exhaustive()
           .with(new Set([__.string]), (x) => 1)
           .with(new Set([__.number]), (x) => 2)
-          .run()
+          .exhaustive()
       ).toEqual(1);
     });
 
@@ -444,32 +443,28 @@ describe('exhaustive()', () => {
 
       expect(
         match(input)
-          .exhaustive()
           .with(new Map([['hello' as const, __.number]]), (x) => x)
           // @ts-expect-error
-          .run()
+          .exhaustive()
       ).toEqual(input);
 
       expect(
         match(input)
-          .exhaustive()
           .with(new Map([['hello' as const, 1 as const]]), (x) => x)
           // @ts-expect-error
-          .run()
+          .exhaustive()
       ).toEqual(input);
 
       expect(
         match(input)
-          .exhaustive()
           .with(new Map([['hello', 1 as const]]), (x) => x)
           // @ts-expect-error
-          .run()
+          .exhaustive()
       ).toEqual(input);
 
       match(input)
-        .exhaustive()
         .with(__, (x) => x)
-        .run();
+        .exhaustive();
     });
 
     it('should work with structures with a lot of unions', () => {
@@ -486,7 +481,6 @@ describe('exhaustive()', () => {
         h: X;
         i: X;
       }>({ a: 1, b: 1, c: 1, d: 1, e: 1, f: 1, g: 1, h: 1, i: 1 })
-        .exhaustive()
         .with({ b: 1 }, () => 'otherwise')
         .with({ b: 2 }, () => 'b = 2')
         .with({ b: 3 }, () => 'otherwise')
@@ -494,23 +488,21 @@ describe('exhaustive()', () => {
         .with({ b: 5 }, () => 'otherwise')
         .with({ b: 6 }, () => 'otherwise')
         .with({ b: 7 }, () => 'otherwise')
-        .run();
+        .exhaustive();
 
       match<{
         a: X;
         b: X;
         c: X;
       }>({ a: 1, b: 1, c: 1 })
-        .exhaustive()
         .with({ a: not(1) }, () => 'a != 1')
         .with({ a: 1 }, () => 'a != 1')
-        .run();
+        .exhaustive();
 
       match<{
         a: BigUnion;
         b: BigUnion;
       }>({ a: 'a', b: 'b' })
-        .exhaustive()
         .with({ a: 'a' }, () => 0)
         .with({ a: 'b' }, () => 0)
         .with({ a: 'c' }, (x) => 0)
@@ -518,18 +510,47 @@ describe('exhaustive()', () => {
         .with({ a: 'e' }, (x) => 0)
         .with({ a: 'f', b: __ }, (x) => 0)
         .with({ a: __ }, (x) => 0)
-        .run();
+        .exhaustive();
     });
 
     it('should work with generics', () => {
       const last = <a>(xs: a[]) =>
         match<a[], Option<a>>(xs)
-          .exhaustive()
           .with([], () => none)
-          .with(__, (xs) => some(xs[xs.length - 1]))
-          .run();
+          .with(__, (x, y) => some(xs[xs.length - 1]))
+          .exhaustive();
 
       expect(last([1, 2, 3])).toEqual(some(3));
+    });
+
+    it('should work with generics in type guards', () => {
+      const map = <A, B>(
+        option: Option<A>,
+        mapper: (value: A) => B
+      ): Option<B> =>
+        match<Option<A>, Option<B>>(option)
+          .when(
+            (option): option is { kind: 'some'; value: A } =>
+              option.kind === 'some',
+            (option) => ({
+              kind: 'some',
+              value: mapper(option.value),
+            })
+          )
+          .when(
+            (option): option is { kind: 'none' } => option.kind === 'none',
+            (option) => option
+          )
+          .otherwise(() => ({ kind: 'none' }));
+
+      const res = map(
+        { kind: 'some' as const, value: 20 },
+        (x) => `number is ${x}`
+      );
+
+      type t = Expect<Equal<typeof res, Option<string>>>;
+
+      expect(res).toEqual({ kind: 'some' as const, value: `number is 20` });
     });
 
     it('should work with inputs of varying shapes', () => {
@@ -538,7 +559,6 @@ describe('exhaustive()', () => {
 
       expect(
         match(input)
-          .exhaustive()
           .with(['hello', { kind: 'some' }], ([, { value }]) => {
             return value;
           })
@@ -547,7 +567,7 @@ describe('exhaustive()', () => {
           })
           .with({ type: __ }, (x) => x.type)
           .with([__], (x) => `("hello" | Option<string>)[] | "hello"[]`)
-          .run()
+          .exhaustive()
       ).toEqual('test');
     });
 
@@ -555,22 +575,19 @@ describe('exhaustive()', () => {
       type Input = { type: 'video'; duration: number };
 
       match<Input>({ type: 'video', duration: 10 })
-        .exhaustive()
         .with({ type: 'video', duration: 10 }, (x) => '')
         // @ts-expect-error
-        .run();
+        .exhaustive();
 
       let n: number = 10;
       match<number>(n)
-        .exhaustive()
         .with(10, (x) => '')
         // @ts-expect-error
-        .run();
+        .exhaustive();
     });
 
     it('should correctly exclude cases if when pattern contains a type guard', () => {
       match<{ x: 1 | 2 | 3 }>({ x: 2 })
-        .exhaustive()
         .with({ x: when((x): x is 1 => x === 1) }, (x) => {
           type t = Expect<Equal<typeof x, { x: 1 }>>;
           return '';
@@ -583,12 +600,11 @@ describe('exhaustive()', () => {
           type t = Expect<Equal<typeof x, { x: 3 }>>;
           return '';
         })
-        .run();
+        .exhaustive();
     });
 
     it('should correctly exclude cases if .when is a type guard', () => {
       match<Option<string>, Option<number>>({ kind: 'none' })
-        .exhaustive()
         .when(
           (option): option is { kind: 'some'; value: string } =>
             option.kind === 'some',
@@ -601,7 +617,238 @@ describe('exhaustive()', () => {
           (option): option is { kind: 'none' } => option.kind === 'none',
           (option) => option
         )
-        .run();
+        .exhaustive();
     });
+
+    it('should correctly exclude cases if the pattern is a literal type', () => {
+      const input = { kind: 'none' } as Option<string>;
+      match(input)
+        .with({ kind: 'some', value: 'hello' }, (option) => '')
+        .with({ kind: 'none' }, (option) => '')
+        // @ts-expect-error: handled { kind: 'some', value: string }
+        .exhaustive();
+
+      match(input)
+        .with({ kind: 'some', value: 'hello' }, (option) => '')
+        .with({ kind: 'none' }, (option) => '')
+        .with({ kind: 'some' }, (option) => '')
+        .exhaustive();
+    });
+
+    it('should not exclude cases if the pattern is a literal type and the value is not', () => {
+      match({ x: 2 })
+        .with({ x: 2 }, ({ x }) => {
+          type t = Expect<Equal<typeof x, number>>;
+          return '';
+        })
+        // @ts-expect-error
+        .exhaustive();
+
+      match<1 | 2 | 3>(2)
+        .with(2, (x) => {
+          type t = Expect<Equal<typeof x, 2>>;
+          return '';
+        })
+        // @ts-expect-error
+        .exhaustive();
+
+      match<1 | 2 | 3>(2)
+        .with(1, (x) => {
+          type t = Expect<Equal<typeof x, 1>>;
+          return '';
+        })
+        .with(2, (x) => {
+          type t = Expect<Equal<typeof x, 2>>;
+          return '';
+        })
+        .with(3, (x) => {
+          type t = Expect<Equal<typeof x, 3>>;
+          return '';
+        })
+        .exhaustive();
+    });
+  });
+
+  it('real world example', () => {
+    type Input =
+      | { type: 'text'; text: string; author: { name: string } }
+      | { type: 'video'; duration: number; src: string }
+      | {
+          type: 'movie';
+          duration: number;
+          author: { name: string };
+          src: string;
+          title: string;
+        }
+      | { type: 'picture'; src: string };
+
+    const isNumber = (x: unknown): x is number => typeof x === 'number';
+
+    match<Input>({ type: 'text', text: 'Hello', author: { name: 'Gabriel' } })
+      .with(
+        {
+          type: 'text',
+          text: select('text'),
+          author: { name: select('authorName') },
+        },
+        ({ text, authorName }) => `${text} from ${authorName}`
+      )
+      .with({ type: 'video', duration: when((x) => x > 10) }, () => '')
+      .with(
+        {
+          type: 'video',
+          duration: when(isNumber),
+        },
+        () => ''
+      )
+      .with({ type: 'movie', duration: 10 }, () => '')
+      .with(
+        {
+          type: 'movie',
+          duration: 10,
+          author: select('author'),
+          title: select('title'),
+        },
+        ({ author, title }) => ''
+      )
+      .with({ type: 'picture' }, () => '')
+      .with({ type: 'movie', duration: when(isNumber) }, () => '')
+      .exhaustive();
+  });
+
+  it('reducer example', () => {
+    const initState: State = {
+      status: 'idle',
+    };
+
+    const reducer = (state: State, event: Event): State =>
+      match<[State, Event], State>([state, event])
+        .with(
+          [{ status: 'loading' }, { type: 'success', data: select() }],
+          (data) => ({ status: 'success', data })
+        )
+        .with(
+          [{ status: 'loading' }, { type: 'error', error: select() }],
+          (error) => ({ status: 'error', error })
+        )
+        .with([{ status: 'loading' }, { type: 'cancel' }], () => initState)
+
+        .with([{ status: not('loading') }, { type: 'fetch' }], (value) => ({
+          status: 'loading',
+        }))
+        .with(__, () => state)
+        .exhaustive();
+  });
+
+  it('select should always match', () => {
+    type Input = { type: 3; data: number };
+
+    const input = { type: 3, data: 2 } as Input;
+
+    match<Input>(input)
+      .with({ type: 3, data: select() }, (data) => {
+        type t = Expect<Equal<typeof data, number>>;
+        return 3;
+      })
+      .exhaustive();
+
+    type Input2 = { type: 3; data: true } | 2;
+    match<Input2>(2)
+      .with({ type: 3, data: select() }, (data) => {
+        type t = Expect<Equal<typeof data, true>>;
+        return 3;
+      })
+      .with(2, () => 2)
+      .exhaustive();
+  });
+
+  describe('Exhaustive match and `not` patterns', () => {
+    it('should work with a single not pattern', () => {
+      const reducer1 = (state: State, event: Event): State =>
+        match<[State, Event], State>([state, event])
+          .with([{ status: not('loading') }, __], (x) => state)
+          .with([{ status: 'loading' }, { type: 'fetch' }], () => state)
+          // @ts-expect-error
+          .exhaustive();
+
+      const reducer3 = (state: State, event: Event): State =>
+        match<[State, Event], State>([state, event])
+          .with([{ status: not('loading') }, __], (x) => state)
+          .with([{ status: 'loading' }, __], () => state)
+          .exhaustive();
+    });
+
+    it('should work with several not patterns', () => {
+      const reducer = (state: State, event: Event): State =>
+        match<[State, Event], State>([state, event])
+          .with(
+            [{ status: not('loading') }, { type: not('fetch') }],
+            (x) => state
+          )
+          .with([{ status: 'loading' }, { type: __ }], () => state)
+          .with([{ status: __ }, { type: 'fetch' }], () => state)
+          .exhaustive();
+
+      const f = (input: readonly [1 | 2 | 3, 1 | 2 | 3, 1 | 2 | 3]) =>
+        match(input)
+          .with([not(1), not(1), not(1)], (x) => 'ok')
+          .with([1, __, __], () => 'ok')
+          .with([__, 1, __], () => 'ok')
+          .with([__, __, 1], () => 'ok')
+          .exhaustive();
+
+      const range = [1, 2, 3] as const;
+      const flatMap = <A, B>(
+        xs: readonly A[],
+        f: (x: A) => readonly B[]
+      ): B[] => xs.reduce<B[]>((acc, x) => acc.concat(f(x)), []);
+
+      const allPossibleCases = flatMap(range, (x) =>
+        flatMap(range, (y) => flatMap(range, (z) => [[x, y, z]] as const))
+      );
+
+      allPossibleCases.forEach((x) => expect(f(x)).toBe('ok'));
+
+      const f2 = (input: [1 | 2 | 3, 1 | 2 | 3, 1 | 2 | 3]) =>
+        match(input)
+          .with([not(1), not(1), not(1)], (x) => 'ok')
+          .with([1, __, __], () => 'ok')
+          .with([__, 1, __], () => 'ok')
+          // @ts-expect-error : NonExhaustiveError<[3, 3, 1] | [3, 2, 1] | [2, 3, 1] | [2, 2, 1]>
+          .exhaustive();
+    });
+
+    it('should work with not patterns and lists', () => {
+      const f = (input: (1 | 2 | 3)[]) =>
+        match(input)
+          .with([not(1)], (x) => 'ok')
+          .with([1], (x) => 'ok')
+          // @ts-expect-error: NonExhaustiveError<(1 | 2 | 3)[]>, because lists can be heterogenous
+          .exhaustive();
+    });
+  });
+
+  describe('exhaustive and any', () => {
+    const f = (input: { t: 'a'; x: any } | { t: 'b' }) =>
+      match(input)
+        .with({ t: 'a' }, (x) => {
+          type t = Expect<Equal<typeof x, { t: 'a'; x: any }>>;
+          return 'ok';
+        })
+        .with({ t: 'b' }, (x) => 'ok')
+        .exhaustive();
+
+    const f2 = (input: { t: 'a'; x: any } | { t: 'b' }) =>
+      match(input)
+        .with({ t: 'a', x: 'hello' }, (x) => 'ok')
+        .with({ t: 'b' }, (x) => 'ok')
+        // @ts-expect-error
+        .exhaustive();
+
+    const f3 = (input: { t: 'a'; x: any } | { t: 'b' }) =>
+      match(input)
+        .with({ t: 'a', x: __ }, (x) => 'ok')
+        .with({ t: 'b' }, (x) => 'ok')
+        .exhaustive();
   });
 });

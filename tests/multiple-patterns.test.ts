@@ -46,7 +46,6 @@ describe('Multiple patterns', () => {
   it('exhaustive patterns should match if one of the patterns matches', () => {
     const testFn = (input: Option<number>) =>
       match(input)
-        .exhaustive()
         .with(
           { kind: 'some', value: 2 as const },
           { kind: 'some', value: 3 as const },
@@ -69,7 +68,7 @@ describe('Multiple patterns', () => {
           >;
           return false;
         })
-        .run();
+        .exhaustive();
 
     const cases = [
       { input: { kind: 'some', value: 3 }, expected: true },
@@ -87,8 +86,7 @@ describe('Multiple patterns', () => {
   it("no patterns shouldn't typecheck", () => {
     const input = { kind: 'none' } as Option<number>;
     match(input)
-      .exhaustive()
-      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'Pattern<Option<number>>'
+      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
       .with(() => false);
 
     match(input)
@@ -96,8 +94,7 @@ describe('Multiple patterns', () => {
       .with(() => false);
 
     match(input)
-      .exhaustive()
-      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'Pattern<Option<number>>'
+      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
       .with(() => false)
       .with(
         { kind: 'some', value: 2 as const },
@@ -112,17 +109,32 @@ describe('Multiple patterns', () => {
     type Country = 'France' | 'Germany' | 'Spain' | 'USA';
 
     match<Country>('France')
-      .exhaustive()
       .with('France', 'Germany', 'Spain', () => 'Europe')
       .with('USA', () => 'America')
-      .run();
+      .exhaustive();
 
     match<Country>('Germany')
-      .exhaustive()
       .with('Germany', 'Spain', () => 'Europe')
       .with('USA', () => 'America')
       // @ts-expect-error: 'France' is missing
-      .run();
+      .exhaustive();
+  });
+
+  it('should work with nullables', () => {
+    match<null | undefined>(null)
+      .with(null, undefined, (x) => 'Nullable')
+      .exhaustive();
+  });
+
+  it('should work with objects', () => {
+    match<{ a: string; b: number } | [1, 2]>({ a: '', b: 2 })
+      .with({ a: __.string }, (x) => 'obj')
+      .with([1, 2], (x) => 'tuple')
+      .exhaustive();
+
+    match<{ a: string; b: number } | [1, 2]>({ a: '', b: 2 })
+      .with({ a: __.string }, [1, 2], (x) => 'obj')
+      .exhaustive();
   });
 
   it('should work with all types of input', () => {
@@ -182,7 +194,6 @@ describe('Multiple patterns', () => {
 
     const exhaustive = (input: Input) =>
       match<Input>(input)
-        .exhaustive()
         .with(null, undefined, (x) => 'Nullable')
         .with(__.boolean, __.number, __.string, (x) => 'primitive')
         .with(
@@ -192,10 +203,10 @@ describe('Multiple patterns', () => {
           new Set([__.number]),
           (x) => 'Object'
         )
-        .with([false, 2] as const, (x) => '[false, 2]')
-        .with([false, __.number] as const, (x) => '[false, number]')
-        .with([true, __.number] as const, (x) => '[true, number]')
-        .run();
+        .with([false, 2], (x) => '[false, 2]')
+        .with([false, __.number], (x) => '[false, number]')
+        .with([true, __.number], (x) => '[true, number]')
+        .exhaustive();
 
     const cases: { input: Input; expected: string }[] = [
       { input: null, expected: 'Nullable' },
@@ -215,5 +226,14 @@ describe('Multiple patterns', () => {
       expect(nonExhaustive(input)).toEqual(expected);
       expect(exhaustive(input)).toEqual(expected);
     });
+  });
+
+  it("when 2 returned values don't match, the error should be at the second returned value", () => {
+    const f = (input: { t: 'a'; x: any } | { t: 'b' }) =>
+      match(input)
+        .with({ t: 'a', x: 'hello' }, { t: 'a' }, (x) => 'ok')
+        // @ts-expect-error
+        .with({ t: 'b' }, (x) => 2)
+        .run();
   });
 });

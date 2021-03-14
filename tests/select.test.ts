@@ -1,12 +1,16 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, __, select, not } from '../src';
 import { State, Event } from './utils';
+import {
+  MixedNamedAndAnonymousSelectError,
+  SeveralAnonymousSelectError,
+} from '../src/types/FindSelected';
 
 describe('select', () => {
   it('should work with tuples', () => {
     expect(
       match<[string, number], number>(['get', 2])
-        .with(['get', select('y')], (_, { y }) => {
+        .with(['get', select('y')], ({ y }) => {
           type t = Expect<Equal<typeof y, number>>;
           return y;
         })
@@ -17,7 +21,7 @@ describe('select', () => {
   it('should work with array', () => {
     expect(
       match<string[], string[]>(['you', 'hello'])
-        .with([select('texts')], (xs, { texts }) => {
+        .with([select('texts')], ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, string[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -27,7 +31,7 @@ describe('select', () => {
 
     expect(
       match<{ text: string }[], string[]>([{ text: 'you' }, { text: 'hello' }])
-        .with([{ text: select('texts') }], (xs, { texts }) => {
+        .with([{ text: select('texts') }], ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, { text: string }[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -40,7 +44,7 @@ describe('select', () => {
         { text: { content: 'you' } },
         { text: { content: 'hello' } },
       ])
-        .with([{ text: { content: select('texts') } }], (xs, { texts }) => {
+        .with([{ text: { content: select('texts') } }], ({ texts }, xs) => {
           type t = Expect<Equal<typeof texts, string[]>>;
           return texts;
         })
@@ -56,8 +60,12 @@ describe('select', () => {
         other: 20,
       })
         .with(
-          { status: 'success', data: select('data'), other: select('other') },
-          (_, { data, other }) => {
+          {
+            status: 'success',
+            data: select('data'),
+            other: select('other'),
+          },
+          ({ data, other }) => {
             type t = Expect<Equal<typeof data, string>>;
             type t2 = Expect<Equal<typeof other, number>>;
             return data + other.toString();
@@ -70,7 +78,7 @@ describe('select', () => {
   it('should work with primitive types', () => {
     expect(
       match<string, string>('hello')
-        .with(select('x'), (_, { x }) => {
+        .with(select('x'), ({ x }) => {
           type t = Expect<Equal<typeof x, string>>;
           return x;
         })
@@ -94,7 +102,7 @@ describe('select', () => {
               requestTime: select('time'),
             },
           ],
-          (_, { data, time }) => {
+          ({ data, time }) => {
             type t = Expect<Equal<typeof time, number | undefined>>;
 
             return {
@@ -105,14 +113,14 @@ describe('select', () => {
         )
         .with(
           [{ status: 'loading' }, { type: 'success', data: select('data') }],
-          (_, { data }) => ({
+          ({ data }) => ({
             status: 'success',
             data,
           })
         )
         .with(
           [{ status: 'loading' }, { type: 'error', error: select('error') }],
-          (_, { error }) => ({
+          ({ error }) => ({
             status: 'error',
             error,
           })
@@ -121,7 +129,7 @@ describe('select', () => {
         .with([{ status: not('loading') }, { type: 'fetch' }], () => ({
           status: 'loading',
         }))
-        .with([select('state'), select('event')], (_, { state, event }) => {
+        .with([select('state'), select('event')], ({ state, event }) => {
           type t = Expect<Equal<typeof state, State>>;
           type t2 = Expect<Equal<typeof event, Event>>;
           return state;
@@ -144,5 +152,23 @@ describe('select', () => {
     expect(reducer({ status: 'loading' }, { type: 'cancel' })).toEqual({
       status: 'idle',
     });
+  });
+
+  it('should infer the selection to an error when using several anonymous selection', () => {
+    match({ type: 'point', x: 2, y: 3 })
+      .with({ type: 'point', x: select(), y: select() }, (x) => {
+        type t = Expect<Equal<typeof x, SeveralAnonymousSelectError>>;
+        return 'ok';
+      })
+      .run();
+  });
+
+  it('should infer the selection to an error when using mixed named and unnamed selections', () => {
+    match({ type: 'point', x: 2, y: 3 })
+      .with({ type: 'point', x: select(), y: select('y') }, (x) => {
+        type t = Expect<Equal<typeof x, MixedNamedAndAnonymousSelectError>>;
+        return 'ok';
+      })
+      .run();
   });
 });
