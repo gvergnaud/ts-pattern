@@ -170,7 +170,7 @@ const reducer = (state: State, event: Event): State =>
 
     .with(
       [
-        { status: 'loading', startTime: when((t) => t < Date.now() - 2000) },
+        { status: 'loading', startTime: when((t) => t + 2000 < Date.now()) },
         { type: 'cancel' },
       ],
       () => ({
@@ -264,7 +264,7 @@ You can only have a **single** unnamed selection. If you need to select more pro
   )
 ```
 
-Each named selection will be injected inside a `selections` object passed as first argument to the handler function. Names can be any strings.
+Each named selection will be injected inside a `selections` object, passed as first argument to the handler function. Names can be any strings.
 
 ### not(pattern)
 
@@ -281,28 +281,23 @@ and returning its opposite:
 ### `when()` and guard functions
 
 Sometimes, we need to make sure our input data respects a condition
-that can't be expressed by a pattern. Imagine if we wanted to check that a number
-is positive for instance. In this case, we can use **guard functions**:
-functions taking some data and returning a `boolean`.
+that can't be expressed by a pattern. Imagine if we needed to check if a number
+was positive for instance. In these cases, we can use a **guard function**:
+a function taking some data and returning a `boolean`.
 
 With `ts-pattern` there are two options to use a guard function:
 
 - use `when(<guard function>)` inside your pattern
 - pass it as second parameter to `.with(...)`
 
-#### when(predicate)
-
-The `when` function lets you **add a guard** to your pattern.
-Your pattern will not match **unless your predicate (guard) function returns `true`**.
-It might be handy if you need to make a dynamic checks on
-your data structure.
+#### using when(predicate)
 
 ```ts
   .with(
     [
       {
         status: 'loading',
-        startTime: when((t) => t < Date.now() - 2000),
+        startTime: when((t) => t + 2000 < Date.now()),
       },
       { type: 'cancel' },
     ],
@@ -320,12 +315,14 @@ the `pattern` and the `handler` callback:
 ```ts
   .with(
     [{ status: 'loading' },{ type: 'cancel' }],
-    ([state, event]) => state.startTime < Date.now() - 2000,
+    ([state, event]) => state.startTime + 2000 < Date.now(),
     () => ({
       status: 'idle'
     })
   )
 ```
+
+This pattern will only match if the guard function returns `true`.
 
 ### the `__` wildcard
 
