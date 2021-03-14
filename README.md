@@ -65,9 +65,11 @@ yarn add ts-pattern
 
 | ts-pattern | TypeScript v4.2+ | TypeScript v4.1+ | TypeScript v3.x- |
 | ---------- | ---------------- | ---------------- | ---------------- |
-| v3.x       | ✅               | ❌               | ❌               |
+| v3.x       | ✅               | ⚠️               | ❌               |
 | v2.x       | ✅               | ✅               | ❌               |
 | v1.x       | ✅               | ✅               | ✅               |
+
+✅ Full support, ⚠️ Partial support, ❌ No support
 
 # Documentation
 
