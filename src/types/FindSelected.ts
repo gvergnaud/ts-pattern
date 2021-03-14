@@ -78,8 +78,8 @@ export type SeveralAnonymousSelectError<
   __error: never;
 } & a;
 
-export type MixedNamedAndUnnamedSelectError<
-  a = 'Mixing named selection (`select("name")`) and anonymous selection (`select()`) is forbiden. Please you only named selections'
+export type MixedNamedAndAnonymousSelectError<
+  a = 'Mixing named selections (`select("name")`) and anonymous selections (`select()`) is forbiden. Please, only use named selections.'
 > = {
   __error: never;
 } & a;
@@ -96,7 +96,7 @@ type SelectionToArgs<
     ? SeveralAnonymousSelectError
     : keyof selections extends PatternType.AnonymousSelect
     ? selections[PatternType.AnonymousSelect][0]
-    : MixedNamedAndUnnamedSelectError
+    : MixedNamedAndAnonymousSelectError
   : { [k in keyof selections]: selections[k][0] };
 
 export type FindSelected<i, p> = SelectionToArgs<

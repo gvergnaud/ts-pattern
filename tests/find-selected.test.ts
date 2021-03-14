@@ -1,6 +1,6 @@
 import {
   FindSelected,
-  MixedNamedAndUnnamedSelectError,
+  MixedNamedAndAnonymousSelectError,
   SeveralAnonymousSelectError,
 } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
@@ -260,7 +260,7 @@ describe('FindSelected', () => {
                 };
               }
             >,
-            MixedNamedAndUnnamedSelectError
+            MixedNamedAndAnonymousSelectError
           >
         >
       ];
