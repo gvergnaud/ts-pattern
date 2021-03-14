@@ -1,11 +1,5 @@
 import { PatternType } from '../PatternType';
-import type {
-  Cast,
-  Compute,
-  IsPlainObject,
-  UnionToTuple,
-  ValueOf,
-} from './helpers';
+import type { Cast, IsPlainObject, UnionToIntersection } from './helpers';
 import type { NamedSelectPattern, AnonymousSelectPattern } from './Pattern';
 
 export type FindSelectionUnion<
@@ -14,9 +8,9 @@ export type FindSelectionUnion<
   // path just serves as an id, to identify different anonymous patterns which have the same type
   path extends any[] = []
 > = p extends NamedSelectPattern<infer k>
-  ? [k, i, path]
+  ? { [kk in k]: [i, path] }
   : p extends AnonymousSelectPattern
-  ? [PatternType.AnonymousSelect, i, path]
+  ? { [kk in PatternType.AnonymousSelect]: [i, path] }
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]
     ? [i, p] extends [
@@ -58,22 +52,23 @@ export type FindSelectionUnion<
           pp,
           [...path, number]
         > extends infer selectionUnion
-      ? selectionUnion extends [infer k, infer v, infer path]
-        ? [k, v[], path]
-        : never
+      ? {
+          [k in keyof selectionUnion]: selectionUnion[k] extends [
+            infer v,
+            infer path
+          ]
+            ? [v[], path]
+            : never;
+        }
       : never
     : never
   : IsPlainObject<p> extends true
   ? i extends object
-    ? ValueOf<
-        {
-          [k in keyof i & keyof p]: FindSelectionUnion<
-            i[k],
-            p[k],
-            [...path, k]
-          >;
-        }
-      >
+    ? {
+        [k in keyof p]: k extends keyof i
+          ? FindSelectionUnion<i[k], p[k], [...path, k]>
+          : never;
+      }[keyof p]
     : never
   : never;
 
@@ -89,54 +84,25 @@ export type MixedNamedAndUnnamedSelectError<
   __error: never;
 } & a;
 
-type OrderSelections<
-  selections,
-  output extends { positional: any; kwargs: {} } = {
-    positional: '@ts-pattern/empty';
-    kwargs: {};
-  }
-> = selections extends [infer head, ...infer tail]
-  ? head extends [infer key, infer value, any]
-    ? key extends PatternType.AnonymousSelect
-      ? OrderSelections<
-          tail,
-          {
-            positional: output['positional'] extends '@ts-pattern/empty'
-              ? value
-              : '@ts-pattern/error';
-            kwargs: output['kwargs'];
-          }
-        >
-      : OrderSelections<
-          tail,
-          {
-            positional: output['positional'];
-            kwargs: output['kwargs'] & { [k in Cast<key, string>]: value };
-          }
-        >
-    : never
-  : output;
-
-// SelectionTuplesToArgs :: [number | string, value][] -> [...args]
-type SelectionTuplesToArgs<
-  selections,
+// SelectionToArgs :: [number | string, value][] -> [...args]
+type SelectionToArgs<
+  selections extends Record<string, [unknown, unknown]>,
   i
-> = OrderSelections<selections> extends {
-  positional: infer positional;
-  kwargs: infer kwargs;
-}
-  ? positional extends '@ts-pattern/error'
+> = [keyof selections] extends [never]
+  ? i
+  : PatternType.AnonymousSelect extends keyof selections
+  ? // If the path is never, it means several anonymous patterns were `&` together
+    [selections[PatternType.AnonymousSelect][1]] extends [never]
     ? SeveralAnonymousSelectError
-    : positional extends '@ts-pattern/empty'
-    ? [keyof kwargs] extends [never]
-      ? i
-      : Compute<kwargs>
-    : [keyof kwargs] extends [never]
-    ? positional
+    : keyof selections extends PatternType.AnonymousSelect
+    ? selections[PatternType.AnonymousSelect][0]
     : MixedNamedAndUnnamedSelectError
-  : i;
+  : { [k in keyof selections]: selections[k][0] };
 
-export type FindSelected<i, p> = SelectionTuplesToArgs<
-  UnionToTuple<FindSelectionUnion<i, p>>,
+export type FindSelected<i, p> = SelectionToArgs<
+  Cast<
+    UnionToIntersection<{} | FindSelectionUnion<i, p>>,
+    Record<string, [unknown, unknown]>
+  >,
   i
 >;

@@ -73,8 +73,8 @@ export type Match<i, o, patternValueTuples extends [any, any] = never> = {
     pattern: pat,
     predicate: pred,
     handler: (
-      value: value,
-      selections: FindSelected<i, pat>
+      selections: FindSelected<value, pat>,
+      value: value
     ) => PickReturnValue<o, c>
   ): Match<
     i,
