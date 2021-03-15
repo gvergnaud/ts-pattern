@@ -110,7 +110,7 @@ yarn add ts-pattern
 - [Untyped Input (API response) Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/api.tsx)
 - [`when` Guard Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/when.tsx)
 - [`not` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.tsx)
-- [`select` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.tsx)
+- [`select` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/select.tsx)
 
 ## Getting Started
 
@@ -883,7 +883,7 @@ const input = { type: 'post', user: { name: 'Gabriel' } }
 const output = match<Input>(input)
     .with(
       { type: 'post', user: { name: select('username') } },
-      (_, { username }) => username // username: string
+      ({ username }) => username // username: string
     )
     .otherwise(() => 'anonymous');
 
