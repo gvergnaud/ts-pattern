@@ -72,7 +72,9 @@ yarn add ts-pattern
 | v1.x       | ✅               | ✅               | ✅               |
 
 ✅ Full support
+
 ⚠️ Partial support, everything works except passing more than 2 patterns to `.with()`
+
 ❌ No support
 
 # Documentation
