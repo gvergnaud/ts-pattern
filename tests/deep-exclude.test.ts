@@ -451,4 +451,18 @@ describe('DeepExclude', () => {
       Expect<Equal<DeepExclude<Input, p>, never>>
     ];
   });
+
+  it('should work with unknown', () => {
+    type cases = [
+      Expect<
+        Equal<
+          DeepExclude<
+            [number, { type: 'a'; b: string }],
+            [unknown, { type: 'a'; b: unknown }]
+          >,
+          never
+        >
+      >
+    ];
+  });
 });
