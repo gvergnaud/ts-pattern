@@ -68,13 +68,13 @@ export type Pattern<a> =
   | (a extends Primitives
       ? a
       : a extends (infer b)[]
-      ? a extends [infer b, infer c, infer d, infer e, infer f]
+      ? a extends readonly [infer b, infer c, infer d, infer e, infer f]
         ? readonly [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>]
-        : a extends [infer b, infer c, infer d, infer e]
+        : a extends readonly [infer b, infer c, infer d, infer e]
         ? readonly [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>]
-        : a extends [infer b, infer c, infer d]
+        : a extends readonly [infer b, infer c, infer d]
         ? readonly [Pattern<b>, Pattern<c>, Pattern<d>]
-        : a extends [infer b, infer c]
+        : a extends readonly [infer b, infer c]
         ? readonly [Pattern<b>, Pattern<c>]
         :
             | []

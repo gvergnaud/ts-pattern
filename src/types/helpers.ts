@@ -20,7 +20,7 @@ export type LeastUpperBound<a, b> = a extends b ? a : b extends a ? b : never;
 
 export type ExcludeIfContainsNever<a, b> = b extends Map<any, any> | Set<any>
   ? a
-  : b extends [any, ...any]
+  : b extends readonly [any, ...any]
   ? ExcludeNeverObject<a, b, '0' | '1' | '2' | '3' | '4'>
   : b extends any[]
   ? ExcludeNeverObject<a, b, number>
@@ -61,7 +61,10 @@ export type UnionToTuple<T> = UnionToIntersection<
 
 export type Cast<a, b> = a extends b ? a : never;
 
-export type Flatten<xs extends any[]> = xs extends [infer head, ...infer tail]
+export type Flatten<xs extends any[]> = xs extends readonly [
+  infer head,
+  ...infer tail
+]
   ? [...Cast<head, any[]>, ...Flatten<tail>]
   : [];
 
@@ -83,7 +86,7 @@ export type Iterator<
 > = it['length'] extends n ? it : Iterator<n, [any, ...it]>;
 
 export type Next<it extends any[]> = [any, ...it];
-export type Prev<it extends any[]> = it extends [any, ...infer tail]
+export type Prev<it extends any[]> = it extends readonly [any, ...infer tail]
   ? tail
   : [];
 
@@ -125,7 +128,7 @@ export type Compute<a extends any> = a extends BuiltInObjects
   : { [k in keyof a]: a[k] } & unknown;
 
 // All :: Bool[] -> Bool
-export type All<xs> = xs extends [infer head, ...infer tail]
+export type All<xs> = xs extends readonly [infer head, ...infer tail]
   ? boolean extends head
     ? false
     : head extends true
