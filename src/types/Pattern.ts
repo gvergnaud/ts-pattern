@@ -56,7 +56,7 @@ type WildCardPattern<a> = a extends number
 /**
  * ### Pattern
  * Patterns can be any (nested) javascript value.
- * They can also be "wildcards", using type constructors
+ * They can also be a "wildcards", like `__`.
  */
 export type Pattern<a> =
   | typeof __

@@ -46,9 +46,12 @@ export function select<k extends string>(
 export { Pattern, __ };
 
 /**
- * ### match
- * Entry point to create pattern matching code branches. It returns an
- * empty Match case.
+ * #### match
+ *
+ * Entry point to create a pattern matching expression.
+ *
+ * It returns a `Match` builder, on which you can chain
+ * several `.with(pattern, handler)` clauses.
  */
 export const match = <a, b = Unset>(value: a): Match<a, b> =>
   builder(value, []) as any;

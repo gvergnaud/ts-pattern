@@ -18,14 +18,15 @@ export type PickReturnValue<a, b> = a extends Unset ? b : a;
 type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 
 /**
- * ### Match
+ * #### Match
  * An interface to create a pattern matching clause.
  */
 export type Match<i, o, patternValueTuples extends [any, any] = never> = {
   /**
-   * ### Match.with
-   * If the data matches the pattern provided as first argument,
-   * use this branch and execute the handler function.
+   * #### Match.with
+   *
+   * If the input matches the pattern provided as first argument,
+   * execute the handler function and return its result.
    **/
   with<p extends Pattern<i>, c, value = MatchedValue<i, InvertPattern<p>>>(
     pattern: p,
@@ -86,9 +87,10 @@ export type Match<i, o, patternValueTuples extends [any, any] = never> = {
   >;
 
   /**
-   * ### Match.when
+   * #### Match.when
+   *
    * When the first function returns a truthy value,
-   * use this branch and execute the handler function.
+   * execute the handler function and return its result.
    **/
   when: <pred extends (value: i) => unknown, c, value = GuardValue<pred>>(
     predicate: pred,
@@ -103,21 +105,24 @@ export type Match<i, o, patternValueTuples extends [any, any] = never> = {
   >;
 
   /**
-   * ### Match.otherwise
-   * takes a function returning the default value
-   * and return the matched result.
+   * #### Match.otherwise
+   *
+   * takes a function returning the **default value**.
+   * and return the result of the pattern matching expression.
    *
    * Equivalent to `.with(__, () => x).run()`
    **/
   otherwise: <c>(handler: () => PickReturnValue<o, c>) => PickReturnValue<o, c>;
 
   /**
-   * ### Match.exhaustive
-   * Runs the pattern matching and return a value.
+   * #### Match.exhaustive
+   *
+   * Runs the pattern matching expression and return the result value.
    *
    * If this is of type `NonExhaustiveError`, it means you aren't matching
-   * every cases, and you should probably add a  another `.with(...)` clause
+   * every cases, and you should probably add another `.with(...)` clause
    * to prevent potential runtime errors.
+   *
    * */
   exhaustive: DeepExcludeAll<i, patternValueTuples> extends infer remainingCases
     ? [remainingCases] extends [never]
@@ -126,8 +131,8 @@ export type Match<i, o, patternValueTuples extends [any, any] = never> = {
     : never;
 
   /**
-   * ### Match.run
-   * Runs the pattern matching and return a value.
+   * #### Match.run
+   * Runs the pattern matching expression and return the result.
    * */
   run: () => o;
 };
