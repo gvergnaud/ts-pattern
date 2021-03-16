@@ -403,6 +403,23 @@ describe('exhaustive()', () => {
         .exhaustive();
     });
 
+    it('should support __ in a readonly tuple', () => {
+      const f = (n: number, state: State) => {
+        const x = match([n, state] as const)
+          .with(
+            [1, { status: 'success', data: select() }],
+            ([_, { data }]) => data.startsWith('coucou'),
+            (data) => data.replace('coucou', 'bonjour')
+          )
+          .with([2, __], () => "It's a twoooo")
+          .with([__, { status: 'error' }], () => 'Oups')
+          .with([__, { status: 'idle' }], () => '')
+          .with([__, { status: 'loading' }], () => '')
+          .with([__, { status: 'success' }], () => '')
+          .exhaustive();
+      };
+    });
+
     it('should work with Sets', () => {
       type Input = Set<string> | Set<number>;
       const input = new Set(['']) as Input;

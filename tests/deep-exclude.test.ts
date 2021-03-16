@@ -1,7 +1,6 @@
 import { DeepExclude } from '../src/types/DeepExclude';
 import { Primitives, Equal, Expect } from '../src/types/helpers';
-import { InvertPatternForExclude } from '../src/types/InvertPattern';
-import { BigUnion, Option } from './utils';
+import { BigUnion, Option, State } from './utils';
 
 type Colors = 'pink' | 'purple' | 'red' | 'yellow' | 'blue';
 
@@ -109,6 +108,25 @@ describe('DeepExclude', () => {
           Equal<
             DeepExclude<[string, string], readonly [unknown, unknown]>,
             never
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<[number, State], [unknown, { status: 'error' }]>,
+            | [number, { status: 'idle' }]
+            | [number, { status: 'loading' }]
+            | [number, { status: 'success'; data: string }]
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<
+              readonly [number, State],
+              [unknown, { status: 'error' }]
+            >,
+            | [number, { status: 'idle' }]
+            | [number, { status: 'loading' }]
+            | [number, { status: 'success'; data: string }]
           >
         >
       ];

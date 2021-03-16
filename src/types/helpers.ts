@@ -93,7 +93,7 @@ export type Slice<
   output extends any[] = []
 > = Length<it> extends 0
   ? output
-  : xs extends [infer head, ...infer tail]
+  : xs extends readonly [infer head, ...infer tail]
   ? Slice<tail, Prev<it>, [...output, head]>
   : output;
 
@@ -102,7 +102,7 @@ export type Drop<
   n extends any[]
 > = Length<n> extends 0
   ? xs
-  : xs extends [any, ...infer tail]
+  : xs extends readonly [any, ...infer tail]
   ? Drop<tail, Prev<n>>
   : [];
 
