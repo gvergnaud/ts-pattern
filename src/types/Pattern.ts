@@ -67,22 +67,34 @@ export type Pattern<a> =
   | WildCardPattern<a>
   | (a extends Primitives
       ? a
-      : a extends (infer b)[]
-      ? a extends readonly [infer b, infer c, infer d, infer e, infer f]
-        ? readonly [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>, Pattern<f>]
-        : a extends readonly [infer b, infer c, infer d, infer e]
-        ? readonly [Pattern<b>, Pattern<c>, Pattern<d>, Pattern<e>]
-        : a extends readonly [infer b, infer c, infer d]
-        ? readonly [Pattern<b>, Pattern<c>, Pattern<d>]
-        : a extends readonly [infer b, infer c]
-        ? readonly [Pattern<b>, Pattern<c>]
+      : a extends readonly (infer i)[]
+      ? a extends readonly [infer a1, infer a2, infer a3, infer a4, infer a5]
+        ? readonly [
+            Pattern<a1>,
+            Pattern<a2>,
+            Pattern<a3>,
+            Pattern<a4>,
+            Pattern<a5>
+          ]
+        : a extends readonly [infer a1, infer a2, infer a3, infer a4]
+        ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>, Pattern<a4>]
+        : a extends readonly [infer a1, infer a2, infer a3]
+        ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>]
+        : a extends readonly [infer a1, infer a2]
+        ? readonly [Pattern<a1>, Pattern<a2>]
         :
-            | []
-            | [Pattern<b>]
-            | [Pattern<b>, Pattern<b>]
-            | [Pattern<b>, Pattern<b>, Pattern<b>]
-            | [Pattern<b>, Pattern<b>, Pattern<b>, Pattern<b>]
-            | [Pattern<b>, Pattern<b>, Pattern<b>, Pattern<b>, Pattern<b>]
+            | readonly []
+            | readonly [Pattern<i>]
+            | readonly [Pattern<i>, Pattern<i>]
+            | readonly [Pattern<i>, Pattern<i>, Pattern<i>]
+            | readonly [Pattern<i>, Pattern<i>, Pattern<i>, Pattern<i>]
+            | readonly [
+                Pattern<i>,
+                Pattern<i>,
+                Pattern<i>,
+                Pattern<i>,
+                Pattern<i>
+              ]
       : a extends Map<infer k, infer v>
       ? Map<k, Pattern<v>>
       : a extends Set<infer v>
