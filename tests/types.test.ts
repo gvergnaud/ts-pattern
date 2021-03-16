@@ -168,11 +168,15 @@ describe('types', () => {
         return 'ok';
       })
       .with({ type: __.string }, (x) => {
-        type t = Expect<Equal<typeof x, { type: string }>>;
+        type t = Expect<
+          Equal<typeof x, { type: string; hello?: { yo: number } | undefined }>
+        >;
         return 'ok';
       })
       .with({ type: when((x) => true) }, (x) => {
-        type t = Expect<Equal<typeof x, { type: string }>>;
+        type t = Expect<
+          Equal<typeof x, { type: string; hello?: { yo: number } | undefined }>
+        >;
         return 'ok';
       })
       .with({ type: not('hello' as 'hello') }, (x) => {

@@ -11,7 +11,7 @@ export type Values<a extends object> = UnionToTuple<ValueOf<a>>;
  * or unknown for instance).
  */
 
-export type LeastUpperBound<a, b> = b extends a ? b : a extends b ? a : never;
+export type LeastUpperBound<a, b> = a extends b ? a : b extends a ? b : never;
 
 /**
  * if a key of an object has the never type,

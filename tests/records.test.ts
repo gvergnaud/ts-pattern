@@ -17,7 +17,9 @@ describe('Records ({})', () => {
     expect(
       match<Vector, string>(vector)
         .with({ x: 1, y: 1, z: 1 }, (x) => {
-          type t = Expect<Equal<typeof x, Vector3>>;
+          type t = Expect<
+            Equal<typeof x, Vector3 | { x: number; y: number; z: number }>
+          >;
           return 'vector3';
         })
         .with({ x: 2, y: 1 }, (x) => {

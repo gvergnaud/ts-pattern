@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __ } from '../src';
+import { match, not, __ } from '../src';
 
 describe('optional properties', () => {
   it('matching on optional properties should work', () => {
@@ -33,5 +33,39 @@ describe('optional properties', () => {
       .run();
 
     expect(res).toEqual(100);
+  });
+
+  it('should correctly narrow the input type when the input is assignable to the pattern type', () => {
+    type Foo =
+      | { type: 'test'; id?: string }
+      | { type: 'test2'; id?: string; otherProp: string }
+      | { type: 'test3'; id?: string; otherProp?: string };
+
+    const f = (foo: Foo) =>
+      match(foo)
+        .with({ type: 'test', id: not(undefined) }, ({ id }) => {
+          type t = Expect<Equal<typeof id, string>>;
+          return 0;
+        })
+
+        .with({ type: 'test' }, ({ id }) => {
+          type t = Expect<Equal<typeof id, string | undefined>>;
+          return 1;
+        })
+
+        .with({ type: 'test2' }, ({ id }) => {
+          type t = Expect<Equal<typeof id, string | undefined>>;
+          return 2;
+        })
+        .with({ type: 'test3' }, ({ id }) => {
+          type t = Expect<Equal<typeof id, string | undefined>>;
+          return 3;
+        })
+        .exhaustive();
+
+    expect(f({ type: 'test', id: '1' })).toEqual(0);
+    expect(f({ type: 'test' })).toEqual(1);
+    expect(f({ type: 'test2', otherProp: '' })).toEqual(2);
+    expect(f({ type: 'test3' })).toEqual(3);
   });
 });

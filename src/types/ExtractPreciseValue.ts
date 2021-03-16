@@ -81,10 +81,10 @@ export type ExtractPreciseValue<a, b> =
             : LeastUpperBound<a, b>
           : IsPlainObject<b> extends true
           ? a extends object
-            ? b extends a
-              ? b
-              : a extends b
+            ? a extends b
               ? a
+              : b extends a
+              ? b
               : [keyof a & keyof b] extends [never]
               ? never
               : {

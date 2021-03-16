@@ -1,5 +1,6 @@
 import { ExtractPreciseValue } from '../src/types/ExtractPreciseValue';
-import { Expect, Equal } from '../src/types/helpers';
+import { Expect, Equal, LeastUpperBound } from '../src/types/helpers';
+import { NotPattern } from '../src/types/Pattern';
 import { Option, State } from './utils';
 
 describe('ExtractPreciseValue', () => {
@@ -180,5 +181,45 @@ describe('ExtractPreciseValue', () => {
         >
       >
     ];
+  });
+
+  describe('Optional properties', () => {
+    it('should pick the input type as the upper bound, even if it is assignable to the pattern type', () => {
+      // This happens if the input type only has optional properties
+      type Input =
+        | { type: 'test'; id?: string }
+        | { type: 'test2'; id?: string; otherProp: string }
+        | { type: 'test3'; id?: string; otherProp?: string };
+
+      type cases = [
+        Expect<
+          Equal<
+            ExtractPreciseValue<Input, { type: 'test' }>,
+            { type: 'test'; id?: string }
+          >
+        >,
+        Expect<
+          Equal<
+            ExtractPreciseValue<
+              Input,
+              { type: 'test'; id: NotPattern<undefined> }
+            >,
+            { type: 'test'; id: string }
+          >
+        >,
+        Expect<
+          Equal<
+            ExtractPreciseValue<Input, { type: 'test2' }>,
+            { type: 'test2'; id?: string; otherProp: string }
+          >
+        >,
+        Expect<
+          Equal<
+            ExtractPreciseValue<Input, { type: 'test3' }>,
+            { type: 'test3'; id?: string; otherProp?: string }
+          >
+        >
+      ];
+    });
   });
 });
