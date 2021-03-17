@@ -148,7 +148,7 @@ To avoid unwanted state changes that could lead to bugs, we want to create
 a reducer function that **matches on both the state and the event**
 and return a new state.
 
-This is a case were `match` really shines. Instead of writing nested
+This is a case where `match` really shines. Instead of writing nested
 switch statements, we can do that in a very expressive way:
 
 ```ts
