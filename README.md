@@ -193,8 +193,7 @@ const reducer = (state: State, event: Event): State =>
 
 ### match(value)
 
-`match` takes a value and returns a builder on which you can
-add your pattern matching cases.
+`match` takes a value and returns a [_builder_](https://en.wikipedia.org/wiki/Builder_pattern) on which you can add your pattern matching cases.
 
 ```ts
 match<[State, Event], State>([state, event]);
@@ -226,7 +225,7 @@ The first argument is the **pattern**: the **shape of value**
 you expect for this branch.
 
 The second argument is the **handler function**: the code **branch** that will be called if
-the data matches the pattern.
+the input value matches the pattern.
 
 The handler function takes the input value as first parameter with its type **narrowed down** to what the pattern matches.
 
@@ -883,9 +882,7 @@ console.log(output);
 
 ### type inference
 
-`ts-pattern` strongly invests on TypeScript's type inference to narrow
-the type of your value to something that matches what you would expect.
-Here are a few examples:
+`ts-pattern` heavily relies on TypeScript's type system to automatically infer the precise type of your input value based on your pattern. Here are a few examples showing how the input type would be narrowed using various patterns:
 
 ```ts
 type Input = { type: string } | string;
