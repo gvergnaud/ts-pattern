@@ -225,11 +225,10 @@ Then we add a first `with` clause:
 The first argument is the **pattern**: the **shape of value**
 you expect for this branch.
 
-The second argument is the handler function: the **branch** that will be called if
-the data matches the given pattern.
+The second argument is the **handler function**: the code **branch** that will be called if
+the data matches the pattern.
 
-The **type** of the data structure is **narrowed down** to
-what is permitted by the pattern.
+The handler function takes the input value as first parameter with its type **narrowed down** to what the pattern matches.
 
 ### select(name?)
 
@@ -245,9 +244,9 @@ In the second `with` clause, we use the `select` function:
   )
 ```
 
-`select` let you extract a piece of your input data structure and inject it into your handler. It is pretty useful when pattern matching on deep data structures because it avoids the hassle of destructuring your input in your handler.
+`select` let you **extract** a piece of your input value and **inject** it into your handler. It is pretty useful when pattern matching on deep data structures because it avoids the hassle of destructuring your input in your handler.
 
-Since we didn't pass any name to `select()`, It will inject the `event.error` property as first argument to the handler function. Note that you can still access **the full input data structure** with its type narrowed by your pattern as **second argument** of the handler function:
+Since we didn't pass any name to `select()`, It will inject the `event.error` property as first argument to the handler function. Note that you can still access **the full input value** with its type narrowed by your pattern as **second argument** of the handler function:
 
 ```ts
   .with(
@@ -259,7 +258,7 @@ Since we didn't pass any name to `select()`, It will inject the `event.error` pr
   )
 ```
 
-You can only have a **single** unnamed selection. If you need to select more properties on your input data structure, you will need to give them **names**:
+You can only have a **single** anonymous selection. If you need to select more properties on your input data structure, you will need to give them **names**:
 
 ```ts
 .with(
@@ -274,9 +273,7 @@ Each named selection will be injected inside a `selections` object, passed as fi
 
 ### not(pattern)
 
-If you need to match on everything **but** a specific value, you can use
-a `not(<pattern>)` pattern. it's a function taking a pattern
-and returning its opposite:
+If you need to match on everything **but** a specific value, you can use a `not(<pattern>)` pattern. it's a function taking a pattern and returning its opposite:
 
 ```ts
   .with([{ status: not('loading') }, { type: 'fetch' }], () => ({
@@ -286,10 +283,7 @@ and returning its opposite:
 
 ### `when()` and guard functions
 
-Sometimes, we need to make sure our input data respects a condition
-that can't be expressed by a pattern. Imagine if we needed to check if a number
-was positive for instance. In these cases, we can use a **guard function**:
-a function taking some data and returning a `boolean`.
+Sometimes, we need to make sure our input value respects a condition that can't be expressed by a pattern. For example, imagine you need to check if a number is positive. In these cases, we can use **guard functions**: functions taking a value and returning a `boolean`.
 
 With `ts-pattern` there are two options to use a guard function:
 
@@ -352,13 +346,11 @@ You can use it at the top level, or inside your pattern.
   .exhaustive();
 ```
 
-`.exhaustive()` execute the pattern matching expression, and **returns the result**. It also enables **exhaustiveness checking**, making sure we don't forget any possible case in our input data. This extra type safety is very nice because forgetting a case is an easy mistake to make, especially in an evolving code-base.
+`.exhaustive()` **executes** the pattern matching expression, and **returns the result**. It also enables **exhaustiveness checking**, making sure we don't forget any possible case in our input value. This extra type safety is very nice because forgetting a case is an easy mistake to make, especially in an evolving code-base.
 
-Note that exhaustive pattern matching is **optional**. It comes with the trade-off
-of having **longer compilation times**.
+Note that exhaustive pattern matching is **optional**. It comes with the trade-off of having **longer compilation times** because the type checker has more work to do.
 
-Alternatively you can use `.otherwise()`, which take an handler returning
-a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).exhaustive()`.
+Alternatively you can use `.otherwise()`, which take an handler returning a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).exhaustive()`.
 
 ```ts
   .otherwise(() => state);
@@ -370,7 +362,7 @@ If you don't want to use `.exhaustive()` and also don't want to provide a defaul
   .run();
 ```
 
-It's just like `.exhaustive()`, but it's **unsafe** and might throw at runtime if no branch of your pattern matching expression matches your input.
+It's just like `.exhaustive()`, but it's **unsafe** and might throw runtime error if no branch matches your input value.
 
 ### Matching several patterns
 
@@ -391,7 +383,7 @@ switch (type) {
 ```
 
 Similarly, ts-pattern lets you pass several patterns to `.with()` and if
-one of these patterns matches your input, the branch will be chosen:
+one of these patterns matches your input, the handler function will be called:
 
 ```ts
 const sanitize = (name: string) =>
@@ -405,7 +397,7 @@ sanitize('p'); // 'text'
 sanitize('button'); // 'button'
 ```
 
-Obviously, you can still provide patterns that are more complex than strings, and aren't possible to express with regular switch statements. Exhaustive matching also works as you would expect.
+Obviously, it also works with more complex patterns than strings. Exhaustive matching also works as you would expect.
 
 ## API Reference
 
@@ -457,8 +449,7 @@ function with(
   pattern: Pattern<TInput>[],
   when: (value: TInput) => unknown,
   handler: (
-    [unnamedSelection: Selection<TInput>, ]
-    [namedSelections: Selections<TInput>, ]
+    [selection: Selection<TInput>, ]
     value: TInput
   ) => TOutput
 ): Match<TInput, TOutput>;
@@ -864,9 +855,8 @@ console.log(toNumber(true));
 
 #### `select` patterns
 
-The `select` function enables you to pick a part of your data structure
-and inject it in the `selections` object given as second parameter to
-your handler function.
+The `select` function enables you to pick a piece of your input data structure
+and inject it in your handler function.
 
 It can be useful when you have a deep data structure and you want to
 avoid the hassle of destructuring it.
