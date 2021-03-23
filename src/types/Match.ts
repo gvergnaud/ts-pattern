@@ -2,7 +2,7 @@ import type { Pattern, GuardValue, GuardPattern } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
-import type { WithDefault } from './helpers';
+import type { WithDefault, Union } from './helpers';
 import type { FindSelected } from './FindSelected';
 
 // We fall back to `a` if we weren't able to extract anything more precise
@@ -14,8 +14,6 @@ export type MatchedValue<a, invpattern> = WithDefault<
 export type Unset = '@ts-pattern/unset';
 
 export type PickReturnValue<a, b> = a extends Unset ? b : a;
-
-type Union<a, b> = [b] extends [a] ? a : [a] extends [b] ? b : a | b;
 
 type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 
@@ -41,12 +39,7 @@ export type Match<
       selections: FindSelected<value, p>,
       value: value
     ) => PickReturnValue<o, c>
-  ): Match<
-    i,
-    o,
-    patternValueTuples | [p, value],
-    PickReturnValue<o, Union<inferredOutput, c>>
-  >;
+  ): Match<i, o, patternValueTuples | [p, value], Union<inferredOutput, c>>;
 
   with<
     p1 extends Pattern<i>,

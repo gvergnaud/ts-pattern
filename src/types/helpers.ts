@@ -174,3 +174,5 @@ export type Primitives =
   | null
   | symbol
   | bigint;
+
+export type Union<a, b> = [b] extends [a] ? a : [a] extends [b] ? b : a | b;
