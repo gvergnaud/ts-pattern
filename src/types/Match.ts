@@ -15,7 +15,7 @@ export type Unset = '@ts-pattern/unset';
 
 export type PickReturnValue<a, b> = a extends Unset ? b : a;
 
-type Union<a, b> = b extends a ? a : a | b;
+type Union<a, b> = [b] extends [a] ? a : [a] extends [b] ? b : a | b;
 
 type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 
@@ -27,7 +27,7 @@ export type Match<
   i,
   o,
   patternValueTuples extends [any, any] = never,
-  inferedOutput = never
+  inferredOutput = never
 > = {
   /**
    * #### Match.with
@@ -45,7 +45,7 @@ export type Match<
     i,
     o,
     patternValueTuples | [p, value],
-    PickReturnValue<o, Union<inferedOutput, c>>
+    PickReturnValue<o, Union<inferredOutput, c>>
   >;
 
   with<
@@ -62,7 +62,7 @@ export type Match<
     i,
     o,
     patternValueTuples | (p extends any ? [p, value] : never),
-    Union<inferedOutput, c>
+    Union<inferredOutput, c>
   >;
 
   with<
@@ -84,7 +84,7 @@ export type Match<
     | (pred extends (value: any) => value is infer narrowed
         ? [GuardPattern<unknown, narrowed>, value]
         : never),
-    Union<inferedOutput, c>
+    Union<inferredOutput, c>
   >;
 
   with<
@@ -98,7 +98,7 @@ export type Match<
     i,
     o,
     patternValueTuples | (p extends any ? [p, value] : never),
-    Union<inferedOutput, c>
+    Union<inferredOutput, c>
   >;
 
   /**
@@ -117,7 +117,7 @@ export type Match<
     | (pred extends (value: any) => value is infer narrowed
         ? [GuardPattern<unknown, narrowed>, value]
         : never),
-    Union<inferedOutput, c>
+    Union<inferredOutput, c>
   >;
 
   /**
@@ -130,7 +130,7 @@ export type Match<
    **/
   otherwise: <c>(
     handler: () => PickReturnValue<o, c>
-  ) => PickReturnValue<o, Union<inferedOutput, c>>;
+  ) => PickReturnValue<o, Union<inferredOutput, c>>;
 
   /**
    * #### Match.exhaustive
@@ -144,7 +144,7 @@ export type Match<
    * */
   exhaustive: DeepExcludeAll<i, patternValueTuples> extends infer remainingCases
     ? [remainingCases] extends [never]
-      ? () => PickReturnValue<o, inferedOutput>
+      ? () => PickReturnValue<o, inferredOutput>
       : NonExhaustiveError<remainingCases>
     : never;
 
@@ -152,7 +152,7 @@ export type Match<
    * #### Match.run
    * Runs the pattern matching expression and return the result.
    * */
-  run: () => PickReturnValue<o, inferedOutput>;
+  run: () => PickReturnValue<o, inferredOutput>;
 };
 
 type DeepExcludeAll<a, tuple extends [any, any]> = DeepExclude<
