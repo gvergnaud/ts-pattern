@@ -13,7 +13,7 @@ const reverse2 = <T>(xs: T[]): T[] => {
 };
 ```
 
-- [ ] When not provided, maybe compute the output type from all branches
+- [x] When not provided, maybe compute the output type from all branches
 - [x] maybe add a lightweight `select` API for single values
 - [x] add support matching against several patterns in a single `.with()` clause.
 - [x] Find a way to enforce exhaustive pattern matching
