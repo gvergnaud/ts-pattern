@@ -1,7 +1,7 @@
 <h1 align="center">ts-pattern</h1>
 
 <p align="center">
-A complete Pattern Matching library for <a href="https://github.com/microsoft/TypeScript">TypeScript</a>
+An exhaustive Pattern Matching library for <a href="https://github.com/microsoft/TypeScript">TypeScript</a>
 with smart type inference.
 </p>
 
