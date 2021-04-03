@@ -257,7 +257,7 @@ Since we didn't pass any name to `select()`, It will inject the `event.error` pr
   )
 ```
 
-You can only have a **single** anonymous selection. If you need to select more properties on your input data structure, you will need to give them **names**:
+In a pattern, we can only have a **single** anonymous selection. If you need to select more properties on your input data structure, you will need to give them **names**:
 
 ```ts
 .with(
@@ -819,10 +819,10 @@ const output = match<Input>({ score: 10 })
     {
       score: when((score): score is 5 => score === 5),
     },
-    (input) => 'Its a good 5/7.' // input is infered as { score: 5 }
+    (input) => '😐' // input is infered as { score: 5 }
   )
-  .with({ score: when((score) => score < 5) }, () => 'bad')
-  .with({ score: when((score) => score > 5) }, () => 'good')
+  .with({ score: when((score) => score < 5) }, () => '😞')
+  .with({ score: when((score) => score > 5) }, () => '🙂')
   .run();
 
 console.log(output);
@@ -854,14 +854,18 @@ console.log(toNumber(true));
 
 #### `select` patterns
 
-The `select` function enables you to pick a piece of your input data structure
-and inject it in your handler function.
+The `select` function enables us to pick a piece of our input data structure
+and inject it in our handler function.
 
-It can be useful when you have a deep data structure and you want to
-avoid the hassle of destructuring it.
+It's especially useful when pattern matching on deep data structure to
+avoid the hassle of destructuring it in the handler function.
+
+Selections can be either named (with `select('someName')`) or anonymous (with `select()`).
+
+You can have only one anonymous selection by pattern, and the selected value will be directly inject in your handler as first argument:
 
 ```ts
-import { match, not } from 'ts-pattern';
+import { match, select } from 'ts-pattern';
 
 type Input =
   | { type: 'post'; user: { name: string } }
@@ -871,13 +875,35 @@ const input = { type: 'post', user: { name: 'Gabriel' } }
 
 const output = match<Input>(input)
     .with(
-      { type: 'post', user: { name: select('username') } },
-      ({ username }) => username // username: string
+      { type: 'post', user: { name: select() } },
+      username => username // username: string
     )
     .otherwise(() => 'anonymous');
 
 console.log(output);
 // => 'Gabriel'
+```
+
+If you need to select several things inside your input data structure, you can name your selections by giving a string to `select(<name>)`. Each selection will be passed as first argument to your handler in an object.
+
+```ts
+import { match, select } from 'ts-pattern';
+
+type Input =
+  | { type: 'post'; user: { name: string }, content: string }
+  | { ... };
+
+const input = { type: 'post', user: { name: 'Gabriel' }, content: 'Hello!' }
+
+const output = match<Input>(input)
+    .with(
+      { type: 'post', user: { name: select('name') }, content: select('body') },
+      ({ name, body }) => `${name} wrote "${body}"`
+    )
+    .otherwise(() => '');
+
+console.log(output);
+// => 'Gabriel wrote "Hello!"'
 ```
 
 ### type inference
