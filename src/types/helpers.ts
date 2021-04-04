@@ -21,17 +21,20 @@ export type LeastUpperBound<a, b> = a extends b ? a : b extends a ? b : never;
 export type ExcludeIfContainsNever<a, b> = b extends Map<any, any> | Set<any>
   ? a
   : b extends readonly [any, ...any]
-  ? ExcludeNeverObject<a, b, '0' | '1' | '2' | '3' | '4'>
+  ? ExcludeObjectIfContainsNever<a, keyof b & ('0' | '1' | '2' | '3' | '4')>
   : b extends any[]
-  ? ExcludeNeverObject<a, b, number>
-  : ExcludeNeverObject<a, b, string>;
+  ? ExcludeObjectIfContainsNever<a, keyof b & number>
+  : ExcludeObjectIfContainsNever<a, keyof b & string>;
 
-type ExcludeNeverObject<a, b, keyConstraint = unknown> = a extends any
+export type ExcludeObjectIfContainsNever<
+  a,
+  keyConstraint = unknown
+> = a extends any
   ? {
-      [k in keyConstraint & keyof b & keyof a]-?: [a[k]] extends [never]
+      [k in keyConstraint & keyof a]-?: [a[k]] extends [never]
         ? 'exclude'
         : 'include';
-    }[keyConstraint & keyof b & keyof a] extends infer includeOrExclude
+    }[keyConstraint & keyof a] extends infer includeOrExclude
     ? (
         includeOrExclude extends 'include'
           ? 'include' extends includeOrExclude

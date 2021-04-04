@@ -26,7 +26,8 @@ describe('Nesting', () => {
             return 1;
           }
         )
-        .run();
+        .with(__, () => 1)
+        .exhaustive();
 
       type t = Expect<Equal<typeof res, number>>;
 
@@ -74,7 +75,7 @@ describe('Nesting', () => {
       ).toEqual(true);
     });
 
-    it('it should work on 6 level', () => {
+    it('it should work on 9 level', () => {
       expect(
         match({
           one: {
@@ -82,8 +83,14 @@ describe('Nesting', () => {
               three: {
                 four: {
                   five: {
-                    foo: 2,
-                    bar: true,
+                    six: {
+                      seven: {
+                        height: {
+                          foo: 2,
+                          bar: true,
+                        },
+                      },
+                    },
                   },
                 },
               },
@@ -97,15 +104,21 @@ describe('Nesting', () => {
                   three: {
                     four: {
                       five: {
-                        foo: __,
-                        bar: select('bar'),
+                        six: {
+                          seven: {
+                            height: {
+                              foo: __,
+                              bar: select('bar'),
+                            },
+                          },
+                        },
                       },
                     },
                   },
                 },
               },
             },
-            (_, x) => x.one.two.three.four.five.bar
+            (_, x) => x.one.two.three.four.five.six.seven.height.bar
           )
           .run()
       ).toEqual(true);
@@ -113,7 +126,7 @@ describe('Nesting', () => {
   });
 
   describe('array', () => {
-    it('it should work on 2 level', () => {
+    it('it should work on 2 levels', () => {
       expect(
         match([{ two: '2', foo: 2, bar: true }])
           .with([{ foo: __, bar: select('bar') }], ({ bar }) => bar)
@@ -121,7 +134,7 @@ describe('Nesting', () => {
       ).toEqual([true]);
     });
 
-    it('it should work on 3 level', () => {
+    it('it should work on 3 levels', () => {
       expect(
         match([[{ two: '2', foo: 2, bar: true }]])
           .with([[{ foo: __, bar: select('bar') }]], ({ bar }) => bar)
@@ -129,7 +142,7 @@ describe('Nesting', () => {
       ).toEqual([[true]]);
     });
 
-    it('it should work on 4 level', () => {
+    it('it should work on 4 levels', () => {
       expect(
         match([[[{ two: '2', foo: 2, bar: true }]]])
           .with([[[{ foo: __, bar: select('bar') }]]], ({ bar }) => bar)
@@ -137,7 +150,7 @@ describe('Nesting', () => {
       ).toEqual([[[true]]]);
     });
 
-    it('it should work on 5 level', () => {
+    it('it should work on 5 levels', () => {
       expect(
         match([[[[{ two: '2', foo: 2, bar: true }]]]])
           .with([[[[{ foo: __, bar: __ }]]]], ([[[[{ bar }]]]]) => bar)
@@ -145,12 +158,15 @@ describe('Nesting', () => {
       ).toEqual(true);
     });
 
-    it('it should work on 6 level', () => {
+    it('it should work on 11 levels', () => {
       expect(
-        match([[[[[{ two: '2', foo: 2, bar: true }]]]]])
-          .with([[[[[{ foo: __, bar: select('bar') }]]]]], ({ bar }) => bar)
+        match([[[[[[[[[[{ two: '2', foo: 2, bar: true }]]]]]]]]]])
+          .with(
+            [[[[[[[[[[{ foo: __, bar: select('bar') }]]]]]]]]]],
+            ({ bar }) => bar
+          )
           .run()
-      ).toEqual([[[[[true]]]]]);
+      ).toEqual([[[[[[[[[[true]]]]]]]]]]);
     });
   });
 });
