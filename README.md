@@ -659,7 +659,7 @@ console.log(output);
 // => 'it is a boolean!'
 ```
 
-#### Object
+#### Objects
 
 A pattern can be an object with sub-pattern properties. In order to match,
 the input must be an object with all properties defined on the pattern object
