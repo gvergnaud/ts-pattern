@@ -826,7 +826,7 @@ const output = match<Input>({ score: 10 })
   .run();
 
 console.log(output);
-// => 'good'
+// => '🙂'
 ```
 
 #### `not` patterns
