@@ -3,7 +3,7 @@
 - [ ] add a `rest` (maybe `rest(Pattern<a>)`) pattern for list. Example of using `rest`:
 
 ```ts
-const reverse2 = <T>(xs: T[]): T[] => {
+const reverse = <T>(xs: T[]): T[] => {
   return (
     match<T[], T[]>(xs)
       // matches a list with at least one element
