@@ -43,7 +43,7 @@ return match(result)
 
 ## What is Pattern Matching?
 
-Pattern Matching is a technique coming from Functional Programming languages to declaratively write conditional code branches based on the structure of a value. This technique has proven itself to be much more powerful and much less verbose than imperative alternatives (if/else/switch statements) especially when branching on complex data structures or on several values.
+Pattern Matching is a technique coming from functional programming languages to declaratively write conditional code branches based on the structure of a value. This technique has proven itself to be much more powerful and much less verbose than imperative alternatives (if/else/switch statements) especially when branching on complex data structures or on several values.
 
 Pattern Matching is implemented in Haskell, Rust, Swift, Elixir and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years (if ever). Luckily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
 
@@ -106,6 +106,7 @@ yarn add ts-pattern
 ## Code Sandbox Examples
 
 - [Basic Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/basic.tsx)
+- [Gif fetcher app Demo (with React)](https://codesandbox.io/s/ts-pattern-gif-search-demo-n8h4k?file=/src/App.tsx)
 - [Reducer Demo (with React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
 - [Untyped Input (API response) Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/api.tsx)
 - [`when` Guard Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/when.tsx)
