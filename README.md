@@ -108,7 +108,7 @@ yarn add ts-pattern
 - [Basic Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/basic.tsx)
 - [Gif fetcher app Demo (with React)](https://codesandbox.io/s/ts-pattern-gif-search-demo-n8h4k?file=/src/App.tsx)
 - [Reducer Demo (with React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
-- [Untyped Input (API response) Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/api.tsx)
+- [Untyped Input Demo (Handling an API response)](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/api.tsx)
 - [`when` Guard Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/when.tsx)
 - [`not` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.tsx)
 - [`select` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/select.tsx)
