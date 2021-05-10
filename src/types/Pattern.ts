@@ -62,7 +62,7 @@ export type Pattern<a> =
   | typeof __
   | AnonymousSelectPattern
   | NamedSelectPattern<string>
-  | GuardPattern<a>
+  | GuardPattern<a, a>
   | NotPattern<a | any>
   | WildCardPattern<a>
   | (a extends Primitives

@@ -12,7 +12,7 @@ import type { Unset, PickReturnValue, Match } from './types/Match';
 
 import { __, PatternType } from './PatternType';
 
-export const when = <a, b extends a = a>(
+export const when = <a, b extends a = never>(
   predicate: GuardFunction<a, b>
 ): GuardPattern<a, b> => ({
   '@ts-pattern/__patternKind': PatternType.Guard,
