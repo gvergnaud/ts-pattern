@@ -89,21 +89,18 @@ const builder = <a, b>(
 
   return {
     with(...args: any[]) {
-      const { patterns, predicates } = args.slice(0, -1).reduce<{
-        patterns: Pattern<a>[];
-        predicates: ((value: a) => unknown)[];
-      }>(
-        (acc, arg) => {
-          if (typeof arg === 'function') {
-            acc.predicates.push(arg);
-          } else {
-            acc.patterns.push(arg);
-          }
-          return acc;
-        },
-        { patterns: [], predicates: [] }
-      );
       const handler = args[args.length - 1];
+
+      const patterns: Pattern<a>[] = [];
+      const predicates: ((value: a) => unknown)[] = [];
+      for (let i = 0; i < args.length - 1; i++) {
+        const arg = args[i];
+        if (typeof arg === 'function') {
+          predicates.push(arg);
+        } else {
+          patterns.push(arg);
+        }
+      }
 
       const doesMatch = (value: a) =>
         Boolean(
@@ -148,7 +145,7 @@ const builder = <a, b>(
         value,
         cases.concat([
           {
-            test: (value: a) => true,
+            test: () => true,
             handler,
             select: (value) => value,
           },
@@ -163,8 +160,6 @@ const builder = <a, b>(
 
 const isObject = (value: unknown): value is Object =>
   Boolean(value && typeof value === 'object');
-
-const isArray = (value: unknown): value is any[] => Array.isArray(value);
 
 const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
   const pattern = x as GuardPattern<unknown>;
@@ -221,42 +216,41 @@ const matchPattern = <a, p extends Pattern<a>>(
   if (isNotPattern(pattern))
     return !matchPattern(pattern['@ts-pattern/__pattern'] as Pattern<a>, value);
   if (isListPattern(pattern))
-    return isArray(value)
+    return Array.isArray(value)
       ? value.every((v) => matchPattern(pattern[0], v))
       : false;
 
   if (typeof pattern !== typeof value) return false;
 
-  if (isArray(pattern)) {
-    return isArray(value) && pattern.length === value.length
-      ? pattern.every((subPattern, i) => matchPattern(subPattern, value[i]))
-      : false;
-  }
-
-  if (pattern instanceof Map) {
-    if (!(value instanceof Map)) return false;
-    return [...pattern.keys()].every((key) =>
-      matchPattern(pattern.get(key), value.get(key))
-    );
-  }
-
-  if (pattern instanceof Set) {
-    if (!(value instanceof Set)) return false;
-
-    const patternValues = [...pattern.values()];
-    const allValues = [...value.values()];
-    return patternValues.length === 0
-      ? allValues.length === 0
-      : patternValues.length === 1
-      ? patternValues.every((subPattern) =>
-          Object.values(__).includes(subPattern)
-            ? matchPattern([subPattern], allValues)
-            : value.has(subPattern)
-        )
-      : patternValues.every((subPattern) => value.has(subPattern));
-  }
-
   if (isObject(pattern)) {
+    if (Array.isArray(pattern)) {
+      return Array.isArray(value) && pattern.length === value.length
+        ? pattern.every((subPattern, i) => matchPattern(subPattern, value[i]))
+        : false;
+    }
+
+    if (pattern instanceof Map) {
+      if (!(value instanceof Map)) return false;
+      return [...pattern.keys()].every((key) =>
+        matchPattern(pattern.get(key), value.get(key))
+      );
+    }
+
+    if (pattern instanceof Set) {
+      if (!(value instanceof Set)) return false;
+
+      if (pattern.size === 0) return value.size === 0;
+
+      if (pattern.size === 1) {
+        const [subPattern] = [...pattern.values()];
+        return Object.values(__).includes(subPattern)
+          ? matchPattern([subPattern], [...value.values()])
+          : value.has(subPattern);
+      }
+
+      return [...pattern.values()].every((subPattern) => value.has(subPattern));
+    }
+
     if (!isObject(value)) return false;
 
     return Object.keys(pattern).every((k: string): boolean =>
@@ -264,6 +258,7 @@ const matchPattern = <a, p extends Pattern<a>>(
       matchPattern(pattern[k], value[k])
     );
   }
+
   return value === pattern;
 };
 
@@ -287,33 +282,35 @@ const selectPositionalWithPattern = <a, p extends Pattern<a>>(
 ): Option<unknown> => {
   if (isAnonymousSelectPattern(pattern)) return { kind: 'some', value };
 
-  if (isListPattern(pattern) && isArray(value))
-    return value
-      .map((v) => selectPositionalWithPattern(pattern[0], v))
-      .filter(
-        (selection): selection is { kind: 'some'; value: unknown } =>
-          selection.kind === 'some'
-      )
-      .reduce<Option<unknown[]>>((acc, selection) => {
-        return acc.kind === 'none'
-          ? { kind: 'some', value: [selection.value] }
-          : { kind: 'some', value: acc.value.concat([selection.value]) };
-      }, none);
+  if (isObject(pattern) && isObject(value)) {
+    if (Array.isArray(value)) {
+      if (isListPattern(pattern)) {
+        return value.reduce<Option<unknown[]>>((acc, item) => {
+          const selection = selectPositionalWithPattern(pattern[0], item);
+          return selection.kind === 'none'
+            ? acc
+            : acc.kind === 'none'
+            ? { kind: 'some', value: [selection.value] }
+            : { kind: 'some', value: acc.value.concat([selection.value]) };
+        }, none);
+      }
 
-  if (isArray(pattern) && isArray(value))
-    return pattern.length <= value.length
-      ? pattern.reduce<Option<unknown>>((acc, subPattern, i) => {
-          if (acc.kind === 'some') return acc;
-          return selectPositionalWithPattern(subPattern, value[i]);
-        }, none)
-      : none;
+      if (Array.isArray(pattern)) {
+        return pattern.length <= value.length
+          ? pattern.reduce<Option<unknown>>((acc, subPattern, i) => {
+              if (acc.kind === 'some') return acc;
+              return selectPositionalWithPattern(subPattern, value[i]);
+            }, none)
+          : none;
+      }
+    }
 
-  if (isObject(pattern) && isObject(value))
     return Object.keys(pattern).reduce<Option<unknown>>((acc, k: string) => {
       if (acc.kind === 'some') return acc;
       // @ts-ignore
       return selectPositionalWithPattern(pattern[k], value[k]);
     }, none);
+  }
 
   return none;
 };
@@ -325,32 +322,39 @@ const selectKwargsWithPattern = <a, p extends Pattern<a>>(
   if (isNamedSelectPattern(pattern))
     return { [pattern['@ts-pattern/__key']]: value };
 
-  if (isListPattern(pattern) && isArray(value))
-    return value
-      .map((v) => selectKwargsWithPattern(pattern[0], v))
-      .reduce<Record<string, unknown[]>>((acc, selections) => {
-        return Object.keys(selections).reduce((acc, key) => {
-          acc[key] = (acc[key] || []).concat([selections[key]]);
-          return acc;
-        }, acc);
-      }, {});
+  if (isObject(pattern) && isObject(value)) {
+    if (Array.isArray(value)) {
+      if (isListPattern(pattern)) {
+        return value.reduce<Record<string, unknown[]>>((acc, item) => {
+          const selections = selectKwargsWithPattern(pattern[0], item);
+          return Object.keys(selections).reduce((acc, key) => {
+            acc[key] = (acc[key] || []).concat([selections[key]]);
+            return acc;
+          }, acc);
+        }, {});
+      }
 
-  if (isArray(pattern) && isArray(value))
-    return pattern.length <= value.length
-      ? pattern.reduce(
-          (acc, subPattern, i) =>
-            Object.assign(acc, selectKwargsWithPattern(subPattern, value[i])),
-          {}
-        )
-      : {};
+      if (Array.isArray(pattern)) {
+        return pattern.length <= value.length
+          ? pattern.reduce(
+              (acc, subPattern, i) =>
+                Object.assign(
+                  acc,
+                  selectKwargsWithPattern(subPattern, value[i])
+                ),
+              {}
+            )
+          : {};
+      }
+    }
 
-  if (isObject(pattern) && isObject(value))
     return Object.keys(pattern).reduce(
       (acc, k: string) =>
         // @ts-ignore
         Object.assign(acc, selectKwargsWithPattern(pattern[k], value[k])),
       {}
     );
+  }
 
   return {};
 };

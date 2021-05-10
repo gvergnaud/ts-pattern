@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "strict": true,
+    "declaration": true,
+    "target": "es5",
     "downlevelIteration": true,
+    "strict": true,
     "outDir": "lib/"
   },
   "exclude": ["tests/", "lib/"]
