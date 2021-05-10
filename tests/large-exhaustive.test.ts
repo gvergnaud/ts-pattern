@@ -10,7 +10,7 @@ describe('large exhaustive', () => {
     a3: number; b3: number; c3: number; d3: number; e3: number; f3: number; g3: number; h3: number; i3: number; j3: number; k3: number; l3: number; m3: number; n3: number; o3: number; p3: number; q3: number; r3: number; s3: number; t3: number; u3: number; v3: number; w3: number; x3: number; y3: number; z3: number;
 };
 
-  describe('large objects', () => {
+  it('large objects', () => {
     expect(
       match<LargeObject | null>(null)
         .with(
@@ -36,7 +36,7 @@ describe('large exhaustive', () => {
     ).toBe('Null');
   });
 
-  describe('large tuple', () => {
+  it('large tuple', () => {
     expect(
       match<
         [LargeObject, LargeObject, LargeObject, LargeObject, LargeObject] | null
@@ -129,7 +129,7 @@ describe('large exhaustive', () => {
     } } } }
   };
 
-  describe('deep objects', () => {
+  it('deep objects', () => {
     expect(
       match<DeepObject | null>(null)
         .with(
