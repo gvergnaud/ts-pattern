@@ -215,14 +215,15 @@ const matchPattern = <a, p extends Pattern<a>>(
     return Boolean(pattern['@ts-pattern/__when'](value));
   if (isNotPattern(pattern))
     return !matchPattern(pattern['@ts-pattern/__pattern'] as Pattern<a>, value);
-  if (isListPattern(pattern))
-    return Array.isArray(value)
-      ? value.every((v) => matchPattern(pattern[0], v))
-      : false;
 
   if (typeof pattern !== typeof value) return false;
 
   if (isObject(pattern)) {
+    if (isListPattern(pattern))
+      return Array.isArray(value)
+        ? value.every((v) => matchPattern(pattern[0], v))
+        : false;
+
     if (Array.isArray(pattern)) {
       return Array.isArray(value) && pattern.length === value.length
         ? pattern.every((subPattern, i) => matchPattern(subPattern, value[i]))
