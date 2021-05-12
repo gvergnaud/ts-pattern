@@ -1,7 +1,7 @@
 import { ExtractPreciseValue } from '../src/types/ExtractPreciseValue';
 import { Expect, Equal, LeastUpperBound } from '../src/types/helpers';
 import { NotPattern } from '../src/types/Pattern';
-import { Option, State } from './utils';
+import { Event, Option, State } from './utils';
 
 describe('ExtractPreciseValue', () => {
   it('should correctly extract the matching value from the input and an inverted pattern', () => {

@@ -154,6 +154,67 @@ describe('select', () => {
     });
   });
 
+  it('should support nesting of several arrays', () => {
+    type Input = [{ name: string }, { post: { title: string }[] }][];
+    expect(
+      match<Input>([
+        [
+          { name: 'Gabriel' },
+          { post: [{ title: 'Hello World' }, { title: "what's up" }] },
+        ],
+        [{ name: 'Alice' }, { post: [{ title: 'Hola' }, { title: 'coucou' }] }],
+      ])
+        .with([], (x) => {
+          type t = Expect<Equal<typeof x, Input>>;
+          return 'empty';
+        })
+        .with(
+          [
+            [
+              { name: select('names') },
+              { post: [{ title: select('titles') }] },
+            ],
+          ],
+          ({ names, titles }) => {
+            type t = Expect<Equal<typeof names, string[]>>;
+            type t2 = Expect<Equal<typeof titles, string[][]>>;
+            return (
+              names.join(' and ') +
+              ' have written ' +
+              titles.map((t) => t.map((t) => `"${t}"`).join(', ')).join(', ')
+            );
+          }
+        )
+        .exhaustive()
+    ).toEqual(
+      `Gabriel and Alice have written "Hello World", "what's up", "Hola", "coucou"`
+    );
+  });
+
+  it('Anonymous selections should support nesting of several arrays', () => {
+    type Input = [{ name: string }, { post: { title: string }[] }][];
+    expect(
+      match<Input>([
+        [
+          { name: 'Gabriel' },
+          { post: [{ title: 'Hello World' }, { title: "what's up" }] },
+        ],
+        [{ name: 'Alice' }, { post: [{ title: 'Hola' }, { title: 'coucou' }] }],
+      ])
+        .with([], (x) => {
+          type t = Expect<Equal<typeof x, Input>>;
+          return 'empty';
+        })
+        .with([[__, { post: [{ title: select() }] }]], (titles) => {
+          type t1 = Expect<Equal<typeof titles, string[][]>>;
+          return titles
+            .map((t) => t.map((t) => `"${t}"`).join(', '))
+            .join(', ');
+        })
+        .exhaustive()
+    ).toEqual(`"Hello World", "what's up", "Hola", "coucou"`);
+  });
+
   it('should infer the selection to an error when using several anonymous selection', () => {
     match({ type: 'point', x: 2, y: 3 })
       .with({ type: 'point', x: select(), y: select() }, (x) => {
