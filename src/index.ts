@@ -209,57 +209,55 @@ const matchPattern = <a, p extends Pattern<a>>(
   value: a,
   select: (key: string, value: unknown) => void
 ): boolean => {
-  if (pattern === __) return true;
-
-  if (isNamedSelectPattern(pattern)) {
-    select(pattern['@ts-pattern/__key'], value);
-    return true;
-  }
-
-  if (isAnonymousSelectPattern(pattern)) {
-    select(ANONYMOUS_SELECT_KEY, value);
-    return true;
-  }
-
-  if (pattern === __.string) return typeof value === 'string';
-  if (pattern === __.boolean) return typeof value === 'boolean';
-  if (pattern === __.number) {
-    return typeof value === 'number' && !Number.isNaN(value);
-  }
-  if (isGuardPattern(pattern))
-    return Boolean(pattern['@ts-pattern/__when'](value));
-  if (isNotPattern(pattern))
-    return !matchPattern(
-      pattern['@ts-pattern/__pattern'] as Pattern<a>,
-      value,
-      select
-    );
-
-  if (typeof pattern !== typeof value) return false;
-
   if (isObject(pattern)) {
-    if (isListPattern(pattern)) {
-      if (!Array.isArray(value)) return false;
+    if (pattern === __) return true;
 
-      const selected: Record<string, unknown[]> = {};
-
-      const listSelect = (key: string, value: unknown) => {
-        selected[key] = (selected[key] || []).concat([value]);
-      };
-
-      const doesMatch = value.every((v) =>
-        matchPattern(pattern[0], v, listSelect)
-      );
-
-      if (doesMatch) {
-        Object.keys(selected).forEach((key) => select(key, selected[key]));
-      }
-
-      return doesMatch;
+    if (isNamedSelectPattern(pattern)) {
+      select(pattern['@ts-pattern/__key'], value);
+      return true;
     }
 
+    if (isAnonymousSelectPattern(pattern)) {
+      select(ANONYMOUS_SELECT_KEY, value);
+      return true;
+    }
+
+    if (isGuardPattern(pattern))
+      return Boolean(pattern['@ts-pattern/__when'](value));
+
+    if (isNotPattern(pattern))
+      return !matchPattern(
+        pattern['@ts-pattern/__pattern'] as Pattern<a>,
+        value,
+        select
+      );
+
+    if (!isObject(value)) return false;
+
     if (Array.isArray(pattern)) {
-      return Array.isArray(value) && pattern.length === value.length
+      if (!Array.isArray(value)) return false;
+
+      // List pattern
+      if (pattern.length === 1) {
+        const selected: Record<string, unknown[]> = {};
+
+        const listSelect = (key: string, value: unknown) => {
+          selected[key] = (selected[key] || []).concat([value]);
+        };
+
+        const doesMatch = value.every((v) =>
+          matchPattern(pattern[0], v, listSelect)
+        );
+
+        if (doesMatch) {
+          Object.keys(selected).forEach((key) => select(key, selected[key]));
+        }
+
+        return doesMatch;
+      }
+
+      // Tuple pattern
+      return pattern.length === value.length
         ? pattern.every((subPattern, i) =>
             matchPattern(subPattern, value[i], select)
           )
@@ -288,8 +286,6 @@ const matchPattern = <a, p extends Pattern<a>>(
       return [...pattern.values()].every((subPattern) => value.has(subPattern));
     }
 
-    if (!isObject(value)) return false;
-
     return Object.keys(pattern).every((k: string): boolean =>
       matchPattern(
         // @ts-ignore
@@ -299,6 +295,14 @@ const matchPattern = <a, p extends Pattern<a>>(
         select
       )
     );
+  }
+
+  if (typeof pattern === 'string') {
+    if (pattern === __.string) return typeof value === 'string';
+    if (pattern === __.boolean) return typeof value === 'boolean';
+    if (pattern === __.number) {
+      return typeof value === 'number' && !Number.isNaN(value);
+    }
   }
 
   return value === pattern;
