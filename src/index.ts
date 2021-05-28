@@ -157,7 +157,7 @@ const builder = <a, b>(
             select: (value) => value,
           },
         ])
-      ).exhaustive(),
+      ).run(),
 
     exhaustive: () => run(),
 
@@ -195,10 +195,6 @@ const isAnonymousSelectPattern = (x: unknown): x is AnonymousSelectPattern => {
     pattern &&
     pattern['@ts-pattern/__patternKind'] === PatternType.AnonymousSelect
   );
-};
-
-const isListPattern = (x: unknown): x is [Pattern<unknown>] => {
-  return Array.isArray(x) && x.length === 1;
 };
 
 // tells us if the value matches a given pattern.
