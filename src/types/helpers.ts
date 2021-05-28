@@ -79,7 +79,7 @@ export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <
 
 export type Expect<T extends true> = T;
 
-export type IsAny<a> = [a] extends [never] ? false : Equal<a, any>;
+export type IsAny<T> = 0 extends 1 & T ? true : false;
 
 export type Length<it extends any[]> = it['length'];
 
