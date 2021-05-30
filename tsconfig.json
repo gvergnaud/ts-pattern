@@ -7,5 +7,5 @@
     "strict": true,
     "outDir": "lib/"
   },
-  "exclude": ["tests/", "lib/"]
+  "exclude": ["tests/", "lib/", "deno_lib/"]
 }

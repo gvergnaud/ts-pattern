@@ -6,7 +6,8 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "rimraf lib && tsc",
-    "prepare": "npm run test && npm run build",
+    "build:deno": "rimraf deno_lib && denoify",
+    "prepare": "npm run test && npm run build && npm run build:deno",
     "test:values": "jest",
     "test:types": "tsc --project tests/tsconfig.json",
     "test": "npm run test:types && npm run test:values",
@@ -37,6 +38,7 @@
   "homepage": "https://github.com/gvergnaud/ts-pattern#readme",
   "devDependencies": {
     "@types/jest": "^26.0.15",
+    "denoify": "^0.7.2",
     "jest": "^26.6.3",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",

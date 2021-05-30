@@ -6,11 +6,11 @@ import type {
   NotPattern,
   GuardValue,
   GuardFunction,
-} from './types/Pattern';
+} from './types/Pattern.ts';
 
-import type { Unset, PickReturnValue, Match } from './types/Match';
+import type { Unset, PickReturnValue, Match } from './types/Match.ts';
 
-import { __, PatternType } from './PatternType';
+import { __, PatternType } from './PatternType.ts';
 
 export const when = <a, b extends a = never>(
   predicate: GuardFunction<a, b>
