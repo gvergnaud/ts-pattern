@@ -121,7 +121,10 @@ type BuiltInObjects =
   | { readonly [Symbol.toStringTag]: string };
 
 export type IsPlainObject<o> = o extends object
-  ? o extends BuiltInObjects
+  ? // to excluded branded string types,
+    // like `string & { __brand: "id" }`
+    // and built-in objects
+    o extends string | BuiltInObjects
     ? false
     : true
   : false;

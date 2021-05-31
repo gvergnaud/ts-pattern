@@ -222,4 +222,42 @@ describe('ExtractPreciseValue', () => {
       ];
     });
   });
+
+  describe('Branded strings', () => {
+    it('Type narrowing should correctly work on branded strings', () => {
+      // Branded strings is a commonly used way of implementing
+      // nominal types in typescript.
+
+      type BrandedId = string & { __brand: 'brandId' };
+
+      type FooBar =
+        | { type: 'foo'; id: BrandedId; value: string }
+        | { type: 'bar' };
+
+      type cases = [
+        Expect<
+          Equal<
+            ExtractPreciseValue<
+              {
+                fooBar: FooBar;
+                fooBarId: BrandedId;
+              },
+              {
+                fooBar: { type: 'foo' };
+                fooBarId: BrandedId;
+              }
+            >,
+            {
+              fooBar: {
+                type: 'foo';
+                id: BrandedId;
+                value: string;
+              };
+              fooBarId: BrandedId;
+            }
+          >
+        >
+      ];
+    });
+  });
 });
