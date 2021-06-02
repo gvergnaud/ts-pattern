@@ -3,8 +3,8 @@ import { IsMatching } from '../src/types/IsMatching';
 import { Option } from './utils';
 
 describe('IsMatching', () => {
-  it('should return true if the pattern matches the input,  false otherwise', () => {
-    describe('Literals', () => {
+  describe('should return true if the pattern matches the input,  false otherwise', () => {
+    it('Literals', () => {
       type cases = [
         Expect<Equal<IsMatching<'c' | 'd', 'c'>, true>>,
         Expect<Equal<IsMatching<'c' | 'd', 'a'>, false>>,
@@ -22,7 +22,7 @@ describe('IsMatching', () => {
       ];
     });
 
-    describe('Object', () => {
+    it('Object', () => {
       type cases = [
         Expect<
           Equal<
@@ -166,7 +166,7 @@ describe('IsMatching', () => {
       ];
     });
 
-    describe('Tuples', () => {
+    it('Tuples', () => {
       type cases = [
         Expect<Equal<IsMatching<['a', 'c' | 'd'], ['a', 'd']>, true>>,
         Expect<Equal<IsMatching<['a', 'c' | 'd'], ['a', unknown]>, true>>,
@@ -190,7 +190,7 @@ describe('IsMatching', () => {
       ];
     });
 
-    describe('Lists', () => {
+    it('Lists', () => {
       type cases = [
         Expect<Equal<IsMatching<('a' | 'b')[], 'a'[]>, true>>,
         Expect<Equal<IsMatching<('a' | 'b')[], 'b'[]>, true>>,
@@ -200,7 +200,7 @@ describe('IsMatching', () => {
       ];
     });
 
-    describe('Sets', () => {
+    it('Sets', () => {
       type cases = [
         Expect<Equal<IsMatching<Set<'a' | 'b'>, Set<'a'>>, true>>,
         Expect<Equal<IsMatching<Set<'a' | 'b'>, Set<'b'>>, true>>,
@@ -214,7 +214,7 @@ describe('IsMatching', () => {
       ];
     });
 
-    describe('Maps', () => {
+    it('Maps', () => {
       type cases = [
         Expect<
           Equal<IsMatching<Map<string, 'a' | 'b'>, Map<string, 'a'>>, true>

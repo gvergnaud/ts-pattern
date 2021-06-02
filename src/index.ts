@@ -63,8 +63,6 @@ export const match = <a, b = Unset>(value: a): Match<a, b> =>
  * ### builder
  * This is the implementation of our pattern matching, using the
  * builder pattern.
- * This builder pattern is neat because we can have complexe type checking
- * for each of the methods adding new behavior to our pattern matching.
  */
 const builder = <a, b>(
   value: a,
@@ -160,7 +158,7 @@ const builder = <a, b>(
             select: (value) => value,
           },
         ])
-      ).exhaustive(),
+      ).run(),
 
     exhaustive: () => run(),
 
@@ -198,10 +196,6 @@ const isAnonymousSelectPattern = (x: unknown): x is AnonymousSelectPattern => {
     pattern &&
     pattern['@ts-pattern/__patternKind'] === PatternType.AnonymousSelect
   );
-};
-
-const isListPattern = (x: unknown): x is [Pattern<unknown>] => {
-  return Array.isArray(x) && x.length === 1;
 };
 
 // tells us if the value matches a given pattern.
