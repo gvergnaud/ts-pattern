@@ -10,21 +10,14 @@ export type GuardValue<F> = F extends (value: any) => value is infer b
   ? a
   : never;
 
-export type GuardFunction<a, b extends a> =
-  | ((value: a) => value is b)
-  | ((value: a) => boolean);
+export type GuardFunction<a, b extends a> = (value: a) => value is b;
+
+export type Predicate<a> = (value: a) => boolean;
 
 /**
  * Using @deprecated here to dissuade people from using them inside there patterns.
  * Theses properties should be used by ts-pattern's internals only.
  */
-
-export type GuardPattern<a, b extends a = never> = {
-  /** @deprecated This property should only be used by ts-pattern's internals. */
-  '@ts-pattern/__patternKind': PatternType.Guard;
-  /** @deprecated This property should only be used by ts-pattern's internals. */
-  '@ts-pattern/__when': GuardFunction<a, b>;
-};
 
 export type NotPattern<a> = {
   /** @deprecated This property should only be used by ts-pattern's internals. */
@@ -45,14 +38,6 @@ export type NamedSelectPattern<k extends string> = {
   '@ts-pattern/__key': k;
 };
 
-type WildCardPattern<a> = a extends number
-  ? typeof __.number
-  : a extends string
-  ? typeof __.string
-  : a extends boolean
-  ? typeof __.boolean
-  : never;
-
 /**
  * ### Pattern
  * Patterns can be any (nested) javascript value.
@@ -62,9 +47,9 @@ export type Pattern<a> =
   | typeof __
   | AnonymousSelectPattern
   | NamedSelectPattern<string>
-  | GuardPattern<a, a>
+  | GuardFunction<a, a>
+  | Predicate<a>
   | NotPattern<a | any>
-  | WildCardPattern<a>
   | (a extends Primitives
       ? a
       : a extends readonly (infer i)[]

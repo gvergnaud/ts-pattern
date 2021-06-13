@@ -3,8 +3,9 @@ import { IsPlainObject, Primitives, IsLiteral, Or } from './helpers';
 import type {
   NamedSelectPattern,
   AnonymousSelectPattern,
-  GuardPattern,
+  GuardFunction,
   NotPattern,
+  Predicate,
 } from './Pattern';
 
 /**
@@ -12,18 +13,17 @@ import type {
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
-export type InvertPattern<p> = p extends typeof __.number
-  ? number
-  : p extends typeof __.string
-  ? string
-  : p extends typeof __.boolean
-  ? boolean
-  : p extends NamedSelectPattern<any> | AnonymousSelectPattern | typeof __
+export type InvertPattern<p> = p extends
+  | NamedSelectPattern<any>
+  | AnonymousSelectPattern
+  | typeof __
   ? unknown
-  : p extends GuardPattern<infer p1, infer p2>
+  : p extends GuardFunction<infer p1, infer p2>
   ? [p2] extends [never]
     ? p1
     : p2
+  : p extends Predicate<infer p1>
+  ? p1
   : p extends NotPattern<infer a1>
   ? NotPattern<InvertPattern<a1>>
   : p extends Primitives
@@ -60,18 +60,17 @@ export type InvertPattern<p> = p extends typeof __.number
 /**
  * ### InvertPatternForExclude
  */
-export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
-  ? Exclude<i, p1>
-  : p extends typeof __.number
-  ? number
-  : p extends typeof __.string
-  ? string
-  : p extends typeof __.boolean
-  ? boolean
-  : p extends NamedSelectPattern<any> | AnonymousSelectPattern | typeof __
+export type InvertPatternForExclude<p, i> = p extends
+  | NamedSelectPattern<any>
+  | AnonymousSelectPattern
+  | typeof __
   ? unknown
-  : p extends GuardPattern<any, infer p1>
+  : p extends NotPattern<infer p1>
+  ? Exclude<i, p1>
+  : p extends GuardFunction<any, infer p1>
   ? p1
+  : p extends Predicate<any>
+  ? never
   : p extends Primitives
   ? IsLiteral<p> extends true
     ? p

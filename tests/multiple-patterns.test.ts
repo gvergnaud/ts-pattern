@@ -1,4 +1,4 @@
-import { match, __ } from '../src';
+import { match, __, isNumber, isString, isBoolean } from '../src';
 import { Option } from './utils';
 import { Expect, Equal } from '../src/types/helpers';
 
@@ -85,16 +85,14 @@ describe('Multiple patterns', () => {
 
   it("no patterns shouldn't typecheck", () => {
     const input = { kind: 'none' } as Option<number>;
-    match(input)
-      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
-      .with(() => false);
+    // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
+    match(input).with(() => false);
 
-    match(input)
-      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'Pattern<Option<number>>'
-      .with(() => false);
+    // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'Pattern<Option<number>>'
+    match(input).with(() => false);
 
+    // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
     match(input)
-      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
       .with(() => false)
       .with(
         { kind: 'some', value: 2 as const },
@@ -128,12 +126,12 @@ describe('Multiple patterns', () => {
 
   it('should work with objects', () => {
     match<{ a: string; b: number } | [1, 2]>({ a: '', b: 2 })
-      .with({ a: __.string }, (x) => 'obj')
+      .with({ a: isString }, (x) => 'obj')
       .with([1, 2], (x) => 'tuple')
       .exhaustive();
 
     match<{ a: string; b: number } | [1, 2]>({ a: '', b: 2 })
-      .with({ a: __.string }, [1, 2], (x) => 'obj')
+      .with({ a: isString }, [1, 2], (x) => 'obj')
       .exhaustive();
   });
 
@@ -155,15 +153,15 @@ describe('Multiple patterns', () => {
           type t = Expect<Equal<typeof x, null | undefined>>;
           return 'Nullable';
         })
-        .with(__.boolean, __.number, __.string, (x) => {
+        .with(isBoolean, isNumber, isString, (x) => {
           type t = Expect<Equal<typeof x, boolean | number | string>>;
           return 'primitive';
         })
         .with(
-          { a: __.string },
+          { a: isString },
           [true, 2],
           new Map([['key', __]]),
-          new Set([__.number]),
+          new Set([isNumber]),
           (x) => {
             type t = Expect<
               Equal<
@@ -182,11 +180,11 @@ describe('Multiple patterns', () => {
           type t = Expect<Equal<typeof x, [false, 2]>>;
           return '[false, 2]';
         })
-        .with([false, __.number] as const, (x) => {
+        .with([false, isNumber] as const, (x) => {
           type t = Expect<Equal<typeof x, [false, number]>>;
           return '[false, number]';
         })
-        .with([true, __.number] as const, (x) => {
+        .with([true, isNumber] as const, (x) => {
           type t = Expect<Equal<typeof x, [true, number]>>;
           return '[true, number]';
         })
@@ -195,17 +193,17 @@ describe('Multiple patterns', () => {
     const exhaustive = (input: Input) =>
       match<Input>(input)
         .with(null, undefined, (x) => 'Nullable')
-        .with(__.boolean, __.number, __.string, (x) => 'primitive')
+        .with(isBoolean, isNumber, isString, (x) => 'primitive')
         .with(
-          { a: __.string },
+          { a: isString },
           [true, 2],
           new Map([['key', __]]),
-          new Set([__.number]),
+          new Set([isNumber]),
           (x) => 'Object'
         )
         .with([false, 2], (x) => '[false, 2]')
-        .with([false, __.number], (x) => '[false, number]')
-        .with([true, __.number], (x) => '[true, number]')
+        .with([false, isNumber], (x) => '[false, number]')
+        .with([true, isNumber], (x) => '[true, number]')
         .exhaustive();
 
     const cases: { input: Input; expected: string }[] = [

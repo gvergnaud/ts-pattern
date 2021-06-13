@@ -20,7 +20,10 @@ describe('Nesting', () => {
         },
       })
         .with(
-          { type: 'post', content: { video: { id: 2, content: { src: '' } } } },
+          {
+            type: 'post',
+            content: { video: { id: 2, content: { src: '' as string } } },
+          },
           (x) => {
             type t = Expect<Equal<typeof x, Post>>;
             return 1;

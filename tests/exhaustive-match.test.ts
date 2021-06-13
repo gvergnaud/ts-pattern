@@ -1,4 +1,13 @@
-import { match, not, Pattern, select, when, __ } from '../src';
+import {
+  isNumber,
+  isString,
+  isBoolean,
+  match,
+  not,
+  Pattern,
+  select,
+  __,
+} from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import { Option, some, none, BigUnion, State, Event } from './utils';
 
@@ -243,7 +252,7 @@ describe('exhaustive()', () => {
 
       match<Option<number>>({ kind: 'some', value: 3 })
         .with({ kind: 'some', value: 3 }, ({ value }): number => value)
-        .with({ kind: 'some', value: __.number }, ({ value }): number => value)
+        .with({ kind: 'some', value: isNumber }, ({ value }): number => value)
         .with({ kind: 'none' }, () => 0)
         .exhaustive();
     });
@@ -330,7 +339,7 @@ describe('exhaustive()', () => {
       match<number>(2)
         .with(2, () => 'two')
         .with(3, () => 'three')
-        .with(__.number, () => 'something else')
+        .with(isNumber, () => 'something else')
         .exhaustive();
 
       match<string>('Hello')
@@ -388,17 +397,17 @@ describe('exhaustive()', () => {
 
       match(input)
         .with({ type: 'a' }, (x) => x.items)
-        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .with({ type: 'b', items: [{ data: isString }] }, (x) => [])
         .exhaustive();
 
       match(input)
         .with({ type: 'a', items: [__] }, (x) => x.items)
-        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .with({ type: 'b', items: [{ data: isString }] }, (x) => [])
         .exhaustive();
 
       match<Input>(input)
         .with({ type: 'a', items: [{ some: __ }] }, (x) => x.items)
-        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .with({ type: 'b', items: [{ data: isString }] }, (x) => [])
         // @ts-expect-error
         .exhaustive();
     });
@@ -425,13 +434,13 @@ describe('exhaustive()', () => {
       const input = new Set(['']) as Input;
 
       match(input)
-        .with(new Set([__.string]), (x) => x)
+        .with(new Set([isString]), (x) => x)
         // @ts-expect-error
         .exhaustive();
 
       match(input)
-        .with(new Set([__.string]), (x) => x)
-        .with(new Set([__.number]), (x) => new Set([]))
+        .with(new Set([isString]), (x) => x)
+        .with(new Set([isNumber]), (x) => new Set([]))
         .exhaustive();
     });
 
@@ -441,15 +450,15 @@ describe('exhaustive()', () => {
 
       expect(
         match(input)
-          .with(new Set([__.string]), (x) => x)
+          .with(new Set([isString]), (x) => x)
           // @ts-expect-error
           .exhaustive()
       ).toEqual(input);
 
       expect(
         match(input)
-          .with(new Set([__.string]), (x) => 1)
-          .with(new Set([__.number]), (x) => 2)
+          .with(new Set([isString]), (x) => 1)
+          .with(new Set([isNumber]), (x) => 2)
           .exhaustive()
       ).toEqual(1);
     });
@@ -460,7 +469,7 @@ describe('exhaustive()', () => {
 
       expect(
         match(input)
-          .with(new Map([['hello' as const, __.number]]), (x) => x)
+          .with(new Map([['hello' as const, isNumber]]), (x) => x)
           // @ts-expect-error
           .exhaustive()
       ).toEqual(input);
@@ -605,15 +614,15 @@ describe('exhaustive()', () => {
 
     it('should correctly exclude cases if when pattern contains a type guard', () => {
       match<{ x: 1 | 2 | 3 }>({ x: 2 })
-        .with({ x: when((x): x is 1 => x === 1) }, (x) => {
+        .with({ x: (x): x is 1 => x === 1 }, (x) => {
           type t = Expect<Equal<typeof x, { x: 1 }>>;
           return '';
         })
-        .with({ x: when((x): x is 2 => x === 2) }, (x) => {
+        .with({ x: (x): x is 2 => x === 2 }, (x) => {
           type t = Expect<Equal<typeof x, { x: 2 }>>;
           return '';
         })
-        .with({ x: when((x): x is 3 => x === 3) }, (x) => {
+        .with({ x: (x): x is 3 => x === 3 }, (x) => {
           type t = Expect<Equal<typeof x, { x: 3 }>>;
           return '';
         })
@@ -710,11 +719,11 @@ describe('exhaustive()', () => {
         },
         ({ text, authorName }) => `${text} from ${authorName}`
       )
-      .with({ type: 'video', duration: when((x) => x > 10) }, () => '')
+      .with({ type: 'video', duration: (x) => x > 10 }, () => '')
       .with(
         {
           type: 'video',
-          duration: when(isNumber),
+          duration: isNumber,
         },
         () => ''
       )
@@ -729,7 +738,7 @@ describe('exhaustive()', () => {
         ({ author, title }) => ''
       )
       .with({ type: 'picture' }, () => '')
-      .with({ type: 'movie', duration: when(isNumber) }, () => '')
+      .with({ type: 'movie', duration: isNumber }, () => '')
       .exhaustive();
   });
 

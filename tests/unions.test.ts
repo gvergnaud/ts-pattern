@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __ } from '../src';
+import { isString, match, __ } from '../src';
 import { Option } from './utils';
 
 describe('Unions (a | b)', () => {
@@ -46,7 +46,7 @@ describe('Unions (a | b)', () => {
         type t = Expect<Equal<typeof x, Post>>;
         return 1;
       })
-      .with({ type: 'video', content: { src: __.string } }, (x) => {
+      .with({ type: 'video', content: { src: isString } }, (x) => {
         type t = Expect<Equal<typeof x, Video>>;
         return 2;
       })

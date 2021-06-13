@@ -1,11 +1,11 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, not } from '../src';
+import { match, __, not, isString, isBoolean, isNumber } from '../src';
 import { Blog } from './utils';
 
 describe('wildcards', () => {
   it('should match String wildcards', () => {
     const res = match<string | number | boolean>('')
-      .with(__.string, (x) => {
+      .with(isString, (x) => {
         type t = Expect<Equal<typeof x, string>>;
         return true;
       })
@@ -16,7 +16,7 @@ describe('wildcards', () => {
 
   it('should match Number wildcards', () => {
     const res = match<string | number | boolean>(2)
-      .with(__.number, (x) => {
+      .with(isNumber, (x) => {
         type t = Expect<Equal<typeof x, number>>;
         return true;
       })
@@ -27,7 +27,7 @@ describe('wildcards', () => {
 
   it('should match Boolean wildcards', () => {
     const res = match<string | number | boolean>(true)
-      .with(__.boolean, (x) => {
+      .with(isBoolean, (x) => {
         type t = Expect<Equal<typeof x, boolean>>;
         return true;
       })
@@ -44,11 +44,11 @@ describe('wildcards', () => {
     }; /* API logic. */
 
     const res = match<any, Blog | Error>(httpResult)
-      .with({ id: __.number, title: __.string }, (r) => ({
+      .with({ id: isNumber, title: isString }, (r) => ({
         id: r.id,
         title: r.title,
       }))
-      .with({ errorMessage: __.string }, (r) => new Error(r.errorMessage))
+      .with({ errorMessage: isString }, (r) => new Error(r.errorMessage))
       .otherwise(() => new Error('Client parse error'));
 
     expect(res).toEqual({
@@ -59,7 +59,7 @@ describe('wildcards', () => {
 
   it('should infer correctly negated String wildcards', () => {
     const res = match<string | number | boolean>('')
-      .with(not(__.string), (x) => {
+      .with(not(isString), (x) => {
         type t = Expect<Equal<typeof x, number | boolean>>;
         return true;
       })
@@ -70,7 +70,7 @@ describe('wildcards', () => {
 
   it('should infer correctly negated Number wildcards', () => {
     const res = match<string | number | boolean>(2)
-      .with(not(__.number), (x) => {
+      .with(not(isNumber), (x) => {
         type t = Expect<Equal<typeof x, string | boolean>>;
         return true;
       })
@@ -81,7 +81,7 @@ describe('wildcards', () => {
 
   it('should infer correctly negated Boolean wildcards', () => {
     const res = match<string | number | boolean>(true)
-      .with(not(__.boolean), (x) => {
+      .with(not(isBoolean), (x) => {
         type t = Expect<Equal<typeof x, string | number>>;
         return true;
       })

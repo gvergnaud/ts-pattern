@@ -2,7 +2,6 @@ import type {
   Pattern,
   AnonymousSelectPattern,
   NamedSelectPattern,
-  GuardPattern,
   NotPattern,
   GuardValue,
   GuardFunction,
@@ -11,13 +10,6 @@ import type {
 import type { Unset, PickReturnValue, Match } from './types/Match';
 
 import { __, PatternType } from './PatternType';
-
-export const when = <a, b extends a = never>(
-  predicate: GuardFunction<a, b>
-): GuardPattern<a, b> => ({
-  '@ts-pattern/__patternKind': PatternType.Guard,
-  '@ts-pattern/__when': predicate,
-});
 
 export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
   '@ts-pattern/__patternKind': PatternType.Not,
@@ -168,13 +160,8 @@ const builder = <a, b>(
 const isObject = (value: unknown): value is Object =>
   Boolean(value && typeof value === 'object');
 
-const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
-  const pattern = x as GuardPattern<unknown>;
-  return (
-    pattern &&
-    pattern['@ts-pattern/__patternKind'] === PatternType.Guard &&
-    typeof pattern['@ts-pattern/__when'] === 'function'
-  );
+const isGuardFunction = (x: unknown): x is GuardFunction<unknown, unknown> => {
+  return Boolean(x && typeof x === 'function');
 };
 
 const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
@@ -216,8 +203,7 @@ const matchPattern = <a, p extends Pattern<a>>(
       return true;
     }
 
-    if (isGuardPattern(pattern))
-      return Boolean(pattern['@ts-pattern/__when'](value));
+    if (isGuardFunction(pattern)) return pattern(value);
 
     if (isNotPattern(pattern))
       return !matchPattern(
@@ -291,13 +277,17 @@ const matchPattern = <a, p extends Pattern<a>>(
     );
   }
 
-  if (typeof pattern === 'string') {
-    if (pattern === __.string) return typeof value === 'string';
-    if (pattern === __.boolean) return typeof value === 'boolean';
-    if (pattern === __.number) {
-      return typeof value === 'number' && !Number.isNaN(value);
-    }
-  }
-
   return value === pattern;
 };
+
+export const isNumber = (value: unknown): value is number =>
+  typeof value === 'number' && !Number.isNaN(value);
+
+export const isString = (value: unknown): value is string =>
+  typeof value === 'string';
+
+export const isBoolean = (value: unknown): value is boolean =>
+  typeof value === 'boolean';
+
+export const nullable = (x: unknown): x is null | undefined =>
+  x === null || x === undefined;

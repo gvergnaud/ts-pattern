@@ -1,4 +1,4 @@
-import type { Pattern, GuardValue, GuardPattern } from './Pattern';
+import type { Pattern, GuardValue } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
@@ -42,23 +42,6 @@ export type Match<
   ): Match<i, o, patternValueTuples | [p, value], Union<inferredOutput, c>>;
 
   with<
-    p1 extends Pattern<i>,
-    p2 extends Pattern<i>,
-    c,
-    p = p1 | p2,
-    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
-  >(
-    pattern1: p1,
-    pattern2: p2,
-    handler: (value: value) => PickReturnValue<o, c>
-  ): Match<
-    i,
-    o,
-    patternValueTuples | (p extends any ? [p, value] : never),
-    Union<inferredOutput, c>
-  >;
-
-  with<
     pat extends Pattern<i>,
     pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
     c,
@@ -74,9 +57,7 @@ export type Match<
     i,
     o,
     | patternValueTuples
-    | (pred extends (value: any) => value is infer narrowed
-        ? [GuardPattern<unknown, narrowed>, value]
-        : never),
+    | (pred extends (value: any) => value is any ? [pred, value] : never),
     Union<inferredOutput, c>
   >;
 
@@ -107,9 +88,7 @@ export type Match<
     i,
     o,
     | patternValueTuples
-    | (pred extends (value: any) => value is infer narrowed
-        ? [GuardPattern<unknown, narrowed>, value]
-        : never),
+    | (pred extends (value: any) => value is any ? [pred, value] : never),
     Union<inferredOutput, c>
   >;
 

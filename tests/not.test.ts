@@ -1,16 +1,16 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, not, when } from '../src';
+import { match, __, not, isNumber, isString, nullable } from '../src';
 
 describe('not', () => {
   describe('pattern containing a not clause', () => {
     it('should work at the top level', () => {
       const get = (x: unknown): string =>
         match(x)
-          .with(not(__.number), (x) => {
+          .with(not(isNumber), (x) => {
             type t = Expect<Equal<typeof x, unknown>>;
             return 'not a number';
           })
-          .with(not(__.string), (x) => {
+          .with(not(isString), (x) => {
             type t = Expect<Equal<typeof x, unknown>>;
             return 'not a string';
           })
@@ -24,7 +24,7 @@ describe('not', () => {
       type DS = { x: string | number; y: string | number };
       const get = (x: DS) =>
         match(x)
-          .with({ y: __.number, x: not(__.string) }, (x) => {
+          .with({ y: isNumber, x: not(isString) }, (x) => {
             type t = Expect<Equal<typeof x, { x: number; y: number }>>;
             return 'yes';
           })
@@ -79,10 +79,6 @@ describe('not', () => {
     });
 
     it('should correctly invert the type of a GuardPattern', () => {
-      const nullable = when(
-        (x: unknown): x is null | undefined => x === null || x === undefined
-      );
-
       expect(
         match<{ str: string } | null>({ str: 'hello' })
           .with(not(nullable), ({ str }) => str)
@@ -90,7 +86,7 @@ describe('not', () => {
           .exhaustive()
       ).toBe('hello');
 
-      const untypedNullable = when((x) => x === null || x === undefined);
+      const untypedNullable = (x: unknown) => x === null || x === undefined;
 
       expect(
         match<{ str: string }>({ str: 'hello' })

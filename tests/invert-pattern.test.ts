@@ -1,16 +1,23 @@
 import { Equal, Expect } from '../src/types/helpers';
 import { InvertPatternForExclude } from '../src/types/InvertPattern';
-import { GuardPattern } from '../src/types/Pattern';
+import { GuardFunction } from '../src/types/Pattern';
 import { PatternType } from '../src/PatternType';
 
 describe('InvertPatternForExclude', () => {
   it('should correctly invert type guards', () => {
+    type x = InvertPatternForExclude<
+      {
+        x: GuardFunction<1 | 2 | 3, 3>;
+      },
+      { x: 1 | 2 | 3 }
+    >;
+
     type cases = [
       Expect<
         Equal<
           InvertPatternForExclude<
             {
-              x: GuardPattern<1 | 2 | 3, 3>;
+              x: GuardFunction<1 | 2 | 3, 3>;
             },
             { x: 1 | 2 | 3 }
           >,
@@ -21,7 +28,7 @@ describe('InvertPatternForExclude', () => {
         Equal<
           InvertPatternForExclude<
             {
-              x: GuardPattern<3, 3>;
+              x: GuardFunction<3, 3>;
             },
             { x: 1 } | { x: 2 } | { x: 3 }
           >,
@@ -33,7 +40,7 @@ describe('InvertPatternForExclude', () => {
 
   it('should work with objects', () => {
     type t = InvertPatternForExclude<
-      { a: PatternType.String },
+      { a: GuardFunction<any, string> },
       { a: string; b: number } | [1, 2]
     >;
 
@@ -41,7 +48,7 @@ describe('InvertPatternForExclude', () => {
       Expect<
         Equal<
           InvertPatternForExclude<
-            { a: PatternType.String },
+            { a: GuardFunction<any, string> },
             { a: string; b: number } | [1, 2]
           >,
           { a: string }

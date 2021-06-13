@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, when, select } from '../src';
+import { match, __, select, isString, isBoolean, isNumber } from '../src';
 import { Option, State } from './utils';
 
 describe('when', () => {
@@ -17,7 +17,7 @@ describe('when', () => {
       expect(
         match(value)
           .with(
-            when((x: number) => x > 10 && x < 50),
+            (x: number) => x > 10 && x < 50,
             () => true
           )
           .otherwise(() => false)
@@ -29,7 +29,7 @@ describe('when', () => {
     let n = 20;
     const res = match(n)
       .with(
-        when((x): x is 13 => x === 13),
+        (x): x is 13 => x === 13,
         (x) => {
           type t = Expect<Equal<typeof x, 13>>;
           return true;
@@ -132,12 +132,12 @@ describe('when', () => {
             }
           )
           .with(
-            __.string,
+            isString,
             (x) => x.length > 2 && x.length < 10,
             () => '2 < x.length < 10'
           )
           .with(
-            __.number,
+            isNumber,
             (x) => x > 2 && x < 10,
             () => '2 < x < 10'
           )
@@ -149,7 +149,7 @@ describe('when', () => {
               return 'x: number';
             }
           )
-          .with(__.string, () => 'x: string')
+          .with(isString, () => 'x: string')
           .exhaustive();
 
         expect(res).toEqual(expected);
@@ -187,7 +187,7 @@ describe('when', () => {
         .with(
           {
             type: 'some',
-            value: when((value) => value % 3 === 0),
+            value: (value) => value % 3 === 0,
           },
           () => 'fizz'
         )

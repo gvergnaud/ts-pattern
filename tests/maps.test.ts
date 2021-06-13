@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __ } from '../src';
+import { match, __, isString } from '../src';
 
 describe('Map', () => {
   it('should match Map patterns', () => {
@@ -8,7 +8,7 @@ describe('Map', () => {
       ['angégé', { name: 'angéline' }],
     ]);
 
-    const userPattern = { name: __.string };
+    const userPattern = { name: isString };
 
     const res = match<Map<string, { name: string }>>(usersMap)
       .with(
