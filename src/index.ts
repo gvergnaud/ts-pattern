@@ -7,9 +7,15 @@ import type {
   GuardFunction,
 } from './types/Pattern';
 
-import type { Unset, PickReturnValue, Match } from './types/Match';
+import type {
+  Unset,
+  PickReturnValue,
+  Match,
+  MatchedValue,
+} from './types/Match';
 
 import { __, PatternType } from './PatternType';
+import { InvertPattern } from './types/InvertPattern';
 
 export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
   '@ts-pattern/__patternKind': PatternType.Not,
@@ -291,3 +297,15 @@ export const isBoolean = (value: unknown): value is boolean =>
 
 export const nullable = (x: unknown): x is null | undefined =>
   x === null || x === undefined;
+
+type AnyConstructor = new (...args: any[]) => any;
+
+export function instanceOf<T extends AnyConstructor>(classConstructor: T) {
+  return (val: unknown): val is InstanceType<T> =>
+    val instanceof classConstructor;
+}
+
+export const isMatching = <p extends Pattern<any>>(pattern: p) => (
+  value: any
+): value is MatchedValue<any, InvertPattern<p>> =>
+  matchPattern(pattern, value, () => {});
