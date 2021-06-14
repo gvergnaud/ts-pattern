@@ -89,16 +89,15 @@ const builder = <a, b>(
     with(...args: any[]) {
       const handler = args[args.length - 1];
 
-      const patterns: Pattern<a>[] = [];
-      const predicates: ((value: a) => unknown)[] = [];
-      for (let i = 0; i < args.length - 1; i++) {
-        const arg = args[i];
-        if (typeof arg === 'function') {
-          predicates.push(arg);
-        } else {
-          patterns.push(arg);
-        }
-      }
+      const hasPredicate = args.length === 3 && typeof args[1] === 'function';
+
+      const predicate: (value: a) => unknown = hasPredicate
+        ? args[1]
+        : () => true;
+
+      const patterns: Pattern<a>[] = hasPredicate
+        ? [args[0]]
+        : args.slice(0, -1);
 
       let selected: Record<string, unknown> = {};
 
@@ -108,7 +107,7 @@ const builder = <a, b>(
             matchPattern(pattern, value, (key, value) => {
               selected[key] = value;
             })
-          ) && predicates.every((predicate) => predicate(value as any))
+          ) && predicate(value as any)
         );
 
       return builder(
@@ -166,8 +165,10 @@ const builder = <a, b>(
 const isObject = (value: unknown): value is Object =>
   Boolean(value && typeof value === 'object');
 
-const isGuardFunction = (x: unknown): x is GuardFunction<unknown, unknown> => {
-  return Boolean(x && typeof x === 'function');
+const isGuardFunction = (
+  value: unknown
+): value is GuardFunction<unknown, unknown> => {
+  return Boolean(value && typeof value === 'function');
 };
 
 const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
@@ -196,9 +197,11 @@ const matchPattern = <a, p extends Pattern<a>>(
   value: a,
   select: (key: string, value: unknown) => void
 ): boolean => {
-  if (isObject(pattern)) {
-    if (pattern === __) return true;
+  if (isGuardFunction(pattern)) return Boolean(pattern(value));
 
+  if (pattern === __) return true;
+
+  if (isObject(pattern)) {
     if (isNamedSelectPattern(pattern)) {
       select(pattern['@ts-pattern/__key'], value);
       return true;
@@ -208,8 +211,6 @@ const matchPattern = <a, p extends Pattern<a>>(
       select(ANONYMOUS_SELECT_KEY, value);
       return true;
     }
-
-    if (isGuardFunction(pattern)) return pattern(value);
 
     if (isNotPattern(pattern))
       return !matchPattern(
@@ -264,7 +265,7 @@ const matchPattern = <a, p extends Pattern<a>>(
 
       if (pattern.size === 1) {
         const [subPattern] = [...pattern.values()];
-        return Object.values(__).includes(subPattern)
+        return subPattern === __ || typeof subPattern === 'function'
           ? matchPattern([subPattern], [...value.values()], select)
           : value.has(subPattern);
       }
