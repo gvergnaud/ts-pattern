@@ -1,5 +1,5 @@
 import type { __ } from '../PatternType';
-import { IsPlainObject, Primitives, IsLiteral, Or } from './helpers';
+import { IsPlainObject, Primitives, IsLiteral } from './helpers';
 import type {
   NamedSelectPattern,
   AnonymousSelectPattern,

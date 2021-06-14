@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, not, isNumber, isString, nullable } from '../src';
+import { match, __, not, isNumber, isString, isNullable } from '../src';
 
 describe('not', () => {
   describe('pattern containing a not clause', () => {
@@ -81,8 +81,8 @@ describe('not', () => {
     it('should correctly invert the type of a GuardPattern', () => {
       expect(
         match<{ str: string } | null>({ str: 'hello' })
-          .with(not(nullable), ({ str }) => str)
-          .with(nullable, () => '')
+          .with(not(isNullable), ({ str }) => str)
+          .with(isNullable, () => '')
           .exhaustive()
       ).toBe('hello');
 
@@ -91,7 +91,7 @@ describe('not', () => {
       expect(
         match<{ str: string }>({ str: 'hello' })
           .with(not(untypedNullable), ({ str }) => str)
-          // @ts-expect-error
+          // // @ts-expect-error
           .exhaustive()
       ).toBe('hello');
     });

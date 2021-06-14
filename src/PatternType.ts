@@ -14,6 +14,6 @@ export enum PatternType {
  *   .exhaustive()
  */
 
-export const __ = '@ts-pattern/__' as __;
+export const __ = { '@ts-pattern/__kind': '@ts-pattern/__' } as __;
 
-export type __ = '@ts-pattern/__' & { __brand: 'catchall' };
+type __ = { '@ts-pattern/__kind': '@ts-pattern/__' };

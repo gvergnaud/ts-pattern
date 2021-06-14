@@ -67,19 +67,7 @@ export type Pattern<a> =
         ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>]
         : a extends readonly [infer a1, infer a2]
         ? readonly [Pattern<a1>, Pattern<a2>]
-        :
-            | readonly []
-            | readonly [Pattern<i>]
-            | readonly [Pattern<i>, Pattern<i>]
-            | readonly [Pattern<i>, Pattern<i>, Pattern<i>]
-            | readonly [Pattern<i>, Pattern<i>, Pattern<i>, Pattern<i>]
-            | readonly [
-                Pattern<i>,
-                Pattern<i>,
-                Pattern<i>,
-                Pattern<i>,
-                Pattern<i>
-              ]
+        : readonly [] | readonly Pattern<i>[]
       : a extends Map<infer k, infer v>
       ? Map<k, Pattern<v>>
       : a extends Set<infer v>

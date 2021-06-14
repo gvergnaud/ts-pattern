@@ -78,11 +78,11 @@ describe('tuple ([a, b])', () => {
         expect(
           match<[string, number], string>(tuple)
             .with(['hello', 20], (x) => {
-              type t = Expect<Equal<typeof x, ['hello', number]>>;
+              type t = Expect<Equal<typeof x, [string, number]>>;
               return `perfect match`;
             })
             .with(['hello', __], (x) => {
-              type t = Expect<Equal<typeof x, ['hello', number]>>;
+              type t = Expect<Equal<typeof x, [string, number]>>;
               return `string match`;
             })
             .with([__, 20], (x) => {

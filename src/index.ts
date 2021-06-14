@@ -199,9 +199,9 @@ const matchPattern = <a, p extends Pattern<a>>(
 ): boolean => {
   if (isGuardFunction(pattern)) return Boolean(pattern(value));
 
-  if (pattern === __) return true;
-
   if (isObject(pattern)) {
+    if (pattern === __) return true;
+
     if (isNamedSelectPattern(pattern)) {
       select(pattern['@ts-pattern/__key'], value);
       return true;
@@ -296,12 +296,12 @@ export const isString = (value: unknown): value is string =>
 export const isBoolean = (value: unknown): value is boolean =>
   typeof value === 'boolean';
 
-export const nullable = (x: unknown): x is null | undefined =>
+export const isNullable = (x: unknown): x is null | undefined =>
   x === null || x === undefined;
 
 type AnyConstructor = new (...args: any[]) => any;
 
-export function instanceOf<T extends AnyConstructor>(classConstructor: T) {
+export function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
   return (val: unknown): val is InstanceType<T> =>
     val instanceof classConstructor;
 }
