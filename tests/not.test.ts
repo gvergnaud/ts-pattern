@@ -14,6 +14,10 @@ describe('not', () => {
             type t = Expect<Equal<typeof x, unknown>>;
             return 'not a string';
           })
+          .with(not(__.unit), (x) => {
+            type t = Expect<Equal<typeof x, unknown>>;
+            return 'not a unit type';
+          })
           .run();
 
       expect(get(20)).toEqual('not a string');
@@ -96,6 +100,24 @@ describe('not', () => {
         match<{ str: string }>({ str: 'hello' })
           .with(not(untypedNullable), ({ str }) => str)
           // @ts-expect-error
+          .exhaustive()
+      ).toBe('hello');
+    });
+
+    it('should correctly exclude unit types with the unit wildcard', () => {
+      expect(
+        match<{ str: string | null | undefined }>({ str: 'hello' })
+          .with({ str: not(__.unit) }, ({ str }) => {
+            type t = Expect<Equal<typeof str, string>>;
+
+            return str;
+          })
+          .with({ str: __.unit }, ({ str }) => {
+            type t = Expect<Equal<typeof str, null | undefined>>;
+
+            return null;
+          })
+
           .exhaustive()
       ).toBe('hello');
     });
