@@ -666,10 +666,12 @@ console.log(output);
 The `__.unit` pattern will match any value of type `null` or `undefined`.
 
 You will **not often need this wildcard** as ordinarily `null` and `undefined`
-are their own wildcards. However, sometimes `null` and `undefined`
-appear in a union together and you may want to treat them as equivalent. This is
-not the cases in many contexts, but if they do appear together in a union and you
-do want to treat them as equivalent then this may come in handy.
+are their own wildcards. 
+
+However, sometimes `null` and `undefined` appear in a union together 
+(e.g. `null | undefined | string`) and you may want to treat them as equivalent.
+This is often not the case in many contexts. However, if they do appear together 
+in a union and you do want to treat them as equivalent then this may come in handy.
 
 ```ts
 import { match, __ } from 'ts-pattern';
