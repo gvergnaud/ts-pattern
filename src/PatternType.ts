@@ -2,6 +2,7 @@ export enum PatternType {
   String = '@ts-pattern/string',
   Number = '@ts-pattern/number',
   Boolean = '@ts-pattern/boolean',
+  Unit = '@ts-pattern/unit',
   Guard = '@ts-pattern/guard',
   Not = '@ts-pattern/not',
   NamedSelect = '@ts-pattern/named-select',
@@ -28,4 +29,5 @@ export const __ = {
   string: PatternType.String,
   number: PatternType.Number,
   boolean: PatternType.Boolean,
+  unit: PatternType.Unit,
 } as const;

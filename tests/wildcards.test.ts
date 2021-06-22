@@ -4,7 +4,7 @@ import { Blog } from './utils';
 
 describe('wildcards', () => {
   it('should match String wildcards', () => {
-    const res = match<string | number | boolean>('')
+    const res = match<string | number | boolean | null | undefined>('')
       .with(__.string, (x) => {
         type t = Expect<Equal<typeof x, string>>;
         return true;
@@ -15,7 +15,7 @@ describe('wildcards', () => {
   });
 
   it('should match Number wildcards', () => {
-    const res = match<string | number | boolean>(2)
+    const res = match<string | number | boolean | null | undefined>(2)
       .with(__.number, (x) => {
         type t = Expect<Equal<typeof x, number>>;
         return true;
@@ -26,7 +26,7 @@ describe('wildcards', () => {
   });
 
   it('should match Boolean wildcards', () => {
-    const res = match<string | number | boolean>(true)
+    const res = match<string | number | boolean | null | undefined>(true)
       .with(__.boolean, (x) => {
         type t = Expect<Equal<typeof x, boolean>>;
         return true;
@@ -34,6 +34,25 @@ describe('wildcards', () => {
       .otherwise(() => false);
 
     expect(res).toEqual(true);
+  });
+
+  it('should match Unit wildcards', () => {
+    const res = match<string | number | boolean | null | undefined>(null)
+      .with(__.unit, (x) => {
+        type t = Expect<Equal<typeof x, null | undefined>>;
+        return true;
+      })
+      .otherwise(() => false);
+
+    const res2 = match<string | number | boolean | null | undefined>(undefined)
+      .with(__.unit, (x) => {
+        type t = Expect<Equal<typeof x, null | undefined>>;
+        return true;
+      })
+      .otherwise(() => false);
+
+    expect(res).toEqual(true);
+    expect(res2).toEqual(true);
   });
 
   it('should match String, Number and Boolean wildcards', () => {

@@ -297,6 +297,9 @@ const matchPattern = <a, p extends Pattern<a>>(
     if (pattern === __.number) {
       return typeof value === 'number' && !Number.isNaN(value);
     }
+    if (pattern === __.unit) {
+      return value === undefined || value === null;
+    }
   }
 
   return value === pattern;

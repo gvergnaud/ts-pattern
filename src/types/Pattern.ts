@@ -51,6 +51,8 @@ type WildCardPattern<a> = a extends number
   ? typeof __.string
   : a extends boolean
   ? typeof __.boolean
+  : a extends null | undefined
+  ? typeof __.unit
   : never;
 
 /**
