@@ -1,4 +1,4 @@
-import type { PatternType } from '../PatternType';
+import type * as PatternType from '../PatternType';
 import { Primitives, IsPlainObject } from './helpers';
 
 /**
@@ -16,30 +16,31 @@ export type GuardFunction<a, b extends a> =
 
 // Using internal tags here to dissuade people from using them inside there patterns.
 // Theses properties should be used by ts-pattern's internals only.
+// Unfortunately they must be publically visable to work at compile time
 export type GuardPattern<a, b extends a = never> = {
   /** @internal This property should only be used by ts-pattern's internals. */
-  '@ts-pattern/__patternKind': PatternType.Guard;
+  [PatternType.PatternKind]: PatternType.Guard;
   /** @internal This property should only be used by ts-pattern's internals. */
-  '@ts-pattern/__when': GuardFunction<a, b>;
+  [PatternType.Guard]: GuardFunction<a, b>;
 };
 
 export type NotPattern<a> = {
   /** @internal This property should only be used by ts-pattern's internals. */
-  '@ts-pattern/__patternKind': PatternType.Not;
+  [PatternType.PatternKind]: PatternType.Not;
   /** @internal This property should only be used by ts-pattern's internals. */
-  '@ts-pattern/__pattern': Pattern<a>;
+  [PatternType.Not]: Pattern<a>;
 };
 
 export type AnonymousSelectPattern = {
   /** @internal This property should only be used by ts-pattern's internals. */
-  '@ts-pattern/__patternKind': PatternType.AnonymousSelect;
+  [PatternType.PatternKind]: PatternType.AnonymousSelect;
 };
 
 export type NamedSelectPattern<k extends string> = {
   /** @internal This property should only be used by ts-pattern's internals. */
-  '@ts-pattern/__patternKind': PatternType.NamedSelect;
+  [PatternType.PatternKind]: PatternType.NamedSelect;
   /** @internal This property should only be used by ts-pattern's internals. */
-  '@ts-pattern/__key': k;
+  [PatternType.NamedSelect]: k;
 };
 
 /**

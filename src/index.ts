@@ -9,7 +9,7 @@ import type {
 
 import type { Unset, PickReturnValue, Match } from './types/Match';
 
-import { PatternType } from './PatternType';
+import * as PatternType from './PatternType';
 import { when, not, select, ANONYMOUS_SELECT_KEY } from './guards';
 import { __ } from './wildcards';
 
@@ -144,28 +144,27 @@ const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
   const pattern = x as GuardPattern<unknown>;
   return (
     pattern &&
-    pattern['@ts-pattern/__patternKind'] === PatternType.Guard &&
-    typeof pattern['@ts-pattern/__when'] === 'function'
+    pattern[PatternType.PatternKind] === PatternType.Guard &&
+    typeof pattern[PatternType.Guard] === 'function'
   );
 };
 
 const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
   const pattern = x as NotPattern<unknown>;
-  return pattern && pattern['@ts-pattern/__patternKind'] === PatternType.Not;
+  return pattern && pattern[PatternType.PatternKind] === PatternType.Not;
 };
 
 const isNamedSelectPattern = (x: unknown): x is NamedSelectPattern<string> => {
   const pattern = x as NamedSelectPattern<string>;
   return (
-    pattern && pattern['@ts-pattern/__patternKind'] === PatternType.NamedSelect
+    pattern && pattern[PatternType.PatternKind] === PatternType.NamedSelect
   );
 };
 
 const isAnonymousSelectPattern = (x: unknown): x is AnonymousSelectPattern => {
   const pattern = x as AnonymousSelectPattern;
   return (
-    pattern &&
-    pattern['@ts-pattern/__patternKind'] === PatternType.AnonymousSelect
+    pattern && pattern[PatternType.PatternKind] === PatternType.AnonymousSelect
   );
 };
 
@@ -177,7 +176,7 @@ const matchPattern = <a, p extends Pattern<a>>(
 ): boolean => {
   if (isObject(pattern)) {
     if (isNamedSelectPattern(pattern)) {
-      select(pattern['@ts-pattern/__key'], value);
+      select(pattern[PatternType.NamedSelect], value);
       return true;
     }
 
@@ -187,11 +186,11 @@ const matchPattern = <a, p extends Pattern<a>>(
     }
 
     if (isGuardPattern(pattern))
-      return Boolean(pattern['@ts-pattern/__when'](value));
+      return Boolean(pattern[PatternType.Guard](value));
 
     if (isNotPattern(pattern))
       return !matchPattern(
-        pattern['@ts-pattern/__pattern'] as Pattern<a>,
+        pattern[PatternType.Not] as Pattern<a>,
         value,
         select
       );

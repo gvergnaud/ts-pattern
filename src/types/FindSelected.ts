@@ -1,4 +1,4 @@
-import { PatternType } from '../PatternType';
+import type * as PatternType from '../PatternType';
 import type { Cast, IsPlainObject, UnionToIntersection } from './helpers';
 import type { NamedSelectPattern, AnonymousSelectPattern } from './Pattern';
 

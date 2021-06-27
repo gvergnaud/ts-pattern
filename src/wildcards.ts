@@ -1,22 +1,22 @@
 import { when } from './guards';
 
-function isUnknown(x: unknown): x is unknown {
+function isUnknown<T>(x: T | unknown): x is unknown {
   return true;
 }
 
-function isNumber(x: unknown): x is number {
+function isNumber<T>(x: T | number): x is number {
   return typeof x === 'number' && !Number.isNaN(x);
 }
 
-function isString(x: unknown): x is string {
+function isString<T>(x: T | string): x is string {
   return typeof x === 'string';
 }
 
-function isBoolean(x: unknown): x is boolean {
+function isBoolean<T>(x: T | boolean): x is boolean {
   return typeof x === 'boolean';
 }
 
-function isEmpty(x: unknown): x is null | undefined {
+function isEmpty<T>(x: T | null | undefined): x is null | undefined {
   return x === null || x === undefined;
 }
 

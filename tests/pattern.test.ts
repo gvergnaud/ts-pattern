@@ -1,5 +1,4 @@
 import { Pattern } from '../src';
-import { PatternType } from '../src/PatternType';
 import { GuardPattern } from '../src/types/Pattern';
 
 type ExtendsPattern<a, p extends Pattern<a>> = true;

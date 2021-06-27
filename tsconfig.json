@@ -5,8 +5,7 @@
     "target": "es5",
     "downlevelIteration": true,
     "strict": true,
-    "outDir": "lib/",
-    "stripInternal": true
+    "outDir": "lib/"
   },
   "exclude": ["tests/", "lib/"]
 }
