@@ -1,4 +1,4 @@
-import type { __, PatternType } from '../PatternType';
+import type { PatternType } from '../PatternType';
 import { Primitives, IsPlainObject } from './helpers';
 
 /**
@@ -14,44 +14,33 @@ export type GuardFunction<a, b extends a> =
   | ((value: a) => value is b)
   | ((value: a) => boolean);
 
-/**
- * Using @deprecated here to dissuade people from using them inside there patterns.
- * Theses properties should be used by ts-pattern's internals only.
- */
-
+// Using internal tags here to dissuade people from using them inside there patterns.
+// Theses properties should be used by ts-pattern's internals only.
 export type GuardPattern<a, b extends a = never> = {
-  /** @deprecated This property should only be used by ts-pattern's internals. */
+  /** @internal This property should only be used by ts-pattern's internals. */
   '@ts-pattern/__patternKind': PatternType.Guard;
-  /** @deprecated This property should only be used by ts-pattern's internals. */
+  /** @internal This property should only be used by ts-pattern's internals. */
   '@ts-pattern/__when': GuardFunction<a, b>;
 };
 
 export type NotPattern<a> = {
-  /** @deprecated This property should only be used by ts-pattern's internals. */
+  /** @internal This property should only be used by ts-pattern's internals. */
   '@ts-pattern/__patternKind': PatternType.Not;
-  /** @deprecated This property should only be used by ts-pattern's internals. */
+  /** @internal This property should only be used by ts-pattern's internals. */
   '@ts-pattern/__pattern': Pattern<a>;
 };
 
 export type AnonymousSelectPattern = {
-  /** @deprecated This property should only be used by ts-pattern's internals. */
+  /** @internal This property should only be used by ts-pattern's internals. */
   '@ts-pattern/__patternKind': PatternType.AnonymousSelect;
 };
 
 export type NamedSelectPattern<k extends string> = {
-  /** @deprecated This property should only be used by ts-pattern's internals. */
+  /** @internal This property should only be used by ts-pattern's internals. */
   '@ts-pattern/__patternKind': PatternType.NamedSelect;
-  /** @deprecated This property should only be used by ts-pattern's internals. */
+  /** @internal This property should only be used by ts-pattern's internals. */
   '@ts-pattern/__key': k;
 };
-
-type WildCardPattern<a> = a extends number
-  ? typeof __.number
-  : a extends string
-  ? typeof __.string
-  : a extends boolean
-  ? typeof __.boolean
-  : never;
 
 /**
  * ### Pattern
@@ -59,12 +48,10 @@ type WildCardPattern<a> = a extends number
  * They can also be a "wildcards", like `__`.
  */
 export type Pattern<a> =
-  | typeof __
   | AnonymousSelectPattern
   | NamedSelectPattern<string>
   | GuardPattern<a, a>
   | NotPattern<a | any>
-  | WildCardPattern<a>
   | (a extends Primitives
       ? a
       : a extends readonly (infer i)[]

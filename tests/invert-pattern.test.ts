@@ -33,7 +33,7 @@ describe('InvertPatternForExclude', () => {
 
   it('should work with objects', () => {
     type t = InvertPatternForExclude<
-      { a: PatternType.String },
+      { a: GuardPattern<unknown, string> },
       { a: string; b: number } | [1, 2]
     >;
 
@@ -41,7 +41,7 @@ describe('InvertPatternForExclude', () => {
       Expect<
         Equal<
           InvertPatternForExclude<
-            { a: PatternType.String },
+            { a: GuardPattern<unknown, string> },
             { a: string; b: number } | [1, 2]
           >,
           { a: string }

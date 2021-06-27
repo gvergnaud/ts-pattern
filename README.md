@@ -660,6 +660,33 @@ console.log(output);
 // => 'it is a boolean!'
 ```
 
+#### `__.empty` wildcard
+
+The `__.empty` pattern will match any value of type `null` or `undefined`.
+
+You will **not often need this wildcard** as ordinarily `null` and `undefined`
+are their own wildcards.
+
+However, sometimes `null` and `undefined` appear in a union together
+(e.g. `null | undefined | string`) and you may want to treat them as equivalent.
+This is often not the case in many contexts. However, if they do appear together
+in a union and you do want to treat them as equivalent then this may come in handy.
+
+```ts
+import { match, __ } from 'ts-pattern';
+const input = null;
+const output = match<number | string | boolean | null | undefined>(input)
+  .with(__.string, () => 'it is a string!')
+  .with(__.number, () => 'it is a number!')
+  .with(__.boolean, () => 'it is a boolean!')
+  .with(__.empty, () => 'it is either null or undefined!')
+  .with(null, () => 'it is null!')
+  .with(undefined, () => 'it is undefined!')
+  .run();
+console.log(output);
+// => 'it is either null or undefined!'
+```
+
 #### Objects
 
 A pattern can be an object with sub-pattern properties. In order to match,

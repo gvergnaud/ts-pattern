@@ -5,47 +5,19 @@ import type {
   GuardPattern,
   NotPattern,
   GuardValue,
-  GuardFunction,
 } from './types/Pattern';
 
 import type { Unset, PickReturnValue, Match } from './types/Match';
 
-import { __, PatternType } from './PatternType';
-
-export const when = <a, b extends a = never>(
-  predicate: GuardFunction<a, b>
-): GuardPattern<a, b> => ({
-  '@ts-pattern/__patternKind': PatternType.Guard,
-  '@ts-pattern/__when': predicate,
-});
-
-export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
-  '@ts-pattern/__patternKind': PatternType.Not,
-  '@ts-pattern/__pattern': pattern,
-});
-
-const ANONYMOUS_SELECT_KEY = '@ts-pattern/__anonymous-select-key';
-
-export function select(): AnonymousSelectPattern;
-export function select<k extends string>(key: k): NamedSelectPattern<k>;
-export function select<k extends string>(
-  key?: k
-): AnonymousSelectPattern | NamedSelectPattern<k> {
-  return key === undefined
-    ? {
-        '@ts-pattern/__patternKind': PatternType.AnonymousSelect,
-      }
-    : {
-        '@ts-pattern/__patternKind': PatternType.NamedSelect,
-        '@ts-pattern/__key': key,
-      };
-}
+import { PatternType } from './PatternType';
+import { when, not, select, ANONYMOUS_SELECT_KEY } from './guards';
+import { __ } from './wildcards';
 
 /**
  * # Pattern matching
  **/
 
-export { Pattern, __ };
+export { Pattern, __, when, not, select };
 
 /**
  * #### match
@@ -204,8 +176,6 @@ const matchPattern = <a, p extends Pattern<a>>(
   select: (key: string, value: unknown) => void
 ): boolean => {
   if (isObject(pattern)) {
-    if (pattern === __) return true;
-
     if (isNamedSelectPattern(pattern)) {
       select(pattern['@ts-pattern/__key'], value);
       return true;
@@ -289,14 +259,6 @@ const matchPattern = <a, p extends Pattern<a>>(
         select
       )
     );
-  }
-
-  if (typeof pattern === 'string') {
-    if (pattern === __.string) return typeof value === 'string';
-    if (pattern === __.boolean) return typeof value === 'boolean';
-    if (pattern === __.number) {
-      return typeof value === 'number' && !Number.isNaN(value);
-    }
   }
 
   return value === pattern;
