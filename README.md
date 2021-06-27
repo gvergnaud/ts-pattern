@@ -92,6 +92,7 @@ yarn add ts-pattern
     - [`__.string` wildcard](#__string-wildcard)
     - [`__.number` wildcard](#__number-wildcard)
     - [`__.boolean` wildcard](#__boolean-wildcard)
+    - [`__.empty` wildcard](#__empty-wildcard)
     - [Objects](#objects)
     - [Lists (arrays)](#lists-arrays)
     - [Tuples (arrays)](#tuples-arrays)
