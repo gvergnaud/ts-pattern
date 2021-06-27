@@ -35,12 +35,15 @@ const emptyGuard = when(isEmpty);
  * `__.number` is wildcard pattern matching any **number**.
  *
  * `__.boolean` is wildcard pattern matching any **boolean**.
+ *
+ * `__.empty` is wildcard pattern matching **null** or **undefined**.
  * @example
  *  match(value)
  *   .with(__, () => 'will always match')
  *   .with(__.string, () => 'will match on strings only')
  *   .with(__.number, () => 'will match on numbers only')
  *   .with(__.boolean, () => 'will match on booleans only')
+ *   .with(__.empty, () => 'will match on null or undefined only')
  */
 export const __ = Object.assign(unknownGuard, {
   string: stringGuard,
