@@ -36,7 +36,7 @@ describe('wildcards', () => {
     expect(res).toEqual(true);
   });
 
-  it('should match Unit wildcards', () => {
+  it('should match empty wildcard', () => {
     const res = match<string | number | boolean | null | undefined>(null)
       .with(__.empty, (x) => {
         type t = Expect<Equal<typeof x, null | undefined>>;
