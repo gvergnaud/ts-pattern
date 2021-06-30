@@ -1,5 +1,5 @@
 /**
- * Symbols used internally within ts-pattern to construct and discriminated
+ * Symbols used internally within ts-pattern to construct and discriminate
  * Guard, Not, and Select, and AnonymousSelect patterns
  *
  * Symbols have the advantage of not appearing in auto-complete suggestions in
