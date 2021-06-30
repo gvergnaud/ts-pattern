@@ -142,11 +142,7 @@ const isObject = (value: unknown): value is Object =>
 
 const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
   const pattern = x as GuardPattern<unknown>;
-  return (
-    pattern &&
-    pattern[symbols.PatternKind] === symbols.Guard &&
-    typeof pattern[symbols.Guard] === 'function'
-  );
+  return pattern && pattern[symbols.PatternKind] === symbols.Guard;
 };
 
 const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
