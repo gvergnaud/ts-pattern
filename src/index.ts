@@ -9,7 +9,7 @@ import type {
 
 import type { Unset, PickReturnValue, Match } from './types/Match';
 
-import * as PatternType from './PatternType';
+import * as PatternType from './symbols';
 import { when, not, select, ANONYMOUS_SELECT_KEY } from './guards';
 import { __ } from './wildcards';
 

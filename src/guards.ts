@@ -1,4 +1,4 @@
-import * as PatternType from './PatternType';
+import * as PatternType from './symbols';
 import {
   AnonymousSelectPattern,
   GuardFunction,

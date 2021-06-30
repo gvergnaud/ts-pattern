@@ -1,4 +1,4 @@
-import type * as PatternType from '../PatternType';
+import type * as PatternType from '../symbols';
 import { Primitives, IsPlainObject } from './helpers';
 
 /**
