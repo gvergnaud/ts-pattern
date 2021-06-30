@@ -36,16 +36,16 @@ describe('wildcards', () => {
     expect(res).toEqual(true);
   });
 
-  it('should match empty wildcard', () => {
+  it('should match nullish wildcard', () => {
     const res = match<string | number | boolean | null | undefined>(null)
-      .with(__.empty, (x) => {
+      .with(__.nullish, (x) => {
         type t = Expect<Equal<typeof x, null | undefined>>;
         return true;
       })
       .otherwise(() => false);
 
     const res2 = match<string | number | boolean | null | undefined>(undefined)
-      .with(__.empty, (x) => {
+      .with(__.nullish, (x) => {
         type t = Expect<Equal<typeof x, null | undefined>>;
         return true;
       })

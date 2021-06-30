@@ -92,7 +92,7 @@ yarn add ts-pattern
     - [`__.string` wildcard](#__string-wildcard)
     - [`__.number` wildcard](#__number-wildcard)
     - [`__.boolean` wildcard](#__boolean-wildcard)
-    - [`__.empty` wildcard](#__empty-wildcard)
+    - [`__.nullish` wildcard](#__nullish-wildcard)
     - [Objects](#objects)
     - [Lists (arrays)](#lists-arrays)
     - [Tuples (arrays)](#tuples-arrays)
@@ -661,9 +661,9 @@ console.log(output);
 // => 'it is a boolean!'
 ```
 
-#### `__.empty` wildcard
+#### `__.nullish` wildcard
 
-The `__.empty` pattern will match any value of type `null` or `undefined`.
+The `__.nullish` pattern will match any value of type `null` or `undefined`.
 
 You will **not often need this wildcard** as ordinarily `null` and `undefined`
 are their own wildcards.
@@ -680,7 +680,7 @@ const output = match<number | string | boolean | null | undefined>(input)
   .with(__.string, () => 'it is a string!')
   .with(__.number, () => 'it is a number!')
   .with(__.boolean, () => 'it is a boolean!')
-  .with(__.empty, () => 'it is either null or undefined!')
+  .with(__.nullish, () => 'it is either null or undefined!')
   .with(null, () => 'it is null!')
   .with(undefined, () => 'it is undefined!')
   .run();

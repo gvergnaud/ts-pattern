@@ -16,7 +16,7 @@ function isBoolean<T>(x: T | boolean): x is boolean {
   return typeof x === 'boolean';
 }
 
-function isEmpty<T>(x: T | null | undefined): x is null | undefined {
+function isNullish<T>(x: T | null | undefined): x is null | undefined {
   return x === null || x === undefined;
 }
 
@@ -24,7 +24,7 @@ const unknownGuard = when(isUnknown);
 const stringGuard = when(isString);
 const numberGuard = when(isNumber);
 const booleanGuard = when(isBoolean);
-const emptyGuard = when(isEmpty);
+const nullishGuard = when(isNullish);
 
 /**
  * ### Catch All wildcard
@@ -36,18 +36,18 @@ const emptyGuard = when(isEmpty);
  *
  * `__.boolean` is wildcard pattern matching any **boolean**.
  *
- * `__.empty` is wildcard pattern matching **null** or **undefined**.
+ * `__.nullish` is wildcard pattern matching **null** or **undefined**.
  * @example
  *  match(value)
  *   .with(__, () => 'will always match')
  *   .with(__.string, () => 'will match on strings only')
  *   .with(__.number, () => 'will match on numbers only')
  *   .with(__.boolean, () => 'will match on booleans only')
- *   .with(__.empty, () => 'will match on null or undefined only')
+ *   .with(__.nullish, () => 'will match on null or undefined only')
  */
 export const __ = Object.assign(unknownGuard, {
   string: stringGuard,
   number: numberGuard,
   boolean: booleanGuard,
-  empty: emptyGuard,
+  nullish: nullishGuard,
 });
