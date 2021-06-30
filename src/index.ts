@@ -9,7 +9,7 @@ import type {
 
 import type { Unset, PickReturnValue, Match } from './types/Match';
 
-import * as PatternType from './symbols';
+import * as symbols from './symbols';
 import { when, not, select, ANONYMOUS_SELECT_KEY } from './guards';
 import { __ } from './wildcards';
 
@@ -144,28 +144,24 @@ const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
   const pattern = x as GuardPattern<unknown>;
   return (
     pattern &&
-    pattern[PatternType.PatternKind] === PatternType.Guard &&
-    typeof pattern[PatternType.Guard] === 'function'
+    pattern[symbols.PatternKind] === symbols.Guard &&
+    typeof pattern[symbols.Guard] === 'function'
   );
 };
 
 const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
   const pattern = x as NotPattern<unknown>;
-  return pattern && pattern[PatternType.PatternKind] === PatternType.Not;
+  return pattern && pattern[symbols.PatternKind] === symbols.Not;
 };
 
 const isNamedSelectPattern = (x: unknown): x is NamedSelectPattern<string> => {
   const pattern = x as NamedSelectPattern<string>;
-  return (
-    pattern && pattern[PatternType.PatternKind] === PatternType.NamedSelect
-  );
+  return pattern && pattern[symbols.PatternKind] === symbols.NamedSelect;
 };
 
 const isAnonymousSelectPattern = (x: unknown): x is AnonymousSelectPattern => {
   const pattern = x as AnonymousSelectPattern;
-  return (
-    pattern && pattern[PatternType.PatternKind] === PatternType.AnonymousSelect
-  );
+  return pattern && pattern[symbols.PatternKind] === symbols.AnonymousSelect;
 };
 
 // tells us if the value matches a given pattern.
@@ -175,8 +171,10 @@ const matchPattern = <a, p extends Pattern<a>>(
   select: (key: string, value: unknown) => void
 ): boolean => {
   if (isObject(pattern)) {
+    if (isGuardPattern(pattern)) return Boolean(pattern[symbols.Guard](value));
+
     if (isNamedSelectPattern(pattern)) {
-      select(pattern[PatternType.NamedSelect], value);
+      select(pattern[symbols.NamedSelect], value);
       return true;
     }
 
@@ -185,15 +183,8 @@ const matchPattern = <a, p extends Pattern<a>>(
       return true;
     }
 
-    if (isGuardPattern(pattern))
-      return Boolean(pattern[PatternType.Guard](value));
-
     if (isNotPattern(pattern))
-      return !matchPattern(
-        pattern[PatternType.Not] as Pattern<a>,
-        value,
-        select
-      );
+      return !matchPattern(pattern[symbols.Not] as Pattern<a>, value, select);
 
     if (!isObject(value)) return false;
 

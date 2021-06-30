@@ -1,4 +1,4 @@
-import type * as PatternType from '../symbols';
+import type * as symbols from '../symbols';
 import type { Cast, IsPlainObject, UnionToIntersection } from './helpers';
 import type { NamedSelectPattern, AnonymousSelectPattern } from './Pattern';
 
@@ -10,7 +10,7 @@ export type FindSelectionUnion<
 > = p extends NamedSelectPattern<infer k>
   ? { [kk in k]: [i, path] }
   : p extends AnonymousSelectPattern
-  ? { [kk in PatternType.AnonymousSelect]: [i, path] }
+  ? { [kk in symbols.AnonymousSelect]: [i, path] }
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]
     ? [i, p] extends [
@@ -90,12 +90,12 @@ type SelectionToArgs<
   i
 > = [keyof selections] extends [never]
   ? i
-  : PatternType.AnonymousSelect extends keyof selections
+  : symbols.AnonymousSelect extends keyof selections
   ? // If the path is never, it means several anonymous patterns were `&` together
-    [selections[PatternType.AnonymousSelect][1]] extends [never]
+    [selections[symbols.AnonymousSelect][1]] extends [never]
     ? SeveralAnonymousSelectError
-    : keyof selections extends PatternType.AnonymousSelect
-    ? selections[PatternType.AnonymousSelect][0]
+    : keyof selections extends symbols.AnonymousSelect
+    ? selections[symbols.AnonymousSelect][0]
     : MixedNamedAndAnonymousSelectError
   : { [k in keyof selections]: selections[k][0] };
 

@@ -1,4 +1,4 @@
-import * as PatternType from './symbols';
+import * as symbols from './symbols';
 import {
   AnonymousSelectPattern,
   GuardFunction,
@@ -11,13 +11,13 @@ import {
 export const when = <a, b extends a = never>(
   predicate: GuardFunction<a, b>
 ): GuardPattern<a, b> => ({
-  [PatternType.PatternKind]: PatternType.Guard,
-  [PatternType.Guard]: predicate,
+  [symbols.PatternKind]: symbols.Guard,
+  [symbols.Guard]: predicate,
 });
 
 export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
-  [PatternType.PatternKind]: PatternType.Not,
-  [PatternType.Not]: pattern,
+  [symbols.PatternKind]: symbols.Not,
+  [symbols.Not]: pattern,
 });
 
 export const ANONYMOUS_SELECT_KEY = '@ts-pattern/__anonymous-select-key';
@@ -29,10 +29,10 @@ export function select<k extends string>(
 ): AnonymousSelectPattern | NamedSelectPattern<k> {
   return key === undefined
     ? {
-        [PatternType.PatternKind]: PatternType.AnonymousSelect,
+        [symbols.PatternKind]: symbols.AnonymousSelect,
       }
     : {
-        [PatternType.PatternKind]: PatternType.NamedSelect,
-        [PatternType.NamedSelect]: key,
+        [symbols.PatternKind]: symbols.NamedSelect,
+        [symbols.NamedSelect]: key,
       };
 }
