@@ -16,7 +16,7 @@ export type GuardFunction<a, b extends a> =
 
 // Using internal tags here to dissuade people from using them inside patterns.
 // Theses properties should be used by ts-pattern's internals only.
-// Unfortunately they must be publically visable to work at compile time
+// Unfortunately they must be publically visible to work at compile time
 export type GuardPattern<a, b extends a = never> = {
   /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.Guard;
