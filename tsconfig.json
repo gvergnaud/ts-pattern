@@ -2,8 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,
-    "target": "es5",
-    "downlevelIteration": true,
+    "target": "es6",
     "strict": true,
     "outDir": "lib/"
   },
