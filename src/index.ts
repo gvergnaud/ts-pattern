@@ -5,47 +5,19 @@ import type {
   GuardPattern,
   NotPattern,
   GuardValue,
-  GuardFunction,
 } from './types/Pattern';
 
 import type { Unset, PickReturnValue, Match } from './types/Match';
 
-import { __, PatternType } from './PatternType';
-
-export const when = <a, b extends a = never>(
-  predicate: GuardFunction<a, b>
-): GuardPattern<a, b> => ({
-  '@ts-pattern/__patternKind': PatternType.Guard,
-  '@ts-pattern/__when': predicate,
-});
-
-export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
-  '@ts-pattern/__patternKind': PatternType.Not,
-  '@ts-pattern/__pattern': pattern,
-});
-
-const ANONYMOUS_SELECT_KEY = '@ts-pattern/__anonymous-select-key';
-
-export function select(): AnonymousSelectPattern;
-export function select<k extends string>(key: k): NamedSelectPattern<k>;
-export function select<k extends string>(
-  key?: k
-): AnonymousSelectPattern | NamedSelectPattern<k> {
-  return key === undefined
-    ? {
-        '@ts-pattern/__patternKind': PatternType.AnonymousSelect,
-      }
-    : {
-        '@ts-pattern/__patternKind': PatternType.NamedSelect,
-        '@ts-pattern/__key': key,
-      };
-}
+import * as symbols from './symbols';
+import { when, not, select, ANONYMOUS_SELECT_KEY } from './guards';
+import { __ } from './wildcards';
 
 /**
  * # Pattern matching
  **/
 
-export { Pattern, __ };
+export { Pattern, __, when, not, select };
 
 /**
  * #### match
@@ -170,31 +142,22 @@ const isObject = (value: unknown): value is Object =>
 
 const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
   const pattern = x as GuardPattern<unknown>;
-  return (
-    pattern &&
-    pattern['@ts-pattern/__patternKind'] === PatternType.Guard &&
-    typeof pattern['@ts-pattern/__when'] === 'function'
-  );
+  return pattern && pattern[symbols.PatternKind] === symbols.Guard;
 };
 
 const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
   const pattern = x as NotPattern<unknown>;
-  return pattern && pattern['@ts-pattern/__patternKind'] === PatternType.Not;
+  return pattern && pattern[symbols.PatternKind] === symbols.Not;
 };
 
 const isNamedSelectPattern = (x: unknown): x is NamedSelectPattern<string> => {
   const pattern = x as NamedSelectPattern<string>;
-  return (
-    pattern && pattern['@ts-pattern/__patternKind'] === PatternType.NamedSelect
-  );
+  return pattern && pattern[symbols.PatternKind] === symbols.NamedSelect;
 };
 
 const isAnonymousSelectPattern = (x: unknown): x is AnonymousSelectPattern => {
   const pattern = x as AnonymousSelectPattern;
-  return (
-    pattern &&
-    pattern['@ts-pattern/__patternKind'] === PatternType.AnonymousSelect
-  );
+  return pattern && pattern[symbols.PatternKind] === symbols.AnonymousSelect;
 };
 
 // tells us if the value matches a given pattern.
@@ -204,10 +167,10 @@ const matchPattern = <a, p extends Pattern<a>>(
   select: (key: string, value: unknown) => void
 ): boolean => {
   if (isObject(pattern)) {
-    if (pattern === __) return true;
+    if (isGuardPattern(pattern)) return Boolean(pattern[symbols.Guard](value));
 
     if (isNamedSelectPattern(pattern)) {
-      select(pattern['@ts-pattern/__key'], value);
+      select(pattern[symbols.NamedSelect], value);
       return true;
     }
 
@@ -216,15 +179,8 @@ const matchPattern = <a, p extends Pattern<a>>(
       return true;
     }
 
-    if (isGuardPattern(pattern))
-      return Boolean(pattern['@ts-pattern/__when'](value));
-
     if (isNotPattern(pattern))
-      return !matchPattern(
-        pattern['@ts-pattern/__pattern'] as Pattern<a>,
-        value,
-        select
-      );
+      return !matchPattern(pattern[symbols.Not] as Pattern<a>, value, select);
 
     if (!isObject(value)) return false;
 
@@ -289,14 +245,6 @@ const matchPattern = <a, p extends Pattern<a>>(
         select
       )
     );
-  }
-
-  if (typeof pattern === 'string') {
-    if (pattern === __.string) return typeof value === 'string';
-    if (pattern === __.boolean) return typeof value === 'boolean';
-    if (pattern === __.number) {
-      return typeof value === 'number' && !Number.isNaN(value);
-    }
   }
 
   return value === pattern;

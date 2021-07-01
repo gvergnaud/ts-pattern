@@ -1,4 +1,3 @@
-import type { __ } from '../PatternType';
 import { IsPlainObject, Primitives, IsLiteral, Or } from './helpers';
 import type {
   NamedSelectPattern,
@@ -12,13 +11,9 @@ import type {
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
-export type InvertPattern<p> = p extends typeof __.number
-  ? number
-  : p extends typeof __.string
-  ? string
-  : p extends typeof __.boolean
-  ? boolean
-  : p extends NamedSelectPattern<any> | AnonymousSelectPattern | typeof __
+export type InvertPattern<p> = p extends
+  | NamedSelectPattern<any>
+  | AnonymousSelectPattern
   ? unknown
   : p extends GuardPattern<infer p1, infer p2>
   ? [p2] extends [never]
@@ -62,13 +57,7 @@ export type InvertPattern<p> = p extends typeof __.number
  */
 export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
   ? Exclude<i, p1>
-  : p extends typeof __.number
-  ? number
-  : p extends typeof __.string
-  ? string
-  : p extends typeof __.boolean
-  ? boolean
-  : p extends NamedSelectPattern<any> | AnonymousSelectPattern | typeof __
+  : p extends NamedSelectPattern<any> | AnonymousSelectPattern
   ? unknown
   : p extends GuardPattern<any, infer p1>
   ? p1

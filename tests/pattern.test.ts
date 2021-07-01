@@ -1,5 +1,5 @@
 import { Pattern } from '../src';
-import { PatternType } from '../src/PatternType';
+import { GuardPattern } from '../src/types/Pattern';
 
 type ExtendsPattern<a, p extends Pattern<a>> = true;
 
@@ -8,7 +8,10 @@ describe('Pattern', () => {
     type Input = { type: 'a'; x: { y: string } } | { type: 'b' };
 
     type cases = [
-      ExtendsPattern<Input, { type: 'a'; x: { y: PatternType.String } }>
+      ExtendsPattern<
+        Input,
+        { type: 'a'; x: { y: GuardPattern<unknown, string> } }
+      >
     ];
   });
 });
