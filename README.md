@@ -85,7 +85,9 @@ yarn add ts-pattern
   - [match](#match)
   - [.with](#with)
   - [.when](#when)
-  - [.otherwise](#when)
+  - [.otherwise](#otherwise)
+  - [.run](#run)
+  - [isMatching](#ismatching)
   - [Patterns](#patterns)
     - [Literals](#literals)
     - [`__` wildcard](#__-wildcard)
@@ -417,7 +419,7 @@ Create a `Match` object on which you can later call `.with`, `.when`, `.otherwis
 function match<TInput, TOutput>(input: TInput): Match<TInput, TOutput>;
 ```
 
-#### Options
+#### Arguments
 
 - `input`
   - **Required**
@@ -457,7 +459,7 @@ function with(
 ): Match<TInput, TOutput>;
 ```
 
-#### Options
+#### Arguments
 
 - `pattern: Pattern<TInput>`
   - **Required**
@@ -492,7 +494,7 @@ function when(
 ): Match<TInput, TOutput>;
 ```
 
-#### Options
+#### Arguments
 
 - `predicate: (value: TInput) => unknown`
   - **Required**
@@ -534,7 +536,7 @@ Executes the match case and return its result.
 function otherwise(defaultHandler: () => TOutput): TOutput;
 ```
 
-#### Options
+#### Arguments
 
 - `defaultHandler: () => TOutput`
   - **Required**
@@ -557,6 +559,60 @@ Executes the match case and return its result.
 ```ts
 function run(): TOutput;
 ```
+
+### `isMatching`
+
+With a single argument:
+
+```ts
+import { isMatching, __ } from 'ts-pattern';
+
+const isBlogPost = isMatching({
+  title: __.string,
+  description: __.string,
+});
+
+if (isBlogPost(value)) {
+  // value: { title: string, description: string }
+}
+```
+
+With two arguments:
+
+```ts
+const blogPostPattern = {
+  title: __.string,
+  description: __.string,
+};
+
+if (isMatching(blogPostPattern, value)) {
+  // value: { title: string, description: string }
+}
+```
+
+Type guard function to check if a value is matching a pattern or not.
+
+#### Signature
+
+```ts
+export function isMatching<p extends Pattern<any>>(
+  pattern: p
+): (value: any) => value is InvertPattern<p>;
+export function isMatching<p extends Pattern<any>>(
+  pattern: p,
+  value: any
+): value is InvertPattern<p>;
+```
+
+#### Arguments
+
+- `pattern: Pattern<any>`
+  - **Required**
+  - The pattern a value should match.
+- `value?: any`
+  - **Optional**
+  - if a value is given as second argument, `isMatching` will return a boolean telling us whether or not the value matches the pattern.
+  - if the only argument given to the function is the pattern, then `isMatching` will return a **type guard function** taking a value and returning a boolean telling us whether or not the value matches the pattern.
 
 ### Patterns
 
