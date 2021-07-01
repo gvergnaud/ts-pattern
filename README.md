@@ -39,7 +39,7 @@ return match(result)
 - **Expressive API**, with catch-all and type specific **wildcards**: `__`.
 - Supports `when(<predicate>)` and `not(<pattern>)` patterns for complex cases.
 - Supports properties selection, via the `select(<name?>)` function.
-- Tiny bundle footprint (**only 1.6kb**).
+- Tiny bundle footprint (**only 1.4kb**).
 
 ## What is Pattern Matching?
 
