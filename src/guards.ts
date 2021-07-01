@@ -36,3 +36,12 @@ export function select<k extends string>(
         [symbols.NamedSelect]: key,
       };
 }
+
+type AnyConstructor = new (...args: any[]) => any;
+
+function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
+  return (val: unknown): val is InstanceType<T> =>
+    val instanceof classConstructor;
+}
+export const instanceOf = <T extends AnyConstructor>(classConstructor: T) =>
+  when(isInstanceOf(classConstructor));

@@ -260,4 +260,16 @@ describe('ExtractPreciseValue', () => {
       ];
     });
   });
+
+  describe('class instances', () => {
+    it('Type narrowing should correctly work on class instances', () => {
+      class A {
+        a = 'a';
+      }
+      class B {
+        b = 'b';
+      }
+      type cases = [Expect<Equal<ExtractPreciseValue<A | B, A>, A>>];
+    });
+  });
 });

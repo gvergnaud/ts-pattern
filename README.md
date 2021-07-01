@@ -101,6 +101,7 @@ yarn add ts-pattern
     - [`when` guards](#when-guards)
     - [`not` patterns](#not-patterns)
     - [`select` patterns](#select-patterns)
+    - [`instanceOf` patterns](#instanceof-patterns)
 - [Type inference](#type-inference)
 - [Inspirations](#inspirations)
 
@@ -933,6 +934,38 @@ const output = match<Input>(input)
 
 console.log(output);
 // => 'Gabriel wrote "Hello!"'
+```
+
+#### `instanceOf` patterns
+
+The `instanceOf` function lets you build a pattern to check if
+a value is an instance of a class:
+
+```ts
+import { match, instanceOf } from 'ts-pattern';
+
+class A {
+  a = 'a';
+}
+class B {
+  b = 'b';
+}
+
+type Input = { value: A | B };
+
+const input = { value: new A() };
+
+const output = match<Input>(input)
+  .with({ value: instanceOf(A) }, (a) => {
+    return 'instance of A!';
+  })
+  .with({ value: instanceOf(B) }, (b) => {
+    return 'instance of B!';
+  })
+  .exhaustive();
+
+console.log(output);
+// => 'instance of A!'
 ```
 
 ### type inference
