@@ -405,7 +405,7 @@ Obviously, it also works with more complex patterns than strings. Exhaustive mat
 
 ## API Reference
 
-### match
+### `match`
 
 ```ts
 match(value);
@@ -425,7 +425,7 @@ function match<TInput, TOutput>(input: TInput): Match<TInput, TOutput>;
   - **Required**
   - the input value your patterns will be tested against.
 
-### .with
+### `.with`
 
 ```ts
 match(...)
@@ -478,7 +478,7 @@ function with(
   - `TInput` might be narrowed to a more precise type using the `pattern`.
   - `selections` is an object of properties selected from the input with the [`select` function](#select-patterns).
 
-### .when
+### `.when`
 
 ```ts
 match(...)
@@ -504,7 +504,7 @@ function when(
   - Function called when the predicate condition is satisfied.
   - All handlers on a single `match` case must return values of the same type, `TOutput`.
 
-### .exhaustive
+### `.exhaustive`
 
 ```ts
 match(...)
@@ -520,7 +520,7 @@ Executes the match case, return its result, and enable exhaustive pattern matchi
 function exhaustive(): IOutput;
 ```
 
-### .otherwise
+### `.otherwise`
 
 ```ts
 match(...)
@@ -544,7 +544,7 @@ function otherwise(defaultHandler: () => TOutput): TOutput;
   - Think of it as the `default:` case of `switch` statements.
   - All handlers on a single `match` case must return values of the same type, `TOutput`.
 
-### .run
+### `.run`
 
 ```ts
 match(...)
