@@ -124,7 +124,7 @@ const builder = <a, b>(
       ),
 
     otherwise: <c>(
-      handler: () => PickReturnValue<b, c>
+      handler: (value: a) => PickReturnValue<b, c>
     ): PickReturnValue<b, c> =>
       builder<a, PickReturnValue<b, c>>(
         value,
