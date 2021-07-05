@@ -137,7 +137,7 @@ export type Match<
    * */
   exhaustive: DeepExcludeAll<i, patternValueTuples> extends infer remainingCases
     ? [remainingCases] extends [never]
-      ? () => PickReturnValue<o, inferredOutput>
+      ? ExhaustiveResult<o, inferredOutput>
       : NonExhaustiveError<remainingCases>
     : never;
 
@@ -152,3 +152,8 @@ type DeepExcludeAll<a, tuple extends [any, any]> = DeepExclude<
   a,
   tuple extends any ? InvertPatternForExclude<tuple[0], tuple[1]> : never
 >;
+
+interface ExhaustiveResult<o, inferredOutput>  {
+  (): PickReturnValue<o, inferredOutput>;
+  <c>(handler: (notMatchedValue: unknown) => c): PickReturnValue<o, Union<inferredOutput, c>>;
+}

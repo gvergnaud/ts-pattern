@@ -137,7 +137,21 @@ const builder = <a, b>(
         ])
       ).run(),
 
-    exhaustive: () => run(),
+    exhaustive: <c>(handler?: (notMatchedValue: unknown) => c) => {
+      if (!handler) {
+        return run();
+      }
+      return builder<a, PickReturnValue<b, c>>(
+        value,
+        cases.concat([
+          {
+            test: () => true,
+            handler,
+            select: (value) => value,
+          },
+        ])
+      ).run();
+    },
 
     run,
   };
