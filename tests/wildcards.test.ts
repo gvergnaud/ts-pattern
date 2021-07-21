@@ -109,6 +109,19 @@ describe('wildcards', () => {
     expect(res).toEqual(false);
   });
 
+  it("when used as an object property pattern, it shouldn't match if the key isn't defined on the object.", () => {
+    type Id = { teamId: number } | { storeId: number };
+
+    const selectedId: Id = { teamId: 1 };
+
+    const res = match<Id>(selectedId)
+      .with({ storeId: __ }, () => 'storeId')
+      .with({ teamId: __ }, () => 'teamId')
+      .exhaustive();
+
+    expect(res).toEqual('teamId');
+  });
+
   describe('catch all', () => {
     const allValueTypes = [
       undefined,

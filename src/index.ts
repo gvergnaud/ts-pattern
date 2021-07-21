@@ -242,14 +242,16 @@ const matchPattern = <a, p extends Pattern<a>>(
       return [...pattern.values()].every((subPattern) => value.has(subPattern));
     }
 
-    return Object.keys(pattern).every((k: string): boolean =>
-      matchPattern(
-        // @ts-ignore
-        pattern[k],
-        // @ts-ignore
-        value[k],
-        select
-      )
+    return Object.keys(pattern).every(
+      (k: string): boolean =>
+        k in value &&
+        matchPattern(
+          // @ts-ignore
+          pattern[k],
+          // @ts-ignore
+          value[k],
+          select
+        )
     );
   }
 
