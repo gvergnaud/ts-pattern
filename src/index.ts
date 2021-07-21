@@ -292,6 +292,6 @@ export function isMatching<p extends Pattern<any>>(
   }
 
   throw new Error(
-    `isMatching wasn't given enough arguments: expected 1 or 2, receive ${args.length}.`
+    `isMatching wasn't given enough arguments: expected 1 or 2, received ${args.length}.`
   );
 }
