@@ -114,7 +114,6 @@ export type Drop<
 
 type BuiltInObjects =
   | Function
-  | Error
   | Date
   | RegExp
   | Generator

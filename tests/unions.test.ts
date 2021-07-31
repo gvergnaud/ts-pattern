@@ -103,4 +103,35 @@ describe('Unions (a | b)', () => {
 
     expect(ouput).toEqual('<img src="hello.com" />');
   });
+
+  it('Issue #41 — should be possible to pattern match on error objects', () => {
+    type ServerError = Error & {
+      response: Response;
+      result: Record<string, any>;
+      statusCode: number;
+    };
+
+    type ServerParseError = Error & {
+      response: Response;
+      statusCode: number;
+      bodyText: string;
+    };
+
+    type Input = Error | ServerError | ServerParseError | undefined;
+
+    const networkError = new Error() as Input;
+
+    const message = match(networkError)
+      .with(
+        { statusCode: 401, name: __.string, message: __.string },
+        (x) => 'Not Authenticated'
+      )
+      .with(
+        { statusCode: 403, name: '', message: '' },
+        (x) => 'Permission Denied'
+      )
+      .otherwise(() => 'Network Error');
+
+    expect(message).toBe('Network Error');
+  });
 });
