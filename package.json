@@ -1,7 +1,7 @@
 {
   "name": "ts-pattern",
   "version": "3.2.4",
-  "description": "Typescript pattern matching library",
+  "description": " The exhaustive Pattern Matching library for TypeScript.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
