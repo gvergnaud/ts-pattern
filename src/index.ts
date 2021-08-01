@@ -33,7 +33,7 @@ export { Pattern, __, when, not, select, instanceOf };
  * It returns a `Match` builder, on which you can chain
  * several `.with(pattern, handler)` clauses.
  */
-export const match = <a, b = Unset>(value: a): Match<a, b> =>
+export const match = <i, o = Unset>(value: i): Match<i, o> =>
   builder(value, []) as any;
 
 /**
@@ -41,11 +41,11 @@ export const match = <a, b = Unset>(value: a): Match<a, b> =>
  * This is the implementation of our pattern matching, using the
  * builder pattern.
  */
-const builder = <a, b>(
-  value: a,
+const builder = <i, o>(
+  value: i,
   cases: {
-    test: (value: a) => unknown;
-    select: (value: a) => any;
+    test: (value: i) => unknown;
+    select: (value: i) => any;
     handler: (...args: any) => any;
   }[]
 ) => {
@@ -69,8 +69,8 @@ const builder = <a, b>(
     with(...args: any[]) {
       const handler = args[args.length - 1];
 
-      const patterns: Pattern<a>[] = [];
-      const predicates: ((value: a) => unknown)[] = [];
+      const patterns: Pattern<i>[] = [];
+      const predicates: ((value: i) => unknown)[] = [];
       for (let i = 0; i < args.length - 1; i++) {
         const arg = args[i];
         if (typeof arg === 'function') {
@@ -82,7 +82,7 @@ const builder = <a, b>(
 
       let selected: Record<string, unknown> = {};
 
-      const doesMatch = (value: a) =>
+      const doesMatch = (value: i) =>
         Boolean(
           patterns.some((pattern) =>
             matchPattern(pattern, value, (key, value) => {
@@ -108,11 +108,11 @@ const builder = <a, b>(
       );
     },
 
-    when: <p extends (value: a) => unknown, c>(
+    when: <p extends (value: i) => unknown, c>(
       predicate: p,
-      handler: (value: GuardValue<p>) => PickReturnValue<b, c>
+      handler: (value: GuardValue<p>) => PickReturnValue<o, c>
     ) =>
-      builder<a, PickReturnValue<b, c>>(
+      builder<i, PickReturnValue<o, c>>(
         value,
         cases.concat([
           {
@@ -124,9 +124,9 @@ const builder = <a, b>(
       ),
 
     otherwise: <c>(
-      handler: (value: a) => PickReturnValue<b, c>
-    ): PickReturnValue<b, c> =>
-      builder<a, PickReturnValue<b, c>>(
+      handler: (value: i) => PickReturnValue<o, c>
+    ): PickReturnValue<o, c> =>
+      builder<i, PickReturnValue<o, c>>(
         value,
         cases.concat([
           {
@@ -167,9 +167,9 @@ const isAnonymousSelectPattern = (x: unknown): x is AnonymousSelectPattern => {
 };
 
 // tells us if the value matches a given pattern.
-const matchPattern = <a, p extends Pattern<a>>(
+const matchPattern = <i, p extends Pattern<i>>(
   pattern: p,
-  value: a,
+  value: i,
   select: (key: string, value: unknown) => void
 ): boolean => {
   if (isObject(pattern)) {
@@ -186,7 +186,7 @@ const matchPattern = <a, p extends Pattern<a>>(
     }
 
     if (isNotPattern(pattern))
-      return !matchPattern(pattern[symbols.Not] as Pattern<a>, value, select);
+      return !matchPattern(pattern[symbols.Not] as Pattern<i>, value, select);
 
     if (!isObject(value)) return false;
 
