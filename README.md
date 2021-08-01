@@ -1,7 +1,7 @@
 <h1 align="center">ts-pattern</h1>
 
 <p align="center">
-The exhaustive Pattern Matching library for <a href="https://github.com/microsoft/TypeScript">TypeScript</a>
+An exhaustive Pattern Matching library for <a href="https://github.com/microsoft/TypeScript">TypeScript</a>
 with smart type inference.
 </p>
 
@@ -354,10 +354,10 @@ You can use it at the top level, or inside your pattern.
 
 Note that exhaustive pattern matching is **optional**. It comes with the trade-off of having **longer compilation times** because the type checker has more work to do.
 
-Alternatively you can use `.otherwise()`, which take an handler which is given as argument the value that has not mached other clauses, and returns a value. `.otherwise(handler)` is equivalent to `.with(__, handler).exhaustive()`.
+Alternatively you can use `.otherwise()`, which take an handler returning a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).exhaustive()`.
 
 ```ts
-  .otherwise(value => state);
+  .otherwise(() => state);
 ```
 
 If you don't want to use `.exhaustive()` and also don't want to provide a default value with `.otherwise()`, you can use `.run()` instead:
@@ -533,14 +533,14 @@ Executes the match case and return its result.
 #### Signature
 
 ```ts
-function otherwise(defaultHandler: () => TOutput): TOutput;
+function otherwise(defaultHandler: (value: TInput) => TOutput): TOutput;
 ```
 
 #### Arguments
 
-- `defaultHandler: () => TOutput`
+- `defaultHandler: (value: TInput) => TOutput`
   - **Required**
-  - Function called if no other patterns were matched.
+  - Function called if no pattern matched the input value.
   - Think of it as the `default:` case of `switch` statements.
   - All handlers on a single `match` case must return values of the same type, `TOutput`.
 
