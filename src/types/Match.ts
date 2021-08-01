@@ -122,7 +122,7 @@ export type Match<
    * Equivalent to `.with(__, () => x).run()`
    **/
   otherwise: <c>(
-    handler: () => PickReturnValue<o, c>
+    handler: (value: i) => PickReturnValue<o, c>
   ) => PickReturnValue<o, Union<inferredOutput, c>>;
 
   /**

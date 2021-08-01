@@ -354,10 +354,10 @@ You can use it at the top level, or inside your pattern.
 
 Note that exhaustive pattern matching is **optional**. It comes with the trade-off of having **longer compilation times** because the type checker has more work to do.
 
-Alternatively you can use `.otherwise()`, which take an handler returning a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).exhaustive()`.
+Alternatively you can use `.otherwise()`, which take an handler which is given as argument the value that has not mached other clauses, and returns a value. `.otherwise(handler)` is equivalent to `.with(__, handler).exhaustive()`.
 
 ```ts
-  .otherwise(() => state);
+  .otherwise(value => state);
 ```
 
 If you don't want to use `.exhaustive()` and also don't want to provide a default value with `.otherwise()`, you can use `.run()` instead:
