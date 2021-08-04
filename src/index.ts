@@ -5,6 +5,8 @@ import type {
   GuardPattern,
   NotPattern,
   GuardValue,
+  NamedSelectOrPattern,
+  AnonymousSelectOrPattern,
 } from './types/Pattern';
 
 import type {
@@ -15,7 +17,14 @@ import type {
 } from './types/Match';
 
 import * as symbols from './symbols';
-import { when, not, select, instanceOf, ANONYMOUS_SELECT_KEY } from './guards';
+import {
+  when,
+  not,
+  select,
+  selectOr,
+  instanceOf,
+  ANONYMOUS_SELECT_KEY,
+} from './guards';
 import { __ } from './wildcards';
 import { InvertPattern } from './types/InvertPattern';
 
@@ -23,7 +32,7 @@ import { InvertPattern } from './types/InvertPattern';
  * # Pattern matching
  **/
 
-export { Pattern, __, when, not, select, instanceOf };
+export { Pattern, __, when, not, select, selectOr, instanceOf };
 
 /**
  * #### match
@@ -166,10 +175,24 @@ const isAnonymousSelectPattern = (x: unknown): x is AnonymousSelectPattern => {
   return pattern && pattern[symbols.PatternKind] === symbols.AnonymousSelect;
 };
 
+const isNamedSelectOrPattern = (
+  x: unknown
+): x is NamedSelectOrPattern<unknown, string> => {
+  const pattern = x as NamedSelectOrPattern<unknown, string>;
+  return pattern && pattern[symbols.PatternKind] === symbols.NamedSelectOr;
+};
+
+const isAnonymousSelectOrPattern = (
+  x: unknown
+): x is AnonymousSelectOrPattern<unknown> => {
+  const pattern = x as AnonymousSelectOrPattern<unknown>;
+  return pattern && pattern[symbols.PatternKind] === symbols.AnonymousSelectOr;
+};
+
 // tells us if the value matches a given pattern.
 const matchPattern = <i, p extends Pattern<i>>(
   pattern: p,
-  value: i,
+  value: i | symbols.None,
   select: (key: string, value: unknown) => void
 ): boolean => {
   if (isObject(pattern)) {
@@ -185,13 +208,33 @@ const matchPattern = <i, p extends Pattern<i>>(
       return true;
     }
 
-    if (isNotPattern(pattern))
-      return !matchPattern(pattern[symbols.Not] as Pattern<i>, value, select);
+    if (isNamedSelectOrPattern(pattern)) {
+      select(
+        pattern[symbols.NamedSelect],
+        value === symbols.None
+          ? pattern[symbols.DefaultValue]
+          : value ?? pattern[symbols.DefaultValue]
+      );
+      return true;
+    }
 
-    if (!isObject(value)) return false;
+    if (isAnonymousSelectOrPattern(pattern)) {
+      select(
+        ANONYMOUS_SELECT_KEY,
+        value === symbols.None
+          ? pattern[symbols.DefaultValue]
+          : value ?? pattern[symbols.DefaultValue]
+      );
+      return true;
+    }
+
+    if (isNotPattern(pattern)) {
+      if (value === symbols.None) return false;
+      return !matchPattern(pattern[symbols.Not] as Pattern<i>, value, select);
+    }
 
     if (Array.isArray(pattern)) {
-      if (!Array.isArray(value)) return false;
+      const valueAsArray = Array.isArray(value) ? value : [symbols.None];
 
       // List pattern
       if (pattern.length === 1) {
@@ -201,7 +244,7 @@ const matchPattern = <i, p extends Pattern<i>>(
           selected[key] = (selected[key] || []).concat([value]);
         };
 
-        const doesMatch = value.every((v) =>
+        const doesMatch = valueAsArray.every((v) =>
           matchPattern(pattern[0], v, listSelect)
         );
 
@@ -211,6 +254,8 @@ const matchPattern = <i, p extends Pattern<i>>(
 
         return doesMatch;
       }
+
+      if (!Array.isArray(value)) return false;
 
       // Tuple pattern
       return pattern.length === value.length
@@ -242,16 +287,14 @@ const matchPattern = <i, p extends Pattern<i>>(
       return [...pattern.values()].every((subPattern) => value.has(subPattern));
     }
 
-    return Object.keys(pattern).every(
-      (k: string): boolean =>
-        k in value &&
-        matchPattern(
-          // @ts-ignore
-          pattern[k],
-          // @ts-ignore
-          value[k],
-          select
-        )
+    return Object.keys(pattern).every((k: string): boolean =>
+      matchPattern(
+        // @ts-ignore
+        pattern[k],
+        // @ts-ignore
+        isObject(value) && k in value ? value[k] : symbols.None,
+        select
+      )
     );
   }
 

@@ -1,7 +1,8 @@
 import { when } from './guards';
+import * as symbols from './symbols';
 
 function isUnknown<T>(x: T | unknown): x is unknown {
-  return true;
+  return x !== symbols.None;
 }
 
 function isNumber<T>(x: T | number): x is number {
