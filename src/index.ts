@@ -199,12 +199,12 @@ const matchPattern = <i, p extends Pattern<i>>(
     if (isGuardPattern(pattern)) return Boolean(pattern[symbols.Guard](value));
 
     if (isNamedSelectPattern(pattern)) {
-      select(pattern[symbols.NamedSelect], value);
+      select(pattern[symbols.NamedSelect], value === symbols.None ? undefined : value);
       return true;
     }
 
     if (isAnonymousSelectPattern(pattern)) {
-      select(ANONYMOUS_SELECT_KEY, value);
+      select(ANONYMOUS_SELECT_KEY, value === symbols.None ? undefined : value);
       return true;
     }
 
