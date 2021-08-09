@@ -114,8 +114,18 @@ describe('not', () => {
 
           return null;
         })
-
         .exhaustive()
+    ).toBe('hello');
+  });
+
+  it("shouldn't change a the type if its any or unknown", () => {
+    expect(
+      match<{ str: any }>({ str: 'hello' })
+        .with({ str: not(__.nullish) }, (x) => {
+          type t = Expect<Equal<typeof x, { str: any }>>;
+          return 'hello';
+        })
+        .otherwise(() => 'no')
     ).toBe('hello');
   });
 });

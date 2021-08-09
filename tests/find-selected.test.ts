@@ -7,6 +7,7 @@ import { Equal, Expect } from '../src/types/helpers';
 import {
   AnonymousSelectPattern,
   NamedSelectPattern,
+  NotPattern,
 } from '../src/types/Pattern';
 import { Event, State } from './utils';
 
@@ -272,6 +273,20 @@ describe('FindSelected', () => {
 
         type cases = [
           Expect<Equal<FindSelected<Input, { type: 'text' }>, Input>>
+        ];
+      });
+
+      it('should return the input type', () => {
+        type Input = { text: any };
+
+        type cases = [
+          Expect<Equal<FindSelected<Input, { text: 'text' }>, Input>>,
+          Expect<
+            Equal<
+              FindSelected<Input, { str: NotPattern<null | undefined> }>,
+              Input
+            >
+          >
         ];
       });
     });

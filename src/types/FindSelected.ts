@@ -1,5 +1,10 @@
 import type * as symbols from '../symbols';
-import type { Cast, IsPlainObject, UnionToIntersection } from './helpers';
+import type {
+  Cast,
+  IsAny,
+  IsPlainObject,
+  UnionToIntersection,
+} from './helpers';
 import type { NamedSelectPattern, AnonymousSelectPattern } from './Pattern';
 
 export type FindSelectionUnion<
@@ -7,7 +12,9 @@ export type FindSelectionUnion<
   p,
   // path just serves as an id, to identify different anonymous patterns which have the same type
   path extends any[] = []
-> = p extends NamedSelectPattern<infer k>
+> = IsAny<i> extends true
+  ? never
+  : p extends NamedSelectPattern<infer k>
   ? { [kk in k]: [i, path] }
   : p extends AnonymousSelectPattern
   ? { [kk in symbols.AnonymousSelect]: [i, path] }
