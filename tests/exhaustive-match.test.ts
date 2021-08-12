@@ -868,4 +868,21 @@ describe('exhaustive()', () => {
         .with({ t: 'b' }, (x) => 'ok')
         .exhaustive();
   });
+
+
+  it('accepts fallback to exhaustive', () => {
+
+    const input: 'a' | 'b' = 'c' as any;
+    const value = match(input)
+      .with('a', x => x)
+      .with('b', x => x)
+      .exhaustive(v => ['unexpected', v] as const);
+
+    // check return type
+    const shoulBe: readonly ['unexpected', unknown] | 'a' | 'b' = value;
+    // @ts-expect-error
+    const shouldNotBe: 'a' | 'b' = value;
+
+    expect(value).toStrictEqual(['unexpected', 'c']);
+  });
 });
