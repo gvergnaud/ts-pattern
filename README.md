@@ -1,7 +1,7 @@
 <h1 align="center">ts-pattern</h1>
 
 <p align="center">
-An exhaustive Pattern Matching library for <a href="https://github.com/microsoft/TypeScript">TypeScript</a>
+The exhaustive Pattern Matching library for <a href="https://github.com/microsoft/TypeScript">TypeScript</a>
 with smart type inference.
 </p>
 
@@ -727,8 +727,6 @@ are their own wildcards.
 
 However, sometimes `null` and `undefined` appear in a union together
 (e.g. `null | undefined | string`) and you may want to treat them as equivalent.
-This is often not the case in many contexts. However, if they do appear together
-in a union and you do want to treat them as equivalent then this may come in handy.
 
 ```ts
 import { match, __ } from 'ts-pattern';
@@ -783,8 +781,8 @@ import { match, __ } from 'ts-pattern';
 type Input = { title: string; content: string }[];
 
 let input: Input = [
-  { title: 'Hello world!', content: 'I‘m a very interesting content' },
-  { title: 'Bonjour!', content: 'I‘m a very interesting content too' },
+  { title: 'Hello world!', content: 'This is a very interesting content' },
+  { title: 'Bonjour!', content: 'This is a very interesting content too' },
 ];
 
 const output = match(input)
