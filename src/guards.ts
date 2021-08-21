@@ -1,9 +1,11 @@
 import * as symbols from './symbols';
 import {
   AnonymousSelectPattern,
+  AnonymousSelectOrPattern,
   GuardFunction,
   GuardPattern,
   NamedSelectPattern,
+  NamedSelectOrPattern,
   NotPattern,
   Pattern,
 } from './types/Pattern';
@@ -34,6 +36,27 @@ export function select<k extends string>(
     : {
         [symbols.PatternKind]: symbols.NamedSelect,
         [symbols.NamedSelect]: key,
+      };
+}
+
+export function selectOr<r>(defaultValue: r): AnonymousSelectOrPattern<r>;
+export function selectOr<r, k extends string>(
+  defaultValue: r,
+  key: k
+): NamedSelectOrPattern<r, k>;
+export function selectOr<r, k extends string>(
+  defaultValue: r,
+  key?: k
+): AnonymousSelectOrPattern<r> | NamedSelectOrPattern<r, k> {
+  return key === undefined
+    ? {
+        [symbols.PatternKind]: symbols.AnonymousSelectOr,
+        [symbols.DefaultValue]: defaultValue,
+      }
+    : {
+        [symbols.PatternKind]: symbols.NamedSelectOr,
+        [symbols.NamedSelect]: key,
+        [symbols.DefaultValue]: defaultValue,
       };
 }
 

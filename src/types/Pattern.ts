@@ -43,6 +43,22 @@ export type NamedSelectPattern<k extends string> = {
   [symbols.NamedSelect]: k;
 };
 
+export type AnonymousSelectOrPattern<r> = {
+  /** @internal This property should only be used by ts-pattern's internals. */
+  [symbols.PatternKind]: symbols.AnonymousSelectOr;
+  /** @internal This property should only be used by ts-pattern's internals. */
+  [symbols.DefaultValue]: r;
+};
+
+export type NamedSelectOrPattern<r, k extends string> = {
+  /** @internal This property should only be used by ts-pattern's internals. */
+  [symbols.PatternKind]: symbols.NamedSelectOr;
+  /** @internal This property should only be used by ts-pattern's internals. */
+  [symbols.NamedSelect]: k;
+  /** @internal This property should only be used by ts-pattern's internals. */
+  [symbols.DefaultValue]: r;
+};
+
 /**
  * ### Pattern
  * Patterns can be any (nested) javascript value.
@@ -51,6 +67,8 @@ export type NamedSelectPattern<k extends string> = {
 export type Pattern<a> =
   | AnonymousSelectPattern
   | NamedSelectPattern<string>
+  | AnonymousSelectOrPattern<a>
+  | NamedSelectOrPattern<a, string>
   | GuardPattern<a, a>
   | NotPattern<a | any>
   | (a extends Primitives

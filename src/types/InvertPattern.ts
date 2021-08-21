@@ -4,6 +4,8 @@ import type {
   AnonymousSelectPattern,
   GuardPattern,
   NotPattern,
+  NamedSelectOrPattern,
+  AnonymousSelectOrPattern,
 } from './Pattern';
 
 /**
@@ -14,7 +16,9 @@ import type {
 export type InvertPattern<p> = p extends
   | NamedSelectPattern<any>
   | AnonymousSelectPattern
-  ? unknown
+  | NamedSelectOrPattern<infer r, any>
+  | AnonymousSelectOrPattern<infer r>
+  ? r
   : p extends GuardPattern<infer p1, infer p2>
   ? [p2] extends [never]
     ? p1
