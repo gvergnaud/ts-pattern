@@ -868,4 +868,43 @@ describe('exhaustive()', () => {
         .with({ t: 'b' }, (x) => 'ok')
         .exhaustive();
   });
+
+  describe('issue #44', () => {
+    it("shouldn't exclude cases if the pattern contains unknown keys", () => {
+      type Person = {
+        sex: 'Male' | 'Female';
+        age: 'Adult' | 'Child';
+      };
+
+      function withTypo(person: Person): string {
+        return (
+          match(person)
+            //   this pattern contains an addition unknown key
+            .with({ sex: 'Female', oopsThisIsATypo: 'Adult' }, (x) => 'Woman')
+            // those are correct
+            .with({ sex: 'Female', age: 'Child' }, () => 'Girl')
+            .with({ sex: 'Male', age: 'Adult' }, () => 'Man')
+            .with({ sex: 'Male', age: 'Child' }, () => 'Boy')
+            // this pattern shouldn't be considered exhaustive
+            // @ts-expect-error
+            .exhaustive()
+        );
+      }
+
+      function withoutTypo(person: Person): string {
+        return (
+          match(person)
+            .with({ sex: 'Female', age: 'Adult' }, (x) => 'Woman')
+            .with({ sex: 'Female', age: 'Child' }, () => 'Girl')
+            .with({ sex: 'Male', age: 'Adult' }, () => 'Man')
+            .with({ sex: 'Male', age: 'Child' }, () => 'Boy')
+            // this should be ok
+            .exhaustive()
+        );
+      }
+
+      expect(() => withTypo({ sex: 'Female', age: 'Adult' })).toThrow();
+      expect(withoutTypo({ sex: 'Female', age: 'Adult' })).toBe('Woman');
+    });
+  });
 });

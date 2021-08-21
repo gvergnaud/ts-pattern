@@ -115,7 +115,9 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
     ? [keyof p & keyof i] extends [never]
       ? never
       : {
-          [k in keyof p & keyof i]: InvertPatternForExclude<p[k], i[k]>;
+          [k in keyof p]: k extends keyof i
+            ? InvertPatternForExclude<p[k], i[k]>
+            : p[k];
         }
     : never
   : never;

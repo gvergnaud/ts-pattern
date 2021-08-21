@@ -59,4 +59,14 @@ describe('InvertPatternForExclude', () => {
       >
     ];
   });
+
+  describe('issue #44', () => {
+    it('if the pattern contains unknown keys, inverted this pattern should keep them', () => {
+      type input = { sex: 'a' | 'b'; age: 'c' | 'd' };
+      type pattern = { sex: 'a'; unknownKey: 'c' };
+      type inverted = InvertPatternForExclude<pattern, input>;
+
+      type cases = [Expect<Equal<inverted, pattern>>];
+    });
+  });
 });
