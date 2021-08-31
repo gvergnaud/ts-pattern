@@ -18,12 +18,13 @@ import * as symbols from './symbols';
 import { when, not, select, instanceOf, ANONYMOUS_SELECT_KEY } from './guards';
 import { __ } from './wildcards';
 import { InvertPattern } from './types/InvertPattern';
+import { impl, Variant } from './variants';
 
 /**
  * # Pattern matching
  **/
 
-export { Pattern, __, when, not, select, instanceOf };
+export { Pattern, __, when, not, select, instanceOf, impl, Variant };
 
 /**
  * #### match
