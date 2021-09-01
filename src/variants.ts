@@ -11,7 +11,7 @@ type Narrow<variant extends AnyVariant, k extends variant['tag']> = Extract<
 >;
 
 type Constructor<k, v> = [v] extends [never]
-  ? Variant<k>
+  ? () => Variant<k>
   : unknown extends v
   ? <t>(value: t) => Variant<k, t>
   : {
@@ -23,12 +23,12 @@ type Impl<variant extends AnyVariant> = {
   [k in variant['tag']]: Constructor<k, Narrow<variant, k>['value']>;
 };
 
-export function impl<variant extends AnyVariant>(): Impl<variant> {
+export function implementVariants<variant extends AnyVariant>(): Impl<variant> {
   return new Proxy({} as Impl<variant>, {
     get: <k extends keyof Impl<variant>>(_: Impl<variant>, tag: k) => {
-      return (value?: Narrow<variant, k>['value']) => ({
+      return (...args: [value?: Narrow<variant, k>['value']]) => ({
         tag,
-        value,
+        ...(args.length === 0 ? {} : { value: args[0] }),
       });
     },
   });
