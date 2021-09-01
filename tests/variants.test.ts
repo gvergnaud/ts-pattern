@@ -138,8 +138,9 @@ describe('Variants', () => {
 
     const y: SomeRes = x;
 
-    const complexMatch = (x: Result<string, { shape: Shape }>) =>
-      match(x)
+    const complexMatch = (x: Result<string, { shape: Shape }>) => {
+      return match(x)
+        .with(Err(select()), (msg) => `Error: ${msg}`)
         .with(
           Success({ shape: Circle(select()) }),
           ({ radius }) => `Circle ${radius}`
@@ -153,10 +154,8 @@ describe('Variants', () => {
           Success({ shape: Rectangle(select()) }),
           ({ x, y }) => `Rectangle ${x + y}`
         )
-        .with(Err(select()), (msg) => `Error: ${msg}`)
-        //.with(Success({ shape: __ }), () => `I wish we didn't need this`)
-        // @ts-expect-error TODO: figure out why this is an error
         .exhaustive();
+    };
 
     expect(complexMatch(Success({ shape: Circle({ radius: 20 }) }))).toEqual(
       'Circle 20'
