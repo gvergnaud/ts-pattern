@@ -31,6 +31,10 @@ return match(result)
   .exhaustive();
 ```
 
+## About
+
+Write **better** and **safer conditions**. Pattern matching lets you express complex conditions in a single, compact expression. Your code becomes **shorter** and **more readable**. Exhaustiveness checking ensures you haven’t forgotten **any possible cases**.
+
 ## Features
 
 - Works on **any data structure**: nested objects, arrays, tuples, Sets, Maps and all primitive types.
