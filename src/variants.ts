@@ -3,6 +3,12 @@ import { Pattern } from './types/Pattern';
 
 export type Variant<k, d = never> = Compute<{ tag: k; value: d }>;
 
+/**
+ * VariantPatterns can be used to match a Variant in a
+ * `match` expression.
+ */
+type VariantPattern<k, p> = { tag: k; value: p };
+
 type AnyVariant = Variant<string, unknown>;
 
 type Narrow<variant extends AnyVariant, k extends variant['tag']> = Extract<
@@ -16,7 +22,7 @@ type Constructor<k, v> = [v] extends [never]
   ? <t>(value: t) => Variant<k, t>
   : {
       (value: v): Variant<k, v>;
-      <p extends Pattern<v>>(pattern: p): Variant<k, p>;
+      <p extends Pattern<v>>(pattern: p): VariantPattern<k, p>;
     };
 
 type Impl<variant extends AnyVariant> = {

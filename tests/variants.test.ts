@@ -74,6 +74,31 @@ describe('Variants', () => {
     ).toEqual(false);
   });
 
+  it('Variants with type parameters should work', () => {
+    const toString = (maybeShape: Maybe<Shape>) =>
+      match(maybeShape)
+        .with(Nothing(), () => 'Nothing')
+        .with(
+          Just(Circle({ radius: select() })),
+          (radius) => `Just Circle { radius: ${radius} }`
+        )
+        .with(
+          Just(Square(select())),
+          ({ sideLength }) => `Just Square sideLength: ${sideLength}`
+        )
+        .with(
+          Just(Rectangle(select())),
+          ({ x, y }) => `Just Rectangle { x: ${x}, y: ${y} }`
+        )
+        .with(Just(Blob(select())), (area) => `Just Blob { area: ${area} }`)
+        .exhaustive();
+
+    expect(toString(Just(Circle({ radius: 20 })))).toEqual(
+      `Just Circle { radius: 20 }`
+    );
+    expect(toString(Nothing())).toEqual(`Nothing`);
+  });
+
   it('should be possible to put a union type in a variant', () => {
     // with a normal union
 
@@ -99,31 +124,6 @@ describe('Variants', () => {
     expect(maybeAndUnion(Just({ type: 'u', value: 2 }))).toEqual(
       'typeof x: number'
     );
-  });
-
-  it('Variants with type parameters should work', () => {
-    const toString = (maybeShape: Maybe<Shape>) =>
-      match(maybeShape)
-        .with(Nothing(), () => 'Nothing')
-        .with(
-          Just(Circle({ radius: select() })),
-          (radius) => `Just Circle { radius: ${radius} }`
-        )
-        .with(
-          Just(Square(select())),
-          ({ sideLength }) => `Just Square sideLength: ${sideLength}`
-        )
-        .with(
-          Just(Rectangle(select())),
-          ({ x, y }) => `Just Rectangle { x: ${x}, y: ${y} }`
-        )
-        .with(Just(Blob(select())), (area) => `Just Blob { area: ${area} }`)
-        .exhaustive();
-
-    expect(toString(Just(Circle({ radius: 20 })))).toEqual(
-      `Just Circle { radius: 20 }`
-    );
-    expect(toString(Nothing())).toEqual(`Nothing`);
   });
 
   it('should be possible to create a variant with several type parameters', () => {
