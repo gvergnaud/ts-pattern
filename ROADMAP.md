@@ -1,5 +1,6 @@
 ### Roadmap
 
+- [ ] update `select()` and `select('name')` to accept a pattern the selected value should match.
 - [ ] add a `rest` (maybe `rest(Pattern<a>)`) pattern for list. Example of using `rest`:
 
 ```ts
