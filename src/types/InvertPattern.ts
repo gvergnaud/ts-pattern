@@ -1,3 +1,4 @@
+import type * as symbols from '../symbols';
 import { IsPlainObject, Primitives, IsLiteral, Or } from './helpers';
 import type {
   NamedSelectPattern,
@@ -14,7 +15,9 @@ import type {
 export type InvertPattern<p> = p extends
   | NamedSelectPattern<any>
   | AnonymousSelectPattern
-  ? unknown
+  ? keyof p extends symbols.PatternKind | symbols.NamedSelect
+    ? unknown
+    : InvertPattern<Omit<p, symbols.PatternKind | symbols.NamedSelect>>
   : p extends GuardPattern<infer p1, infer p2>
   ? [p2] extends [never]
     ? p1
@@ -58,7 +61,12 @@ export type InvertPattern<p> = p extends
 export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
   ? Exclude<i, p1>
   : p extends NamedSelectPattern<any> | AnonymousSelectPattern
-  ? unknown
+  ? keyof p extends symbols.PatternKind | symbols.NamedSelect
+    ? unknown
+    : InvertPatternForExclude<
+        Omit<p, symbols.PatternKind | symbols.NamedSelect>,
+        i
+      >
   : p extends GuardPattern<any, infer p1>
   ? p1
   : p extends Primitives

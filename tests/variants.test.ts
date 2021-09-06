@@ -9,6 +9,8 @@ type Shape =
 
 type Maybe<T> = Variant<'Just', T> | Variant<'Nothing'>;
 
+type x = Maybe<unknown>;
+
 const { Just, Nothing } = implementVariants<Maybe<unknown>>();
 const { Circle, Square, Rectangle, Blob } = implementVariants<Shape>();
 
@@ -16,10 +18,10 @@ describe('Variants', () => {
   it('should work with exhaustive matching', () => {
     const area = (x: Shape) =>
       match(x)
-        .with(Circle({ radius: select() }), (radius) => Math.PI * radius ** 2)
-        .with(Square(select()), ({ sideLength }) => sideLength ** 2)
-        .with(Rectangle(select()), ({ x, y }) => x * y)
-        .with(Blob(__), ({ value }) => value)
+        .with(Circle(__), ({ radius }) => Math.PI * radius ** 2)
+        .with(Square(__), ({ sideLength }) => sideLength ** 2)
+        .with(Rectangle(__), ({ x, y }) => x * y)
+        .with(Blob(__), (value) => value)
         .exhaustive();
 
     expect(area(Circle({ radius: 1 }))).toEqual(Math.PI);
@@ -35,31 +37,31 @@ describe('Variants', () => {
       match({ a, b })
         .with(
           {
-            a: Circle({ radius: select('a') }),
-            b: Circle({ radius: select('b') }),
+            a: Circle(),
+            b: Circle(),
           },
-          ({ a, b }) => a === b
+          ({ a, b }) => a.radius === b.radius
         )
         .with(
           {
-            a: Rectangle(select('a')),
-            b: Rectangle(select('b')),
+            a: Rectangle(),
+            b: Rectangle(),
           },
           ({ a, b }) => a.x === b.x && a.y === b.y
         )
         .with(
           {
-            a: Square({ sideLength: select('a') }),
-            b: Square({ sideLength: select('b') }),
+            a: Square(),
+            b: Square(),
           },
-          ({ a, b }) => a === b
+          ({ a, b }) => a.sideLength === b.sideLength
         )
         .with(
           {
-            a: Blob(select('a')),
-            b: Blob(select('b')),
+            a: Blob(),
+            b: Blob(),
           },
-          ({ a, b }) => a === b
+          ({ a, b }) => a.value === b.value
         )
         .otherwise(() => false);
 
@@ -79,18 +81,18 @@ describe('Variants', () => {
       match(maybeShape)
         .with(Nothing(), () => 'Nothing')
         .with(
-          Just(Circle({ radius: select() })),
-          (radius) => `Just Circle { radius: ${radius} }`
+          Just(Circle()),
+          ({ radius }) => `Just Circle { radius: ${radius} }`
         )
         .with(
-          Just(Square(select())),
+          Just(Square()),
           ({ sideLength }) => `Just Square sideLength: ${sideLength}`
         )
         .with(
-          Just(Rectangle(select())),
+          Just(Rectangle()),
           ({ x, y }) => `Just Rectangle { x: ${x}, y: ${y} }`
         )
-        .with(Just(Blob(select())), (area) => `Just Blob { area: ${area} }`)
+        .with(Just(Blob()), (area) => `Just Blob { area: ${area} }`)
         .exhaustive();
 
     expect(toString(Just(Circle({ radius: 20 })))).toEqual(
@@ -142,12 +144,12 @@ describe('Variants', () => {
       return match(x)
         .with(Err(select()), (msg) => `Error: ${msg}`)
         .with(
-          Success({ shape: Circle(select()) }),
-          ({ radius }) => `Circle ${radius}`
+          Success({ shape: Circle({ radius: select() }) }),
+          (radius) => `Circle ${radius}`
         )
         .with(
-          Success({ shape: Square(select()) }),
-          ({ sideLength }) => `Square ${sideLength}`
+          Success({ shape: Square({ sideLength: select() }) }),
+          (sideLength) => `Square ${sideLength}`
         )
         .with(Success({ shape: Blob(select()) }), (area) => `Blob ${area}`)
         .with(
@@ -164,3 +166,8 @@ describe('Variants', () => {
     expect(complexMatch(Err('Failed'))).toEqual('Error: Failed');
   });
 });
+
+const x = Circle(__);
+const y = Circle(select());
+const z = Circle({ radius: select() });
+const w = Circle({ radius: 2 });
