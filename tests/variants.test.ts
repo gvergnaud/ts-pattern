@@ -21,7 +21,7 @@ describe('Variants', () => {
         .with(Circle(__), ({ radius }) => Math.PI * radius ** 2)
         .with(Square(__), ({ sideLength }) => sideLength ** 2)
         .with(Rectangle(__), ({ x, y }) => x * y)
-        .with(Blob(__), (value) => value)
+        .with(Blob(__), ({ value }) => value)
         .exhaustive();
 
     expect(area(Circle({ radius: 1 }))).toEqual(Math.PI);
@@ -37,29 +37,29 @@ describe('Variants', () => {
       match({ a, b })
         .with(
           {
-            a: Circle(),
-            b: Circle(),
+            a: Circle(__),
+            b: Circle(__),
           },
           ({ a, b }) => a.radius === b.radius
         )
         .with(
           {
-            a: Rectangle(),
-            b: Rectangle(),
+            a: Rectangle(__),
+            b: Rectangle(__),
           },
           ({ a, b }) => a.x === b.x && a.y === b.y
         )
         .with(
           {
-            a: Square(),
-            b: Square(),
+            a: Square(__),
+            b: Square(__),
           },
           ({ a, b }) => a.sideLength === b.sideLength
         )
         .with(
           {
-            a: Blob(),
-            b: Blob(),
+            a: Blob(__),
+            b: Blob(__),
           },
           ({ a, b }) => a.value === b.value
         )
@@ -81,18 +81,18 @@ describe('Variants', () => {
       match(maybeShape)
         .with(Nothing(), () => 'Nothing')
         .with(
-          Just(Circle()),
+          Just(Circle(select())),
           ({ radius }) => `Just Circle { radius: ${radius} }`
         )
         .with(
-          Just(Square()),
-          ({ sideLength }) => `Just Square sideLength: ${sideLength}`
+          Just(Square(__)),
+          ({ value: { sideLength } }) => `Just Square sideLength: ${sideLength}`
         )
         .with(
-          Just(Rectangle()),
+          Just(Rectangle(select())),
           ({ x, y }) => `Just Rectangle { x: ${x}, y: ${y} }`
         )
-        .with(Just(Blob()), (area) => `Just Blob { area: ${area} }`)
+        .with(Just(Blob(select())), (area) => `Just Blob { area: ${area} }`)
         .exhaustive();
 
     expect(toString(Just(Circle({ radius: 20 })))).toEqual(
@@ -120,10 +120,10 @@ describe('Variants', () => {
         .exhaustive();
 
     expect(maybeAndUnion(Nothing())).toEqual('Non');
-    expect(maybeAndUnion(Just({ type: 't', value: 'hello' }))).toEqual(
+    expect(maybeAndUnion(Just({ type: 't' as const, value: 'hello' }))).toEqual(
       'typeof x: string'
     );
-    expect(maybeAndUnion(Just({ type: 'u', value: 2 }))).toEqual(
+    expect(maybeAndUnion(Just({ type: 'u' as const, value: 2 }))).toEqual(
       'typeof x: number'
     );
   });
@@ -140,29 +140,33 @@ describe('Variants', () => {
 
     const y: SomeRes = x;
 
-    const complexMatch = (x: Result<string, { shape: Shape }>) => {
+    const complexMatch = (x: Result<string, { shape: Maybe<Shape> }>) => {
       return match(x)
-        .with(Err(select()), (msg) => `Error: ${msg}`)
+        .with(Err(select()), ({ value }) => `Error: ${value}`)
         .with(
-          Success({ shape: Circle({ radius: select() }) }),
+          Success({ shape: Just(Circle({ radius: select() })) }),
           (radius) => `Circle ${radius}`
         )
         .with(
-          Success({ shape: Square({ sideLength: select() }) }),
+          Success({ shape: Just(Square({ sideLength: select() })) }),
           (sideLength) => `Square ${sideLength}`
         )
-        .with(Success({ shape: Blob(select()) }), (area) => `Blob ${area}`)
         .with(
-          Success({ shape: Rectangle(select()) }),
+          Success({ shape: Just(Blob(select())) }),
+          ({ value: area }) => `Blob ${area}`
+        )
+        .with(
+          Success({ shape: Just(Rectangle(select())) }),
           ({ x, y }) => `Rectangle ${x + y}`
         )
+        .with(Success({ shape: Nothing() }), () => `Nothing`)
         .exhaustive();
     };
 
-    expect(complexMatch(Success({ shape: Circle({ radius: 20 }) }))).toEqual(
-      'Circle 20'
-    );
-    expect(complexMatch(Success({ shape: Blob(20) }))).toEqual('Blob 20');
+    expect(
+      complexMatch(Success({ shape: Just(Circle({ radius: 20 })) }))
+    ).toEqual('Circle 20');
+    expect(complexMatch(Success({ shape: Just(Blob(20)) }))).toEqual('Blob 20');
     expect(complexMatch(Err('Failed'))).toEqual('Error: Failed');
   });
 });

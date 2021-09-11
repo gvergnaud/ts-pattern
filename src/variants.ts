@@ -6,25 +6,25 @@ import {
   Pattern,
 } from './types/Pattern';
 
-export type Variant<k, d = never> = Compute<
-  [d] extends [never]
-    ? { tag: k }
-    : { tag: k } & (d extends object ? d : { value: d })
->;
+type ValueContainer<d> = d extends { tag: string }
+  ? { value: d }
+  : d extends object
+  ? d
+  : { value: d };
 
-type VariantPattern<k> = { tag: k };
+export type Variant<k, d = never> = Compute<
+  [d] extends [never] ? { tag: k } : { tag: k } & ValueContainer<d>
+>;
 
 /**
  * VariantPatterns can be used to match a Variant in a
  * `match` expression.
  */
-type VariantValuePattern<k, p> = { tag: k } & (p extends
-  | AnonymousSelectPattern
-  | NamedSelectPattern<string>
+type VariantPattern<k, p = never> = { tag: k } & ([p] extends [never]
+  ? {}
+  : p extends AnonymousSelectPattern | NamedSelectPattern<string>
   ? p
-  : p extends object
-  ? p
-  : { value: p });
+  : ValueContainer<p>);
 
 type AnyVariant = { tag: string };
 
@@ -37,13 +37,13 @@ type Constructor<k, v> = [v] extends [never]
   ? () => Variant<k>
   : unknown extends v
   ? {
-      <t>(value: t): { tag: k } & (t extends object ? t : { value: t });
-      (): VariantPattern<k>;
+      <t>(value: t): { tag: k } & ValueContainer<t>;
+      (catchall: typeof __): VariantPattern<k>;
     }
   : {
       (value: v): Variant<k, v>;
-      (): VariantPattern<k>;
-      <p extends Pattern<v>>(pattern: p): VariantValuePattern<k, p>;
+      (catchall: typeof __): VariantPattern<k>;
+      <p extends Pattern<v>>(pattern: p): VariantPattern<k, p>;
     };
 
 type Impl<variant extends AnyVariant> = {
@@ -64,8 +64,12 @@ export function implementVariants<variant extends AnyVariant>(): Impl<variant> {
         tag,
         ...(args.length === 0
           ? {}
+          : args[0] === __
+          ? {}
           : typeof args[0] === 'object'
-          ? args[0]
+          ? 'tag' in args[0]
+            ? { value: args[0] }
+            : args[0]
           : { value: args[0] }),
       });
     },
