@@ -148,8 +148,8 @@ describe('Variants', () => {
           (radius) => `Circle ${radius}`
         )
         .with(
-          Success({ shape: Just(Square({ sideLength: select() })) }),
-          (sideLength) => `Square ${sideLength}`
+          Success({ shape: Just(Square(select())) }),
+          ({ sideLength }) => `Square ${sideLength}`
         )
         .with(
           Success({ shape: Just(Blob(select())) }),
@@ -171,7 +171,13 @@ describe('Variants', () => {
   });
 });
 
+/**
+ * I think this is better because I'm too attach to the idea that
+ * patterns should look like constructing the value.
+ * this has some typesafety tradeoffs, but I think they are bearable.
+ */
 const x = Circle(__);
 const y = Circle(select());
 const z = Circle({ radius: select() });
 const w = Circle({ radius: 2 });
+const r = Rectangle({ x: 2, y: 3 });

@@ -5,73 +5,71 @@ import {
   NamedSelectPattern,
   Pattern,
 } from './types/Pattern';
+import { select } from './guards';
 
-type ValueContainer<d> = d extends { tag: string }
+type ValueContainer<d> = d extends { _tag: string }
   ? { value: d }
   : d extends object
   ? d
   : { value: d };
 
 export type Variant<k, d = never> = Compute<
-  [d] extends [never] ? { tag: k } : { tag: k } & ValueContainer<d>
+  [d] extends [never] ? { _tag: k } : { _tag: k } & ValueContainer<d>
 >;
 
 /**
  * VariantPatterns can be used to match a Variant in a
  * `match` expression.
  */
-type VariantPattern<k, p = never> = { tag: k } & ([p] extends [never]
+type VariantPattern<k, p = never> = { _tag: k } & ([p] extends
+  | [never]
+  | [typeof __]
   ? {}
   : p extends AnonymousSelectPattern | NamedSelectPattern<string>
   ? p
   : ValueContainer<p>);
 
-type AnyVariant = { tag: string };
+type AnyVariant = { _tag: string };
 
-type Narrow<variant extends AnyVariant, k extends variant['tag']> = Extract<
+type Narrow<variant extends AnyVariant, k extends variant['_tag']> = Extract<
   variant,
-  { tag: k }
+  { _tag: k }
 >;
 
 type Constructor<k, v> = [v] extends [never]
   ? () => Variant<k>
   : unknown extends v
   ? {
-      <t>(value: t): { tag: k } & ValueContainer<t>;
-      (catchall: typeof __): VariantPattern<k>;
+      <t>(value: t): { _tag: k } & ValueContainer<t>;
+      <p extends Pattern<v>>(pattern: p): VariantPattern<k, p>;
     }
   : {
       (value: v): Variant<k, v>;
-      (catchall: typeof __): VariantPattern<k>;
       <p extends Pattern<v>>(pattern: p): VariantPattern<k, p>;
     };
 
 type Impl<variant extends AnyVariant> = {
-  [k in variant['tag']]: Constructor<
+  [k in variant['_tag']]: Constructor<
     k,
     Narrow<variant, k> extends { value: infer v }
       ? v
-      : keyof Narrow<variant, k> extends 'tag'
+      : keyof Narrow<variant, k> extends '_tag'
       ? never
-      : Compute<Omit<Narrow<variant, k>, 'tag'>>
+      : Compute<Omit<Narrow<variant, k>, '_tag'>>
   >;
 };
 
 export function implementVariants<variant extends AnyVariant>(): Impl<variant> {
   return new Proxy({} as Impl<variant>, {
-    get: <k extends keyof Impl<variant>>(_: Impl<variant>, tag: k) => {
-      return (...args: [value?: any]) => ({
-        tag,
-        ...(args.length === 0
-          ? {}
-          : args[0] === __
-          ? {}
-          : typeof args[0] === 'object'
-          ? 'tag' in args[0]
-            ? { value: args[0] }
-            : args[0]
-          : { value: args[0] }),
-      });
+    get: <k extends keyof Impl<variant>>(_: Impl<variant>, _tag: k) => {
+      return (...args: [value?: any]) =>
+        args.length === 0 || args[0] === __
+          ? { _tag }
+          : args[0] !== null &&
+            typeof args[0] === 'object' &&
+            !('_tag' in args[0])
+          ? { _tag, ...args[0] }
+          : { _tag, value: args[0] };
     },
   });
 }
