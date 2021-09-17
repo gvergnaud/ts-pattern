@@ -5,10 +5,10 @@ function isUnknown<T>(x: T | unknown): x is unknown {
 }
 
 function isNumber<T>(x: T | number): x is number {
-  return typeof x === 'number' && !Number.isNaN(x);
+  return typeof x === 'number';
 }
 
-function numberIsNaN<T>(x: T | number): x is number {
+function numberIsNaN<T>(x: T | number) {
   return Number.isNaN(x);
 }
 
