@@ -18,4 +18,16 @@ describe('Numbers', () => {
 
     expect(res).toEqual(2);
   });
+
+  it('Should match NaN specially', () => {
+    const val: number | null = NaN;
+    const res = match(val)
+      .with(__.nullish, () => 'bad')
+      .with(1, () => 'bad')
+      .with(__.number, () => 'bad')
+      .with(__.NaN, () => 'good')
+      .exhaustive();
+
+    expect(res).toEqual('good');
+  });
 });
