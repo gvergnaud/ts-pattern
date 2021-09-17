@@ -99,6 +99,7 @@ yarn add ts-pattern
     - [`__.number` wildcard](#__number-wildcard)
     - [`__.boolean` wildcard](#__boolean-wildcard)
     - [`__.nullish` wildcard](#__nullish-wildcard)
+    - [`__.NaN` wildcard](#__nan-wildcard)
     - [Objects](#objects)
     - [Lists (arrays)](#lists-arrays)
     - [Tuples (arrays)](#tuples-arrays)
@@ -734,7 +735,9 @@ However, sometimes `null` and `undefined` appear in a union together
 
 ```ts
 import { match, __ } from 'ts-pattern';
+
 const input = null;
+
 const output = match<number | string | boolean | null | undefined>(input)
   .with(__.string, () => 'it is a string!')
   .with(__.number, () => 'it is a number!')
@@ -742,9 +745,30 @@ const output = match<number | string | boolean | null | undefined>(input)
   .with(__.nullish, () => 'it is either null or undefined!')
   .with(null, () => 'it is null!')
   .with(undefined, () => 'it is undefined!')
-  .run();
+  .exhaustive();
+
 console.log(output);
 // => 'it is either null or undefined!'
+```
+
+#### `__.NaN` wildcard
+
+The `__.NaN` pattern will match `NaN` values.
+
+Note that `__.number` also match `NaNs`, but this pattern lets you
+explicitly match them if you want to handle them separately:
+
+```ts
+import { match, __ } from 'ts-pattern';
+
+const input = NaN;
+const output = match<number>(input)
+  .with(__.NaN, () => 'This is not a number!')
+  .with(__.number, () => 'This is a number!')
+  .exhaustive();
+
+console.log(output);
+// => 'This is not a number!'
 ```
 
 #### Objects
