@@ -297,3 +297,6 @@ export function isMatching<p extends Pattern<any>>(
     `isMatching wasn't given enough arguments: expected 1 or 2, received ${args.length}.`
   );
 }
+
+export const oneOf = <a>(...patterns: Pattern<a>[]) =>
+  when((x): x is a => patterns.some((p) => isMatching(p, x)));
