@@ -41,11 +41,17 @@ type Constructor<k, v> = [v] extends [never]
   : unknown extends v
   ? {
       <t>(value: t): { _tag: k } & ValueContainer<t>;
-      <p extends Pattern<v>>(pattern: p): VariantPattern<k, p>;
+      matching<p extends Pattern<v>>(pattern: p): VariantPattern<k, p>;
     }
   : {
       (value: v): Variant<k, v>;
-      <p extends Pattern<v>>(pattern: p): VariantPattern<k, p>;
+      (value: typeof __): Variant<k>;
+      (value: AnonymousSelectPattern): Variant<k, AnonymousSelectPattern>;
+      <name extends string>(value: NamedSelectPattern<name>): Variant<
+        k,
+        NamedSelectPattern<name>
+      >;
+      matching<p extends Pattern<v>>(pattern: p): VariantPattern<k, p>;
     };
 
 type Impl<variant extends AnyVariant> = {
@@ -62,7 +68,7 @@ type Impl<variant extends AnyVariant> = {
 export function implementVariants<variant extends AnyVariant>(): Impl<variant> {
   return new Proxy({} as Impl<variant>, {
     get: <k extends keyof Impl<variant>>(_: Impl<variant>, _tag: k) => {
-      return (...args: [value?: any]) =>
+      const construct = (...args: [value?: any]) =>
         args.length === 0 || args[0] === __
           ? { _tag }
           : args[0] !== null &&
@@ -70,6 +76,10 @@ export function implementVariants<variant extends AnyVariant>(): Impl<variant> {
             !('_tag' in args[0])
           ? { _tag, ...args[0] }
           : { _tag, value: args[0] };
+
+      construct.matching = construct;
+
+      return construct;
     },
   });
 }

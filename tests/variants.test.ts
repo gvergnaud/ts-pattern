@@ -9,8 +9,6 @@ type Shape =
 
 type Maybe<T> = Variant<'Just', T> | Variant<'Nothing'>;
 
-type x = Maybe<unknown>;
-
 const { Just, Nothing } = implementVariants<Maybe<unknown>>();
 const { Circle, Square, Rectangle, Blob } = implementVariants<Shape>();
 
@@ -144,7 +142,7 @@ describe('Variants', () => {
       return match(x)
         .with(Err(select()), ({ value }) => `Error: ${value}`)
         .with(
-          Success({ shape: Just(Circle({ radius: select() })) }),
+          Success({ shape: Just(Circle.matching({ radius: select() })) }),
           (radius) => `Circle ${radius}`
         )
         .with(
@@ -174,10 +172,12 @@ describe('Variants', () => {
 /**
  * I think this is better because I'm too attach to the idea that
  * patterns should look like constructing the value.
- * this has some typesafety tradeoffs, but I think they are bearable.
  */
 const x = Circle(__);
 const y = Circle(select());
-const z = Circle({ radius: select() });
+const z = Circle.matching({ radius: select() });
 const w = Circle({ radius: 2 });
 const r = Rectangle({ x: 2, y: 3 });
+// @ts-expect-error
+const r2 = Rectangle({ x: 2 });
+const r3 = Rectangle.matching({ x: 2 });
