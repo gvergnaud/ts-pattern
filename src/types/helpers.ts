@@ -56,20 +56,20 @@ export type UnionToIntersection<U> = (
 
 export type IsUnion<a> = [a] extends [UnionToIntersection<a>] ? false : true;
 
-export type UnionToTuple<T> = UnionToIntersection<
+export type UnionToTuple<T, output extends any[] = []> = UnionToIntersection<
   T extends any ? (t: T) => T : never
 > extends (_: any) => infer W
-  ? [...UnionToTuple<Exclude<T, W>>, W]
-  : [];
+  ? UnionToTuple<Exclude<T, W>, [W, ...output]>
+  : output;
 
 export type Cast<a, b> = a extends b ? a : never;
 
-export type Flatten<xs extends any[]> = xs extends readonly [
-  infer head,
-  ...infer tail
-]
-  ? [...Cast<head, any[]>, ...Flatten<tail>]
-  : [];
+export type Flatten<
+  xs extends any[],
+  output extends any[] = []
+> = xs extends readonly [infer head, ...infer tail]
+  ? Flatten<tail, [...output, ...Cast<head, any[]>]>
+  : output;
 
 export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <
   T

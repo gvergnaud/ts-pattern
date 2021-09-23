@@ -45,11 +45,15 @@ export type FindUnionsMany<
   p,
   path extends PropertyKey[] = []
 > = UnionToTuple<
-  (p extends any
-    ? IsMatching<a, p> extends true
-      ? FindUnions<a, p, path>
-      : []
-    : never)[number] // using [number] to flatten everything to the same level
+  (
+    p extends any
+      ? IsMatching<a, p> extends true
+        ? FindUnions<a, p, path>
+        : []
+      : never
+  ) extends (infer T)[]
+    ? T
+    : never
 >;
 
 /**
