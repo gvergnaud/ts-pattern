@@ -272,19 +272,32 @@ describe('FindSelected', () => {
         type Input = { type: 'text'; text: string; author: { name: string } };
 
         type cases = [
-          Expect<Equal<FindSelected<Input, { type: 'text' }>, Input>>
-        ];
-      });
-
-      it('should return the input type', () => {
-        type Input = { text: any };
-
-        type cases = [
-          Expect<Equal<FindSelected<Input, { text: 'text' }>, Input>>,
+          Expect<Equal<FindSelected<Input, { type: 'text' }>, Input>>,
+          Expect<
+            Equal<FindSelected<{ text: any }, { text: 'text' }>, { text: any }>
+          >,
           Expect<
             Equal<
-              FindSelected<Input, { str: NotPattern<null | undefined> }>,
-              Input
+              FindSelected<
+                { text: any },
+                { str: NotPattern<null | undefined> }
+              >,
+              { text: any }
+            >
+          >,
+          Expect<
+            Equal<
+              FindSelected<{ text: unknown }, { text: 'text' }>,
+              { text: unknown }
+            >
+          >,
+          Expect<
+            Equal<
+              FindSelected<
+                { text: unknown },
+                { str: NotPattern<null | undefined> }
+              >,
+              { text: unknown }
             >
           >
         ];

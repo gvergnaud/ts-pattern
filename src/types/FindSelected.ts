@@ -1,10 +1,5 @@
 import type * as symbols from '../symbols';
-import type {
-  Cast,
-  IsAny,
-  IsPlainObject,
-  UnionToIntersection,
-} from './helpers';
+import type { Cast, IsAny, UnionToIntersection } from './helpers';
 import type { NamedSelectPattern, AnonymousSelectPattern } from './Pattern';
 
 export type FindSelectionUnion<
@@ -69,7 +64,7 @@ export type FindSelectionUnion<
         }
       : never
     : never
-  : IsPlainObject<p> extends true
+  : p extends object
   ? i extends object
     ? {
         [k in keyof p]: k extends keyof i
