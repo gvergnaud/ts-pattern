@@ -75,7 +75,7 @@ describe('Nesting', () => {
       ).toEqual(true);
     });
 
-    it('it should work on 9 level', () => {
+    it('it should work on 7 level', () => {
       expect(
         match({
           one: {
@@ -84,12 +84,8 @@ describe('Nesting', () => {
                 four: {
                   five: {
                     six: {
-                      seven: {
-                        height: {
-                          foo: 2,
-                          bar: true,
-                        },
-                      },
+                      foo: 2,
+                      bar: true,
                     },
                   },
                 },
@@ -105,12 +101,8 @@ describe('Nesting', () => {
                     four: {
                       five: {
                         six: {
-                          seven: {
-                            height: {
-                              foo: __,
-                              bar: select('bar'),
-                            },
-                          },
+                          foo: __,
+                          bar: select('bar'),
                         },
                       },
                     },
@@ -118,7 +110,7 @@ describe('Nesting', () => {
                 },
               },
             },
-            (_, x) => x.one.two.three.four.five.six.seven.height.bar
+            (_, x) => x.one.two.three.four.five.six.bar
           )
           .run()
       ).toEqual(true);
@@ -158,15 +150,15 @@ describe('Nesting', () => {
       ).toEqual(true);
     });
 
-    it('it should work on 11 levels', () => {
+    it('it should work on 9 levels', () => {
       expect(
-        match([[[[[[[[[[{ two: '2', foo: 2, bar: true }]]]]]]]]]])
+        match([[[[[[[[{ two: '2', foo: 2, bar: true }]]]]]]]])
           .with(
-            [[[[[[[[[[{ foo: __, bar: select('bar') }]]]]]]]]]],
+            [[[[[[[[{ foo: __, bar: select('bar') }]]]]]]]],
             ({ bar }) => bar
           )
           .run()
-      ).toEqual([[[[[[[[[[true]]]]]]]]]]);
+      ).toEqual([[[[[[[[true]]]]]]]]);
     });
   });
 });
