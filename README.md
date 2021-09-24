@@ -469,7 +469,7 @@ function with(
 - `pattern: Pattern<TInput>`
   - **Required**
   - The pattern your input must match for the handler to be called.
-  - [See all valid patterns bellow](#patterns)
+  - [See all valid patterns below](#patterns)
   - If you provide several patterns before providing the `handler`, the `with` clause will match if one of the patterns matches.
 - `when: (value: TInput) => unknown`
   - Optional
