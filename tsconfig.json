@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "ES6",
     "declaration": true,
     "target": "es6",
     "strict": true,
-    "outDir": "lib/"
+    "outDir": "lib/",
+    "moduleResolution": "Node"
   },
   "exclude": ["tests/", "lib/"]
 }
