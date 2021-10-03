@@ -43,6 +43,12 @@ export type NamedSelectPattern<k extends string> = {
   [symbols.NamedSelect]: k;
 };
 
+export type ListPattern<a> = {
+  /** @internal This property should only be used by ts-pattern's internals. */
+  [symbols.PatternKind]: symbols.List;
+  [symbols.List]: a;
+};
+
 /**
  * ### Pattern
  * Patterns can be any (nested) javascript value.
@@ -55,7 +61,7 @@ export type Pattern<a> =
   | NotPattern<a | any>
   | (a extends Primitives
       ? a
-      : a extends readonly (infer i)[]
+      : a extends readonly (infer a1)[]
       ? a extends readonly [infer a1, infer a2, infer a3, infer a4, infer a5]
         ? readonly [
             Pattern<a1>,
@@ -70,18 +76,21 @@ export type Pattern<a> =
         ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>]
         : a extends readonly [infer a1, infer a2]
         ? readonly [Pattern<a1>, Pattern<a2>]
+        : a extends readonly [infer a1]
+        ? readonly [Pattern<a1>]
         :
+            | ListPattern<Pattern<a1>>
             | readonly []
-            | readonly [Pattern<i>]
-            | readonly [Pattern<i>, Pattern<i>]
-            | readonly [Pattern<i>, Pattern<i>, Pattern<i>]
-            | readonly [Pattern<i>, Pattern<i>, Pattern<i>, Pattern<i>]
+            | readonly [Pattern<a1>]
+            | readonly [Pattern<a1>, Pattern<a1>]
+            | readonly [Pattern<a1>, Pattern<a1>, Pattern<a1>]
+            | readonly [Pattern<a1>, Pattern<a1>, Pattern<a1>, Pattern<a1>]
             | readonly [
-                Pattern<i>,
-                Pattern<i>,
-                Pattern<i>,
-                Pattern<i>,
-                Pattern<i>
+                Pattern<a1>,
+                Pattern<a1>,
+                Pattern<a1>,
+                Pattern<a1>,
+                Pattern<a1>
               ]
       : a extends Map<infer k, infer v>
       ? Map<k, Pattern<v>>

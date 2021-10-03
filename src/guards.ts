@@ -3,6 +3,7 @@ import {
   AnonymousSelectPattern,
   GuardFunction,
   GuardPattern,
+  ListPattern,
   NamedSelectPattern,
   NotPattern,
   Pattern,
@@ -18,6 +19,11 @@ export const when = <a, b extends a = never>(
 export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
   [symbols.PatternKind]: symbols.Not,
   [symbols.Not]: pattern,
+});
+
+export const list = <a extends Pattern<any>>(pattern: a): ListPattern<a> => ({
+  [symbols.PatternKind]: symbols.List,
+  [symbols.List]: pattern,
 });
 
 export const ANONYMOUS_SELECT_KEY = '@ts-pattern/__anonymous-select-key';

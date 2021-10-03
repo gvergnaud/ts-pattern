@@ -1,4 +1,5 @@
 import { match, __ } from '../src';
+import { list } from '../src/guards';
 import { Expect, Equal } from '../src/types/helpers';
 import { Option, Blog } from './utils';
 
@@ -10,10 +11,10 @@ describe('List ([a])', () => {
     };
     const res = match<any, Option<Blog[]>>([httpResult])
       .with([] as const, (x) => {
-        type t = Expect<Equal<typeof x, never[]>>;
+        type t = Expect<Equal<typeof x, []>>;
         return { kind: 'some', value: [{ id: 0, title: 'LOlol' }] };
       })
-      .with([{ id: __.number, title: __.string }], (blogs) => {
+      .with(list({ id: __.number, title: __.string }), (blogs) => {
         type t = Expect<Equal<typeof blogs, { id: number; title: string }[]>>;
         return {
           kind: 'some',

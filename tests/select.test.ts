@@ -5,6 +5,7 @@ import {
   MixedNamedAndAnonymousSelectError,
   SeveralAnonymousSelectError,
 } from '../src/types/FindSelected';
+import { list } from '../src/guards';
 
 describe('select', () => {
   it('should work with tuples', () => {
@@ -21,7 +22,7 @@ describe('select', () => {
   it('should work with array', () => {
     expect(
       match<string[], string[]>(['you', 'hello'])
-        .with([select('texts')], ({ texts }, xs) => {
+        .with(list(select('texts')), ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, string[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -44,7 +45,7 @@ describe('select', () => {
         { text: { content: 'you' } },
         { text: { content: 'hello' } },
       ])
-        .with([{ text: { content: select('texts') } }], ({ texts }, xs) => {
+        .with(list({ text: { content: select('texts') } }), ({ texts }, xs) => {
           type t = Expect<Equal<typeof texts, string[]>>;
           return texts;
         })
@@ -169,12 +170,10 @@ describe('select', () => {
           return 'empty';
         })
         .with(
-          [
-            [
-              { name: select('names') },
-              { post: [{ title: select('titles') }] },
-            ],
-          ],
+          list([
+            { name: select('names') },
+            { post: list({ title: select('titles') }) },
+          ]),
           ({ names, titles }) => {
             type t = Expect<Equal<typeof names, string[]>>;
             type t2 = Expect<Equal<typeof titles, string[][]>>;

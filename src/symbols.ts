@@ -32,3 +32,7 @@ export type NamedSelect = typeof NamedSelect;
 /** @internal This symbol should only be used by ts-pattern's internals. */
 export const AnonymousSelect = Symbol('@ts-pattern/anonymous-select');
 export type AnonymousSelect = typeof AnonymousSelect;
+
+/** @internal This symbol should only be used by ts-pattern's internals. */
+export const List = Symbol('@ts-pattern/list');
+export type List = typeof List;

@@ -1,4 +1,5 @@
 import { match, not, Pattern, select, when, __ } from '../src';
+import { list } from '../src/guards';
 import { Equal, Expect } from '../src/types/helpers';
 import { Option, some, none, BigUnion, State, Event } from './utils';
 
@@ -388,17 +389,17 @@ describe('exhaustive()', () => {
 
       match(input)
         .with({ type: 'a' }, (x) => x.items)
-        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .with({ type: 'b', items: list({ data: __.string }) }, (x) => [])
         .exhaustive();
 
       match(input)
-        .with({ type: 'a', items: [__] }, (x) => x.items)
-        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .with({ type: 'a', items: list(__) }, (x) => x.items)
+        .with({ type: 'b', items: list({ data: __.string }) }, (x) => [])
         .exhaustive();
 
       match<Input>(input)
-        .with({ type: 'a', items: [{ some: __ }] }, (x) => x.items)
-        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .with({ type: 'a', items: list({ some: __ }) }, (x) => x.items)
+        .with({ type: 'b', items: list({ data: __.string }) }, (x) => [])
         // @ts-expect-error
         .exhaustive();
     });

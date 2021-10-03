@@ -1,5 +1,6 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, select, __ } from '../src';
+import { list } from '../src/guards';
 
 describe('Nesting', () => {
   describe('deeply nested objects', () => {
@@ -123,7 +124,7 @@ describe('Nesting', () => {
         match([{ two: '2', foo: 2, bar: true }])
           .with([{ foo: __, bar: select('bar') }], ({ bar }) => bar)
           .run()
-      ).toEqual([true]);
+      ).toEqual(true);
     });
 
     it('it should work on 3 levels', () => {
@@ -131,7 +132,7 @@ describe('Nesting', () => {
         match([[{ two: '2', foo: 2, bar: true }]])
           .with([[{ foo: __, bar: select('bar') }]], ({ bar }) => bar)
           .run()
-      ).toEqual([[true]]);
+      ).toEqual(true);
     });
 
     it('it should work on 4 levels', () => {
@@ -139,7 +140,7 @@ describe('Nesting', () => {
         match([[[{ two: '2', foo: 2, bar: true }]]])
           .with([[[{ foo: __, bar: select('bar') }]]], ({ bar }) => bar)
           .run()
-      ).toEqual([[[true]]]);
+      ).toEqual(true);
     });
 
     it('it should work on 5 levels', () => {
@@ -154,7 +155,13 @@ describe('Nesting', () => {
       expect(
         match([[[[[[[[{ two: '2', foo: 2, bar: true }]]]]]]]])
           .with(
-            [[[[[[[[{ foo: __, bar: select('bar') }]]]]]]]],
+            list(
+              list(
+                list(
+                  list(list(list(list(list({ foo: __, bar: select('bar') })))))
+                )
+              )
+            ),
             ({ bar }) => bar
           )
           .run()

@@ -1,6 +1,10 @@
 import type * as symbols from '../symbols';
 import type { Cast, IsAny, UnionToIntersection } from './helpers';
-import type { NamedSelectPattern, AnonymousSelectPattern } from './Pattern';
+import type {
+  NamedSelectPattern,
+  AnonymousSelectPattern,
+  ListPattern,
+} from './Pattern';
 
 export type FindSelectionUnion<
   i,
@@ -13,47 +17,9 @@ export type FindSelectionUnion<
   ? { [kk in k]: [i, path] }
   : p extends AnonymousSelectPattern
   ? { [kk in symbols.AnonymousSelect]: [i, path] }
-  : p extends readonly (infer pp)[]
-  ? i extends readonly (infer ii)[]
-    ? [i, p] extends [
-        readonly [infer i1, infer i2, infer i3, infer i4, infer i5],
-        readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
-      ]
-      ?
-          | FindSelectionUnion<i1, p1, [...path, 1]>
-          | FindSelectionUnion<i2, p2, [...path, 2]>
-          | FindSelectionUnion<i3, p3, [...path, 3]>
-          | FindSelectionUnion<i4, p4, [...path, 4]>
-          | FindSelectionUnion<i5, p5, [...path, 5]>
-      : [i, p] extends [
-          readonly [infer i1, infer i2, infer i3, infer i4],
-          readonly [infer p1, infer p2, infer p3, infer p4]
-        ]
-      ?
-          | FindSelectionUnion<i1, p1, [...path, 1]>
-          | FindSelectionUnion<i2, p2, [...path, 2]>
-          | FindSelectionUnion<i3, p3, [...path, 3]>
-          | FindSelectionUnion<i4, p4, [...path, 4]>
-      : [i, p] extends [
-          readonly [infer i1, infer i2, infer i3],
-          readonly [infer p1, infer p2, infer p3]
-        ]
-      ?
-          | FindSelectionUnion<i1, p1, [...path, 1]>
-          | FindSelectionUnion<i2, p2, [...path, 2]>
-          | FindSelectionUnion<i3, p3, [...path, 3]>
-      : [i, p] extends [
-          readonly [infer i1, infer i2],
-          readonly [infer p1, infer p2]
-        ]
-      ?
-          | FindSelectionUnion<i1, p1, [...path, 1]>
-          | FindSelectionUnion<i2, p2, [...path, 2]>
-      : FindSelectionUnion<
-          ii,
-          pp,
-          [...path, number]
-        > extends infer selectionUnion
+  : i extends readonly (infer ii)[]
+  ? p extends ListPattern<infer pp>
+    ? FindSelectionUnion<ii, pp, [...path, number]> extends infer selectionUnion
       ? {
           [k in keyof selectionUnion]: selectionUnion[k] extends [
             infer v,
@@ -63,6 +29,30 @@ export type FindSelectionUnion<
             : never;
         }
       : never
+    : p extends readonly [infer p0, infer p1, infer p2, infer p3, infer p4]
+    ?
+        | FindSelectionUnion<i[0], p0, [...path, 0]>
+        | FindSelectionUnion<i[1], p1, [...path, 1]>
+        | FindSelectionUnion<i[2], p2, [...path, 2]>
+        | FindSelectionUnion<i[3], p3, [...path, 3]>
+        | FindSelectionUnion<i[4], p4, [...path, 4]>
+    : p extends readonly [infer p0, infer p1, infer p2, infer p3]
+    ?
+        | FindSelectionUnion<i[0], p0, [...path, 0]>
+        | FindSelectionUnion<i[1], p1, [...path, 1]>
+        | FindSelectionUnion<i[2], p2, [...path, 2]>
+        | FindSelectionUnion<i[3], p3, [...path, 3]>
+    : p extends readonly [infer p0, infer p1, infer p2]
+    ?
+        | FindSelectionUnion<i[0], p0, [...path, 0]>
+        | FindSelectionUnion<i[1], p1, [...path, 1]>
+        | FindSelectionUnion<i[2], p2, [...path, 2]>
+    : p extends readonly [infer p0, infer p1]
+    ?
+        | FindSelectionUnion<i[0], p0, [...path, 0]>
+        | FindSelectionUnion<i[1], p1, [...path, 1]>
+    : p extends readonly [infer p0]
+    ? FindSelectionUnion<i[0], p0, [...path, 0]>
     : never
   : p extends object
   ? i extends object

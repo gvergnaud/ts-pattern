@@ -1,11 +1,13 @@
 import {
   FindSelected,
+  FindSelectionUnion,
   MixedNamedAndAnonymousSelectError,
   SeveralAnonymousSelectError,
 } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
 import {
   AnonymousSelectPattern,
+  ListPattern,
   NamedSelectPattern,
   NotPattern,
 } from '../src/types/Pattern';
@@ -70,22 +72,25 @@ describe('FindSelected', () => {
     });
 
     it('Arrays values should be wrapped in arrays', () => {
+      type x = FindSelected<State[], ListPattern<NamedSelectPattern<'state'>>>;
+
       type cases = [
+        Expect<Equal<x, { state: State[] }>>,
         Expect<
           Equal<
-            FindSelected<State[], [NamedSelectPattern<'state'>]>,
-            { state: State[] }
-          >
-        >,
-        Expect<
-          Equal<
-            FindSelected<State[][], [[NamedSelectPattern<'state'>]]>,
+            FindSelected<
+              State[][],
+              ListPattern<ListPattern<NamedSelectPattern<'state'>>>
+            >,
             { state: State[][] }
           >
         >,
         Expect<
           Equal<
-            FindSelected<State[][][], [[[NamedSelectPattern<'state'>]]]>,
+            FindSelected<
+              State[][][],
+              ListPattern<ListPattern<ListPattern<NamedSelectPattern<'state'>>>>
+            >,
             { state: State[][][] }
           >
         >
@@ -137,7 +142,7 @@ describe('FindSelected', () => {
               { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
               {
                 a: [{ c: NamedSelectPattern<'c'> }, { e: 7 }];
-                b: { d: NamedSelectPattern<'d'> }[];
+                b: ListPattern<{ d: NamedSelectPattern<'d'> }>;
               }
             >,
             { c: 3; d: string[] }

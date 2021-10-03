@@ -4,6 +4,7 @@ import type {
   AnonymousSelectPattern,
   GuardPattern,
   NotPattern,
+  ListPattern,
 } from './Pattern';
 
 /**
@@ -23,6 +24,8 @@ export type InvertPattern<p> = p extends
   ? NotPattern<InvertPattern<a1>>
   : p extends Primitives
   ? p
+  : p extends ListPattern<infer a>
+  ? InvertPattern<a>[]
   : p extends readonly (infer pp)[]
   ? p extends readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
     ? [
@@ -43,7 +46,9 @@ export type InvertPattern<p> = p extends
     ? [InvertPattern<p1>, InvertPattern<p2>, InvertPattern<p3>]
     : p extends readonly [infer p1, infer p2]
     ? [InvertPattern<p1>, InvertPattern<p2>]
-    : InvertPattern<pp>[]
+    : p extends readonly [infer p1]
+    ? [InvertPattern<p1>]
+    : []
   : p extends Map<infer pk, infer pv>
   ? Map<pk, InvertPattern<pv>>
   : p extends Set<infer pv>
@@ -67,8 +72,12 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
     : IsLiteral<i> extends true
     ? p
     : never
+  : p extends ListPattern<infer a>
+  ? i extends readonly (infer item)[]
+    ? InvertPatternForExclude<a, item>[]
+    : never
   : p extends readonly (infer pp)[]
-  ? i extends readonly (infer ii)[]
+  ? i extends readonly (infer item)[]
     ? p extends readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
       ? i extends readonly [infer i1, infer i2, infer i3, infer i4, infer i5]
         ? [
@@ -100,7 +109,11 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
       ? i extends readonly [infer i1, infer i2]
         ? [InvertPatternForExclude<p1, i1>, InvertPatternForExclude<p2, i2>]
         : never
-      : InvertPatternForExclude<pp, ii>[]
+      : p extends readonly [infer p1]
+      ? i extends readonly [infer i1]
+        ? [InvertPatternForExclude<p1, i1>]
+        : never
+      : []
     : never
   : p extends Map<infer pk, infer pv>
   ? i extends Map<any, infer iv>
