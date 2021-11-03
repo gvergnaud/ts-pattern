@@ -157,15 +157,14 @@ export type FindUnions<
   : [];
 
 // Distribute :: UnionConfig[] -> Union<[a, path][]>
-export type Distribute<unions extends any[]> = unions extends [
-  { cases: infer cases; path: infer path },
-  ...infer tail
-]
+export type Distribute<
+  unions extends any[],
+  output extends any[] = []
+> = unions extends [{ cases: infer cases; path: infer path }, ...infer tail]
   ? cases extends { value: infer value; subUnions: infer subUnions }
-    ? [
-        [value, path],
-        ...Distribute<Cast<subUnions, any[]>>,
-        ...Distribute<tail>
-      ]
+    ? Distribute<
+        tail,
+        Distribute<Cast<subUnions, any[]>, [...output, [value, path]]>
+      >
     : never
-  : [];
+  : output;

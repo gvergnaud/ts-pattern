@@ -35,7 +35,7 @@ describe('Nesting', () => {
     });
   });
   describe('objects', () => {
-    it('it should work on 2 level', () => {
+    it('it should work on 2 levels', () => {
       expect(
         match({ one: { two: '2', foo: 2, bar: true } })
           .with({ one: { foo: __, bar: __ } }, (x) => x.one.bar)
@@ -43,7 +43,7 @@ describe('Nesting', () => {
       ).toEqual(true);
     });
 
-    it('it should work on 3 level', () => {
+    it('it should work on 3 levels', () => {
       expect(
         match({ one: { two: { three: '2', foo: 2, bar: true } } })
           .with({ one: { two: { foo: __, bar: __ } } }, (x) => x.one.two.bar)
@@ -51,7 +51,7 @@ describe('Nesting', () => {
       ).toEqual(true);
     });
 
-    it('it should work on 4 level', () => {
+    it('it should work on 4 levels', () => {
       expect(
         match({ one: { two: { three: { four: '2', foo: 2, bar: true } } } })
           .with(
@@ -62,7 +62,7 @@ describe('Nesting', () => {
       ).toEqual(true);
     });
 
-    it('it should work on 5 level', () => {
+    it('it should work on 5 levels', () => {
       expect(
         match({
           one: { two: { three: { four: { five: '2', foo: 2, bar: true } } } },
@@ -75,7 +75,7 @@ describe('Nesting', () => {
       ).toEqual(true);
     });
 
-    it('it should work on 7 level', () => {
+    it('it should work on 10 levels', () => {
       expect(
         match({
           one: {
@@ -84,8 +84,16 @@ describe('Nesting', () => {
                 four: {
                   five: {
                     six: {
-                      foo: 2,
-                      bar: true,
+                      seven: {
+                        height: {
+                          nine: {
+                            ten: {
+                              foo: 2,
+                              bar: true,
+                            },
+                          },
+                        },
+                      },
                     },
                   },
                 },
@@ -101,8 +109,16 @@ describe('Nesting', () => {
                     four: {
                       five: {
                         six: {
-                          foo: __,
-                          bar: select('bar'),
+                          seven: {
+                            height: {
+                              nine: {
+                                ten: {
+                                  foo: __,
+                                  bar: select('bar'),
+                                },
+                              },
+                            },
+                          },
                         },
                       },
                     },
@@ -110,7 +126,7 @@ describe('Nesting', () => {
                 },
               },
             },
-            (_, x) => x.one.two.three.four.five.six.bar
+            (_, x) => x.one.two.three.four.five.six.seven.height.nine.ten.bar
           )
           .run()
       ).toEqual(true);
@@ -150,15 +166,15 @@ describe('Nesting', () => {
       ).toEqual(true);
     });
 
-    it('it should work on 9 levels', () => {
+    it('it should work on 10 levels', () => {
       expect(
-        match([[[[[[[[{ two: '2', foo: 2, bar: true }]]]]]]]])
+        match([[[[[[[[[{ two: '2', foo: 2, bar: true }]]]]]]]]])
           .with(
-            [[[[[[[[{ foo: __, bar: select('bar') }]]]]]]]],
+            [[[[[[[[[{ foo: __, bar: select('bar') }]]]]]]]]],
             ({ bar }) => bar
           )
           .run()
-      ).toEqual([[[[[[[[true]]]]]]]]);
+      ).toEqual([[[[[[[[[true]]]]]]]]]);
     });
   });
 });
