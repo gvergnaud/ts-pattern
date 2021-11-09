@@ -31,12 +31,10 @@ describe('generics', () => {
     const last = <a>(xs: a[]) =>
       match<a[], Option<a>>(xs)
         .with([], () => none)
-        .with(__, (x, y) => {
+        .otherwise((x) => {
           type t = Expect<Equal<typeof x, a[]>>;
-          type t2 = Expect<Equal<typeof y, a[]>>;
           return some(xs[xs.length - 1]);
-        })
-        .exhaustive();
+        });
   });
 
   it('should have basic support for tuples containing generics', () => {

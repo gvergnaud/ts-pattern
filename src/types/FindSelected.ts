@@ -1,18 +1,35 @@
 import type * as symbols from '../symbols';
 import type { Cast, IsAny, UnionToIntersection } from './helpers';
-import type { NamedSelectPattern, AnonymousSelectPattern } from './Pattern';
+import type {
+  NamedSelectPattern,
+  AnonymousSelectPattern,
+  OptionalPattern,
+  NotPattern,
+} from './Pattern';
 
 export type FindSelectionUnion<
   i,
   p,
+  isOptional extends boolean,
   // path just serves as an id, to identify different anonymous patterns which have the same type
   path extends any[] = []
 > = IsAny<i> extends true
   ? never
   : p extends NamedSelectPattern<infer k>
-  ? { [kk in k]: [i, path] }
+  ? {
+      [kk in k]: [i | (isOptional extends true ? undefined : never), path];
+    }
   : p extends AnonymousSelectPattern
-  ? { [kk in symbols.AnonymousSelect]: [i, path] }
+  ? {
+      [kk in symbols.AnonymousSelect]: [
+        i | (isOptional extends true ? undefined : never),
+        path
+      ];
+    }
+  : p extends OptionalPattern<infer p>
+  ? FindSelectionUnion<i, p, true>
+  : p extends NotPattern<any>
+  ? never
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]
     ? [i, p] extends [
@@ -20,38 +37,39 @@ export type FindSelectionUnion<
         readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
       ]
       ?
-          | FindSelectionUnion<i1, p1, [...path, 1]>
-          | FindSelectionUnion<i2, p2, [...path, 2]>
-          | FindSelectionUnion<i3, p3, [...path, 3]>
-          | FindSelectionUnion<i4, p4, [...path, 4]>
-          | FindSelectionUnion<i5, p5, [...path, 5]>
+          | FindSelectionUnion<i1, p1, isOptional, [...path, 1]>
+          | FindSelectionUnion<i2, p2, isOptional, [...path, 2]>
+          | FindSelectionUnion<i3, p3, isOptional, [...path, 3]>
+          | FindSelectionUnion<i4, p4, isOptional, [...path, 4]>
+          | FindSelectionUnion<i5, p5, isOptional, [...path, 5]>
       : [i, p] extends [
           readonly [infer i1, infer i2, infer i3, infer i4],
           readonly [infer p1, infer p2, infer p3, infer p4]
         ]
       ?
-          | FindSelectionUnion<i1, p1, [...path, 1]>
-          | FindSelectionUnion<i2, p2, [...path, 2]>
-          | FindSelectionUnion<i3, p3, [...path, 3]>
-          | FindSelectionUnion<i4, p4, [...path, 4]>
+          | FindSelectionUnion<i1, p1, isOptional, [...path, 1]>
+          | FindSelectionUnion<i2, p2, isOptional, [...path, 2]>
+          | FindSelectionUnion<i3, p3, isOptional, [...path, 3]>
+          | FindSelectionUnion<i4, p4, isOptional, [...path, 4]>
       : [i, p] extends [
           readonly [infer i1, infer i2, infer i3],
           readonly [infer p1, infer p2, infer p3]
         ]
       ?
-          | FindSelectionUnion<i1, p1, [...path, 1]>
-          | FindSelectionUnion<i2, p2, [...path, 2]>
-          | FindSelectionUnion<i3, p3, [...path, 3]>
+          | FindSelectionUnion<i1, p1, isOptional, [...path, 1]>
+          | FindSelectionUnion<i2, p2, isOptional, [...path, 2]>
+          | FindSelectionUnion<i3, p3, isOptional, [...path, 3]>
       : [i, p] extends [
           readonly [infer i1, infer i2],
           readonly [infer p1, infer p2]
         ]
       ?
-          | FindSelectionUnion<i1, p1, [...path, 1]>
-          | FindSelectionUnion<i2, p2, [...path, 2]>
+          | FindSelectionUnion<i1, p1, isOptional, [...path, 1]>
+          | FindSelectionUnion<i2, p2, isOptional, [...path, 2]>
       : FindSelectionUnion<
           ii,
           pp,
+          isOptional,
           [...path, number]
         > extends infer selectionUnion
       ? {
@@ -68,7 +86,7 @@ export type FindSelectionUnion<
   ? i extends object
     ? {
         [k in keyof p]: k extends keyof i
-          ? FindSelectionUnion<i[k], p[k], [...path, k]>
+          ? FindSelectionUnion<i[k], p[k], isOptional, [...path, k]>
           : never;
       }[keyof p]
     : never
@@ -103,7 +121,7 @@ type SelectionToArgs<
 
 export type FindSelected<i, p> = SelectionToArgs<
   Cast<
-    UnionToIntersection<{} | FindSelectionUnion<i, p>>,
+    UnionToIntersection<{} | FindSelectionUnion<i, p, false>>,
     Record<string, [unknown, unknown]>
   >,
   i

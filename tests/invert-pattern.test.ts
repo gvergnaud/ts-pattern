@@ -1,6 +1,9 @@
 import { Equal, Expect } from '../src/types/helpers';
-import { InvertPatternForExclude } from '../src/types/InvertPattern';
-import { GuardPattern } from '../src/types/Pattern';
+import {
+  InvertPattern,
+  InvertPatternForExclude,
+} from '../src/types/InvertPattern';
+import { GuardPattern, OptionalPattern } from '../src/types/Pattern';
 
 describe('InvertPatternForExclude', () => {
   it('should correctly invert type guards', () => {
@@ -58,6 +61,42 @@ describe('InvertPatternForExclude', () => {
         >
       >
     ];
+  });
+
+  describe('optional', () => {
+    it('an optional pattern in an object should be considered an optional key', () => {
+      type input = { sex?: 'a' | 'b' };
+      type pattern = { sex: OptionalPattern<'a'> };
+      type inverted = InvertPattern<pattern>;
+
+      type cases = [
+        Expect<
+          Equal<
+            inverted,
+            {
+              sex?: 'a' | undefined;
+            }
+          >
+        >
+      ];
+    });
+
+    it('an optional pattern in an object should be considered an optional key', () => {
+      type input = { sex?: 'a' | 'b' };
+      type pattern = { sex: OptionalPattern<'a'> };
+      type inverted = InvertPatternForExclude<pattern, input>;
+
+      type cases = [
+        Expect<
+          Equal<
+            inverted,
+            {
+              sex?: 'a' | undefined;
+            }
+          >
+        >
+      ];
+    });
   });
 
   describe('issue #44', () => {

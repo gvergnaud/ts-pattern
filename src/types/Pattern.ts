@@ -10,18 +10,18 @@ export type GuardValue<F> = F extends (value: any) => value is infer b
   ? a
   : never;
 
-export type GuardFunction<a, b extends a> =
-  | ((value: a) => value is b)
-  | ((value: a) => boolean);
+export type GuardFunction<input, output extends input> =
+  | ((value: input) => value is output)
+  | ((value: input) => boolean);
 
 // Using internal tags here to dissuade people from using them inside patterns.
 // Theses properties should be used by ts-pattern's internals only.
 // Unfortunately they must be publically visible to work at compile time
-export type GuardPattern<a, b extends a = never> = {
+export type GuardPattern<input, output extends input = never> = {
   /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.Guard;
   /** @internal This property should only be used by ts-pattern's internals. */
-  [symbols.Guard]: GuardFunction<a, b>;
+  [symbols.Guard]: GuardFunction<input, output>;
 };
 
 export type NotPattern<a> = {
@@ -29,6 +29,13 @@ export type NotPattern<a> = {
   [symbols.PatternKind]: symbols.Not;
   /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.Not]: Pattern<a>;
+};
+
+export type OptionalPattern<a> = {
+  /** @internal This property should only be used by ts-pattern's internals. */
+  [symbols.PatternKind]: symbols.Optional;
+  /** @internal This property should only be used by ts-pattern's internals. */
+  [symbols.Optional]: Pattern<a>;
 };
 
 export type AnonymousSelectPattern = {
@@ -53,6 +60,7 @@ export type Pattern<a> =
   | NamedSelectPattern<string>
   | GuardPattern<a, a>
   | NotPattern<a | any>
+  | OptionalPattern<a | any>
   | (a extends Primitives
       ? a
       : a extends readonly (infer i)[]
@@ -87,6 +95,10 @@ export type Pattern<a> =
       ? Map<k, Pattern<v>>
       : a extends Set<infer v>
       ? Set<Pattern<v>>
-      : IsPlainObject<a> extends true
-      ? { readonly [k in keyof a]?: Pattern<a[k]> }
+      : a extends object
+      ? a extends any
+        ? {
+            readonly [k in keyof a]?: Pattern<a[k]>;
+          }
+        : never
       : a);

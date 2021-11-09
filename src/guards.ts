@@ -5,6 +5,7 @@ import {
   GuardPattern,
   NamedSelectPattern,
   NotPattern,
+  OptionalPattern,
   Pattern,
 } from './types/Pattern';
 
@@ -18,6 +19,11 @@ export const when = <a, b extends a = never>(
 export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
   [symbols.PatternKind]: symbols.Not,
   [symbols.Not]: pattern,
+});
+
+export const optional = <a>(pattern: Pattern<a>): OptionalPattern<a> => ({
+  [symbols.PatternKind]: symbols.Optional,
+  [symbols.Optional]: pattern,
 });
 
 export const ANONYMOUS_SELECT_KEY = '@ts-pattern/__anonymous-select-key';
