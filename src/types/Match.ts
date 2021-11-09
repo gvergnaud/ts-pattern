@@ -75,10 +75,7 @@ export type Match<
   ): Match<
     i,
     o,
-    [
-      ...patternValueTuples,
-      ...UnionToTuple<p extends any ? [p, value] : never>
-    ],
+    [...patternValueTuples, ...MakeTuples<ps, value>],
     Union<inferredOutput, c>
   >;
 
@@ -144,3 +141,11 @@ type DeepExcludeAll<a, tupleList extends any[]> = tupleList extends [
 ]
   ? DeepExcludeAll<DeepExclude<a, InvertPatternForExclude<p, v>>, tail>
   : a;
+
+type MakeTuples<
+  ps extends any[],
+  value,
+  output extends any[] = []
+> = ps extends [infer p, ...infer tail]
+  ? MakeTuples<tail, value, [...output, [p, value]]>
+  : output;

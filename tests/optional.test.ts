@@ -145,6 +145,6 @@ describe('optional', () => {
           }
         )
         .exhaustive()
-    ).toBe(undefined);
+    ).toBe('paragraph');
   });
 });
