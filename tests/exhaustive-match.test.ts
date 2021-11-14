@@ -388,17 +388,17 @@ describe('exhaustive()', () => {
 
       match(input)
         .with({ type: 'a' }, (x) => x.items)
-        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .with({ type: 'b', items: { $list: { data: __.string } } }, (x) => [])
         .exhaustive();
 
       match(input)
-        .with({ type: 'a', items: [__] }, (x) => x.items)
-        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .with({ type: 'a', items: { $list: __ } }, (x) => x.items)
+        .with({ type: 'b', items: { $list: { data: __.string } } }, (x) => [])
         .exhaustive();
 
       match<Input>(input)
-        .with({ type: 'a', items: [{ some: __ }] }, (x) => x.items)
-        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .with({ type: 'a', items: { $list: { some: __ } } }, (x) => x.items)
+        .with({ type: 'b', items: { $list: { data: __.string } } }, (x) => [])
         // @ts-expect-error
         .exhaustive();
     });
@@ -582,7 +582,10 @@ describe('exhaustive()', () => {
             return str;
           })
           .with({ type: __ }, (x) => x.type)
-          .with([__], (x) => `("hello" | Option<string>)[] | "hello"[]`)
+          .with(
+            { $list: __ },
+            (x) => `("hello" | Option<string>)[] | "hello"[]`
+          )
           .exhaustive()
       ).toEqual('test');
     });

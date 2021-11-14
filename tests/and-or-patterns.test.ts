@@ -1,4 +1,4 @@
-import { instanceOf, match } from '../src';
+import { instanceOf, match, __ } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('and, and or patterns', () => {

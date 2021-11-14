@@ -22,16 +22,8 @@ export const Guard = Symbol('@ts-pattern/guard');
 export type Guard = typeof Guard;
 
 /** @internal This symbol should only be used by ts-pattern's internals. */
-export const Not = Symbol('@ts-pattern/not');
-export type Not = typeof Not;
-
-/** @internal This symbol should only be used by ts-pattern's internals. */
-export const Optional = Symbol('@ts-pattern/optional');
-export type Optional = typeof Optional;
-
-/** @internal This symbol should only be used by ts-pattern's internals. */
-export const Pattern = Symbol('@ts-pattern/pattern');
-export type Pattern = typeof Pattern;
+export const Variable = Symbol('@ts-pattern/variable');
+export type Variable = typeof Variable;
 
 /** @internal This symbol should only be used by ts-pattern's internals. */
 export const NamedSelect = Symbol('@ts-pattern/named-select');

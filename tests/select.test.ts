@@ -21,7 +21,7 @@ describe('select', () => {
   it('should work with array', () => {
     expect(
       match<string[], string[]>(['you', 'hello'])
-        .with([select('texts')], ({ texts }, xs) => {
+        .with({ $list: select('texts') }, ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, string[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -31,7 +31,7 @@ describe('select', () => {
 
     expect(
       match<{ text: string }[], string[]>([{ text: 'you' }, { text: 'hello' }])
-        .with([{ text: select('texts') }], ({ texts }, xs) => {
+        .with({ $list: { text: select('texts') } }, ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, { text: string }[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -44,10 +44,13 @@ describe('select', () => {
         { text: { content: 'you' } },
         { text: { content: 'hello' } },
       ])
-        .with([{ text: { content: select('texts') } }], ({ texts }, xs) => {
-          type t = Expect<Equal<typeof texts, string[]>>;
-          return texts;
-        })
+        .with(
+          { $list: { text: { content: select('texts') } } },
+          ({ texts }, xs) => {
+            type t = Expect<Equal<typeof texts, string[]>>;
+            return texts;
+          }
+        )
         .run()
     ).toEqual(['you', 'hello']);
   });
@@ -165,16 +168,16 @@ describe('select', () => {
         [{ name: 'Alice' }, { post: [{ title: 'Hola' }, { title: 'coucou' }] }],
       ])
         .with([], (x) => {
-          type t = Expect<Equal<typeof x, Input>>;
+          type t = Expect<Equal<typeof x, []>>;
           return 'empty';
         })
         .with(
-          [
-            [
+          {
+            $list: [
               { name: select('names') },
-              { post: [{ title: select('titles') }] },
+              { post: { $list: { title: select('titles') } } },
             ],
-          ],
+          },
           ({ names, titles }) => {
             type t = Expect<Equal<typeof names, string[]>>;
             type t2 = Expect<Equal<typeof titles, string[][]>>;
@@ -202,15 +205,18 @@ describe('select', () => {
         [{ name: 'Alice' }, { post: [{ title: 'Hola' }, { title: 'coucou' }] }],
       ])
         .with([], (x) => {
-          type t = Expect<Equal<typeof x, Input>>;
+          type t = Expect<Equal<typeof x, []>>;
           return 'empty';
         })
-        .with([[__, { post: [{ title: select() }] }]], (titles) => {
-          type t1 = Expect<Equal<typeof titles, string[][]>>;
-          return titles
-            .map((t) => t.map((t) => `"${t}"`).join(', '))
-            .join(', ');
-        })
+        .with(
+          { $list: [__, { post: { $list: { title: select() } } }] },
+          (titles) => {
+            type t1 = Expect<Equal<typeof titles, string[][]>>;
+            return titles
+              .map((t) => t.map((t) => `"${t}"`).join(', '))
+              .join(', ');
+          }
+        )
         .exhaustive()
     ).toEqual(`"Hello World", "what's up", "Hola", "coucou"`);
   });

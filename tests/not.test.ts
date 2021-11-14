@@ -1,5 +1,6 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, __, not, when } from '../src';
+import { InvertPatternForExclude } from '../src/types/InvertPattern';
 
 describe('not', () => {
   describe('pattern containing a not clause', () => {
@@ -104,7 +105,7 @@ describe('not', () => {
   it('should correctly exclude unit types with the unit wildcard', () => {
     expect(
       match<{ str: string | null | undefined }>({ str: 'hello' })
-        .with({ str: { $not: __.nullish } }, ({ str }) => {
+        .with({ str: __.string }, ({ str }) => {
           type t = Expect<Equal<typeof str, string>>;
 
           return str;

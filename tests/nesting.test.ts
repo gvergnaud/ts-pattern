@@ -139,7 +139,7 @@ describe('Nesting', () => {
         match([{ two: '2', foo: 2, bar: true }])
           .with([{ foo: __, bar: select('bar') }], ({ bar }) => bar)
           .run()
-      ).toEqual([true]);
+      ).toEqual(true);
     });
 
     it('it should work on 3 levels', () => {
@@ -147,7 +147,7 @@ describe('Nesting', () => {
         match([[{ two: '2', foo: 2, bar: true }]])
           .with([[{ foo: __, bar: select('bar') }]], ({ bar }) => bar)
           .run()
-      ).toEqual([[true]]);
+      ).toEqual(true);
     });
 
     it('it should work on 4 levels', () => {
@@ -155,7 +155,7 @@ describe('Nesting', () => {
         match([[[{ two: '2', foo: 2, bar: true }]]])
           .with([[[{ foo: __, bar: select('bar') }]]], ({ bar }) => bar)
           .run()
-      ).toEqual([[[true]]]);
+      ).toEqual(true);
     });
 
     it('it should work on 5 levels', () => {
@@ -174,7 +174,7 @@ describe('Nesting', () => {
             ({ bar }) => bar
           )
           .run()
-      ).toEqual([[[[[[[[[true]]]]]]]]]);
+      ).toEqual(true);
     });
   });
 });

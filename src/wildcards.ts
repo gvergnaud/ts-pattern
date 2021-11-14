@@ -59,8 +59,4 @@ export const __ = Object.assign(unknownGuard, {
   NaN: NaNGuard,
   boolean: booleanGuard,
   nullish: nullishGuard,
-  not: '$not' as const,
-  optional: '$optional' as const,
-  and: '$and' as const,
-  or: '$or' as const,
 });

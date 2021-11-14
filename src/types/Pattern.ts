@@ -40,6 +40,10 @@ export type OrPattern<a> = {
   $or: [Pattern<a>, ...Pattern<a>[]];
 };
 
+export type ListPattern<a> = {
+  $list: Pattern<a>;
+};
+
 export type AnonymousSelectPattern = {
   /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.AnonymousSelect;
@@ -82,7 +86,10 @@ export type Pattern<a> =
         ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>]
         : a extends readonly [infer a1, infer a2]
         ? readonly [Pattern<a1>, Pattern<a2>]
+        : a extends readonly [infer a1]
+        ? readonly [Pattern<a1>]
         :
+            | ListPattern<i>
             | readonly []
             | readonly [Pattern<i>]
             | readonly [Pattern<i>, Pattern<i>]

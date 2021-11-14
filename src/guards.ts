@@ -4,6 +4,7 @@ import {
   GuardFunction,
   GuardPattern,
   NamedSelectPattern,
+  NotPattern,
   Pattern,
 } from './types/Pattern';
 
@@ -14,7 +15,7 @@ export const when = <a, b extends a = never>(
   [symbols.Guard]: predicate,
 });
 
-export const not = <a>(pattern: Pattern<a>) => ({
+export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
   $not: pattern,
 });
 

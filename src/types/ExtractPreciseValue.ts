@@ -28,7 +28,16 @@ export type ExtractPreciseValue<a, b> = unknown extends b
             ],
             '0' | '1' | '2' | '3' | '4'
           >
-        : LeastUpperBound<a, b>
+        : ExcludeObjectIfContainsNever<
+            [
+              ExtractPreciseValue<aItem, b1>,
+              ExtractPreciseValue<aItem, b2>,
+              ExtractPreciseValue<aItem, b3>,
+              ExtractPreciseValue<aItem, b4>,
+              ExtractPreciseValue<aItem, b5>
+            ],
+            '0' | '1' | '2' | '3' | '4'
+          >
       : b extends readonly [infer b1, infer b2, infer b3, infer b4]
       ? a extends readonly [infer a1, infer a2, infer a3, infer a4]
         ? ExcludeObjectIfContainsNever<
@@ -40,7 +49,15 @@ export type ExtractPreciseValue<a, b> = unknown extends b
             ],
             '0' | '1' | '2' | '3'
           >
-        : LeastUpperBound<a, b>
+        : ExcludeObjectIfContainsNever<
+            [
+              ExtractPreciseValue<aItem, b1>,
+              ExtractPreciseValue<aItem, b2>,
+              ExtractPreciseValue<aItem, b3>,
+              ExtractPreciseValue<aItem, b4>
+            ],
+            '0' | '1' | '2' | '3'
+          >
       : b extends readonly [infer b1, infer b2, infer b3]
       ? a extends readonly [infer a1, infer a2, infer a3]
         ? ExcludeObjectIfContainsNever<
@@ -51,14 +68,30 @@ export type ExtractPreciseValue<a, b> = unknown extends b
             ],
             '0' | '1' | '2'
           >
-        : LeastUpperBound<a, b>
+        : ExcludeObjectIfContainsNever<
+            [
+              ExtractPreciseValue<aItem, b1>,
+              ExtractPreciseValue<aItem, b2>,
+              ExtractPreciseValue<aItem, b3>
+            ],
+            '0' | '1' | '2'
+          >
       : b extends readonly [infer b1, infer b2]
       ? a extends readonly [infer a1, infer a2]
         ? ExcludeObjectIfContainsNever<
             [ExtractPreciseValue<a1, b1>, ExtractPreciseValue<a2, b2>],
             '0' | '1'
           >
-        : LeastUpperBound<a, b>
+        : ExcludeObjectIfContainsNever<
+            [ExtractPreciseValue<aItem, b1>, ExtractPreciseValue<aItem, b2>],
+            '0' | '1'
+          >
+      : b extends readonly [infer b1]
+      ? a extends readonly [infer a1]
+        ? ExcludeObjectIfContainsNever<[ExtractPreciseValue<a1, b1>], '0'>
+        : ExcludeObjectIfContainsNever<[ExtractPreciseValue<aItem, b1>], '0'>
+      : b extends readonly []
+      ? []
       : ExtractPreciseValue<aItem, bItem> extends infer preciseValue
       ? [preciseValue] extends [never]
         ? never

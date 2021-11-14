@@ -13,6 +13,7 @@ import type {
   OptionalPattern,
   AndPattern,
   OrPattern,
+  ListPattern,
 } from './Pattern';
 
 type ReduceAnd<tuple extends any[], output = unknown> = tuple extends readonly [
@@ -50,6 +51,8 @@ export type InvertPattern<p> = p extends
   ? ReduceAnd<p['$and']>
   : p extends OrPattern<any>
   ? ReduceOr<p['$or']>
+  : p extends ListPattern<any>
+  ? InvertPattern<p['$list']>[]
   : p extends Primitives
   ? p
   : p extends readonly (infer pp)[]
@@ -72,7 +75,11 @@ export type InvertPattern<p> = p extends
     ? [InvertPattern<p1>, InvertPattern<p2>, InvertPattern<p3>]
     : p extends readonly [infer p1, infer p2]
     ? [InvertPattern<p1>, InvertPattern<p2>]
-    : InvertPattern<pp>[]
+    : p extends readonly [infer p1]
+    ? [InvertPattern<p1>]
+    : p extends readonly []
+    ? []
+    : [InvertPattern<pp>]
   : p extends Map<infer pk, infer pv>
   ? Map<pk, InvertPattern<pv>>
   : p extends Set<infer pv>
@@ -123,14 +130,18 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends
   ? unknown
   : p extends GuardPattern<any, infer p1>
   ? p1
-  : p extends NotPattern<any>
-  ? Exclude<i, InvertPatternForExclude<p['$not'], i>>
+  : p extends NotPattern<infer p1>
+  ? Exclude<i, p1>
   : p extends OptionalPattern<any>
-  ? InvertPatternForExclude<p['$optional'], i> | undefined
+  ? InvertPatternForExclude<p['$optional'], i, empty> | undefined
   : p extends AndPattern<any>
   ? ReduceAndForExclude<p['$and'], i>
   : p extends OrPattern<any>
   ? ReduceOrForExclude<p['$or'], i>
+  : p extends ListPattern<any>
+  ? i extends (infer i1)[]
+    ? InvertPatternForExclude<p['$list'], i1, empty>[]
+    : never
   : p extends Primitives
   ? IsLiteral<p> extends true
     ? p
@@ -173,7 +184,13 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends
             InvertPatternForExclude<p2, i2, empty>
           ]
         : never
-      : InvertPatternForExclude<pp, ii, empty>[]
+      : p extends readonly [infer p1]
+      ? i extends readonly [infer i1]
+        ? [InvertPatternForExclude<p1, i1, empty>]
+        : never
+      : p extends readonly []
+      ? []
+      : [InvertPatternForExclude<pp, ii, empty>]
     : never
   : p extends Map<infer pk, infer pv>
   ? i extends Map<any, infer iv>

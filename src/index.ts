@@ -8,6 +8,7 @@ import type {
   OptionalPattern,
   OrPattern,
   AndPattern,
+  ListPattern,
 } from './types/Pattern';
 
 import type {
@@ -163,22 +164,27 @@ const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
 
 const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
   const pattern = x as NotPattern<unknown>;
-  return pattern && '$not' in pattern;
+  return isObject(pattern) && '$not' in pattern;
 };
 
 const isOptionalPattern = (x: unknown): x is OptionalPattern<unknown> => {
   const pattern = x as OptionalPattern<unknown>;
-  return pattern && '$optional' in pattern;
+  return isObject(pattern) && '$optional' in pattern;
 };
 
 const isOrPattern = (x: unknown): x is OrPattern<unknown> => {
   const pattern = x as OrPattern<unknown>;
-  return pattern && '$or' in pattern;
+  return isObject(pattern) && '$or' in pattern;
 };
 
 const isAndPattern = (x: unknown): x is AndPattern<unknown> => {
   const pattern = x as AndPattern<unknown>;
-  return pattern && '$and' in pattern;
+  return isObject(pattern) && '$and' in pattern;
+};
+
+const isListPattern = (x: unknown): x is ListPattern<unknown> => {
+  const pattern = x as ListPattern<unknown>;
+  return isObject(pattern) && '$list' in pattern;
 };
 
 const isNamedSelectPattern = (x: unknown): x is NamedSelectPattern<string> => {
@@ -210,6 +216,8 @@ const selectWithUndefined = (
       return pattern.$or.forEach((subpattern) =>
         selectWithUndefined(subpattern, select)
       );
+    if (isListPattern(pattern))
+      return selectWithUndefined(pattern.$list, select);
     if (Array.isArray(pattern))
       return pattern.forEach((p) => selectWithUndefined(p, select));
     return Object.values(pattern).forEach((p) =>
@@ -263,27 +271,28 @@ const matchPattern = <i, p extends Pattern<i>>(
 
     if (!isObject(value)) return false;
 
-    if (Array.isArray(pattern)) {
+    if (isListPattern(pattern)) {
       if (!Array.isArray(value)) return false;
 
-      // List pattern
-      if (pattern.length === 1) {
-        const selected: Record<string, unknown[]> = {};
+      const selected: Record<string, unknown[]> = {};
 
-        const listSelect = (key: string, value: unknown) => {
-          selected[key] = (selected[key] || []).concat([value]);
-        };
+      const listSelect = (key: string, value: unknown) => {
+        selected[key] = (selected[key] || []).concat([value]);
+      };
 
-        const doesMatch = value.every((v) =>
-          matchPattern(pattern[0], v, listSelect)
-        );
+      const doesMatch = value.every((v) =>
+        matchPattern(pattern.$list, v, listSelect)
+      );
 
-        if (doesMatch) {
-          Object.keys(selected).forEach((key) => select(key, selected[key]));
-        }
-
-        return doesMatch;
+      if (doesMatch) {
+        Object.keys(selected).forEach((key) => select(key, selected[key]));
       }
+
+      return doesMatch;
+    }
+
+    if (Array.isArray(pattern)) {
+      if (!Array.isArray(value)) return false;
 
       // Tuple pattern
       return pattern.length === value.length

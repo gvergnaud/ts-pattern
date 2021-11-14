@@ -246,7 +246,7 @@ describe('types', () => {
         type t = Expect<Equal<typeof x, { type: string }>>;
         return 'ok';
       })
-      .with([__.string], (x) => {
+      .with({ $list: __.string }, (x) => {
         type t = Expect<Equal<typeof x, string[]>>;
         return 'ok';
       })

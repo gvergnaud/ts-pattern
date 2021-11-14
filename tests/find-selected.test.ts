@@ -73,19 +73,25 @@ describe('FindSelected', () => {
       type cases = [
         Expect<
           Equal<
-            FindSelected<State[], [NamedSelectPattern<'state'>]>,
+            FindSelected<State[], { $list: NamedSelectPattern<'state'> }>,
             { state: State[] }
           >
         >,
         Expect<
           Equal<
-            FindSelected<State[][], [[NamedSelectPattern<'state'>]]>,
+            FindSelected<
+              State[][],
+              { $list: { $list: NamedSelectPattern<'state'> } }
+            >,
             { state: State[][] }
           >
         >,
         Expect<
           Equal<
-            FindSelected<State[][][], [[[NamedSelectPattern<'state'>]]]>,
+            FindSelected<
+              State[][][],
+              { $list: { $list: { $list: NamedSelectPattern<'state'> } } }
+            >,
             { state: State[][][] }
           >
         >
@@ -137,7 +143,7 @@ describe('FindSelected', () => {
               { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
               {
                 a: [{ c: NamedSelectPattern<'c'> }, { e: 7 }];
-                b: { d: NamedSelectPattern<'d'> }[];
+                b: { $list: { d: NamedSelectPattern<'d'> } };
               }
             >,
             { c: 3; d: string[] }

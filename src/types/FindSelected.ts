@@ -5,6 +5,7 @@ import type {
   AnonymousSelectPattern,
   OptionalPattern,
   NotPattern,
+  ListPattern,
 } from './Pattern';
 
 export type FindSelectionUnion<
@@ -30,6 +31,24 @@ export type FindSelectionUnion<
   ? FindSelectionUnion<i, p, true>
   : p extends NotPattern<any>
   ? never
+  : p extends ListPattern<any>
+  ? i extends readonly (infer ii)[]
+    ? FindSelectionUnion<
+        ii,
+        p['$list'],
+        isOptional,
+        [...path, number]
+      > extends infer selectionUnion
+      ? {
+          [k in keyof selectionUnion]: selectionUnion[k] extends [
+            infer v,
+            infer path
+          ]
+            ? [v[], path]
+            : never;
+        }
+      : never
+    : never
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]
     ? [i, p] extends [
@@ -66,20 +85,8 @@ export type FindSelectionUnion<
       ?
           | FindSelectionUnion<i1, p1, isOptional, [...path, 1]>
           | FindSelectionUnion<i2, p2, isOptional, [...path, 2]>
-      : FindSelectionUnion<
-          ii,
-          pp,
-          isOptional,
-          [...path, number]
-        > extends infer selectionUnion
-      ? {
-          [k in keyof selectionUnion]: selectionUnion[k] extends [
-            infer v,
-            infer path
-          ]
-            ? [v[], path]
-            : never;
-        }
+      : [i, p] extends [readonly (infer i1)[], readonly [infer p1]]
+      ? FindSelectionUnion<i1, p1, isOptional, [...path, 1]>
       : never
     : never
   : p extends object

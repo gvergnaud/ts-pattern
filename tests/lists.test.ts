@@ -1,5 +1,6 @@
 import { match, __ } from '../src';
 import { Expect, Equal } from '../src/types/helpers';
+import { InvertPattern } from '../src/types/InvertPattern';
 import { Option, Blog } from './utils';
 
 describe('List ([a])', () => {
@@ -8,13 +9,17 @@ describe('List ([a])', () => {
       id: 20,
       title: 'hellooo',
     };
+    const p = [{ id: __.number, title: __.string }] as const;
+
+    type x = InvertPattern<typeof p>;
+
     const res = match<any, Option<Blog[]>>([httpResult])
       .with([] as const, (x) => {
-        type t = Expect<Equal<typeof x, never[]>>;
+        type t = Expect<Equal<typeof x, []>>;
         return { kind: 'some', value: [{ id: 0, title: 'LOlol' }] };
       })
       .with([{ id: __.number, title: __.string }], (blogs) => {
-        type t = Expect<Equal<typeof blogs, { id: number; title: string }[]>>;
+        type t = Expect<Equal<typeof blogs, [{ id: number; title: string }]>>;
         return {
           kind: 'some',
           value: blogs,
