@@ -30,6 +30,10 @@ export const Optional = Symbol('@ts-pattern/optional');
 export type Optional = typeof Optional;
 
 /** @internal This symbol should only be used by ts-pattern's internals. */
+export const Pattern = Symbol('@ts-pattern/pattern');
+export type Pattern = typeof Pattern;
+
+/** @internal This symbol should only be used by ts-pattern's internals. */
 export const NamedSelect = Symbol('@ts-pattern/named-select');
 export type NamedSelect = typeof NamedSelect;
 

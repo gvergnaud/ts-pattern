@@ -189,7 +189,7 @@ const selectWithUndefined = (
     if (isAnonymousSelectPattern(pattern))
       return select(ANONYMOUS_SELECT_KEY, undefined);
     if (isOptionalPattern(pattern))
-      return selectWithUndefined(pattern[symbols.Optional], select);
+      return selectWithUndefined(pattern[symbols.Pattern], select);
     if (Array.isArray(pattern))
       return pattern.forEach((p) => selectWithUndefined(p, select));
     return Object.values(pattern).forEach((p) =>
@@ -218,16 +218,20 @@ const matchPattern = <i, p extends Pattern<i>>(
     }
 
     if (isNotPattern(pattern))
-      return !matchPattern(pattern[symbols.Not] as Pattern<i>, value, select);
+      return !matchPattern(
+        pattern[symbols.Pattern] as Pattern<i>,
+        value,
+        select
+      );
 
     if (isOptionalPattern(pattern)) {
       if (value === undefined) {
-        selectWithUndefined(pattern[symbols.Optional], select);
+        selectWithUndefined(pattern[symbols.Pattern], select);
         return true;
       }
 
       return matchPattern(
-        pattern[symbols.Optional] as Pattern<i>,
+        pattern[symbols.Pattern] as Pattern<i>,
         value,
         select
       );

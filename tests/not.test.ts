@@ -104,7 +104,7 @@ describe('not', () => {
   it('should correctly exclude unit types with the unit wildcard', () => {
     expect(
       match<{ str: string | null | undefined }>({ str: 'hello' })
-        .with({ str: not(__.nullish) }, ({ str }) => {
+        .with({ str: { $not: __.nullish } }, ({ str }) => {
           type t = Expect<Equal<typeof str, string>>;
 
           return str;

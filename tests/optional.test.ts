@@ -1,3 +1,4 @@
+import * as symbols from '../src/symbols';
 import { match, not, optional, select, __ } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 
@@ -10,7 +11,7 @@ describe('optional', () => {
         .with({ b: 'lol' }, (x) => {
           return false;
         })
-        .with({ a: optional('cool') }, (x) => {
+        .with({ a: { $optional: 'cool' } }, (x) => {
           return true;
         })
         .exhaustive();
@@ -25,7 +26,7 @@ describe('optional', () => {
 
     expect(
       match<Input>({})
-        .with({ a: optional({ name: 'Hello' }) }, (x) => {
+        .with({ a: { $optional: { name: 'Hello' } } }, (x) => {
           return true;
         })
         .with({ b: __.string }, (x) => {
@@ -46,11 +47,11 @@ describe('optional', () => {
 
     expect(
       match<Input>({})
-        .with({ a: optional({ name: select() }) }, (x) => {
+        .with({ a: { $optional: { name: select() } } }, (x) => {
           type t = Expect<Equal<typeof x, string | undefined>>;
           return x;
         })
-        .with({ a: optional(select()) }, (x) => {
+        .with({ a: { $optional: select() } }, (x) => {
           type t = Expect<
             Equal<typeof x, { name: string; age: number } | undefined>
           >;
@@ -62,7 +63,7 @@ describe('optional', () => {
         .with({ a: undefined }, (x) => {
           return '1';
         })
-        .with({ a: not(undefined) }, (x) => {
+        .with({ a: { $not: undefined } }, (x) => {
           return '1';
         })
         .exhaustive()
@@ -75,7 +76,9 @@ describe('optional', () => {
     expect(
       match<Input>({})
         .with(
-          { a: optional({ name: select('name'), age: select('age') }) },
+          {
+            a: { $optional: { name: select('name'), age: select('age') } },
+          },
           ({ name, age }) => {
             type t1 = Expect<Equal<typeof name, string | undefined>>;
             type t2 = Expect<Equal<typeof age, number | undefined>>;
@@ -88,7 +91,7 @@ describe('optional', () => {
         .with({ a: undefined }, (x) => {
           return '1';
         })
-        .with({ a: not(undefined) }, (x) => {
+        .with({ a: { $not: undefined } }, (x) => {
           return '1';
         })
         .exhaustive()
@@ -111,7 +114,7 @@ describe('optional', () => {
         .with(
           {
             type: 'a',
-            data: optional({ type: 'img' as const }),
+            data: { $optional: { type: 'img' } },
           },
           (string) => {
             return string;
@@ -120,7 +123,7 @@ describe('optional', () => {
         .with(
           {
             type: 'a',
-            data: optional({ type: 'text' as const, p: select() }),
+            data: { $optional: { type: 'text', p: select() } },
           },
           (p) => {
             return p;
@@ -129,7 +132,7 @@ describe('optional', () => {
         .with(
           {
             type: 'b',
-            data: optional({ type: 'video' as const, src: select() }),
+            data: { $optional: { type: 'video', src: select() } },
           },
           (p) => {
             return p;
@@ -138,7 +141,7 @@ describe('optional', () => {
         .with(
           {
             type: 'b',
-            data: optional({ type: 'gif' as const, p: select() }),
+            data: { $optional: { type: 'gif', p: select() } },
           },
           (p) => {
             return p;

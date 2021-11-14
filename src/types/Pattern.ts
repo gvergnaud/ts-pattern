@@ -25,17 +25,11 @@ export type GuardPattern<input, output extends input = never> = {
 };
 
 export type NotPattern<a> = {
-  /** @internal This property should only be used by ts-pattern's internals. */
-  [symbols.PatternKind]: symbols.Not;
-  /** @internal This property should only be used by ts-pattern's internals. */
-  [symbols.Not]: Pattern<a>;
+  $not: Pattern<a>;
 };
 
 export type OptionalPattern<a> = {
-  /** @internal This property should only be used by ts-pattern's internals. */
-  [symbols.PatternKind]: symbols.Optional;
-  /** @internal This property should only be used by ts-pattern's internals. */
-  [symbols.Optional]: Pattern<a>;
+  $optional: Pattern<a>;
 };
 
 export type AnonymousSelectPattern = {
@@ -60,7 +54,7 @@ export type Pattern<a> =
   | NamedSelectPattern<string>
   | GuardPattern<a, a>
   | NotPattern<a | any>
-  | OptionalPattern<a | any>
+  | OptionalPattern<a>
   | (a extends Primitives
       ? a
       : a extends readonly (infer i)[]
@@ -98,7 +92,7 @@ export type Pattern<a> =
       : a extends object
       ? a extends any
         ? {
-            readonly [k in keyof a]?: Pattern<a[k]>;
+            readonly [k in keyof a]?: Pattern<NonNullable<a[k]>>;
           }
         : never
       : a);
