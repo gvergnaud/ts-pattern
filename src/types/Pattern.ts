@@ -32,6 +32,14 @@ export type OptionalPattern<a> = {
   $optional: Pattern<a>;
 };
 
+export type AndPattern<a> = {
+  $and: [Pattern<a>, ...Pattern<a>[]];
+};
+
+export type OrPattern<a> = {
+  $or: [Pattern<a>, ...Pattern<a>[]];
+};
+
 export type AnonymousSelectPattern = {
   /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.AnonymousSelect;
@@ -55,6 +63,8 @@ export type Pattern<a> =
   | GuardPattern<a, a>
   | NotPattern<a | any>
   | OptionalPattern<a>
+  | AndPattern<a>
+  | OrPattern<a>
   | (a extends Primitives
       ? a
       : a extends readonly (infer i)[]

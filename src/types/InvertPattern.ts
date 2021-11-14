@@ -2,7 +2,6 @@ import {
   IsPlainObject,
   Primitives,
   IsLiteral,
-  Or,
   ValueOf,
   Compute,
 } from './helpers';
@@ -12,7 +11,23 @@ import type {
   GuardPattern,
   NotPattern,
   OptionalPattern,
+  AndPattern,
+  OrPattern,
 } from './Pattern';
+
+type ReduceAnd<tuple extends any[], output = unknown> = tuple extends readonly [
+  infer p,
+  ...infer tail
+]
+  ? ReduceAnd<tail, output & InvertPattern<p>>
+  : output;
+
+type ReduceOr<tuple extends any[], output = never> = tuple extends readonly [
+  infer p,
+  ...infer tail
+]
+  ? ReduceOr<tail, output | InvertPattern<p>>
+  : output;
 
 /**
  * ### InvertPattern
@@ -29,8 +44,12 @@ export type InvertPattern<p> = p extends
     : p2
   : p extends NotPattern<infer a1>
   ? NotPattern<InvertPattern<a1>>
-  : p extends OptionalPattern<infer a1>
-  ? InvertPattern<a1> | undefined
+  : p extends OptionalPattern<any>
+  ? InvertPattern<p['$optional']> | undefined
+  : p extends AndPattern<any>
+  ? ReduceAnd<p['$and']>
+  : p extends OrPattern<any>
+  ? ReduceOr<p['$or']>
   : p extends Primitives
   ? p
   : p extends readonly (infer pp)[]
@@ -75,65 +94,94 @@ type OptionalKeys<p> = ValueOf<
   }
 >;
 
+export type ReduceAndForExclude<
+  tuple extends any[],
+  i,
+  output = unknown
+> = tuple extends readonly [infer p, ...infer tail]
+  ? ReduceAndForExclude<
+      tail,
+      i,
+      output & InvertPatternForExclude<p, i, unknown>
+    >
+  : output;
+
+export type ReduceOrForExclude<
+  tuple extends any[],
+  i,
+  output = never
+> = tuple extends readonly [infer p, ...infer tail]
+  ? ReduceOrForExclude<tail, i, output | InvertPatternForExclude<p, i, never>>
+  : output;
+
 /**
  * ### InvertPatternForExclude
  */
-export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
-  ? Exclude<i, p1>
-  : p extends OptionalPattern<infer p1>
-  ? InvertPatternForExclude<p1, i> | undefined
-  : p extends NamedSelectPattern<any> | AnonymousSelectPattern
+export type InvertPatternForExclude<p, i, empty = never> = p extends
+  | NamedSelectPattern<any>
+  | AnonymousSelectPattern
   ? unknown
   : p extends GuardPattern<any, infer p1>
   ? p1
+  : p extends NotPattern<any>
+  ? Exclude<i, InvertPatternForExclude<p['$not'], i>>
+  : p extends OptionalPattern<any>
+  ? InvertPatternForExclude<p['$optional'], i> | undefined
+  : p extends AndPattern<any>
+  ? ReduceAndForExclude<p['$and'], i>
+  : p extends OrPattern<any>
+  ? ReduceOrForExclude<p['$or'], i>
   : p extends Primitives
   ? IsLiteral<p> extends true
     ? p
     : IsLiteral<i> extends true
     ? p
-    : never
+    : empty
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]
     ? p extends readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
       ? i extends readonly [infer i1, infer i2, infer i3, infer i4, infer i5]
         ? [
-            InvertPatternForExclude<p1, i1>,
-            InvertPatternForExclude<p2, i2>,
-            InvertPatternForExclude<p3, i3>,
-            InvertPatternForExclude<p4, i4>,
-            InvertPatternForExclude<p5, i5>
+            InvertPatternForExclude<p1, i1, empty>,
+            InvertPatternForExclude<p2, i2, empty>,
+            InvertPatternForExclude<p3, i3, empty>,
+            InvertPatternForExclude<p4, i4, empty>,
+            InvertPatternForExclude<p5, i5, empty>
           ]
         : never
       : p extends readonly [infer p1, infer p2, infer p3, infer p4]
       ? i extends readonly [infer i1, infer i2, infer i3, infer i4]
         ? [
-            InvertPatternForExclude<p1, i1>,
-            InvertPatternForExclude<p2, i2>,
-            InvertPatternForExclude<p3, i3>,
-            InvertPatternForExclude<p4, i4>
+            InvertPatternForExclude<p1, i1, empty>,
+            InvertPatternForExclude<p2, i2, empty>,
+            InvertPatternForExclude<p3, i3, empty>,
+            InvertPatternForExclude<p4, i4, empty>
           ]
         : never
       : p extends readonly [infer p1, infer p2, infer p3]
       ? i extends readonly [infer i1, infer i2, infer i3]
         ? [
-            InvertPatternForExclude<p1, i1>,
-            InvertPatternForExclude<p2, i2>,
-            InvertPatternForExclude<p3, i3>
+            InvertPatternForExclude<p1, i1, empty>,
+            InvertPatternForExclude<p2, i2, empty>,
+            InvertPatternForExclude<p3, i3, empty>
           ]
         : never
       : p extends readonly [infer p1, infer p2]
       ? i extends readonly [infer i1, infer i2]
-        ? [InvertPatternForExclude<p1, i1>, InvertPatternForExclude<p2, i2>]
+        ? [
+            InvertPatternForExclude<p1, i1, empty>,
+            InvertPatternForExclude<p2, i2, empty>
+          ]
         : never
-      : InvertPatternForExclude<pp, ii>[]
+      : InvertPatternForExclude<pp, ii, empty>[]
     : never
   : p extends Map<infer pk, infer pv>
   ? i extends Map<any, infer iv>
-    ? Map<pk, InvertPatternForExclude<pv, iv>>
+    ? Map<pk, InvertPatternForExclude<pv, iv, empty>>
     : never
   : p extends Set<infer pv>
   ? i extends Set<infer iv>
-    ? Set<InvertPatternForExclude<pv, iv>>
+    ? Set<InvertPatternForExclude<pv, iv, empty>>
     : never
   : IsPlainObject<p> extends true
   ? i extends object
@@ -142,13 +190,13 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
       : Compute<
           {
             [k in Exclude<keyof p, OptionalKeys<p>>]: k extends keyof i
-              ? InvertPatternForExclude<p[k], i[k]>
-              : p[k];
+              ? InvertPatternForExclude<p[k], i[k], empty>
+              : InvertPattern<p[k]>;
           } &
             {
               [k in OptionalKeys<p>]?: k extends keyof i
-                ? InvertPatternForExclude<p[k], i[k]>
-                : p[k];
+                ? InvertPatternForExclude<p[k], i[k], empty>
+                : InvertPattern<p[k]>;
             }
         >
     : never
