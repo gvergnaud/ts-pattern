@@ -365,7 +365,7 @@ You can use it at the top level, or inside your pattern.
 
 Note that exhaustive pattern matching is **optional**. It comes with the trade-off of having **longer compilation times** because the type checker has more work to do.
 
-Alternatively you can use `.otherwise()`, which take an handler returning a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).exhaustive()`.
+Alternatively you can use `.otherwise()`, which takes an handler function returning a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).exhaustive()`.
 
 ```ts
   .otherwise(() => state);
@@ -761,7 +761,7 @@ console.log(output);
 
 The `__.NaN` pattern will match `NaN` values.
 
-Note that `__.number` also match `NaNs`, but this pattern lets you
+Note that `__.number` also matches `NaNs`, but this pattern lets you
 explicitly match them if you want to handle them separately:
 
 ```ts
