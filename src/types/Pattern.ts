@@ -25,23 +25,23 @@ export type GuardPattern<input, output extends input = never> = {
 };
 
 export type NotPattern<a> = {
-  $not: Pattern<a>;
+  [symbols.not]: Pattern<a>;
 };
 
 export type OptionalPattern<a> = {
-  $optional: Pattern<a>;
+  [symbols.optional]: Pattern<a>;
 };
 
 export type AndPattern<a> = {
-  $and: [Pattern<a>, ...Pattern<a>[]];
+  [symbols.and]: [Pattern<a>, ...Pattern<a>[]];
 };
 
 export type OrPattern<a> = {
-  $or: [Pattern<a>, ...Pattern<a>[]];
+  [symbols.or]: [Pattern<a>, ...Pattern<a>[]];
 };
 
 export type ListPattern<a> = {
-  $list: Pattern<a>;
+  [symbols.list]: Pattern<a>;
 };
 
 export type AnonymousSelectPattern = {

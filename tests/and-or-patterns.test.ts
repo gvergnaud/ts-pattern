@@ -41,7 +41,7 @@ describe('and, and or patterns', () => {
           .with(
             {
               type: 'a',
-              value: [{ $or: [{ type: 'd' }, { type: 'e' }] }, true],
+              value: [{ [__.or]: [{ type: 'd' }, { type: 'e' }] }, true],
             },
             (x) => {
               type t = Expect<
@@ -66,7 +66,7 @@ describe('and, and or patterns', () => {
             type t = Expect<Equal<typeof x, A>>;
             return 'branch 2';
           })
-          .with({ $or: [{ type: 'a' }, { type: 'b' }] }, (x) => {
+          .with({ [__.or]: [{ type: 'a' }, { type: 'b' }] }, (x) => {
             type t = Expect<Equal<typeof x, Input>>;
             return 'branch 3';
           })
@@ -80,7 +80,7 @@ describe('and, and or patterns', () => {
         match(n)
           .with(
             {
-              $and: [
+              [__.and]: [
                 instanceOf(Child1),
                 { a: instanceOf(Child2), b: instanceOf(Child2) },
               ],
@@ -92,7 +92,7 @@ describe('and, and or patterns', () => {
               return 'match!';
             }
           )
-          .with({ $or: [instanceOf(Child1), instanceOf(Child2)] }, () => {
+          .with({ [__.or]: [instanceOf(Child1), instanceOf(Child2)] }, () => {
             return 'catchall';
           })
           .exhaustive();
@@ -108,9 +108,12 @@ describe('and, and or patterns', () => {
         match(n)
           .with(
             {
-              $and: [
+              [__.and]: [
                 instanceOf(Child1),
-                { a: { $optional: instanceOf(Child2) }, b: instanceOf(Child2) },
+                {
+                  a: { [__.optional]: instanceOf(Child2) },
+                  b: instanceOf(Child2),
+                },
               ],
             },
             (x) => {
@@ -122,9 +125,9 @@ describe('and, and or patterns', () => {
           )
           .with(
             {
-              $and: [
+              [__.and]: [
                 {
-                  $or: [
+                  [__.or]: [
                     { a: { a: instanceOf(Child1), b: instanceOf(Child1) } },
                     { b: { a: instanceOf(Child2), b: instanceOf(Child2) } },
                   ],
@@ -145,7 +148,7 @@ describe('and, and or patterns', () => {
               return 'branch 2';
             }
           )
-          .with({ $or: [instanceOf(Child1), instanceOf(Child2)] }, () => {
+          .with({ [__.or]: [instanceOf(Child1), instanceOf(Child2)] }, () => {
             return 'catchall';
           })
           .exhaustive();

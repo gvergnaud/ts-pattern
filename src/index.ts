@@ -164,27 +164,27 @@ const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
 
 const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
   const pattern = x as NotPattern<unknown>;
-  return isObject(pattern) && '$not' in pattern;
+  return isObject(pattern) && symbols.not in pattern;
 };
 
 const isOptionalPattern = (x: unknown): x is OptionalPattern<unknown> => {
   const pattern = x as OptionalPattern<unknown>;
-  return isObject(pattern) && '$optional' in pattern;
+  return isObject(pattern) && symbols.optional in pattern;
 };
 
 const isOrPattern = (x: unknown): x is OrPattern<unknown> => {
   const pattern = x as OrPattern<unknown>;
-  return isObject(pattern) && '$or' in pattern;
+  return isObject(pattern) && symbols.or in pattern;
 };
 
 const isAndPattern = (x: unknown): x is AndPattern<unknown> => {
   const pattern = x as AndPattern<unknown>;
-  return isObject(pattern) && '$and' in pattern;
+  return isObject(pattern) && symbols.and in pattern;
 };
 
 const isListPattern = (x: unknown): x is ListPattern<unknown> => {
   const pattern = x as ListPattern<unknown>;
-  return isObject(pattern) && '$list' in pattern;
+  return isObject(pattern) && symbols.list in pattern;
 };
 
 const isNamedSelectPattern = (x: unknown): x is NamedSelectPattern<string> => {
@@ -207,17 +207,17 @@ const selectWithUndefined = (
     if (isAnonymousSelectPattern(pattern))
       return select(ANONYMOUS_SELECT_KEY, undefined);
     if (isOptionalPattern(pattern))
-      return selectWithUndefined(pattern.$optional, select);
+      return selectWithUndefined(pattern[symbols.optional], select);
     if (isAndPattern(pattern))
-      return pattern.$and.forEach((subpattern) =>
+      return pattern[symbols.and].forEach((subpattern) =>
         selectWithUndefined(subpattern, select)
       );
     if (isOrPattern(pattern))
-      return pattern.$or.forEach((subpattern) =>
+      return pattern[symbols.or].forEach((subpattern) =>
         selectWithUndefined(subpattern, select)
       );
     if (isListPattern(pattern))
-      return selectWithUndefined(pattern.$list, select);
+      return selectWithUndefined(pattern[symbols.list], select);
     if (Array.isArray(pattern))
       return pattern.forEach((p) => selectWithUndefined(p, select));
     return Object.values(pattern).forEach((p) =>
@@ -246,25 +246,29 @@ const matchPattern = <i, p extends Pattern<i>>(
     }
 
     if (isNotPattern(pattern))
-      return !matchPattern(pattern.$not as Pattern<i>, value, select);
+      return !matchPattern(pattern[symbols.not] as Pattern<i>, value, select);
 
     if (isOptionalPattern(pattern)) {
       if (value === undefined) {
-        selectWithUndefined(pattern.$optional, select);
+        selectWithUndefined(pattern[symbols.optional], select);
         return true;
       }
 
-      return matchPattern(pattern.$optional as Pattern<i>, value, select);
+      return matchPattern(
+        pattern[symbols.optional] as Pattern<i>,
+        value,
+        select
+      );
     }
 
     if (isOrPattern(pattern)) {
-      return pattern.$or.some((subpattern) =>
+      return pattern[symbols.or].some((subpattern) =>
         matchPattern(subpattern as Pattern<i>, value, select)
       );
     }
 
     if (isAndPattern(pattern)) {
-      return pattern.$and.every((subpattern) =>
+      return pattern[symbols.and].every((subpattern) =>
         matchPattern(subpattern as Pattern<i>, value, select)
       );
     }
@@ -281,7 +285,7 @@ const matchPattern = <i, p extends Pattern<i>>(
       };
 
       const doesMatch = value.every((v) =>
-        matchPattern(pattern.$list, v, listSelect)
+        matchPattern(pattern[symbols.list], v, listSelect)
       );
 
       if (doesMatch) {

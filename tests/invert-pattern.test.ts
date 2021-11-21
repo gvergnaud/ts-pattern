@@ -1,12 +1,10 @@
-import { optional } from '../src';
-import { Compute, Equal, Expect } from '../src/types/helpers';
+import * as symbols from '../src/symbols';
+import { Equal, Expect } from '../src/types/helpers';
 import {
   InvertPattern,
   InvertPatternForExclude,
-  ReduceAndForExclude,
-  ReduceOrForExclude,
 } from '../src/types/InvertPattern';
-import { GuardPattern, OptionalPattern, OrPattern } from '../src/types/Pattern';
+import { GuardPattern } from '../src/types/Pattern';
 
 describe('InvertPatternForExclude', () => {
   it('should correctly invert type guards', () => {
@@ -79,7 +77,7 @@ describe('InvertPatternForExclude', () => {
   describe('optional', () => {
     it('an optional pattern in an object should be considered an optional key', () => {
       type input = { key?: 'a' | 'b' };
-      type pattern = { key: { $optional: 'a' } };
+      type pattern = { key: { [symbols.optional]: 'a' } };
       type inverted = InvertPatternForExclude<pattern, input>;
 
       type cases = [
@@ -95,7 +93,7 @@ describe('InvertPatternForExclude', () => {
     });
     it('the inverted value should be the intersection of all the inverted patterns', () => {
       type x = InvertPatternForExclude<
-        { type2: 'c'; data: { $optional: 'f' } },
+        { type2: 'c'; data: { [symbols.optional]: 'f' } },
         { type: 'a' | 'b'; type2: 'c' | 'd'; data?: 'f' | 'g' }
       >;
       type cases = [Expect<Equal<x, { type2: 'c'; data?: 'f' | undefined }>>];
@@ -103,7 +101,7 @@ describe('InvertPatternForExclude', () => {
 
     it('an optional pattern in an object should be considered an optional key', () => {
       type input = { key?: 'a' | 'b' };
-      type pattern = { key: { $optional: 'a' } };
+      type pattern = { key: { [symbols.optional]: 'a' } };
       type inverted = InvertPatternForExclude<pattern, input>;
 
       type cases = [
@@ -122,7 +120,7 @@ describe('InvertPatternForExclude', () => {
   describe('or', () => {
     it('the inverted value should be a union of all the inverted patterns', () => {
       type input = { key: 'a' | 'b' | 'c' };
-      type pattern = { key: { $or: ['a', 'b'] } };
+      type pattern = { key: { [symbols.or]: ['a', 'b'] } };
       type inverted = InvertPatternForExclude<pattern, input>;
 
       type cases = [
@@ -138,7 +136,7 @@ describe('InvertPatternForExclude', () => {
           Equal<
             InvertPatternForExclude<
               {
-                $or: [{ type: 'a' }, { type: 'b'; data: string }];
+                [symbols.or]: [{ type: 'a' }, { type: 'b'; data: string }];
               },
               { type: 'a' } | { type: 'b'; data?: string } | { type: 'c' }
             >,
@@ -171,7 +169,9 @@ describe('InvertPatternForExclude', () => {
 
     it('or patterns should be composable with optional patterns', () => {
       type input = { key?: 'a' | 'b' | 'c' };
-      type pattern = { key: { $optional: { $or: ['a', 'b'] } } };
+      type pattern = {
+        key: { [symbols.optional]: { [symbols.or]: ['a', 'b'] } };
+      };
       type inverted = InvertPatternForExclude<pattern, input>;
 
       type cases = [
@@ -193,7 +193,7 @@ describe('InvertPatternForExclude', () => {
         Expect<
           Equal<
             InvertPatternForExclude<
-              { key: { $and: [string, 'b'] } },
+              { key: { [symbols.and]: [string, 'b'] } },
               { key: string | number }
             >,
             { key: 'b' }
@@ -203,7 +203,10 @@ describe('InvertPatternForExclude', () => {
           Equal<
             InvertPatternForExclude<
               {
-                $and: [{ type: 'a' }, { type2: 'c'; data: { $optional: 'f' } }];
+                [symbols.and]: [
+                  { type: 'a' },
+                  { type2: 'c'; data: { [symbols.optional]: 'f' } }
+                ];
               },
               { type: 'a' | 'b'; type2: 'c' | 'd'; data?: 'f' | 'g' }
             >,
@@ -221,7 +224,9 @@ describe('InvertPatternForExclude', () => {
     it('and patterns should be composable with optional patterns', () => {
       type input = { key?: { key1: 's' | 'n'; key2: 's' | 'n' } };
       type pattern = {
-        key: { $optional: { $and: [{ key1: 's' }, { key2: 'n' }] } };
+        key: {
+          [symbols.optional]: { [symbols.and]: [{ key1: 's' }, { key2: 'n' }] };
+        };
       };
       type inverted = InvertPatternForExclude<pattern, input>;
 
@@ -243,7 +248,7 @@ describe('InvertPattern', () => {
   describe('optional', () => {
     it('an optional pattern in an object should be considered an optional key', () => {
       type input = { key?: 'a' | 'b' };
-      type pattern = { key: { $optional: 'a' } };
+      type pattern = { key: { [symbols.optional]: 'a' } };
       type inverted = InvertPattern<pattern>;
 
       type cases = [
@@ -260,7 +265,7 @@ describe('InvertPattern', () => {
 
     it('an optional pattern in an object should be considered an optional key', () => {
       type input = { key?: 'a' | 'b' };
-      type pattern = { key: { $optional: 'a' } };
+      type pattern = { key: { [symbols.optional]: 'a' } };
       type inverted = InvertPatternForExclude<pattern, input>;
 
       type cases = [
@@ -278,7 +283,7 @@ describe('InvertPattern', () => {
 
   describe('or', () => {
     it('the inverted value should be a union of all the inverted patterns', () => {
-      type pattern = { key: { $or: ['a', 'b'] } };
+      type pattern = { key: { [symbols.or]: ['a', 'b'] } };
       type inverted = InvertPattern<pattern>;
 
       type cases = [
@@ -293,7 +298,10 @@ describe('InvertPattern', () => {
         Expect<
           Equal<
             InvertPattern<{
-              $or: [{ type: 'a' }, { type: 'b'; data: { $optional: string } }];
+              [symbols.or]: [
+                { type: 'a' },
+                { type: 'b'; data: { [symbols.optional]: string } }
+              ];
             }>,
             | {
                 type: 'a';
@@ -308,7 +316,9 @@ describe('InvertPattern', () => {
     });
 
     it('or patterns should be composable with optional patterns', () => {
-      type pattern = { key: { $optional: { $or: ['a', 'b'] } } };
+      type pattern = {
+        key: { [symbols.optional]: { [symbols.or]: ['a', 'b'] } };
+      };
       type inverted = InvertPattern<pattern>;
 
       type cases = [
@@ -328,14 +338,17 @@ describe('InvertPattern', () => {
     it('the inverted value should be the intersection of all the inverted patterns', () => {
       type cases = [
         Expect<
-          Equal<InvertPattern<{ key: { $and: [string, 'b'] } }>, { key: 'b' }>
+          Equal<
+            InvertPattern<{ key: { [symbols.and]: [string, 'b'] } }>,
+            { key: 'b' }
+          >
         >,
         Expect<
           Equal<
             InvertPattern<{
-              $and: [
+              [symbols.and]: [
                 { type: 'a' },
-                { type2: 'b'; data: { $optional: string } }
+                { type2: 'b'; data: { [symbols.optional]: string } }
               ];
             }>,
             {
@@ -351,7 +364,11 @@ describe('InvertPattern', () => {
 
     it('and patterns should be composable with optional patterns', () => {
       type pattern = {
-        key: { $optional: { $and: [{ key1: string }, { key2: number }] } };
+        key: {
+          [symbols.optional]: {
+            [symbols.and]: [{ key1: string }, { key2: number }];
+          };
+        };
       };
       type inverted = InvertPattern<pattern>;
 

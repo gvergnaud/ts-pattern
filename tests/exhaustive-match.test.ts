@@ -388,17 +388,26 @@ describe('exhaustive()', () => {
 
       match(input)
         .with({ type: 'a' }, (x) => x.items)
-        .with({ type: 'b', items: { $list: { data: __.string } } }, (x) => [])
+        .with(
+          { type: 'b', items: { [__.list]: { data: __.string } } },
+          (x) => []
+        )
         .exhaustive();
 
       match(input)
-        .with({ type: 'a', items: { $list: __ } }, (x) => x.items)
-        .with({ type: 'b', items: { $list: { data: __.string } } }, (x) => [])
+        .with({ type: 'a', items: { [__.list]: __ } }, (x) => x.items)
+        .with(
+          { type: 'b', items: { [__.list]: { data: __.string } } },
+          (x) => []
+        )
         .exhaustive();
 
       match<Input>(input)
-        .with({ type: 'a', items: { $list: { some: __ } } }, (x) => x.items)
-        .with({ type: 'b', items: { $list: { data: __.string } } }, (x) => [])
+        .with({ type: 'a', items: { [__.list]: { some: __ } } }, (x) => x.items)
+        .with(
+          { type: 'b', items: { [__.list]: { data: __.string } } },
+          (x) => []
+        )
         // @ts-expect-error
         .exhaustive();
     });
@@ -561,7 +570,7 @@ describe('exhaustive()', () => {
 
       const res = map(
         { kind: 'some' as const, value: 20 },
-        (x) => `number is ${x}`
+        (x) => `number is __{x}`
       );
 
       type t = Expect<Equal<typeof res, Option<string>>>;
@@ -583,7 +592,7 @@ describe('exhaustive()', () => {
           })
           .with({ type: __ }, (x) => x.type)
           .with(
-            { $list: __ },
+            { [__.list]: __ },
             (x) => `("hello" | Option<string>)[] | "hello"[]`
           )
           .exhaustive()
@@ -710,7 +719,7 @@ describe('exhaustive()', () => {
           text: select('text'),
           author: { name: select('authorName') },
         },
-        ({ text, authorName }) => `${text} from ${authorName}`
+        ({ text, authorName }) => `__{text} from __{authorName}`
       )
       .with({ type: 'video', duration: when((x) => x > 10) }, () => '')
       .with(

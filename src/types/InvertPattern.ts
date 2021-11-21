@@ -15,6 +15,7 @@ import type {
   OrPattern,
   ListPattern,
 } from './Pattern';
+import * as symbols from '../symbols';
 
 type ReduceAnd<tuple extends any[], output = unknown> = tuple extends readonly [
   infer p,
@@ -46,13 +47,13 @@ export type InvertPattern<p> = p extends
   : p extends NotPattern<infer a1>
   ? NotPattern<InvertPattern<a1>>
   : p extends OptionalPattern<any>
-  ? InvertPattern<p['$optional']> | undefined
+  ? InvertPattern<p[symbols.optional]> | undefined
   : p extends AndPattern<any>
-  ? ReduceAnd<p['$and']>
+  ? ReduceAnd<p[symbols.and]>
   : p extends OrPattern<any>
-  ? ReduceOr<p['$or']>
+  ? ReduceOr<p[symbols.or]>
   : p extends ListPattern<any>
-  ? InvertPattern<p['$list']>[]
+  ? InvertPattern<p[symbols.list]>[]
   : p extends Primitives
   ? p
   : p extends readonly (infer pp)[]
@@ -133,14 +134,14 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends
   : p extends NotPattern<infer p1>
   ? Exclude<i, p1>
   : p extends OptionalPattern<any>
-  ? InvertPatternForExclude<p['$optional'], i, empty> | undefined
+  ? InvertPatternForExclude<p[symbols.optional], i, empty> | undefined
   : p extends AndPattern<any>
-  ? ReduceAndForExclude<p['$and'], i>
+  ? ReduceAndForExclude<p[symbols.and], i>
   : p extends OrPattern<any>
-  ? ReduceOrForExclude<p['$or'], i>
+  ? ReduceOrForExclude<p[symbols.or], i>
   : p extends ListPattern<any>
   ? i extends (infer i1)[]
-    ? InvertPatternForExclude<p['$list'], i1, empty>[]
+    ? InvertPatternForExclude<p[symbols.list], i1, empty>[]
     : never
   : p extends Primitives
   ? IsLiteral<p> extends true

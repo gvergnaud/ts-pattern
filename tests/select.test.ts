@@ -21,7 +21,7 @@ describe('select', () => {
   it('should work with array', () => {
     expect(
       match<string[], string[]>(['you', 'hello'])
-        .with({ $list: select('texts') }, ({ texts }, xs) => {
+        .with({ [__.list]: select('texts') }, ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, string[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -31,7 +31,7 @@ describe('select', () => {
 
     expect(
       match<{ text: string }[], string[]>([{ text: 'you' }, { text: 'hello' }])
-        .with({ $list: { text: select('texts') } }, ({ texts }, xs) => {
+        .with({ [__.list]: { text: select('texts') } }, ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, { text: string }[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -45,7 +45,7 @@ describe('select', () => {
         { text: { content: 'hello' } },
       ])
         .with(
-          { $list: { text: { content: select('texts') } } },
+          { [__.list]: { text: { content: select('texts') } } },
           ({ texts }, xs) => {
             type t = Expect<Equal<typeof texts, string[]>>;
             return texts;
@@ -173,9 +173,9 @@ describe('select', () => {
         })
         .with(
           {
-            $list: [
+            [__.list]: [
               { name: select('names') },
-              { post: { $list: { title: select('titles') } } },
+              { post: { [__.list]: { title: select('titles') } } },
             ],
           },
           ({ names, titles }) => {
@@ -184,7 +184,9 @@ describe('select', () => {
             return (
               names.join(' and ') +
               ' have written ' +
-              titles.map((t) => t.map((t) => `"${t}"`).join(', ')).join(', ')
+              titles
+                .map((t) => t.map((t) => `"[__.{]t}"`).join(', '))
+                .join(', ')
             );
           }
         )
@@ -209,11 +211,13 @@ describe('select', () => {
           return 'empty';
         })
         .with(
-          { $list: [__, { post: { $list: { title: select() } } }] },
+          {
+            [__.list]: [__, { post: { [__.list]: { title: select() } } }],
+          },
           (titles) => {
             type t1 = Expect<Equal<typeof titles, string[][]>>;
             return titles
-              .map((t) => t.map((t) => `"${t}"`).join(', '))
+              .map((t) => t.map((t) => `"[__.{]t}"`).join(', '))
               .join(', ');
           }
         )

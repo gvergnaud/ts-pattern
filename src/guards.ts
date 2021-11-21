@@ -16,10 +16,12 @@ export const when = <a, b extends a = never>(
 });
 
 export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
-  $not: pattern,
+  [symbols.not]: pattern,
 });
 
-export const optional = <a>(pattern: Pattern<a>) => ({ $optional: pattern });
+export const optional = <a>(pattern: Pattern<a>) => ({
+  [symbols.optional]: pattern,
+});
 
 export const ANONYMOUS_SELECT_KEY = '@ts-pattern/__anonymous-select-key';
 

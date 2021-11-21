@@ -1,4 +1,5 @@
 import { when } from './guards';
+import * as symbols from './symbols';
 
 function isUnknown<T>(x: T | unknown): x is unknown {
   return true;
@@ -59,4 +60,9 @@ export const __ = Object.assign(unknownGuard, {
   NaN: NaNGuard,
   boolean: booleanGuard,
   nullish: nullishGuard,
-});
+  not: symbols.not,
+  list: symbols.list,
+  optional: symbols.optional,
+  or: symbols.or,
+  and: symbols.and,
+} as const);

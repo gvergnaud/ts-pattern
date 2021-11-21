@@ -10,6 +10,7 @@ import {
   NotPattern,
 } from '../src/types/Pattern';
 import { Event, State } from './utils';
+import * as symbols from '../src/symbols';
 
 describe('FindSelected', () => {
   describe('should correctly return kwargs', () => {
@@ -73,7 +74,10 @@ describe('FindSelected', () => {
       type cases = [
         Expect<
           Equal<
-            FindSelected<State[], { $list: NamedSelectPattern<'state'> }>,
+            FindSelected<
+              State[],
+              { [symbols.list]: NamedSelectPattern<'state'> }
+            >,
             { state: State[] }
           >
         >,
@@ -81,7 +85,9 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               State[][],
-              { $list: { $list: NamedSelectPattern<'state'> } }
+              {
+                [symbols.list]: { [symbols.list]: NamedSelectPattern<'state'> };
+              }
             >,
             { state: State[][] }
           >
@@ -90,7 +96,13 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               State[][][],
-              { $list: { $list: { $list: NamedSelectPattern<'state'> } } }
+              {
+                [symbols.list]: {
+                  [symbols.list]: {
+                    [symbols.list]: NamedSelectPattern<'state'>;
+                  };
+                };
+              }
             >,
             { state: State[][][] }
           >
@@ -143,7 +155,7 @@ describe('FindSelected', () => {
               { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
               {
                 a: [{ c: NamedSelectPattern<'c'> }, { e: 7 }];
-                b: { $list: { d: NamedSelectPattern<'d'> } };
+                b: { [symbols.list]: { d: NamedSelectPattern<'d'> } };
               }
             >,
             { c: 3; d: string[] }

@@ -35,7 +35,7 @@ export type FindSelectionUnion<
   ? i extends readonly (infer ii)[]
     ? FindSelectionUnion<
         ii,
-        p['$list'],
+        p[symbols.list],
         isOptional,
         [...path, number]
       > extends infer selectionUnion
