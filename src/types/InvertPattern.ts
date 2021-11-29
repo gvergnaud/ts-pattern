@@ -4,6 +4,7 @@ import {
   IsLiteral,
   ValueOf,
   Compute,
+  Equal,
 } from './helpers';
 import type {
   NamedSelectPattern,
@@ -44,20 +45,20 @@ export type InvertPattern<p> = p extends
   ? [p2] extends [never]
     ? p1
     : p2
-  : p extends NotPattern<infer a1>
-  ? NotPattern<InvertPattern<a1>>
-  : p extends OptionalPattern<any>
-  ? InvertPattern<p[symbols.optional]> | undefined
-  : p extends AndPattern<any>
-  ? ReduceAnd<p[symbols.and]>
-  : p extends OrPattern<any>
-  ? ReduceOr<p[symbols.or]>
-  : p extends ListPattern<any>
-  ? InvertPattern<p[symbols.list]>[]
   : p extends Primitives
   ? p
   : p extends readonly (infer pp)[]
-  ? p extends readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
+  ? p extends NotPattern<infer a1>
+    ? NotPattern<InvertPattern<a1>>
+    : p extends readonly [symbols.optional, infer pattern]
+    ? InvertPattern<pattern> | undefined
+    : p extends readonly [symbols.and, ...infer ps]
+    ? ReduceAnd<ps>
+    : p extends readonly [symbols.or, ...infer ps]
+    ? ReduceOr<ps>
+    : p extends ListPattern<any>
+    ? InvertPattern<p[1]>[]
+    : p extends readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
     ? [
         InvertPattern<p1>,
         InvertPattern<p2>,
@@ -131,18 +132,6 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends
   ? unknown
   : p extends GuardPattern<any, infer p1>
   ? p1
-  : p extends NotPattern<infer p1>
-  ? Exclude<i, p1>
-  : p extends OptionalPattern<any>
-  ? InvertPatternForExclude<p[symbols.optional], i, empty> | undefined
-  : p extends AndPattern<any>
-  ? ReduceAndForExclude<p[symbols.and], i>
-  : p extends OrPattern<any>
-  ? ReduceOrForExclude<p[symbols.or], i>
-  : p extends ListPattern<any>
-  ? i extends (infer i1)[]
-    ? InvertPatternForExclude<p[symbols.list], i1, empty>[]
-    : never
   : p extends Primitives
   ? IsLiteral<p> extends true
     ? p
@@ -150,7 +139,19 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends
     ? p
     : empty
   : p extends readonly (infer pp)[]
-  ? i extends readonly (infer ii)[]
+  ? p extends NotPattern<infer p1>
+    ? Exclude<i, p1>
+    : p extends readonly [symbols.optional, infer pattern]
+    ? InvertPatternForExclude<pattern, i, empty> | undefined
+    : p extends readonly [symbols.and, ...infer ps]
+    ? ReduceAndForExclude<ps, i>
+    : p extends readonly [symbols.or, ...infer ps]
+    ? ReduceOrForExclude<ps, i>
+    : p extends ListPattern<any>
+    ? i extends (infer i1)[]
+      ? InvertPatternForExclude<p[1], i1, empty>[]
+      : never
+    : i extends readonly (infer ii)[]
     ? p extends readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
       ? i extends readonly [infer i1, infer i2, infer i3, infer i4, infer i5]
         ? [

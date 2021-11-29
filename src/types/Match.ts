@@ -24,7 +24,7 @@ type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 export type Match<
   i,
   o,
-  patternValueTuples extends any[] = [],
+  patternValueTuples extends [any, any][] = [],
   inferredOutput = never
 > = {
   /**
@@ -56,12 +56,9 @@ export type Match<
   ): Match<
     i,
     o,
-    [
-      ...patternValueTuples,
-      ...(pred extends (value: any) => value is infer narrowed
-        ? [[GuardPattern<unknown, narrowed>, value]]
-        : [])
-    ],
+    pred extends (value: any) => value is infer narrowed
+      ? [...patternValueTuples, [GuardPattern<unknown, narrowed>, value]]
+      : patternValueTuples,
     Union<inferredOutput, c>
   >;
 
@@ -91,12 +88,9 @@ export type Match<
   ) => Match<
     i,
     o,
-    [
-      ...patternValueTuples,
-      ...(pred extends (value: any) => value is infer narrowed
-        ? [[GuardPattern<unknown, narrowed>, value]]
-        : [])
-    ],
+    pred extends (value: any) => value is infer narrowed
+      ? [...patternValueTuples, [GuardPattern<unknown, narrowed>, value]]
+      : patternValueTuples,
     Union<inferredOutput, c>
   >;
 

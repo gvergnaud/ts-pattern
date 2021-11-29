@@ -10,7 +10,7 @@ export type GuardValue<F> = F extends (value: any) => value is infer b
   ? a
   : never;
 
-export type GuardFunction<input, output extends input> =
+export type GuardFunction<input, output extends input = never> =
   | ((value: input) => value is output)
   | ((value: input) => boolean);
 
@@ -24,25 +24,15 @@ export type GuardPattern<input, output extends input = never> = {
   [symbols.Guard]: GuardFunction<input, output>;
 };
 
-export type NotPattern<a> = {
-  [symbols.not]: Pattern<a>;
-};
+export type NotPattern<a> = readonly [symbols.not, Pattern<a>];
 
-export type OptionalPattern<a> = {
-  [symbols.optional]: Pattern<a>;
-};
+export type OptionalPattern<a> = readonly [symbols.optional, Pattern<a>];
 
-export type AndPattern<a> = {
-  [symbols.and]: [Pattern<a>, ...Pattern<a>[]];
-};
+export type AndPattern<a> = readonly [symbols.and, Pattern<a>, ...Pattern<a>[]];
 
-export type OrPattern<a> = {
-  [symbols.or]: [Pattern<a>, ...Pattern<a>[]];
-};
+export type OrPattern<a> = readonly [symbols.or, Pattern<a>, ...Pattern<a>[]];
 
-export type ListPattern<a> = {
-  [symbols.list]: Pattern<a>;
-};
+export type ListPattern<a> = readonly [symbols.list, Pattern<a>];
 
 export type AnonymousSelectPattern = {
   /** @internal This property should only be used by ts-pattern's internals. */

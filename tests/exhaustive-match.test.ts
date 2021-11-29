@@ -388,26 +388,17 @@ describe('exhaustive()', () => {
 
       match(input)
         .with({ type: 'a' }, (x) => x.items)
-        .with(
-          { type: 'b', items: { [__.list]: { data: __.string } } },
-          (x) => []
-        )
+        .with({ type: 'b', items: [__.listOf, { data: __.string }] }, (x) => [])
         .exhaustive();
 
       match(input)
-        .with({ type: 'a', items: { [__.list]: __ } }, (x) => x.items)
-        .with(
-          { type: 'b', items: { [__.list]: { data: __.string } } },
-          (x) => []
-        )
+        .with({ type: 'a', items: [__.listOf, __] }, (x) => x.items)
+        .with({ type: 'b', items: [__.listOf, { data: __.string }] }, (x) => [])
         .exhaustive();
 
       match<Input>(input)
-        .with({ type: 'a', items: { [__.list]: { some: __ } } }, (x) => x.items)
-        .with(
-          { type: 'b', items: { [__.list]: { data: __.string } } },
-          (x) => []
-        )
+        .with({ type: 'a', items: [__.listOf, { some: __ }] }, (x) => x.items)
+        .with({ type: 'b', items: [__.listOf, { data: __.string }] }, (x) => [])
         // @ts-expect-error
         .exhaustive();
     });
@@ -570,7 +561,7 @@ describe('exhaustive()', () => {
 
       const res = map(
         { kind: 'some' as const, value: 20 },
-        (x) => `number is __{x}`
+        (x) => `number is 20`
       );
 
       type t = Expect<Equal<typeof res, Option<string>>>;
@@ -592,7 +583,7 @@ describe('exhaustive()', () => {
           })
           .with({ type: __ }, (x) => x.type)
           .with(
-            { [__.list]: __ },
+            [__.listOf, __],
             (x) => `("hello" | Option<string>)[] | "hello"[]`
           )
           .exhaustive()

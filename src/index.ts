@@ -164,27 +164,27 @@ const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
 
 const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
   const pattern = x as NotPattern<unknown>;
-  return isObject(pattern) && symbols.not in pattern;
+  return Array.isArray(pattern) && pattern[0] === symbols.not;
 };
 
 const isOptionalPattern = (x: unknown): x is OptionalPattern<unknown> => {
   const pattern = x as OptionalPattern<unknown>;
-  return isObject(pattern) && symbols.optional in pattern;
+  return Array.isArray(pattern) && pattern[0] === symbols.optional;
 };
 
 const isOrPattern = (x: unknown): x is OrPattern<unknown> => {
   const pattern = x as OrPattern<unknown>;
-  return isObject(pattern) && symbols.or in pattern;
+  return Array.isArray(pattern) && pattern[0] === symbols.or;
 };
 
 const isAndPattern = (x: unknown): x is AndPattern<unknown> => {
   const pattern = x as AndPattern<unknown>;
-  return isObject(pattern) && symbols.and in pattern;
+  return Array.isArray(pattern) && pattern[0] === symbols.and;
 };
 
 const isListPattern = (x: unknown): x is ListPattern<unknown> => {
   const pattern = x as ListPattern<unknown>;
-  return isObject(pattern) && symbols.list in pattern;
+  return Array.isArray(pattern) && pattern[0] === symbols.list;
 };
 
 const isNamedSelectPattern = (x: unknown): x is NamedSelectPattern<string> => {
@@ -207,17 +207,16 @@ const selectWithUndefined = (
     if (isAnonymousSelectPattern(pattern))
       return select(ANONYMOUS_SELECT_KEY, undefined);
     if (isOptionalPattern(pattern))
-      return selectWithUndefined(pattern[symbols.optional], select);
+      return selectWithUndefined(pattern[1], select);
     if (isAndPattern(pattern))
-      return pattern[symbols.and].forEach((subpattern) =>
-        selectWithUndefined(subpattern, select)
-      );
+      return pattern
+        .slice(1)
+        .forEach((subpattern) => selectWithUndefined(subpattern, select));
     if (isOrPattern(pattern))
-      return pattern[symbols.or].forEach((subpattern) =>
-        selectWithUndefined(subpattern, select)
-      );
-    if (isListPattern(pattern))
-      return selectWithUndefined(pattern[symbols.list], select);
+      return pattern
+        .slice(1)
+        .forEach((subpattern) => selectWithUndefined(subpattern, select));
+    if (isListPattern(pattern)) return selectWithUndefined(pattern[1], select);
     if (Array.isArray(pattern))
       return pattern.forEach((p) => selectWithUndefined(p, select));
     return Object.values(pattern).forEach((p) =>
@@ -246,31 +245,31 @@ const matchPattern = <i, p extends Pattern<i>>(
     }
 
     if (isNotPattern(pattern))
-      return !matchPattern(pattern[symbols.not] as Pattern<i>, value, select);
+      return !matchPattern(pattern[1] as Pattern<i>, value, select);
 
     if (isOptionalPattern(pattern)) {
       if (value === undefined) {
-        selectWithUndefined(pattern[symbols.optional], select);
+        selectWithUndefined(pattern[1], select);
         return true;
       }
 
-      return matchPattern(
-        pattern[symbols.optional] as Pattern<i>,
-        value,
-        select
-      );
+      return matchPattern(pattern[1] as Pattern<i>, value, select);
     }
 
     if (isOrPattern(pattern)) {
-      return pattern[symbols.or].some((subpattern) =>
-        matchPattern(subpattern as Pattern<i>, value, select)
-      );
+      return pattern
+        .slice(1)
+        .some((subpattern) =>
+          matchPattern(subpattern as Pattern<i>, value, select)
+        );
     }
 
     if (isAndPattern(pattern)) {
-      return pattern[symbols.and].every((subpattern) =>
-        matchPattern(subpattern as Pattern<i>, value, select)
-      );
+      return pattern
+        .slice(1)
+        .every((subpattern) =>
+          matchPattern(subpattern as Pattern<i>, value, select)
+        );
     }
 
     if (!isObject(value)) return false;
@@ -285,7 +284,7 @@ const matchPattern = <i, p extends Pattern<i>>(
       };
 
       const doesMatch = value.every((v) =>
-        matchPattern(pattern[symbols.list], v, listSelect)
+        matchPattern(pattern[1], v, listSelect)
       );
 
       if (doesMatch) {

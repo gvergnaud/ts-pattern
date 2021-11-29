@@ -28,11 +28,13 @@ describe('types', () => {
     });
 
     const pattern3: Pattern<Input> = [
-      when((state) => {
+      /* FIXME: this needs a  `: State` but shouldn't */
+      when((state: State) => {
         type t = Expect<Equal<typeof state, State>>;
         return !!state;
       }),
-      when((event) => {
+      /* FIXME: this needs a  `: Event` but shouldn't */
+      when((event: Event) => {
         type t = Expect<Equal<typeof event, Event>>;
         return !!event;
       }),
@@ -135,7 +137,7 @@ describe('types', () => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
-      .with(not(__.string), (x) => {
+      .with([__.not, __.string], (x) => {
         type t = Expect<
           Equal<
             typeof x,
@@ -179,7 +181,7 @@ describe('types', () => {
         >;
         return 'ok';
       })
-      .with({ type: not('hello' as 'hello') }, (x) => {
+      .with({ type: not('hello') }, (x) => {
         type t = Expect<
           Equal<
             typeof x,
@@ -246,7 +248,7 @@ describe('types', () => {
         type t = Expect<Equal<typeof x, { type: string }>>;
         return 'ok';
       })
-      .with({ [__.list]: __.string }, (x) => {
+      .with([__.listOf, __.string], (x) => {
         type t = Expect<Equal<typeof x, string[]>>;
         return 'ok';
       })

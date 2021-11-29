@@ -61,8 +61,8 @@ export const __ = Object.assign(unknownGuard, {
   boolean: booleanGuard,
   nullish: nullishGuard,
   not: symbols.not,
-  list: symbols.list,
+  listOf: symbols.list,
   optional: symbols.optional,
-  or: symbols.or,
-  and: symbols.and,
+  oneOf: symbols.or,
+  every: symbols.and,
 } as const);

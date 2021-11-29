@@ -103,8 +103,10 @@ describe('not', () => {
   });
 
   it('should correctly exclude unit types with the unit wildcard', () => {
+    const input = { str: 'hello' } as { str: string | null | undefined };
+
     expect(
-      match<{ str: string | null | undefined }>({ str: 'hello' })
+      match(input)
         .with({ str: __.string }, ({ str }) => {
           type t = Expect<Equal<typeof str, string>>;
 

@@ -147,7 +147,7 @@ export type FindUnions<
           // Optional properties aren't considered as union types to avoid
           // generating a huge union.
           [k in keyof Required<a> & keyof p]: FindUnions<
-            NonNullable<a[k]>,
+            Exclude<a[k], undefined>,
             p[k],
             [...path, k]
           >;

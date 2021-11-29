@@ -5,6 +5,7 @@ import {
   GuardPattern,
   NamedSelectPattern,
   NotPattern,
+  OptionalPattern,
   Pattern,
 } from './types/Pattern';
 
@@ -15,13 +16,11 @@ export const when = <a, b extends a = never>(
   [symbols.Guard]: predicate,
 });
 
-export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
-  [symbols.not]: pattern,
-});
+export const not = <a>(pattern: Pattern<a>): NotPattern<a> =>
+  [symbols.not, pattern] as const;
 
-export const optional = <a>(pattern: Pattern<a>) => ({
-  [symbols.optional]: pattern,
-});
+export const optional = <a>(pattern: Pattern<a>) =>
+  [symbols.optional, pattern] as const;
 
 export const ANONYMOUS_SELECT_KEY = '@ts-pattern/__anonymous-select-key';
 
