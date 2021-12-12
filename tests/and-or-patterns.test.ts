@@ -72,6 +72,20 @@ describe('and, and or patterns', () => {
           })
           .exhaustive();
     });
+
+    it('should work on any depth', () => {
+      type Country = 'France' | 'Germany' | 'Spain' | 'USA';
+
+      const input = { country: 'France' } as { country: Country };
+
+      match(input)
+        .with(
+          { country: [__.oneOf, 'France', 'Germany', 'Spain'] },
+          (x) => 'Europe'
+        )
+        .with({ country: 'USA' }, () => 'America')
+        .exhaustive();
+    });
   });
 
   describe('and', () => {
@@ -124,12 +138,12 @@ describe('and, and or patterns', () => {
           .with(
             [
               __.every,
+              { a: instanceOf(Child1) },
               [
                 __.oneOf,
                 { a: { a: instanceOf(Child1), b: instanceOf(Child1) } },
                 { b: { a: instanceOf(Child2), b: instanceOf(Child2) } },
               ],
-              { a: instanceOf(Child1) },
             ],
             (x) => {
               type t = Expect<
