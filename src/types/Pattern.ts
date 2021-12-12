@@ -24,15 +24,21 @@ export type GuardPattern<input, output extends input = never> = {
   [symbols.Guard]: GuardFunction<input, output>;
 };
 
-export type NotPattern<a> = readonly [symbols.not, Pattern<a>];
+// Using `...Pattern<a>[]`  instead of Pattern<a> on purpose here.
+// Even though it's supposed to contain a single sub pattern, we need
+// to use a list otherwise this won't be computed lazily by the typesystem
+// and passing a wrong pattern will yield a "Type instanciation is too deep"
+// error.
 
-export type OptionalPattern<a> = readonly [symbols.optional, Pattern<a>];
+export type NotPattern<a> = readonly [symbols.not, ...Pattern<a>[]];
 
-export type AndPattern<a> = readonly [symbols.and, Pattern<a>, ...Pattern<a>[]];
+export type OptionalPattern<a> = readonly [symbols.optional, ...Pattern<a>[]];
 
-export type OrPattern<a> = readonly [symbols.or, Pattern<a>, ...Pattern<a>[]];
+export type ListPattern<a> = readonly [symbols.list, ...Pattern<a>[]];
 
-export type ListPattern<a> = readonly [symbols.list, Pattern<a>];
+export type AndPattern<a> = readonly [symbols.and, ...Pattern<a>[]];
+
+export type OrPattern<a> = readonly [symbols.or, ...Pattern<a>[]];
 
 export type AnonymousSelectPattern = {
   /** @internal This property should only be used by ts-pattern's internals. */

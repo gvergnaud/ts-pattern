@@ -1,11 +1,12 @@
 import type * as symbols from '../symbols';
-import type { Cast, IsAny, UnionToIntersection } from './helpers';
+import type { Cast, Equal, IsAny, UnionToIntersection } from './helpers';
 import type {
   NamedSelectPattern,
   AnonymousSelectPattern,
   OptionalPattern,
   NotPattern,
   ListPattern,
+  Pattern,
 } from './Pattern';
 
 export type FindSelectionUnion<
@@ -117,6 +118,8 @@ type SelectionToArgs<
   i
 > = [keyof selections] extends [never]
   ? i
+  : IsAny<keyof selections> extends true
+  ? i
   : symbols.AnonymousSelect extends keyof selections
   ? // If the path is never, it means several anonymous patterns were `&` together
     [selections[symbols.AnonymousSelect][1]] extends [never]
@@ -126,10 +129,16 @@ type SelectionToArgs<
     : MixedNamedAndAnonymousSelectError
   : { [k in keyof selections]: selections[k][0] };
 
-export type FindSelected<i, p> = SelectionToArgs<
-  Cast<
-    UnionToIntersection<{} | FindSelectionUnion<i, p, false>>,
-    Record<string, [unknown, unknown]>
-  >,
-  i
->;
+export type FindSelected<i, p> =
+  // This happens if the provided pattern didn't extend Pattern<i>,
+  // Because the compiler falls back on the general `Pattern<i>` type
+  // in this case.
+  Equal<p, Pattern<i>> extends true
+    ? i
+    : SelectionToArgs<
+        Cast<
+          UnionToIntersection<{} | FindSelectionUnion<i, p, false>>,
+          Record<string, [unknown, unknown]>
+        >,
+        i
+      >;
