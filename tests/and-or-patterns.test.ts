@@ -113,6 +113,21 @@ describe('and, and or patterns', () => {
       expect(f(new Child1(new Child2(), new Child2()))).toBe('match!');
       expect(f(new Child1(new Child1(), new Child2()))).toBe('catchall');
     });
+
+    it('should consider two incompatible patterns as matching never', () => {
+      const f = (n: number | string) => {
+        return (
+          match(n)
+            .with([__.every, __.number, __.nullish], (x) => {
+              return 'big number';
+            })
+            .with(__.string, () => 'string')
+            // @ts-expect-error NonExhaustiveError<number>
+            .exhaustive()
+        );
+      };
+      expect(() => f(20)).toThrow();
+    });
   });
 
   describe('composition', () => {
