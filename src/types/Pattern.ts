@@ -1,5 +1,5 @@
 import type * as symbols from '../symbols';
-import { Primitives, Compute, IsPlainObject } from './helpers';
+import { Primitives, Compute, IsPlainObject, Cast } from './helpers';
 
 /**
  * GuardValue returns the value guarded by a type guard function.
@@ -67,7 +67,7 @@ export type Pattern<a> =
   | OrPattern<a>
   // If all branches are objects, then you an match
   // on properties that all objects have (usually the discriminants).
-  | (IsPlainObject<a> extends true
+  | ([a] extends [object]
       ? {
           readonly /*
             using (Compute<a>) to avoid the distribution of `a`
@@ -80,36 +80,9 @@ export type Pattern<a> =
   | (a extends Primitives
       ? a
       : a extends readonly (infer i)[]
-      ? a extends readonly [infer a1, infer a2, infer a3, infer a4, infer a5]
-        ? readonly [
-            Pattern<a1>,
-            Pattern<a2>,
-            Pattern<a3>,
-            Pattern<a4>,
-            Pattern<a5>
-          ]
-        : a extends readonly [infer a1, infer a2, infer a3, infer a4]
-        ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>, Pattern<a4>]
-        : a extends readonly [infer a1, infer a2, infer a3]
-        ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>]
-        : a extends readonly [infer a1, infer a2]
-        ? readonly [Pattern<a1>, Pattern<a2>]
-        : a extends readonly [infer a1]
-        ? readonly [Pattern<a1>]
-        :
-            | ListPattern<i>
-            | readonly []
-            | readonly [Pattern<i>]
-            | readonly [Pattern<i>, Pattern<i>]
-            | readonly [Pattern<i>, Pattern<i>, Pattern<i>]
-            | readonly [Pattern<i>, Pattern<i>, Pattern<i>, Pattern<i>]
-            | readonly [
-                Pattern<i>,
-                Pattern<i>,
-                Pattern<i>,
-                Pattern<i>,
-                Pattern<i>
-              ]
+      ? a extends readonly [any, ...any[]]
+        ? MapPattern<Cast<a, any[]>>
+        : ListPattern<i> | readonly Pattern<i>[]
       : a extends Map<infer k, infer v>
       ? Map<k, Pattern<v>>
       : a extends Set<infer v>
@@ -119,3 +92,10 @@ export type Pattern<a> =
           [k in keyof a]?: Pattern<NonNullable<a[k]>>;
         }
       : a);
+
+type MapPattern<
+  xs extends any[],
+  output extends readonly any[] = readonly []
+> = xs extends readonly [infer head, ...infer tail]
+  ? MapPattern<tail, readonly [...output, Pattern<head>]>
+  : output;

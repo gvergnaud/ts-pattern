@@ -117,8 +117,7 @@ type BuiltInObjects =
   | Date
   | RegExp
   | Generator
-  | { readonly [Symbol.toStringTag]: string }
-  | any[];
+  | { readonly [Symbol.toStringTag]: string };
 
 export type IsPlainObject<o> = o extends object
   ? // to excluded branded string types,
