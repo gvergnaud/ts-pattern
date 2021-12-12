@@ -28,8 +28,7 @@ describe('types', () => {
     });
 
     const pattern3: Pattern<Input> = [
-      /* FIXME: this needs a  `: State` but shouldn't */
-      when((state: State) => {
+      when((state) => {
         type t = Expect<Equal<typeof state, State>>;
         return !!state;
       }),

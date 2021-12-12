@@ -1,5 +1,5 @@
 import type * as symbols from '../symbols';
-import { Primitives, IsPlainObject } from './helpers';
+import { Primitives, Compute, IsPlainObject } from './helpers';
 
 /**
  * GuardValue returns the value guarded by a type guard function.
@@ -65,6 +65,18 @@ export type Pattern<a> =
   | OptionalPattern<a>
   | AndPattern<a>
   | OrPattern<a>
+  // If all branches are objects, then you an match
+  // on properties that all objects have (usually the discriminants).
+  | (IsPlainObject<a> extends true
+      ? {
+          readonly /*
+            using (Compute<a>) to avoid the distribution of `a`
+            if it is a union type, and let people pass subpatterns
+            that match several branches in the union at once.
+          */
+          [k in keyof Compute<a> & keyof a]?: Pattern<a[k]>;
+        }
+      : never)
   | (a extends Primitives
       ? a
       : a extends readonly (infer i)[]
@@ -103,9 +115,7 @@ export type Pattern<a> =
       : a extends Set<infer v>
       ? Set<Pattern<v>>
       : a extends object
-      ? a extends any
-        ? {
-            readonly [k in keyof a]?: Pattern<NonNullable<a[k]>>;
-          }
-        : never
+      ? {
+          [k in keyof a]?: Pattern<NonNullable<a[k]>>;
+        }
       : a);

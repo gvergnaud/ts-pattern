@@ -1,5 +1,6 @@
 import { instanceOf, match, select, when, __ } from '../src';
-import { Equal, Expect } from '../src/types/helpers';
+import { Compute, Equal, Expect, IsPlainObject } from '../src/types/helpers';
+import { OrPattern } from '../src/types/Pattern';
 
 describe('and, and or patterns', () => {
   type A = {
@@ -66,9 +67,49 @@ describe('and, and or patterns', () => {
             type t = Expect<Equal<typeof x, A>>;
             return 'branch 2';
           })
-          .with([__.oneOf, { type: 'a' }, { type: 'b' }], (x) => {
-            type t = Expect<Equal<typeof x, Input>>;
-            return 'branch 3';
+          .with(
+            [
+              __.oneOf,
+              { type: 'a', value: [{ type: 'd' }, true] },
+              { type: 'b' },
+            ],
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  | B
+                  | {
+                      type: 'a';
+                      value: [{ type: 'd'; value: number }, true];
+                    }
+                >
+              >;
+              return 'branch 3';
+            }
+          )
+          .exhaustive();
+    });
+
+    it('oneOf and every should work on properties shared by several element in a union type', () => {
+      type Input =
+        | { type: 'a'; value: string }
+        | { type: 'b'; value: number }
+        | { type: 'c'; value: boolean };
+
+      const f = (input: Input) =>
+        match(input)
+          .with({ type: [__.oneOf, 'a', 'b'] }, (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                { type: 'a'; value: string } | { type: 'b'; value: number }
+              >
+            >;
+            return 'branch 1';
+          })
+          .with({ type: 'c' }, (x) => {
+            type t = Expect<Equal<typeof x, { type: 'c'; value: boolean }>>;
+            return 'branch 2';
           })
           .exhaustive();
     });
