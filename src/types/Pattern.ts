@@ -70,7 +70,7 @@ export type Pattern<a> =
             if it is a union type, and let people pass subpatterns
             that match several branches in the union at once.
           */
-          [k in keyof Compute<a> & keyof a]?: Pattern<a[k]>;
+          [k in keyof Compute<a>]?: k extends keyof a ? Pattern<a[k]> : never;
         }
       : never)
   | (a extends Primitives
@@ -85,7 +85,7 @@ export type Pattern<a> =
       ? Set<Pattern<v>>
       : a extends object
       ? {
-          [k in keyof a]?: Pattern<NonNullable<a[k]>>;
+          readonly [k in keyof a]?: Pattern<NonNullable<a[k]>>;
         }
       : a);
 
