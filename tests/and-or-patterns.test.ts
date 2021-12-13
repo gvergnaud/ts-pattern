@@ -91,10 +91,18 @@ describe('and, and or patterns', () => {
     });
 
     it('oneOf and every should work on properties shared by several element in a union type', () => {
+      type C = {
+        type: 'c';
+        value:
+          | { type: 'd'; value: boolean }
+          | { type: 'e'; value: string[] }
+          | { type: 'f'; value: number[] };
+      };
+
       type Input =
         | { type: 'a'; value: string }
         | { type: 'b'; value: number }
-        | { type: 'c'; value: boolean };
+        | C;
 
       const f = (input: Input) =>
         match(input)
@@ -108,9 +116,49 @@ describe('and, and or patterns', () => {
             return 'branch 1';
           })
           .with({ type: 'c' }, (x) => {
-            type t = Expect<Equal<typeof x, { type: 'c'; value: boolean }>>;
+            type t = Expect<Equal<typeof x, C>>;
             return 'branch 2';
           })
+          .exhaustive();
+
+      const fe = (input: Input) =>
+        match(input)
+          .with({ type: [__.oneOf, 'a', 'b'] }, (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                { type: 'a'; value: string } | { type: 'b'; value: number }
+              >
+            >;
+            return 'branch 1';
+          })
+          .with({ type: 'c', value: { type: [__.oneOf, 'd', 'e'] } }, (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                {
+                  type: 'c';
+                  value:
+                    | { type: 'd'; value: boolean }
+                    | { type: 'e'; value: string[] };
+                }
+              >
+            >;
+            return 'branch 2';
+          })
+          .with({ type: 'c', value: { type: 'f' } }, (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                {
+                  type: 'c';
+                  value: { type: 'f'; value: number[] };
+                }
+              >
+            >;
+            return 'branch 2';
+          })
+          // FIXME: This should work
           .exhaustive();
     });
 
