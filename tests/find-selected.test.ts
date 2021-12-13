@@ -6,7 +6,7 @@ import {
 import { Equal, Expect } from '../src/types/helpers';
 import {
   AnonymousSelectPattern,
-  NamedSelectPattern,
+  SelectPattern,
   NotPattern,
 } from '../src/types/Pattern';
 import { Event, State } from './utils';
@@ -20,7 +20,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               [State, Event],
-              [NamedSelectPattern<'state'>, NamedSelectPattern<'event'>]
+              [SelectPattern<'state'>, SelectPattern<'event'>]
             >,
             { state: State; event: Event }
           >
@@ -30,9 +30,9 @@ describe('FindSelected', () => {
             FindSelected<
               [1, 2, 3],
               [
-                NamedSelectPattern<'first'>,
-                NamedSelectPattern<'second'>,
-                NamedSelectPattern<'third'>
+                SelectPattern<'first'>,
+                SelectPattern<'second'>,
+                SelectPattern<'third'>
               ]
             >,
             { first: 1; second: 2; third: 3 }
@@ -43,10 +43,10 @@ describe('FindSelected', () => {
             FindSelected<
               [1, 2, 3, 4],
               [
-                NamedSelectPattern<'1'>,
-                NamedSelectPattern<'2'>,
-                NamedSelectPattern<'3'>,
-                NamedSelectPattern<'4'>
+                SelectPattern<'1'>,
+                SelectPattern<'2'>,
+                SelectPattern<'3'>,
+                SelectPattern<'4'>
               ]
             >,
             { '1': 1; '2': 2; '3': 3; '4': 4 }
@@ -57,11 +57,11 @@ describe('FindSelected', () => {
             FindSelected<
               [1, 2, 3, 4, 5],
               [
-                NamedSelectPattern<'1'>,
-                NamedSelectPattern<'2'>,
-                NamedSelectPattern<'3'>,
-                NamedSelectPattern<'4'>,
-                NamedSelectPattern<'5'>
+                SelectPattern<'1'>,
+                SelectPattern<'2'>,
+                SelectPattern<'3'>,
+                SelectPattern<'4'>,
+                SelectPattern<'5'>
               ]
             >,
             { '1': 1; '2': 2; '3': 3; '4': 4; '5': 5 }
@@ -74,7 +74,7 @@ describe('FindSelected', () => {
       type cases = [
         Expect<
           Equal<
-            FindSelected<State[], [symbols.list, NamedSelectPattern<'state'>]>,
+            FindSelected<State[], [symbols.list, SelectPattern<'state'>]>,
             { state: State[] }
           >
         >,
@@ -82,7 +82,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               State[][],
-              [symbols.list, [symbols.list, NamedSelectPattern<'state'>]]
+              [symbols.list, [symbols.list, SelectPattern<'state'>]]
             >,
             { state: State[][] }
           >
@@ -93,7 +93,7 @@ describe('FindSelected', () => {
               State[][][],
               [
                 symbols.list,
-                [symbols.list, [symbols.list, NamedSelectPattern<'state'>]]
+                [symbols.list, [symbols.list, SelectPattern<'state'>]]
               ]
             >,
             { state: State[][][] }
@@ -108,7 +108,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               { a: { b: { c: 3 } } },
-              { a: { b: { c: NamedSelectPattern<'c'> } } }
+              { a: { b: { c: SelectPattern<'c'> } } }
             >,
             { c: 3 }
           >
@@ -119,8 +119,8 @@ describe('FindSelected', () => {
               { a: { b: { c: 3 }; d: { e: 7 } } },
               {
                 a: {
-                  b: { c: NamedSelectPattern<'c'> };
-                  d: { e: NamedSelectPattern<'e'> };
+                  b: { c: SelectPattern<'c'> };
+                  d: { e: SelectPattern<'e'> };
                 };
               }
             >,
@@ -136,7 +136,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               { a: { b: { c: [3, 4] } } },
-              { a: { b: { c: [NamedSelectPattern<'c'>, unknown] } } }
+              { a: { b: { c: [SelectPattern<'c'>, unknown] } } }
             >,
             { c: 3 }
           >
@@ -146,8 +146,8 @@ describe('FindSelected', () => {
             FindSelected<
               { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
               {
-                a: [{ c: NamedSelectPattern<'c'> }, { e: 7 }];
-                b: [symbols.list, { d: NamedSelectPattern<'d'> }];
+                a: [{ c: SelectPattern<'c'> }, { e: 7 }];
+                b: [symbols.list, { d: SelectPattern<'d'> }];
               }
             >,
             { c: 3; d: string[] }
@@ -267,7 +267,7 @@ describe('FindSelected', () => {
                 type: 'text';
                 text: AnonymousSelectPattern;
                 author: {
-                  name: NamedSelectPattern<'authorName'>;
+                  name: SelectPattern<'authorName'>;
                 };
               }
             >,

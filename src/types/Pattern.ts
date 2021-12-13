@@ -1,5 +1,5 @@
 import type * as symbols from '../symbols';
-import { Primitives, Compute, IsPlainObject, Cast } from './helpers';
+import { Primitives, Compute, Cast } from './helpers';
 
 /**
  * GuardValue returns the value guarded by a type guard function.
@@ -17,12 +17,12 @@ export type GuardFunction<input, output extends input = never> =
 // Using internal tags here to dissuade people from using them inside patterns.
 // Theses properties should be used by ts-pattern's internals only.
 // Unfortunately they must be publically visible to work at compile time
-export type GuardPattern<input, output extends input = never> = {
+export interface GuardPattern<input, output extends input = never> {
   /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.Guard;
   /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.Guard]: GuardFunction<input, output>;
-};
+}
 
 // Using `...Pattern<a>[]`  instead of Pattern<a> on purpose here.
 // Even though it's supposed to contain a single sub pattern, we need
@@ -40,17 +40,14 @@ export type AndPattern<a> = readonly [symbols.and, ...Pattern<a>[]];
 
 export type OrPattern<a> = readonly [symbols.or, ...Pattern<a>[]];
 
-export type AnonymousSelectPattern = {
-  /** @internal This property should only be used by ts-pattern's internals. */
-  [symbols.PatternKind]: symbols.AnonymousSelect;
-};
+export type AnonymousSelectPattern = SelectPattern<symbols.AnonymousSelectKey>;
 
-export type NamedSelectPattern<k extends string> = {
+export interface SelectPattern<k extends string> {
   /** @internal This property should only be used by ts-pattern's internals. */
-  [symbols.PatternKind]: symbols.NamedSelect;
+  [symbols.PatternKind]: symbols.Select;
   /** @internal This property should only be used by ts-pattern's internals. */
-  [symbols.NamedSelect]: k;
-};
+  [symbols.Select]: k;
+}
 
 /**
  * ### Pattern
@@ -58,8 +55,7 @@ export type NamedSelectPattern<k extends string> = {
  * They can also be a "wildcards", like `__`.
  */
 export type Pattern<a> =
-  | AnonymousSelectPattern
-  | NamedSelectPattern<string>
+  | SelectPattern<string>
   | GuardPattern<a, a>
   | NotPattern<a | any>
   | OptionalPattern<a>

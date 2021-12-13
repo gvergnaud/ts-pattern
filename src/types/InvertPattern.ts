@@ -7,13 +7,10 @@ import {
   Equal,
 } from './helpers';
 import type {
-  NamedSelectPattern,
-  AnonymousSelectPattern,
+  SelectPattern,
   GuardPattern,
   NotPattern,
   OptionalPattern,
-  AndPattern,
-  OrPattern,
   ListPattern,
 } from './Pattern';
 import * as symbols from '../symbols';
@@ -37,9 +34,7 @@ type ReduceOr<tuple extends any[], output = never> = tuple extends readonly [
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
-export type InvertPattern<p> = p extends
-  | NamedSelectPattern<any>
-  | AnonymousSelectPattern
+export type InvertPattern<p> = p extends SelectPattern<any>
   ? unknown
   : p extends GuardPattern<infer p1, infer p2>
   ? [p2] extends [never]
@@ -126,9 +121,11 @@ export type ReduceOrForExclude<
 /**
  * ### InvertPatternForExclude
  */
-export type InvertPatternForExclude<p, i, empty = never> = p extends
-  | NamedSelectPattern<any>
-  | AnonymousSelectPattern
+export type InvertPatternForExclude<
+  p,
+  i,
+  empty = never
+> = p extends SelectPattern<any>
   ? unknown
   : p extends GuardPattern<any, infer p1>
   ? p1

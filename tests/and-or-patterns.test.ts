@@ -1,5 +1,5 @@
 import { instanceOf, match, select, when, __ } from '../src';
-import { Compute, Equal, Expect, IsPlainObject } from '../src/types/helpers';
+import { Compute, Equal, Expect } from '../src/types/helpers';
 import { OrPattern } from '../src/types/Pattern';
 
 describe('and, and or patterns', () => {

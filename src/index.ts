@@ -1,7 +1,6 @@
 import type {
   Pattern,
-  AnonymousSelectPattern,
-  NamedSelectPattern,
+  SelectPattern,
   GuardPattern,
   NotPattern,
   GuardValue,
@@ -19,14 +18,7 @@ import type {
 } from './types/Match';
 
 import * as symbols from './symbols';
-import {
-  when,
-  not,
-  optional,
-  select,
-  instanceOf,
-  ANONYMOUS_SELECT_KEY,
-} from './guards';
+import { when, not, optional, select, instanceOf } from './guards';
 import { __ } from './wildcards';
 import { InvertPattern } from './types/InvertPattern';
 
@@ -110,8 +102,8 @@ const builder = <i, o>(
             handler,
             select: (value) =>
               Object.keys(selected).length
-                ? ANONYMOUS_SELECT_KEY in selected
-                  ? selected[ANONYMOUS_SELECT_KEY]
+                ? symbols.AnonymousSelectKey in selected
+                  ? selected[symbols.AnonymousSelectKey]
                   : selected
                 : value,
           },
@@ -187,14 +179,9 @@ const isListPattern = (x: unknown): x is ListPattern<unknown> => {
   return Array.isArray(pattern) && pattern[0] === symbols.list;
 };
 
-const isNamedSelectPattern = (x: unknown): x is NamedSelectPattern<string> => {
-  const pattern = x as NamedSelectPattern<string>;
-  return pattern && pattern[symbols.PatternKind] === symbols.NamedSelect;
-};
-
-const isAnonymousSelectPattern = (x: unknown): x is AnonymousSelectPattern => {
-  const pattern = x as AnonymousSelectPattern;
-  return pattern && pattern[symbols.PatternKind] === symbols.AnonymousSelect;
+const isSelectPattern = (x: unknown): x is SelectPattern<string> => {
+  const pattern = x as SelectPattern<string>;
+  return pattern && pattern[symbols.PatternKind] === symbols.Select;
 };
 
 const selectWithUndefined = (
@@ -202,10 +189,8 @@ const selectWithUndefined = (
   select: (key: string, value: unknown) => void
 ): void => {
   if (isObject(pattern)) {
-    if (isNamedSelectPattern(pattern))
-      return select(pattern[symbols.NamedSelect], undefined);
-    if (isAnonymousSelectPattern(pattern))
-      return select(ANONYMOUS_SELECT_KEY, undefined);
+    if (isSelectPattern(pattern))
+      return select(pattern[symbols.Select], undefined);
     if (isOptionalPattern(pattern))
       return selectWithUndefined(pattern[1], select);
     if (isAndPattern(pattern))
@@ -234,13 +219,8 @@ const matchPattern = <i, p extends Pattern<i>>(
   if (isObject(pattern)) {
     if (isGuardPattern(pattern)) return Boolean(pattern[symbols.Guard](value));
 
-    if (isNamedSelectPattern(pattern)) {
-      select(pattern[symbols.NamedSelect], value);
-      return true;
-    }
-
-    if (isAnonymousSelectPattern(pattern)) {
-      select(ANONYMOUS_SELECT_KEY, value);
+    if (isSelectPattern(pattern)) {
+      select(pattern[symbols.Select], value);
       return true;
     }
 
