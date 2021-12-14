@@ -112,18 +112,18 @@ export type Drop<
   ? Drop<tail, Prev<n>>
   : [];
 
-type BuiltInObjects =
+export type BuiltInObjects =
   | Function
   | Date
   | RegExp
   | Generator
   | { readonly [Symbol.toStringTag]: string };
 
-export type IsPlainObject<o> = o extends object
+export type IsPlainObject<o, excludeUnion = BuiltInObjects> = o extends object
   ? // to excluded branded string types,
     // like `string & { __brand: "id" }`
     // and built-in objects
-    o extends string | BuiltInObjects
+    o extends string | excludeUnion
     ? false
     : true
   : false;

@@ -271,5 +271,21 @@ describe('ExtractPreciseValue', () => {
       }
       type cases = [Expect<Equal<ExtractPreciseValue<A | B, A>, A>>];
     });
+
+    it('issue #63: it should correctly narrow Error subclasses', () => {
+      class FooError extends Error {
+        foo = 'bar';
+      }
+
+      class BazError extends Error {
+        baz = 'bil';
+      }
+
+      type input = FooError | BazError | Error;
+
+      type res = ExtractPreciseValue<input, FooError>;
+
+      type cases = [Expect<Equal<res, FooError>>];
+    });
   });
 });

@@ -1,5 +1,6 @@
 import type { NotPattern } from './Pattern';
 import type {
+  BuiltInObjects,
   ExcludeObjectIfContainsNever,
   IsAny,
   IsPlainObject,
@@ -73,7 +74,9 @@ export type ExtractPreciseValue<a, b> = unknown extends b
   ? a extends Set<infer av>
     ? Set<ExtractPreciseValue<av, bv>>
     : LeastUpperBound<a, b>
-  : IsPlainObject<b> extends true
+  : // We add `Error` to the excludeUnion because
+  // We want to consider them like primitive values.
+  IsPlainObject<b, BuiltInObjects | Error> extends true
   ? a extends object
     ? a extends b
       ? a

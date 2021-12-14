@@ -44,4 +44,25 @@ describe('instanceOf', () => {
 
     expect(output).toEqual('instance of A!');
   });
+
+  it('issue #63: should work on union of errors', () => {
+    class FooError extends Error {
+      foo = 'foo';
+    }
+
+    class BazError extends Error {
+      baz = 'baz';
+    }
+
+    type Input = FooError | BazError | Error;
+
+    let err: Input = new FooError();
+
+    expect(
+      match<Input, string>(err)
+        .with(instanceOf(FooError), (err) => err.foo)
+        .with(instanceOf(BazError), (err) => err.baz)
+        .otherwise(() => 'nothing')
+    ).toBe('foo');
+  });
 });
