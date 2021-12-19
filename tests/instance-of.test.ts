@@ -47,19 +47,23 @@ describe('instanceOf', () => {
 
   it('issue #63: should work on union of errors', () => {
     class FooError extends Error {
-      foo = 'foo';
+      constructor(public foo?: string) {
+        super();
+      }
     }
 
     class BazError extends Error {
-      baz = 'baz';
+      constructor(public baz?: string) {
+        super();
+      }
     }
 
     type Input = FooError | BazError | Error;
 
-    let err: Input = new FooError();
+    let err: Input = new FooError('foo');
 
     expect(
-      match<Input, string>(err)
+      match<Input, string | undefined>(err)
         .with(instanceOf(FooError), (err) => err.foo)
         .with(instanceOf(BazError), (err) => err.baz)
         .otherwise(() => 'nothing')

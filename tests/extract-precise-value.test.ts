@@ -281,11 +281,33 @@ describe('ExtractPreciseValue', () => {
         baz = 'bil';
       }
 
-      type input = FooError | BazError | Error;
+      class ErrorWithOptionalKeys1 extends Error {
+        foo?: string;
+      }
 
-      type res = ExtractPreciseValue<input, FooError>;
+      class ErrorWithOptionalKeys2 extends Error {
+        baz?: string;
+      }
 
-      type cases = [Expect<Equal<res, FooError>>];
+      type cases = [
+        Expect<
+          Equal<
+            ExtractPreciseValue<FooError | BazError | Error, FooError>,
+            FooError
+          >
+        >,
+        Expect<
+          Equal<
+            ExtractPreciseValue<
+              | ErrorWithOptionalKeys1
+              | ErrorWithOptionalKeys2
+              | ErrorWithOptionalKeys1,
+              ErrorWithOptionalKeys1
+            >,
+            ErrorWithOptionalKeys1
+          >
+        >
+      ];
     });
   });
 });

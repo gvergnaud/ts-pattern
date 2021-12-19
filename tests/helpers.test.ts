@@ -5,6 +5,7 @@ import {
   ExcludeIfContainsNever,
   Expect,
   Iterator,
+  LeastUpperBound,
   Slice,
 } from '../src/types/helpers';
 
@@ -111,6 +112,14 @@ describe('helpers', () => {
           >
         >
       ];
+    });
+  });
+
+  describe('LeastUpperBound', () => {
+    it('If both a and b extend each other, it should pick b', () => {
+      class B {}
+      class A extends B {}
+      type t = Expect<Equal<LeastUpperBound<A | B, B>, B>>;
     });
   });
 });
