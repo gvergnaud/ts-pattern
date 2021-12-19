@@ -31,17 +31,14 @@ export type NotPattern<a> = {
   [symbols.Not]: Pattern<a>;
 };
 
-export type AnonymousSelectPattern = {
-  /** @internal This property should only be used by ts-pattern's internals. */
-  [symbols.PatternKind]: symbols.AnonymousSelect;
-};
+export type AnonymousSelectPattern = SelectPattern<symbols.AnonymousSelectKey>;
 
-export type NamedSelectPattern<k extends string> = {
+export interface SelectPattern<k extends string> {
   /** @internal This property should only be used by ts-pattern's internals. */
-  [symbols.PatternKind]: symbols.NamedSelect;
+  [symbols.PatternKind]: symbols.Select;
   /** @internal This property should only be used by ts-pattern's internals. */
-  [symbols.NamedSelect]: k;
-};
+  [symbols.Select]: k;
+}
 
 /**
  * ### Pattern
@@ -49,8 +46,7 @@ export type NamedSelectPattern<k extends string> = {
  * They can also be a "wildcards", like `__`.
  */
 export type Pattern<a> =
-  | AnonymousSelectPattern
-  | NamedSelectPattern<string>
+  | SelectPattern<string>
   | GuardPattern<a, a>
   | NotPattern<a | any>
   | (a extends Primitives

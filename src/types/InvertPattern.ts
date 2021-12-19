@@ -1,19 +1,12 @@
 import { IsPlainObject, Primitives, IsLiteral, Or } from './helpers';
-import type {
-  NamedSelectPattern,
-  AnonymousSelectPattern,
-  GuardPattern,
-  NotPattern,
-} from './Pattern';
+import type { SelectPattern, GuardPattern, NotPattern } from './Pattern';
 
 /**
  * ### InvertPattern
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
-export type InvertPattern<p> = p extends
-  | NamedSelectPattern<any>
-  | AnonymousSelectPattern
+export type InvertPattern<p> = p extends SelectPattern<any>
   ? unknown
   : p extends GuardPattern<infer p1, infer p2>
   ? [p2] extends [never]
@@ -57,7 +50,7 @@ export type InvertPattern<p> = p extends
  */
 export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
   ? Exclude<i, p1>
-  : p extends NamedSelectPattern<any> | AnonymousSelectPattern
+  : p extends SelectPattern<any>
   ? unknown
   : p extends GuardPattern<any, infer p1>
   ? p1
