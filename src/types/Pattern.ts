@@ -33,12 +33,12 @@ export type NotPattern<a> = {
 
 export type AnonymousSelectPattern = SelectPattern<symbols.AnonymousSelectKey>;
 
-export interface SelectPattern<k extends string> {
+export type SelectPattern<k extends string> = {
   /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.Select;
   /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.Select]: k;
-}
+};
 
 /**
  * ### Pattern
