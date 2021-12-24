@@ -10,18 +10,57 @@ export type GuardValue<F> = F extends (value: any) => value is infer b
   ? a
   : never;
 
-export type GuardFunction<a, b extends a> =
-  | ((value: a) => value is b)
-  | ((value: a) => boolean);
+export type GuardFunction<input, output extends input = never> =
+  | ((value: input) => value is output)
+  | ((value: input) => boolean);
+
+export type GetMatchInput<
+  T extends MatchProtocolPattern<any, any, any>,
+  input // This is what we need to inject as a type parameter to the generic function
+> = T[symbols.MatchProtocol]['predicate'] extends (
+  value: infer input
+) => unknown
+  ? input
+  : never;
+
+export type GetMatchOutput<
+  T extends MatchProtocolPattern<any, any, any>,
+  input // This is what we need to inject as a type parameter to the generic function
+> = T[symbols.MatchProtocol]['predicate'] extends (
+  value: any
+) => value is infer output
+  ? output
+  : never;
+
+export type GetMatchSelection<
+  pattern extends MatchProtocolPattern<any, any, any>,
+  input // This is what we need to inject as a type parameter to the generic function
+> = pattern[symbols.MatchProtocol]['selector'] extends (
+  value: input
+) => { value: infer value }
+  ? value
+  : never;
+
+export type MatchProtocolPattern<
+  key extends string,
+  p extends (value: unknown) => unknown,
+  s extends (value: unknown) => { key: key; value: unknown }
+> = {
+  readonly [symbols.PatternKind]: symbols.MatchProtocol;
+  readonly [symbols.MatchProtocol]: {
+    readonly predicate: p;
+    readonly selector: s;
+  };
+};
 
 // Using internal tags here to dissuade people from using them inside patterns.
 // Theses properties should be used by ts-pattern's internals only.
 // Unfortunately they must be publically visible to work at compile time
-export type GuardPattern<a, b extends a = never> = {
+export type GuardPattern<input, output extends input = never> = {
   /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.Guard;
   /** @internal This property should only be used by ts-pattern's internals. */
-  [symbols.Guard]: GuardFunction<a, b>;
+  [symbols.Guard]: GuardFunction<input, output>;
 };
 
 export type NotPattern<a> = {
@@ -49,6 +88,7 @@ export type Pattern<a> =
   | SelectPattern<string>
   | GuardPattern<a, a>
   | NotPattern<a | any>
+  | MatchProtocolPattern<string, (value: any) => any, (value: any) => any>
   | (a extends Primitives
       ? a
       : a extends readonly (infer i)[]

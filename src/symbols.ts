@@ -29,5 +29,9 @@ export type Not = typeof Not;
 export const Select = Symbol('@ts-pattern/select');
 export type Select = typeof Select;
 
+/** @internal This symbol should only be used by ts-pattern's internals. */
+export const MatchProtocol = Symbol('@ts-pattern/match-protocol');
+export type MatchProtocol = typeof MatchProtocol;
+
 export const AnonymousSelectKey = '@ts-pattern/__anonymous-select-key';
 export type AnonymousSelectKey = typeof AnonymousSelectKey;

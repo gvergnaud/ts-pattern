@@ -6,13 +6,28 @@ import {
   SelectPattern,
   NotPattern,
   Pattern,
+  MatchProtocolPattern,
 } from './types/Pattern';
 
-export const when = <a, b extends a = never>(
-  predicate: GuardFunction<a, b>
-): GuardPattern<a, b> => ({
+export const when = <input, output extends input = never>(
+  predicate: GuardFunction<input, output>
+): GuardPattern<input, output> => ({
   [symbols.PatternKind]: symbols.Guard,
   [symbols.Guard]: predicate,
+});
+
+export const pattern = <
+  key extends string,
+  p extends (value: any) => unknown,
+  selected
+>(
+  predicate: p,
+  selector: p extends (value: any) => value is infer N
+    ? (value: N) => { key: key; value: selected }
+    : never
+): MatchProtocolPattern<key, p, typeof selector> => ({
+  [symbols.PatternKind]: symbols.MatchProtocol,
+  [symbols.MatchProtocol]: { predicate, selector },
 });
 
 export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({

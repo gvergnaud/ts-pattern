@@ -1,6 +1,10 @@
 import type * as symbols from '../symbols';
 import type { Cast, IsAny, UnionToIntersection } from './helpers';
-import type { SelectPattern, AnonymousSelectPattern } from './Pattern';
+import type {
+  SelectPattern,
+  MatchProtocolPattern,
+  GetMatchSelection,
+} from './Pattern';
 
 export type FindSelectionUnion<
   i,
@@ -9,6 +13,8 @@ export type FindSelectionUnion<
   path extends any[] = []
 > = IsAny<i> extends true
   ? never
+  : p extends MatchProtocolPattern<infer k, any, any>
+  ? { [kk in k]: [GetMatchSelection<p, i>, path] }
   : p extends SelectPattern<infer k>
   ? { [kk in k]: [i, path] }
   : p extends readonly (infer pp)[]
