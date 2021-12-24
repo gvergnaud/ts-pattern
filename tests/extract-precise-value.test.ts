@@ -1,6 +1,6 @@
 import { ExtractPreciseValue } from '../src/types/ExtractPreciseValue';
 import { Expect, Equal, LeastUpperBound } from '../src/types/helpers';
-import { NotPattern } from '../src/types/Pattern';
+import { ToExclude } from '../src/types/Pattern';
 import { Event, Option, State } from './utils';
 
 describe('ExtractPreciseValue', () => {
@@ -202,7 +202,7 @@ describe('ExtractPreciseValue', () => {
           Equal<
             ExtractPreciseValue<
               Input,
-              { type: 'test'; id: NotPattern<undefined> }
+              { type: 'test'; id: ToExclude<undefined> }
             >,
             { type: 'test'; id: string }
           >

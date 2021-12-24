@@ -160,17 +160,43 @@ describe('when', () => {
   it('should narrow the type of the input based on the pattern', () => {
     type Option<T> = { type: 'some'; value: T } | { type: 'none' };
 
-    const optionalFizzBuzz = (optionalNumber: Option<{ test: 'a' | 'b' }>) =>
+    const optionalFizzBuzz = (
+      optionalNumber: Option<{
+        opt?: 'x' | 'y';
+        list: {
+          test: 'a' | 'b';
+          sublist: ('z' | 'w')[];
+          maybe?: string | number;
+        }[];
+        coords: { x: 'left' | 'right'; y: 'top' | 'bottom' };
+      }>
+    ) =>
       match(optionalNumber)
         .with(
           {
             type: 'some',
-            value: P.when2({ test: 'b' }),
+            value: {
+              list: P.listOf({
+                test: 'a',
+                sublist: P.listOf('z'),
+                maybe: P.optional(P.string),
+              }),
+              opt: P.optional('x'),
+            },
           },
-          (x) => x
+          (x) => 'okk'
         )
-        .with({ type: 'some' }, (someNumber) => () => 'fizzbuzz')
-        .with({ type: 'none' }, () => '')
+        .with(
+          {
+            type: 'some',
+            value: {
+              coords: P.not({ x: P.optional('right') }),
+            },
+          },
+          (x) => 'okk'
+        )
+        .with({ type: 'none' }, () => null)
+        .with({ type: 'some' }, () => 'ok')
         .exhaustive();
   });
 

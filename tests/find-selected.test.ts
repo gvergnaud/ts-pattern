@@ -280,7 +280,7 @@ describe('FindSelected', () => {
             Equal<
               FindSelected<
                 { text: any },
-                { str: NotPattern<null | undefined> }
+                { str: NotPattern<null | undefined, null | undefined> }
               >,
               { text: any }
             >
@@ -295,7 +295,7 @@ describe('FindSelected', () => {
             Equal<
               FindSelected<
                 { text: unknown },
-                { str: NotPattern<null | undefined> }
+                { str: NotPattern<null | undefined, null | undefined> }
               >,
               { text: unknown }
             >

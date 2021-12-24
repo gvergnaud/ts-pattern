@@ -1,4 +1,4 @@
-import { match, not, P, select, when, __ } from '../src';
+import { match, not, P, Pattern, select, when, __ } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import { Option, some, none, BigUnion, State, Event } from './utils';
 

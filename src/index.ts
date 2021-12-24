@@ -142,13 +142,13 @@ const builder = <i, o>(
 const isObject = (value: unknown): value is Object =>
   Boolean(value && typeof value === 'object');
 
-const isGuardPattern = (x: unknown): x is GuardPattern<unknown> => {
-  const pattern = x as GuardPattern<unknown>;
+const isGuardPattern = (x: unknown): x is GuardPattern<unknown, unknown> => {
+  const pattern = x as GuardPattern<unknown, unknown>;
   return pattern && pattern[symbols.PatternKind] === symbols.Guard;
 };
 
-const isNotPattern = (x: unknown): x is NotPattern<unknown> => {
-  const pattern = x as NotPattern<unknown>;
+const isNotPattern = (x: unknown): x is NotPattern<unknown, unknown> => {
+  const pattern = x as NotPattern<unknown, unknown>;
   return pattern && pattern[symbols.PatternKind] === symbols.Not;
 };
 
@@ -172,7 +172,11 @@ const matchPattern = <i, p extends Pattern<i>>(
     }
 
     if (isNotPattern(pattern))
-      return !matchPattern(pattern[symbols.Not] as Pattern<i>, value, select);
+      return !matchPattern(
+        pattern[symbols.Not](value) as Pattern<i>,
+        value,
+        select
+      );
 
     if (!isObject(value)) return false;
 
@@ -283,74 +287,3 @@ export function isMatching<p extends Pattern<any>>(
     `isMatching wasn't given enough arguments: expected 1 or 2, received ${args.length}.`
   );
 }
-
-type Nullish = null | undefined;
-
-const noneGuard = (option: unknown): option is Nullish => option == null;
-
-const none = P.pattern(
-  noneGuard,
-  (x) =>
-    ({
-      key: symbols.AnonymousSelectKey,
-      value: x,
-    } as const)
-);
-
-match<any>(2)
-  .with(
-    {
-      value: P.optional(P.string),
-      users: P.listOf({
-        name: P.string,
-        description: P.optional(P.string),
-      }),
-      type: P.oneOf('a', 'b'),
-      nice: P.every(P.when(isNumber), P.select()),
-    },
-    () => null
-  )
-  .with(
-    {
-      value: P.optional(() => P.string),
-      users: P.listOf(() => ({
-        name: P.string,
-        description: P.optional(P.string),
-      })),
-      type: P.oneOf(() => ['a', 'b']),
-      nice: P.every(() => [P.when(isNumber), P.select()]),
-    },
-    () => null
-  )
-  .with(
-    {
-      value: P.optional(P.string),
-      users: P.listOf({
-        name: P.string,
-        description: P.optional(P.string),
-      }),
-      type: [P.oneOf, 'a', 'b'],
-      nice: [P.every, P.when(isNumber), P.select],
-    },
-    () => null
-  )
-  .with(
-    {
-      test: { cool: { yo: '2' } },
-      value: [P.optional, P.string],
-      users: [
-        P.listOf,
-        {
-          name: P.string,
-          description: [P.optional, P.string],
-        },
-      ],
-      type: [P.oneOf, 'a', 'b'],
-      nice: [P.every, P.when(isNumber), P.select],
-    },
-    () => null
-  )
-  .with(none, (x) => 0 + 2)
-  .with(P.not(P.number), (x) => 0 + 2)
-  .with(P.not(null), (x) => 0 + 2)
-  .exhaustive();

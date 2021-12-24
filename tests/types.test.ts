@@ -131,7 +131,7 @@ describe('types', () => {
           return 'ok';
         }
       )
-      .with(not('hello'), (x) => {
+      .with(not('hello' as const), (x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })

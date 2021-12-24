@@ -1,5 +1,7 @@
 import { isMatching } from '.';
 import * as symbols from './symbols';
+import { DeepExclude } from './types/DeepExclude';
+import { DistributeMatchingUnions } from './types/DistributeUnions';
 import { Cast } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
@@ -13,14 +15,32 @@ import {
   GuardValue,
 } from './types/Pattern';
 
-export const when2 = <input, p extends Pattern<input>>(
+export const optional = <input, p extends Pattern<Exclude<input, undefined>>>(
   pattern: p,
-  getPattern?: (value: input) => p,
-  select?: (x: InvertPattern<p>) => void
-): GuardPattern<input, InvertPattern<p>> => ({
+  _?: (value: input) => p
+): GuardPattern<input, Cast<InvertPattern<p> | undefined, input>> => ({
   [symbols.PatternKind]: symbols.Guard,
-  [symbols.Guard]: (value: input): value is InvertPattern<p> =>
-    isMatching(getPattern(value), value),
+  [symbols.Guard]: (
+    value: input
+  ): value is Cast<InvertPattern<p> | undefined, input> =>
+    value === undefined || isMatching(pattern, value),
+});
+
+export const listOf = <input extends any[], p extends Pattern<input[number]>>(
+  pattern: p,
+  _?: (value: input) => p
+): GuardPattern<input, Cast<InvertPattern<p>[], input>> => ({
+  [symbols.PatternKind]: symbols.Guard,
+  [symbols.Guard]: (value: input): value is Cast<InvertPattern<p>[], input> =>
+    value.every((v) => isMatching(pattern, v)),
+});
+
+export const not = <input, p extends Pattern<input>>(
+  pattern: p
+): NotPattern<input, InvertPattern<p>> => ({
+  [symbols.PatternKind]: symbols.Not,
+  // Maybe try to make this a function taking input to improve the pattern inference
+  [symbols.Not]: (input: input) => pattern as InvertPattern<p>,
 });
 
 export const when = <input, output extends input = never>(
@@ -38,59 +58,6 @@ type GetKey<s> = s extends (value: any) => { key: infer k } ? k : never;
 
 type GuardInput<s> = s extends (value: infer v) => unknown ? v : never;
 type GuardNarrowed<s> = s extends (value: any) => value is infer n ? n : never;
-
-export function pattern<
-  p extends GuardFunction<any, any>,
-  s extends (value: GuardValue<p>) => { key: string; value: any }
->(
-  predicate: p,
-  selector: s
-): MatchProtocolPattern<
-  GetKey<s>,
-  GuardInput<p>,
-  Cast<GuardNarrowed<p>, GuardInput<p>>,
-  GetSelection<s>,
-  false
->;
-export function pattern<
-  p extends GuardFunction<any, any>,
-  s extends (value: GuardValue<p>) => { key: string; value: any },
-  isExhaustive extends boolean
->(
-  predicate: p,
-  selector: s,
-  isExhaustive: isExhaustive
-): MatchProtocolPattern<
-  GetKey<s>,
-  GuardInput<p>,
-  Cast<GuardNarrowed<p>, GuardInput<p>>,
-  GetSelection<s>,
-  isExhaustive
->;
-export function pattern<
-  p extends GuardFunction<any, any>,
-  s extends (value: GuardValue<p>) => { key: string; value: any }
->(
-  predicate: p,
-  selector: s,
-  isExhaustive?: boolean
-): MatchProtocolPattern<
-  GetKey<s>,
-  GuardInput<p>,
-  Cast<GuardNarrowed<p>, GuardInput<p>>,
-  GetSelection<s>,
-  boolean
-> {
-  return {
-    [symbols.PatternKind]: symbols.MatchProtocol,
-    [symbols.MatchProtocol]: { predicate, selector, isExhaustive },
-  };
-}
-
-export const not = <a>(pattern: Pattern<a>): NotPattern<a> => ({
-  [symbols.PatternKind]: symbols.Not,
-  [symbols.Not]: pattern,
-});
 
 export function select(): AnonymousSelectPattern;
 export function select<k extends string>(key: k): SelectPattern<k>;
@@ -115,7 +82,7 @@ function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
     val instanceof classConstructor;
 }
 export const instanceOf = <T extends AnyConstructor>(classConstructor: T) =>
-  when(isInstanceOf(classConstructor));
+  when<unknown, InstanceType<T>>(isInstanceOf(classConstructor));
 
 function isUnknown<T>(x: T | unknown): x is unknown {
   return true;

@@ -18,6 +18,14 @@ export const PatternKind = Symbol('@ts-pattern/pattern-kind');
 export type PatternKind = typeof PatternKind;
 
 /** @internal This symbol should only be used by ts-pattern's internals. */
+export const Pattern = Symbol('@ts-pattern/pattern');
+export type Pattern = typeof Pattern;
+
+/** @internal This symbol should only be used by ts-pattern's internals. */
+export const ToExclude = Symbol('@ts-pattern/to-exclude');
+export type ToExclude = typeof ToExclude;
+
+/** @internal This symbol should only be used by ts-pattern's internals. */
 export const Guard = Symbol('@ts-pattern/guard');
 export type Guard = typeof Guard;
 

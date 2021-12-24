@@ -1,4 +1,4 @@
-import type { NotPattern } from './Pattern';
+import type { ToExclude } from './Pattern';
 import type {
   BuiltInObjects,
   ExcludeObjectIfContainsNever,
@@ -6,6 +6,7 @@ import type {
   IsPlainObject,
   LeastUpperBound,
 } from './helpers';
+import { DeepExclude } from './DeepExclude';
 
 export type ExtractPreciseValue<a, b> = unknown extends b
   ? a
@@ -13,8 +14,8 @@ export type ExtractPreciseValue<a, b> = unknown extends b
   ? b
   : b extends readonly []
   ? []
-  : b extends NotPattern<infer b1>
-  ? Exclude<a, b1>
+  : b extends ToExclude<infer b1>
+  ? DeepExclude<a, b1>
   : b extends readonly (infer bItem)[]
   ? a extends readonly (infer aItem)[]
     ? b extends readonly [infer b1, infer b2, infer b3, infer b4, infer b5]

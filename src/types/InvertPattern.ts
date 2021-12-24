@@ -1,3 +1,4 @@
+import { DeepExclude } from './DeepExclude';
 import { IsPlainObject, Primitives, IsLiteral, Or } from './helpers';
 import type {
   SelectPattern,
@@ -5,6 +6,7 @@ import type {
   NotPattern,
   MatchProtocolPattern,
   GetMatchedValue,
+  ToExclude,
 } from './Pattern';
 
 /**
@@ -26,8 +28,8 @@ export type InvertPattern<p> = p extends MatchProtocolPattern<
   ? [p2] extends [never]
     ? p1
     : p2
-  : p extends NotPattern<infer a1>
-  ? NotPattern<InvertPattern<a1>>
+  : p extends NotPattern<any, infer p1>
+  ? ToExclude<InvertPattern<p1>>
   : p extends Primitives
   ? p
   : p extends readonly (infer pp)[]
@@ -62,8 +64,8 @@ export type InvertPattern<p> = p extends MatchProtocolPattern<
 /**
  * ### InvertPatternForExclude
  */
-export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
-  ? Exclude<i, p1>
+export type InvertPatternForExclude<p, i> = p extends NotPattern<any, infer p1>
+  ? DeepExclude<i, p1>
   : p extends SelectPattern<any>
   ? unknown
   : p extends MatchProtocolPattern<any, any, any, any, infer isExhaustive>

@@ -41,11 +41,11 @@ describe('not', () => {
 
       const get = (x: 'one' | 'two') =>
         match(x)
-          .with(P.not(one), (x) => {
+          .with(P.not('one' as const), (x) => {
             type t = Expect<Equal<typeof x, 'two'>>;
             return 'not 1';
           })
-          .with(P.not(two), (x) => {
+          .with(P.not('two' as const), (x) => {
             type t = Expect<Equal<typeof x, 'one'>>;
             return 'not 2';
           })
