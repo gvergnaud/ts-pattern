@@ -1,4 +1,4 @@
-import { match, not, Pattern, select, when, __ } from '../src';
+import { match, not, P, select, when, __ } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import { Option, some, none, BigUnion, State, Event } from './utils';
 
@@ -197,7 +197,7 @@ describe('exhaustive()', () => {
           type t = Expect<Equal<typeof data, true>>;
           return 3;
         })
-        .with({ type: 3, data: __ }, ({ data }) => {
+        .with({ type: 3, data: P.__ }, ({ data }) => {
           type t = Expect<Equal<typeof data, boolean>>;
           return 3;
         })
@@ -243,7 +243,7 @@ describe('exhaustive()', () => {
 
       match<Option<number>>({ kind: 'some', value: 3 })
         .with({ kind: 'some', value: 3 }, ({ value }): number => value)
-        .with({ kind: 'some', value: __.number }, ({ value }): number => value)
+        .with({ kind: 'some', value: P.number }, ({ value }): number => value)
         .with({ kind: 'none' }, () => 0)
         .exhaustive();
     });
@@ -330,7 +330,7 @@ describe('exhaustive()', () => {
       match<number>(2)
         .with(2, () => 'two')
         .with(3, () => 'three')
-        .with(__.number, () => 'something else')
+        .with(P.number, () => 'something else')
         .exhaustive();
 
       match<string>('Hello')
@@ -388,17 +388,17 @@ describe('exhaustive()', () => {
 
       match(input)
         .with({ type: 'a' }, (x) => x.items)
-        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .with({ type: 'b', items: [{ data: P.string }] }, (x) => [])
         .exhaustive();
 
       match(input)
         .with({ type: 'a', items: [__] }, (x) => x.items)
-        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .with({ type: 'b', items: [{ data: P.string }] }, (x) => [])
         .exhaustive();
 
       match<Input>(input)
         .with({ type: 'a', items: [{ some: __ }] }, (x) => x.items)
-        .with({ type: 'b', items: [{ data: __.string }] }, (x) => [])
+        .with({ type: 'b', items: [{ data: P.string }] }, (x) => [])
         // @ts-expect-error
         .exhaustive();
     });
@@ -425,13 +425,13 @@ describe('exhaustive()', () => {
       const input = new Set(['']) as Input;
 
       match(input)
-        .with(new Set([__.string]), (x) => x)
+        .with(new Set([P.string]), (x) => x)
         // @ts-expect-error
         .exhaustive();
 
       match(input)
-        .with(new Set([__.string]), (x) => x)
-        .with(new Set([__.number]), (x) => new Set([]))
+        .with(new Set([P.string]), (x) => x)
+        .with(new Set([P.number]), (x) => new Set([]))
         .exhaustive();
     });
 
@@ -441,15 +441,15 @@ describe('exhaustive()', () => {
 
       expect(
         match(input)
-          .with(new Set([__.string]), (x) => x)
+          .with(new Set([P.string]), (x) => x)
           // @ts-expect-error
           .exhaustive()
       ).toEqual(input);
 
       expect(
         match(input)
-          .with(new Set([__.string]), (x) => 1)
-          .with(new Set([__.number]), (x) => 2)
+          .with(new Set([P.string]), (x) => 1)
+          .with(new Set([P.number]), (x) => 2)
           .exhaustive()
       ).toEqual(1);
     });
@@ -460,7 +460,7 @@ describe('exhaustive()', () => {
 
       expect(
         match(input)
-          .with(new Map([['hello' as const, __.number]]), (x) => x)
+          .with(new Map([['hello' as const, P.number]]), (x) => x)
           // @ts-expect-error
           .exhaustive()
       ).toEqual(input);

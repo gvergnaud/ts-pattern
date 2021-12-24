@@ -1,4 +1,4 @@
-import { isMatching, __ } from '../src';
+import { isMatching, __, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('isMatching', () => {
@@ -9,8 +9,8 @@ describe('isMatching', () => {
     };
 
     const isBlogPost = isMatching({
-      title: __.string,
-      author: { name: __.string, age: __.number },
+      title: P.string,
+      author: { name: P.string, age: P.number },
     });
 
     if (isBlogPost(something)) {
@@ -36,8 +36,8 @@ describe('isMatching', () => {
     if (
       isMatching(
         {
-          title: __.string,
-          author: { name: __.string, age: __.number },
+          title: P.string,
+          author: { name: P.string, age: P.number },
         },
         something
       )

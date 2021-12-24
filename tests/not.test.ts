@@ -1,16 +1,16 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, not, when } from '../src';
+import { match, P } from '../src';
 
 describe('not', () => {
   describe('pattern containing a not clause', () => {
     it('should work at the top level', () => {
       const get = (x: unknown): string =>
         match(x)
-          .with(not(__.number), (x) => {
+          .with(P.not(P.number), (x) => {
             type t = Expect<Equal<typeof x, unknown>>;
             return 'not a number';
           })
-          .with(not(__.string), (x) => {
+          .with(P.not(P.string), (x) => {
             type t = Expect<Equal<typeof x, unknown>>;
             return 'not a string';
           })
@@ -24,11 +24,11 @@ describe('not', () => {
       type DS = { x: string | number; y: string | number };
       const get = (x: DS) =>
         match(x)
-          .with({ y: __.number, x: not(__.string) }, (x) => {
+          .with({ y: P.number, x: P.not(P.string) }, (x) => {
             type t = Expect<Equal<typeof x, { x: number; y: number }>>;
             return 'yes';
           })
-          .with(__, () => 'no')
+          .with(P.__, () => 'no')
           .run();
 
       expect(get({ x: 2, y: 2 })).toEqual('yes');
@@ -41,11 +41,11 @@ describe('not', () => {
 
       const get = (x: 'one' | 'two') =>
         match(x)
-          .with(not(one), (x) => {
+          .with(P.not(one), (x) => {
             type t = Expect<Equal<typeof x, 'two'>>;
             return 'not 1';
           })
-          .with(not(two), (x) => {
+          .with(P.not(two), (x) => {
             type t = Expect<Equal<typeof x, 'one'>>;
             return 'not 2';
           })
@@ -64,11 +64,11 @@ describe('not', () => {
 
       const get = (x: Input) =>
         match(x)
-          .with({ type: not('success') }, (x) => {
+          .with({ type: P.not('success') }, (x) => {
             type t = Expect<Equal<typeof x, { type: 'error' }>>;
             return 'error';
           })
-          .with({ type: not('error') }, (x) => {
+          .with({ type: P.not('error') }, (x) => {
             type t = Expect<Equal<typeof x, { type: 'success' }>>;
             return 'success';
           })
@@ -79,22 +79,22 @@ describe('not', () => {
     });
 
     it('should correctly invert the type of a GuardPattern', () => {
-      const nullable = when(
+      const nullable = P.when(
         (x: unknown): x is null | undefined => x === null || x === undefined
       );
 
       expect(
         match<{ str: string } | null>({ str: 'hello' })
-          .with(not(nullable), ({ str }) => str)
+          .with(P.not(nullable), ({ str }) => str)
           .with(nullable, () => '')
           .exhaustive()
       ).toBe('hello');
 
-      const untypedNullable = when((x) => x === null || x === undefined);
+      const untypedNullable = P.when((x) => x === null || x === undefined);
 
       expect(
         match<{ str: string }>({ str: 'hello' })
-          .with(not(untypedNullable), ({ str }) => str)
+          .with(P.not(untypedNullable), ({ str }) => str)
           // @ts-expect-error
           .exhaustive()
       ).toBe('hello');
@@ -104,12 +104,12 @@ describe('not', () => {
   it('should correctly exclude unit types with the unit wildcard', () => {
     expect(
       match<{ str: string | null | undefined }>({ str: 'hello' })
-        .with({ str: not(__.nullish) }, ({ str }) => {
+        .with({ str: P.not(P.nullish) }, ({ str }) => {
           type t = Expect<Equal<typeof str, string>>;
 
           return str;
         })
-        .with({ str: __.nullish }, ({ str }) => {
+        .with({ str: P.nullish }, ({ str }) => {
           type t = Expect<Equal<typeof str, null | undefined>>;
 
           return null;
@@ -121,7 +121,7 @@ describe('not', () => {
   it("shouldn't change a the type if its any or unknown", () => {
     expect(
       match<{ str: any }>({ str: 'hello' })
-        .with({ str: not(__.nullish) }, (x) => {
+        .with({ str: P.not(P.nullish) }, (x) => {
           type t = Expect<Equal<typeof x, { str: any }>>;
           return 'hello';
         })

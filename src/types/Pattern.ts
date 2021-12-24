@@ -14,42 +14,40 @@ export type GuardFunction<input, output extends input = never> =
   | ((value: input) => value is output)
   | ((value: input) => boolean);
 
-export type GetMatchInput<
-  T extends MatchProtocolPattern<any, any, any>,
-  input // This is what we need to inject as a type parameter to the generic function
-> = T[symbols.MatchProtocol]['predicate'] extends (
-  value: infer input
-) => unknown
-  ? input
-  : never;
+type AnyMatchPattern = MatchProtocolPattern<any, any, any, any, any>;
 
-export type GetMatchOutput<
-  T extends MatchProtocolPattern<any, any, any>,
+export type GetMatchedValue<
+  T extends AnyMatchPattern,
   input // This is what we need to inject as a type parameter to the generic function
-> = T[symbols.MatchProtocol]['predicate'] extends (
-  value: any
-) => value is infer output
-  ? output
+> = T extends MatchProtocolPattern<any, infer input, infer output, any, any>
+  ? [output] extends [never]
+    ? input
+    : output
   : never;
 
 export type GetMatchSelection<
-  pattern extends MatchProtocolPattern<any, any, any>,
+  T extends AnyMatchPattern,
   input // This is what we need to inject as a type parameter to the generic function
-> = pattern[symbols.MatchProtocol]['selector'] extends (
-  value: input
-) => { value: infer value }
-  ? value
+> = T extends MatchProtocolPattern<any, any, any, infer selection, any>
+  ? [selection] extends [never]
+    ? GetMatchedValue<T, input>
+    : selection
   : never;
 
 export type MatchProtocolPattern<
   key extends string,
-  p extends (value: unknown) => unknown,
-  s extends (value: unknown) => { key: key; value: unknown }
+  input,
+  narrowed extends input,
+  selected,
+  isExhaustive extends boolean
 > = {
   readonly [symbols.PatternKind]: symbols.MatchProtocol;
   readonly [symbols.MatchProtocol]: {
-    readonly predicate: p;
-    readonly selector: s;
+    readonly predicate:
+      | ((input: input) => input is narrowed)
+      | ((input: input) => boolean);
+    readonly selector: (input: narrowed) => { key: key; value: selected };
+    readonly isExhaustive: isExhaustive;
   };
 };
 
@@ -88,7 +86,7 @@ export type Pattern<a> =
   | SelectPattern<string>
   | GuardPattern<a, a>
   | NotPattern<a | any>
-  | MatchProtocolPattern<string, (value: any) => any, (value: any) => any>
+  | MatchProtocolPattern<string, a, a, any, boolean>
   | (a extends Primitives
       ? a
       : a extends readonly (infer i)[]

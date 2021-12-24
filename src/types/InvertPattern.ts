@@ -4,8 +4,7 @@ import type {
   GuardPattern,
   NotPattern,
   MatchProtocolPattern,
-  GetMatchOutput,
-  GetMatchInput,
+  GetMatchedValue,
 } from './Pattern';
 
 /**
@@ -13,10 +12,14 @@ import type {
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
-export type InvertPattern<p> = p extends MatchProtocolPattern<any, any, any>
-  ? [GetMatchOutput<p, unknown>] extends [never]
-    ? GetMatchInput<p, unknown>
-    : GetMatchOutput<p, unknown>
+export type InvertPattern<p> = p extends MatchProtocolPattern<
+  any,
+  any,
+  any,
+  any,
+  any
+>
+  ? GetMatchedValue<p, unknown>
   : p extends SelectPattern<any>
   ? unknown
   : p extends GuardPattern<infer p1, infer p2>
@@ -63,8 +66,10 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<infer p1>
   ? Exclude<i, p1>
   : p extends SelectPattern<any>
   ? unknown
-  : p extends MatchProtocolPattern<any, any, any>
-  ? GetMatchOutput<p, i>
+  : p extends MatchProtocolPattern<any, any, any, any, infer isExhaustive>
+  ? isExhaustive extends true
+    ? GetMatchedValue<p, i>
+    : never
   : p extends GuardPattern<any, infer p1>
   ? p1
   : p extends Primitives

@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __ } from '../src';
+import { match, __, P } from '../src';
 
 describe('Numbers', () => {
   it('Should match exact numbers', () => {
@@ -19,24 +19,24 @@ describe('Numbers', () => {
     expect(res).toEqual(2);
   });
 
-  it('__.number should match NaN', () => {
+  it('P.number should match NaN', () => {
     const val: number | null = NaN;
     const res = match(val)
-      .with(__.nullish, () => 'bad')
+      .with(P.nullish, () => 'bad')
       .with(1, () => 'bad')
-      .with(__.number, () => 'good')
+      .with(P.number, () => 'good')
       .exhaustive();
 
     expect(res).toEqual('good');
   });
 
-  it('__.NaN should match NaN specially', () => {
+  it('P.NaN should match NaN specially', () => {
     const val: number | null = NaN;
     const res = match(val)
-      .with(__.nullish, () => 'bad')
+      .with(P.nullish, () => 'bad')
       .with(1, () => 'bad')
-      .with(__.NaN, () => 'good')
-      .with(__.number, () => 'bad')
+      .with(P.NaN, () => 'good')
+      .with(P.number, () => 'bad')
       .exhaustive();
 
     expect(res).toEqual('good');

@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, when, select } from '../src';
+import { match, __, when, select, P } from '../src';
 import { Option, State } from './utils';
 
 describe('when', () => {
@@ -132,12 +132,12 @@ describe('when', () => {
             }
           )
           .with(
-            __.string,
+            P.string,
             (x) => x.length > 2 && x.length < 10,
             () => '2 < x.length < 10'
           )
           .with(
-            __.number,
+            P.number,
             (x) => x > 2 && x < 10,
             () => '2 < x < 10'
           )
@@ -149,12 +149,29 @@ describe('when', () => {
               return 'x: number';
             }
           )
-          .with(__.string, () => 'x: string')
+          .with(P.string, () => 'x: string')
           .exhaustive();
 
         expect(res).toEqual(expected);
       });
     });
+  });
+
+  it('should narrow the type of the input based on the pattern', () => {
+    type Option<T> = { type: 'some'; value: T } | { type: 'none' };
+
+    const optionalFizzBuzz = (optionalNumber: Option<{ test: 'a' | 'b' }>) =>
+      match(optionalNumber)
+        .with(
+          {
+            type: 'some',
+            value: P.when2({ test: 'b' }),
+          },
+          (x) => x
+        )
+        .with({ type: 'some' }, (someNumber) => () => 'fizzbuzz')
+        .with({ type: 'none' }, () => '')
+        .exhaustive();
   });
 
   it('should narrow the type of the input based on the pattern', () => {

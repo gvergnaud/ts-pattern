@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __ } from '../src';
+import { match, __, P } from '../src';
 import { State, Event } from './utils';
 
 describe('tuple ([a, b])', () => {
@@ -7,10 +7,10 @@ describe('tuple ([a, b])', () => {
     const sum = (xs: number[]): number =>
       match(xs)
         .with([], () => 0)
-        .with([__.number, __.number], ([x, y]) => x + y)
-        .with([__.number, __.number, __.number], ([x, y, z]) => x + y + z)
+        .with([P.number, P.number], ([x, y]) => x + y)
+        .with([P.number, P.number, P.number], ([x, y, z]) => x + y + z)
         .with(
-          [__.number, __.number, __.number, __.number],
+          [P.number, P.number, P.number, P.number],
           ([x, y, z, w]) => x + y + z + w
         )
         .run();
@@ -26,17 +26,17 @@ describe('tuple ([a, b])', () => {
       | ['++', number];
 
     const res = match<Input, number>(['-', 2])
-      .with(['+', __.number, __.number], (value) => {
+      .with(['+', P.number, P.number], (value) => {
         type t = Expect<Equal<typeof value, ['+', number, number]>>;
         const [, x, y] = value;
         return x + y;
       })
-      .with(['*', __.number, __.number], (value) => {
+      .with(['*', P.number, P.number], (value) => {
         type t = Expect<Equal<typeof value, ['*', number, number]>>;
         const [, x, y] = value;
         return x * y;
       })
-      .with(['-', __.number], (value) => {
+      .with(['-', P.number], (value) => {
         type t = Expect<Equal<typeof value, ['-', number]>>;
         const [, x] = value;
         return -x;
@@ -89,7 +89,7 @@ describe('tuple ([a, b])', () => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `number match`;
             })
-            .with([__.string, __.number], (x) => {
+            .with([P.string, P.number], (x) => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `not matching`;
             })

@@ -1,4 +1,4 @@
-import { match, __ } from '../src';
+import { match, __, P } from '../src';
 import { Expect, Equal } from '../src/types/helpers';
 import { Option, Blog } from './utils';
 
@@ -13,7 +13,7 @@ describe('List ([a])', () => {
         type t = Expect<Equal<typeof x, never[]>>;
         return { kind: 'some', value: [{ id: 0, title: 'LOlol' }] };
       })
-      .with([{ id: __.number, title: __.string }], (blogs) => {
+      .with([{ id: P.number, title: P.string }], (blogs) => {
         type t = Expect<Equal<typeof blogs, { id: number; title: string }[]>>;
         return {
           kind: 'some',

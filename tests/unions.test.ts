@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __ } from '../src';
+import { match, __, P } from '../src';
 import { Option } from './utils';
 
 describe('Unions (a | b)', () => {
@@ -46,7 +46,7 @@ describe('Unions (a | b)', () => {
         type t = Expect<Equal<typeof x, Post>>;
         return 1;
       })
-      .with({ type: 'video', content: { src: __.string } }, (x) => {
+      .with({ type: 'video', content: { src: P.string } }, (x) => {
         type t = Expect<Equal<typeof x, Video>>;
         return 2;
       })
@@ -123,7 +123,7 @@ describe('Unions (a | b)', () => {
 
     const message = match(networkError)
       .with(
-        { statusCode: 401, name: __.string, message: __.string },
+        { statusCode: 401, name: P.string, message: P.string },
         (x) => 'Not Authenticated'
       )
       .with(

@@ -13,7 +13,7 @@ export type FindSelectionUnion<
   path extends any[] = []
 > = IsAny<i> extends true
   ? never
-  : p extends MatchProtocolPattern<infer k, any, any>
+  : p extends MatchProtocolPattern<infer k, any, any, any, any>
   ? { [kk in k]: [GetMatchSelection<p, i>, path] }
   : p extends SelectPattern<infer k>
   ? { [kk in k]: [i, path] }

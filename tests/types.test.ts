@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, when, not, Pattern } from '../src';
+import { match, __, when, not, Pattern, P } from '../src';
 import { State, Event } from './utils';
 
 describe('types', () => {
@@ -10,7 +10,7 @@ describe('types', () => {
     pattern = __;
     pattern = [__, __];
     pattern = [{ status: 'success', data: '' }, __];
-    pattern = [{ status: 'success', data: __.string }, __];
+    pattern = [{ status: 'success', data: P.string }, __];
     pattern = [{ status: 'success', data: __ }, __];
     pattern = [{ status: 'error', error: new Error() }, __];
     pattern = [{ status: 'idle' }, __];
@@ -110,7 +110,7 @@ describe('types', () => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
-      .with(__.string, (x) => {
+      .with(P.string, (x) => {
         type t = Expect<Equal<typeof x, string>>;
         return 'ok';
       })
@@ -135,7 +135,7 @@ describe('types', () => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
-      .with(not(__.string), (x) => {
+      .with(not(P.string), (x) => {
         type t = Expect<
           Equal<
             typeof x,
@@ -167,7 +167,7 @@ describe('types', () => {
         >;
         return 'ok';
       })
-      .with({ type: __.string }, (x) => {
+      .with({ type: P.string }, (x) => {
         type t = Expect<
           Equal<typeof x, { type: string; hello?: { yo: number } | undefined }>
         >;
@@ -195,7 +195,7 @@ describe('types', () => {
         >;
         return 'ok';
       })
-      .with({ type: not(__.string) }, (x) => {
+      .with({ type: not(P.string) }, (x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
@@ -207,7 +207,7 @@ describe('types', () => {
         type t = Expect<Equal<typeof x, string>>;
         return 'ok';
       })
-      .with(not({ type: __.string }), (x) => {
+      .with(not({ type: P.string }), (x) => {
         type t = Expect<Equal<typeof x, string>>;
         return 'ok';
       })
@@ -230,27 +230,27 @@ describe('types', () => {
         type t = Expect<Equal<typeof x, { type: string }>>;
         return 'ok';
       })
-      .with(__.string, (x) => {
+      .with(P.string, (x) => {
         type t = Expect<Equal<typeof x, string>>;
         return 'ok';
       })
-      .with(__.number, (x) => {
+      .with(P.number, (x) => {
         type t = Expect<Equal<typeof x, number>>;
         return 'ok';
       })
-      .with(__.boolean, (x) => {
+      .with(P.boolean, (x) => {
         type t = Expect<Equal<typeof x, boolean>>;
         return 'ok';
       })
-      .with({ type: __.string }, (x) => {
+      .with({ type: P.string }, (x) => {
         type t = Expect<Equal<typeof x, { type: string }>>;
         return 'ok';
       })
-      .with([__.string], (x) => {
+      .with([P.string], (x) => {
         type t = Expect<Equal<typeof x, string[]>>;
         return 'ok';
       })
-      .with([__.number, __.number], (x) => {
+      .with([P.number, P.number], (x) => {
         type t = Expect<Equal<typeof x, [number, number]>>;
         return 'ok';
       })
@@ -261,7 +261,7 @@ describe('types', () => {
     const users: unknown = [{ name: 'Gabriel', postCount: 20 }];
 
     const typedUsers = match(users)
-      .with([{ name: __.string, postCount: __.number }], (users) => users)
+      .with([{ name: P.string, postCount: P.number }], (users) => users)
       .otherwise(() => []);
 
     // type of `typedUsers` is { name: string, postCount: number }[]
