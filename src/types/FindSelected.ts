@@ -4,6 +4,7 @@ import type {
   SelectPattern,
   MatchProtocolPattern,
   GetMatchSelection,
+  GuardPattern,
 } from './Pattern';
 
 export type FindSelectionUnion<
@@ -13,8 +14,13 @@ export type FindSelectionUnion<
   path extends any[] = []
 > = IsAny<i> extends true
   ? never
-  : p extends MatchProtocolPattern<infer k, any, any, any, any>
-  ? { [kk in k]: [GetMatchSelection<p, i>, path] }
+  : p extends GuardPattern<any, any, infer selections>
+  ? {
+      [k in keyof selections]: [
+        selections[k][0],
+        [...path, ...selections[k][1]]
+      ];
+    }
   : p extends SelectPattern<infer k>
   ? { [kk in k]: [i, path] }
   : p extends readonly (infer pp)[]
@@ -53,20 +59,7 @@ export type FindSelectionUnion<
       ?
           | FindSelectionUnion<i1, p1, [...path, 1]>
           | FindSelectionUnion<i2, p2, [...path, 2]>
-      : FindSelectionUnion<
-          ii,
-          pp,
-          [...path, number]
-        > extends infer selectionUnion
-      ? {
-          [k in keyof selectionUnion]: selectionUnion[k] extends [
-            infer v,
-            infer path
-          ]
-            ? [v[], path]
-            : never;
-        }
-      : never
+      : FindSelectionUnion<ii, pp, [...path, 1]>
     : never
   : p extends object
   ? i extends object
@@ -90,11 +83,12 @@ export type MixedNamedAndAnonymousSelectError<
   __error: never;
 } & a;
 
+export type SelectionsRecord = Record<string, [unknown, unknown[]]>;
+
 // SelectionToArgs :: [number | string, value][] -> [...args]
-type SelectionToArgs<
-  selections extends Record<string, [unknown, unknown]>,
-  i
-> = [keyof selections] extends [never]
+type SelectionToArgs<selections extends SelectionsRecord, i> = [
+  keyof selections
+] extends [never]
   ? i
   : symbols.AnonymousSelectKey extends keyof selections
   ? // If the path is never, it means several anonymous patterns were `&` together
@@ -105,10 +99,9 @@ type SelectionToArgs<
     : MixedNamedAndAnonymousSelectError
   : { [k in keyof selections]: selections[k][0] };
 
-export type FindSelected<i, p> = SelectionToArgs<
-  Cast<
-    UnionToIntersection<{} | FindSelectionUnion<i, p>>,
-    Record<string, [unknown, unknown]>
-  >,
-  i
+export type Selections<i, p> = Cast<
+  UnionToIntersection<{} | FindSelectionUnion<i, p>>,
+  SelectionsRecord
 >;
+
+export type FindSelected<i, p> = SelectionToArgs<Selections<i, p>, i>;

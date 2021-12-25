@@ -24,7 +24,7 @@ export type InvertPattern<p> = p extends MatchProtocolPattern<
   ? GetMatchedValue<p, unknown>
   : p extends SelectPattern<any>
   ? unknown
-  : p extends GuardPattern<infer p1, infer p2>
+  : p extends GuardPattern<infer p1, infer p2, any>
   ? [p2] extends [never]
     ? p1
     : p2
@@ -52,7 +52,11 @@ export type InvertPattern<p> = p extends MatchProtocolPattern<
     ? [InvertPattern<p1>, InvertPattern<p2>, InvertPattern<p3>]
     : p extends readonly [infer p1, infer p2]
     ? [InvertPattern<p1>, InvertPattern<p2>]
-    : InvertPattern<pp>[]
+    : p extends readonly [infer p1]
+    ? [InvertPattern<p1>]
+    : p extends readonly []
+    ? []
+    : [InvertPattern<pp>]
   : p extends Map<infer pk, infer pv>
   ? Map<pk, InvertPattern<pv>>
   : p extends Set<infer pv>
@@ -72,7 +76,7 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<any, infer p1>
   ? isExhaustive extends true
     ? GetMatchedValue<p, i>
     : never
-  : p extends GuardPattern<any, infer p1>
+  : p extends GuardPattern<any, infer p1, any>
   ? p1
   : p extends Primitives
   ? IsLiteral<p> extends true
@@ -113,7 +117,13 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<any, infer p1>
       ? i extends readonly [infer i1, infer i2]
         ? [InvertPatternForExclude<p1, i1>, InvertPatternForExclude<p2, i2>]
         : never
-      : InvertPatternForExclude<pp, ii>[]
+      : p extends readonly [infer p1]
+      ? i extends readonly [infer i1]
+        ? [InvertPatternForExclude<p1, i1>]
+        : never
+      : p extends readonly []
+      ? []
+      : [InvertPatternForExclude<pp, ii>]
     : never
   : p extends Map<infer pk, infer pv>
   ? i extends Map<any, infer iv>

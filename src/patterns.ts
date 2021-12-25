@@ -1,7 +1,6 @@
 import { isMatching } from '.';
 import * as symbols from './symbols';
-import { DeepExclude } from './types/DeepExclude';
-import { DistributeMatchingUnions } from './types/DistributeUnions';
+import { Selections, SelectionsRecord } from './types/FindSelected';
 import { Cast } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
@@ -11,14 +10,20 @@ import {
   SelectPattern,
   NotPattern,
   Pattern,
-  MatchProtocolPattern,
-  GuardValue,
 } from './types/Pattern';
+
+type OptionalSelections<sels extends SelectionsRecord> = {
+  [k in keyof sels]: [sels[k][0] | undefined, sels[k][1]];
+};
 
 export const optional = <input, p extends Pattern<Exclude<input, undefined>>>(
   pattern: p,
   _?: (value: input) => p
-): GuardPattern<input, Cast<InvertPattern<p> | undefined, input>> => ({
+): GuardPattern<
+  input,
+  Cast<InvertPattern<p> | undefined, input>,
+  OptionalSelections<Selections<input, p>>
+> => ({
   [symbols.PatternKind]: symbols.Guard,
   [symbols.Guard]: (
     value: input
@@ -26,13 +31,22 @@ export const optional = <input, p extends Pattern<Exclude<input, undefined>>>(
     value === undefined || isMatching(pattern, value),
 });
 
-export const listOf = <input extends any[], p extends Pattern<input[number]>>(
-  pattern: p,
-  _?: (value: input) => p
-): GuardPattern<input, Cast<InvertPattern<p>[], input>> => ({
+type ListSelections<sels extends SelectionsRecord> = {
+  [k in keyof sels]: [sels[k][0][], sels[k][1]];
+};
+
+type Members<xs> = xs extends Array<infer x> ? x : never;
+
+export const listOf = <input, p extends Pattern<Members<input>>>(
+  pattern: p
+): GuardPattern<
+  input,
+  InvertPattern<p>[],
+  ListSelections<Selections<Members<input>, p>>
+> => ({
   [symbols.PatternKind]: symbols.Guard,
   [symbols.Guard]: (value: input): value is Cast<InvertPattern<p>[], input> =>
-    value.every((v) => isMatching(pattern, v)),
+    Array.isArray(value) && value.every((v) => isMatching(pattern, v)),
 });
 
 export const not = <input, p extends Pattern<input>>(
@@ -45,19 +59,10 @@ export const not = <input, p extends Pattern<input>>(
 
 export const when = <input, output extends input = never>(
   predicate: GuardFunction<input, output>
-): GuardPattern<input, output> => ({
+): GuardPattern<input, output, {}> => ({
   [symbols.PatternKind]: symbols.Guard,
   [symbols.Guard]: predicate,
 });
-
-type GetSelection<s> = s extends (value: any) => { value: infer value }
-  ? value
-  : never;
-
-type GetKey<s> = s extends (value: any) => { key: infer k } ? k : never;
-
-type GuardInput<s> = s extends (value: infer v) => unknown ? v : never;
-type GuardNarrowed<s> = s extends (value: any) => value is infer n ? n : never;
 
 export function select(): AnonymousSelectPattern;
 export function select<k extends string>(key: k): SelectPattern<k>;

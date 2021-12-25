@@ -166,6 +166,7 @@ describe('when', () => {
         list: {
           test: 'a' | 'b';
           sublist: ('z' | 'w')[];
+          prop: string;
           maybe?: string | number;
         }[];
         coords: { x: 'left' | 'right'; y: 'top' | 'bottom' };
@@ -178,22 +179,72 @@ describe('when', () => {
             value: {
               list: P.listOf({
                 test: 'a',
-                sublist: P.listOf('z'),
+                sublist: ['w'],
                 maybe: P.optional(P.string),
+                prop: P.when((x) => {
+                  type t = Expect<Equal<typeof x, string>>;
+                  return true;
+                }),
               }),
               opt: P.optional('x'),
             },
           },
-          (x) => 'okk'
+          (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                {
+                  type: 'some';
+                  value: {
+                    opt: 'x' | undefined;
+                    list: {
+                      test: 'a';
+                      sublist: ['w'];
+                      prop: string;
+                      maybe: string | undefined;
+                    }[];
+                    coords: {
+                      x: 'left' | 'right';
+                      y: 'top' | 'bottom';
+                    };
+                  };
+                }
+              >
+            >;
+            return 'okk';
+          }
         )
         .with(
           {
             type: 'some',
             value: {
-              coords: P.not({ x: P.optional('right') }),
+              coords: P.not({ x: P.optional('left') }),
             },
           },
-          (x) => 'okk'
+          (x) => {
+            type t = Expect<
+              Equal<
+                typeof x['value']['coords'],
+                {
+                  y: 'top' | 'bottom';
+                  x: 'right';
+                }
+              >
+            >;
+
+            return 'okk';
+          }
+        )
+        .with(
+          {
+            type: 'some',
+            value: {
+              list: P.listOf({ test: 'a', prop: select() }),
+            },
+          },
+          (x) => {
+            type t = Expect<Equal<typeof x, string[]>>;
+          }
         )
         .with({ type: 'none' }, () => null)
         .with({ type: 'some' }, () => 'ok')

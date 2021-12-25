@@ -142,8 +142,10 @@ const builder = <i, o>(
 const isObject = (value: unknown): value is Object =>
   Boolean(value && typeof value === 'object');
 
-const isGuardPattern = (x: unknown): x is GuardPattern<unknown, unknown> => {
-  const pattern = x as GuardPattern<unknown, unknown>;
+const isGuardPattern = (
+  x: unknown
+): x is GuardPattern<unknown, unknown, {}> => {
+  const pattern = x as GuardPattern<unknown, unknown, {}>;
   return pattern && pattern[symbols.PatternKind] === symbols.Guard;
 };
 

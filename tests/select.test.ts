@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, select, not } from '../src';
+import { match, __, select, not, P } from '../src';
 import { State, Event } from './utils';
 import {
   MixedNamedAndAnonymousSelectError,
@@ -21,7 +21,12 @@ describe('select', () => {
   it('should work with array', () => {
     expect(
       match<string[], string[]>(['you', 'hello'])
-        .with([select('texts')], ({ texts }, xs) => {
+        .with([select('first')], ({ first }, xs) => {
+          type t = Expect<Equal<typeof xs, string[]>>;
+          type t2 = Expect<Equal<typeof first, string>>;
+          return [first];
+        })
+        .with(P.listOf(P.select('texts')), ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, string[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -31,7 +36,7 @@ describe('select', () => {
 
     expect(
       match<{ text: string }[], string[]>([{ text: 'you' }, { text: 'hello' }])
-        .with([{ text: select('texts') }], ({ texts }, xs) => {
+        .with(P.listOf({ text: select('texts') }), ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, { text: string }[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -44,10 +49,13 @@ describe('select', () => {
         { text: { content: 'you' } },
         { text: { content: 'hello' } },
       ])
-        .with([{ text: { content: select('texts') } }], ({ texts }, xs) => {
-          type t = Expect<Equal<typeof texts, string[]>>;
-          return texts;
-        })
+        .with(
+          P.listOf({ text: { content: select('texts') } }),
+          ({ texts }, xs) => {
+            type t = Expect<Equal<typeof texts, string[]>>;
+            return texts;
+          }
+        )
         .run()
     ).toEqual(['you', 'hello']);
   });
@@ -165,26 +173,18 @@ describe('select', () => {
         [{ name: 'Alice' }, { post: [{ title: 'Hola' }, { title: 'coucou' }] }],
       ])
         .with([], (x) => {
-          type t = Expect<Equal<typeof x, Input>>;
+          type t = Expect<Equal<typeof x, []>>;
           return 'empty';
         })
-        .with(
-          [
-            [
-              { name: select('names') },
-              { post: [{ title: select('titles') }] },
-            ],
-          ],
-          ({ names, titles }) => {
-            type t = Expect<Equal<typeof names, string[]>>;
-            type t2 = Expect<Equal<typeof titles, string[][]>>;
-            return (
-              names.join(' and ') +
-              ' have written ' +
-              titles.map((t) => t.map((t) => `"${t}"`).join(', ')).join(', ')
-            );
-          }
-        )
+        .with(P.listOf([{ name: select('names') }, __]), ({ names }) => {
+          type t = Expect<Equal<typeof names, string[]>>;
+          type t2 = Expect<Equal<typeof titles, string[][]>>;
+          return (
+            names.join(' and ') +
+            ' have written ' +
+            titles.map((t) => t.map((t) => `"${t}"`).join(', ')).join(', ')
+          );
+        })
         .exhaustive()
     ).toEqual(
       `Gabriel and Alice have written "Hello World", "what's up", "Hola", "coucou"`
@@ -205,12 +205,22 @@ describe('select', () => {
           type t = Expect<Equal<typeof x, Input>>;
           return 'empty';
         })
-        .with([[__, { post: [{ title: select() }] }]], (titles) => {
-          type t1 = Expect<Equal<typeof titles, string[][]>>;
-          return titles
-            .map((t) => t.map((t) => `"${t}"`).join(', '))
-            .join(', ');
-        })
+        .with(
+          P.listOf([
+            { name: select('a') },
+            { post: P.listOf({ title: P.string }) },
+          ]),
+          (x) => ''
+        )
+        .with(
+          P.listOf([__, { post: P.listOf({ title: select() }) }]),
+          (titles) => {
+            type t1 = Expect<Equal<typeof titles, string[][]>>;
+            return titles
+              .map((t) => t.map((t) => `"${t}"`).join(', '))
+              .join(', ');
+          }
+        )
         .exhaustive()
     ).toEqual(`"Hello World", "what's up", "Hola", "coucou"`);
   });

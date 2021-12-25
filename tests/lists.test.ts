@@ -10,10 +10,10 @@ describe('List ([a])', () => {
     };
     const res = match<any, Option<Blog[]>>([httpResult])
       .with([] as const, (x) => {
-        type t = Expect<Equal<typeof x, never[]>>;
+        type t = Expect<Equal<typeof x, []>>;
         return { kind: 'some', value: [{ id: 0, title: 'LOlol' }] };
       })
-      .with([{ id: P.number, title: P.string }], (blogs) => {
+      .with(P.listOf({ id: P.number, title: P.string }), (blogs) => {
         type t = Expect<Equal<typeof blogs, { id: number; title: string }[]>>;
         return {
           kind: 'some',

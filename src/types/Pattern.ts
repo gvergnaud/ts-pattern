@@ -1,5 +1,6 @@
 import type * as symbols from '../symbols';
-import { Primitives, IsPlainObject, Compute, Cast } from './helpers';
+import { Primitives, Compute, Cast, IsPlainObject } from './helpers';
+import { SelectionsRecord } from './FindSelected';
 
 /**
  * GuardValue returns the value guarded by a type guard function.
@@ -54,7 +55,7 @@ export type MatchProtocolPattern<
 // Using internal tags here to dissuade people from using them inside patterns.
 // Theses properties should be used by ts-pattern's internals only.
 // Unfortunately they must be publically visible to work at compile time
-export type GuardPattern<input, output> = {
+export type GuardPattern<input, output, selections extends SelectionsRecord> = {
   /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.Guard;
   /** @internal This property should only be used by ts-pattern's internals. */
@@ -84,6 +85,13 @@ export type SelectPattern<k extends string> = {
   [symbols.Select]: k;
 };
 
+type MapPattern<
+  xs extends any[],
+  output extends readonly any[] = readonly []
+> = xs extends readonly [infer head, ...infer tail]
+  ? MapPattern<tail, readonly [...output, Pattern<head>]>
+  : output;
+
 /**
  * ### Pattern
  * Patterns can be any (nested) javascript value.
@@ -92,10 +100,10 @@ export type SelectPattern<k extends string> = {
 export type Pattern<a> =
   | NotPattern<unknown, unknown>
   | SelectPattern<string>
-  | GuardPattern<a, a>
+  | GuardPattern<a, a, {}>
   // If all branches are objects, then you an match
   // on properties that all objects have (usually the discriminants).
-  | ([a] extends [object]
+  | ([IsPlainObject<a>] extends [true]
       ? {
           readonly /*
           using (Compute<a>) to avoid the distribution of `a`
@@ -112,7 +120,11 @@ export type Pattern<a> =
       : a extends readonly (infer i)[]
       ? a extends readonly [any, ...any[]]
         ? MapPattern<Cast<a, any[]>>
-        : readonly Pattern<i>[]
+        :
+            | []
+            | [Pattern<i>]
+            | [[Pattern<i>], [Pattern<i>]]
+            | [[Pattern<i>], [Pattern<i>], [Pattern<i>]]
       : a extends Map<infer k, infer v>
       ? Map<k, Pattern<v>>
       : a extends Set<infer v>
@@ -123,9 +135,39 @@ export type Pattern<a> =
         }
       : a);
 
-type MapPattern<
-  xs extends any[],
-  output extends readonly any[] = readonly []
-> = xs extends readonly [infer head, ...infer tail]
-  ? MapPattern<tail, readonly [...output, Pattern<head>]>
-  : output;
+export type TopLevelPattern<a> =
+  | NotPattern<unknown, unknown>
+  | SelectPattern<string>
+  // If all branches are objects, then you an match
+  // on properties that all objects have (usually the discriminants).
+  | ([IsPlainObject<a>] extends [true]
+      ? {
+          readonly /*
+          using (Compute<a>) to avoid the distribution of `a`
+          if it is a union type, and let people pass subpatterns
+          that match several branches in the union at once.
+        */
+          [k in keyof Compute<a>]?: k extends keyof a
+            ? Pattern<a[k]> | NotPattern<a[k], a[k]>
+            : never;
+        }
+      : never)
+  | (a extends Primitives
+      ? a
+      : a extends readonly (infer i)[]
+      ? a extends readonly [any, ...any[]]
+        ? MapPattern<Cast<a, any[]>>
+        :
+            | []
+            | [Pattern<i>]
+            | [[Pattern<i>], [Pattern<i>]]
+            | [[Pattern<i>], [Pattern<i>], [Pattern<i>]]
+      : a extends Map<infer k, infer v>
+      ? Map<k, Pattern<v>>
+      : a extends Set<infer v>
+      ? Set<Pattern<v>>
+      : a extends object
+      ? {
+          readonly [k in keyof a]?: Pattern<a[k]>;
+        }
+      : a);
