@@ -33,14 +33,12 @@ export type Match<
    * If the input matches the pattern provided as first argument,
    * execute the handler function and return its result.
    **/
-  with<
-    p extends Pattern<i>,
-    c,
-    value = MatchedValue<i, InvertPattern<p>>,
-    sel = FindSelected<value, p>
-  >(
+  with<p extends Pattern<i>, c, value = MatchedValue<i, InvertPattern<p>>>(
     pattern: p,
-    handler: (selections: sel, value: value) => PickReturnValue<o, c>
+    handler: (
+      selections: FindSelected<value, p>,
+      value: value
+    ) => PickReturnValue<o, c>
   ): Match<i, o, patternValueTuples | [p, value], Union<inferredOutput, c>>;
 
   with<

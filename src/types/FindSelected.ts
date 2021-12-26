@@ -1,5 +1,5 @@
 import type * as symbols from '../symbols';
-import type { Cast, IsAny, UnionToIntersection } from './helpers';
+import type { Cast, Equal, IsAny, UnionToIntersection } from './helpers';
 import type { SelectPattern, GuardPattern, Pattern } from './Pattern';
 
 export type SelectionsRecord = Record<string, [unknown, unknown[]]>;
@@ -147,4 +147,8 @@ export type Selections<i, p> = Cast<
   SelectionsRecord
 >;
 
-export type FindSelected<i, p> = SelectionToArgs<Selections<i, p>, i>;
+export type FindSelected<i, p> =
+  // This happens if the provided pattern didn't extend Pattern<i>,
+  // Because the compiler falls back on the general `Pattern<i>` type
+  // in this case.
+  Equal<p, Pattern<i>> extends true ? i : SelectionToArgs<Selections<i, p>, i>;
