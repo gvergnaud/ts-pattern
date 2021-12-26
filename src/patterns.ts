@@ -16,6 +16,7 @@ import {
   SelectPattern,
   NotPattern,
   Pattern,
+  UnknownPattern,
 } from './types/Pattern';
 
 type OptionalSelections<sels extends SelectionsRecord> = {
@@ -39,7 +40,10 @@ export const optional = <input, p extends Pattern<Exclude<input, undefined>>>(
 
 type Members<xs> = xs extends Array<infer x> ? x : unknown;
 
-export const listOf = <input, p extends Pattern<Members<input>>>(
+export const listOf = <
+  input,
+  p extends unknown extends input ? UnknownPattern : Pattern<Members<input>>
+>(
   pattern: p
 ): GuardPattern<input, InvertPattern<p[]>, ListPatternSelection<p>> => {
   let selected: Record<string, unknown[]> = {};
@@ -68,7 +72,10 @@ export const listOf = <input, p extends Pattern<Members<input>>>(
   };
 };
 
-export const not = <input, p extends Pattern<input>>(
+export const not = <
+  input,
+  p extends unknown extends input ? UnknownPattern : Pattern<input>
+>(
   pattern: p
 ): NotPattern<input, InvertPattern<p>> => ({
   [symbols.PatternKind]: symbols.Not,

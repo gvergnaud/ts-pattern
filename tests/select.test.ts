@@ -185,8 +185,6 @@ describe('select', () => {
             type t = Expect<Equal<typeof names, string[]>>;
             type t2 = Expect<Equal<typeof titles, string[][]>>;
 
-            console.log(titles);
-
             return (
               names.join(' and ') +
               ' have written ' +

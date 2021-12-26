@@ -41,12 +41,32 @@ describe('not', () => {
 
       const get = (x: 'one' | 'two') =>
         match(x)
-          .with(P.not('one' as const), (x) => {
+          .with(P.not(one), (x) => {
             type t = Expect<Equal<typeof x, 'two'>>;
             return 'not 1';
           })
-          .with(P.not('two' as const), (x) => {
+          .with(P.not(two), (x) => {
             type t = Expect<Equal<typeof x, 'one'>>;
+            return 'not 2';
+          })
+          .run();
+
+      expect(get('two')).toEqual('not 1');
+      expect(get('one')).toEqual('not 2');
+    });
+
+    it('should discriminate union types contained in objects correctly', () => {
+      const one = 'one';
+      const two = 'two';
+
+      const get = (x: 'one' | 'two') =>
+        match({ key: x })
+          .with({ key: P.not(one) }, (x) => {
+            type t = Expect<Equal<typeof x, { key: 'two' }>>;
+            return 'not 1';
+          })
+          .with({ key: P.not(two) }, (x) => {
+            type t = Expect<Equal<typeof x, { key: 'one' }>>;
             return 'not 2';
           })
           .run();
