@@ -111,26 +111,24 @@ export type Pattern<a> =
   | GuardPattern<a, a, any>
   // If all branches are objects, then we match
   // on properties that all objects have (usually the discriminants).
-  | ([IsPlainObject<a>] extends [true]
+  | (IsPlainObject<a> extends true
       ? /*
-          using (Compute<a>) to avoid the distribution of `a`
-          if it is a union type, and let people pass subpatterns
-          that match several branches in the union at once.
-        */
+        using (Compute<a>) to avoid the distribution of `a`
+        if it is a union type, and let people pass subpatterns
+        that match several branches in the union at once.
+      */
         keyof Compute<a> extends infer commonkeys
         ? {
             readonly [k in Cast<commonkeys, string>]?: k extends keyof a
-              ? Pattern<a[k]> | NotPattern<a[k], a[k]>
+              ? // TODO comment on why we need to put a NotPattern here
+                Pattern<a[k]> | NotPattern<a[k], a[k]>
               : never;
           } &
             (a extends object
               ? { readonly [k in Exclude<keyof a, commonkeys>]?: Pattern<a[k]> }
               : {})
         : never
-      : a extends object
-      ? { readonly [k in keyof a]?: Pattern<a[k]> }
-      : never)
-  | (a extends Primitives
+      : a extends Primitives
       ? a
       : unknown extends a
       ? UnknownPattern
@@ -168,4 +166,6 @@ export type Pattern<a> =
       ? Map<k, Pattern<v>>
       : a extends Set<infer v>
       ? Set<Pattern<v>>
+      : a extends object
+      ? { readonly [k in keyof a]?: Pattern<a[k]> }
       : a);
