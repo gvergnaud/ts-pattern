@@ -93,11 +93,48 @@ describe('ExtractPreciseValue', () => {
   });
 
   it('should return the correct branch a union based on the pattern', () => {
-    type x = ExtractPreciseValue<
-      { a: string; b: number } | [boolean, number],
-      readonly [true, 2]
-    >;
-    type cases = [Expect<Equal<x, [true, 2]>>];
+    type cases = [
+      Expect<
+        Equal<
+          ExtractPreciseValue<
+            { a: string; b: number } | [boolean, number],
+            readonly [true, 2]
+          >,
+          [true, 2]
+        >
+      >,
+      Expect<
+        Equal<
+          ExtractPreciseValue<
+            | {
+                type: 'img';
+                src: string;
+              }
+            | {
+                type: 'text';
+                p: string;
+              }
+            | {
+                type: 'video';
+                src: number;
+              }
+            | {
+                type: 'gif';
+                p: string;
+              }
+            | undefined,
+            {
+              type: 'video';
+              src: unknown;
+            }
+          >,
+          {
+            type: 'video';
+            src: number;
+          }
+        >
+      >
+    ];
   });
 
   it('should support readonly input types', () => {

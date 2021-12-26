@@ -1,11 +1,27 @@
 import { DeepExclude } from './DeepExclude';
-import { IsPlainObject, Primitives, IsLiteral, Or } from './helpers';
+import {
+  IsPlainObject,
+  Primitives,
+  IsLiteral,
+  ValueOf,
+  Compute,
+} from './helpers';
 import type {
   SelectPattern,
   GuardPattern,
   NotPattern,
   ToExclude,
 } from './Pattern';
+
+type OptionalKeys<p> = ValueOf<
+  {
+    [k in keyof p]: p[k] extends GuardPattern<any, any, any, infer isOptional>
+      ? isOptional extends true
+        ? k
+        : never
+      : never;
+  }
+>;
 
 /**
  * ### InvertPattern
@@ -14,7 +30,7 @@ import type {
  */
 export type InvertPattern<p> = p extends SelectPattern<any>
   ? unknown
-  : p extends GuardPattern<infer p1, infer p2, any>
+  : p extends GuardPattern<infer p1, infer p2, any, any>
   ? [p2] extends [never]
     ? p1
     : p2
@@ -52,7 +68,14 @@ export type InvertPattern<p> = p extends SelectPattern<any>
   : p extends Set<infer pv>
   ? Set<InvertPattern<pv>>
   : IsPlainObject<p> extends true
-  ? { [k in keyof p]: InvertPattern<p[k]> }
+  ? Compute<
+      {
+        [k in Exclude<keyof p, OptionalKeys<p>>]: InvertPattern<p[k]>;
+      } &
+        {
+          [k in OptionalKeys<p>]?: InvertPattern<p[k]>;
+        }
+    >
   : p;
 
 /**
@@ -62,7 +85,7 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<any, infer p1>
   ? DeepExclude<i, p1>
   : p extends SelectPattern<any>
   ? unknown
-  : p extends GuardPattern<any, infer p1, any>
+  : p extends GuardPattern<any, infer p1, any, any>
   ? p1
   : p extends Primitives
   ? IsLiteral<p> extends true
@@ -123,10 +146,17 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<any, infer p1>
   ? i extends object
     ? [keyof p & keyof i] extends [never]
       ? never
-      : {
-          [k in keyof p]: k extends keyof i
-            ? InvertPatternForExclude<p[k], i[k]>
-            : p[k];
-        }
+      : Compute<
+          {
+            [k in Exclude<keyof p, OptionalKeys<p>>]: k extends keyof i
+              ? InvertPatternForExclude<p[k], i[k]>
+              : InvertPattern<p[k]>;
+          } &
+            {
+              [k in OptionalKeys<p>]?: k extends keyof i
+                ? InvertPatternForExclude<p[k], i[k]>
+                : InvertPattern<p[k]>;
+            }
+        >
     : never
   : never;

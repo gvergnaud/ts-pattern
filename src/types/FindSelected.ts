@@ -33,7 +33,7 @@ export type FindSelectionUnion<
   path extends any[] = []
 > = IsAny<i> extends true
   ? never
-  : p extends GuardPattern<any, any, infer sel>
+  : p extends GuardPattern<any, any, infer sel, boolean>
   ? sel extends RecordSelection<infer selections>
     ? {
         [k in keyof selections]: [

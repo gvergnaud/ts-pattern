@@ -201,7 +201,7 @@ describe('when', () => {
                       test: 'a';
                       sublist: ['w'];
                       prop: string;
-                      maybe: string | undefined;
+                      maybe?: string | undefined;
                     }[];
                     coords: {
                       x: 'left' | 'right';
@@ -218,7 +218,7 @@ describe('when', () => {
           {
             type: 'some',
             value: {
-              coords: P.not({ x: P.optional('left') }),
+              coords: P.not({ x: 'left' }),
             },
           },
           (x) => {

@@ -25,15 +25,14 @@ type OptionalSelections<sels extends SelectionsRecord> = {
 
 export const optional = <
   input,
-  p extends unknown extends input
-    ? UnknownPattern
-    : Pattern<Exclude<input, undefined>>
+  p extends unknown extends input ? UnknownPattern : Pattern<input>
 >(
   pattern: p
 ): GuardPattern<
   input,
-  Cast<InvertPattern<p> | undefined, input>,
-  RecordSelection<OptionalSelections<Selections<input, p>>>
+  InvertPattern<p> | undefined,
+  RecordSelection<OptionalSelections<Selections<input, p>>>,
+  true
 > => ({
   [symbols.PatternKind]: symbols.Guard,
   [symbols.Guard]: (
@@ -50,7 +49,7 @@ export const listOf = <
   p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
 >(
   pattern: p
-): GuardPattern<input, InvertPattern<p[]>, ListPatternSelection<p>> => {
+): GuardPattern<input, InvertPattern<p[]>, ListPatternSelection<p>, false> => {
   let selected: Record<string, unknown[]> = {};
 
   const listSelector = (key: string, value: unknown) => {
@@ -90,12 +89,15 @@ export const not = <
 
 export const when = <input, output extends input = never>(
   predicate: GuardFunction<input, output>
-): GuardPattern<input, output, NoneSelection> => ({
+): GuardPattern<input, output, NoneSelection, false> => ({
   [symbols.PatternKind]: symbols.Guard,
   [symbols.Guard]: predicate,
   [symbols.Selector]: () => ({}),
 });
 
+// TODO check if we could infer the type using the same technique
+// as for guards, and infer it without needing the input type
+// in FindSelected
 export function select(): AnonymousSelectPattern;
 export function select<k extends string>(key: k): SelectPattern<k>;
 export function select<k extends string>(
@@ -111,15 +113,6 @@ export function select<k extends string>(
         [symbols.Select]: key,
       };
 }
-
-type AnyConstructor = new (...args: any[]) => any;
-
-function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
-  return (val: unknown): val is InstanceType<T> =>
-    val instanceof classConstructor;
-}
-export const instanceOf = <T extends AnyConstructor>(classConstructor: T) =>
-  when<unknown, InstanceType<T>>(isInstanceOf(classConstructor));
 
 function isUnknown<T>(x: T | unknown): x is unknown {
   return true;
@@ -141,9 +134,16 @@ function isNullish<T>(x: T | null | undefined): x is null | undefined {
   return x === null || x === undefined;
 }
 
+type AnyConstructor = new (...args: any[]) => any;
+
+function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
+  return (val: unknown): val is InstanceType<T> =>
+    val instanceof classConstructor;
+}
+
 /**
  * ### Catch All wildcard
- * `__` is wildcard pattern, matching **any value**.
+ * `__` is a wildcard pattern, matching **any value**.
  * @example
  *  match(value)
  *   .with(__, () => 'will always match')
@@ -152,7 +152,7 @@ export const __ = when(isUnknown);
 
 /**
  * ### String wildcard
- * `P.string` is wildcard pattern matching any **string**.
+ * `P.string` is a wildcard pattern matching any **string**.
  * @example
  *  match(value)
  *   .with(P.string, () => 'will match on strings only')
@@ -162,7 +162,7 @@ export const string = when(isString);
 
 /**
  * ### Number wildcard
- * `P.number` is wildcard pattern matching any **number**.
+ * `P.number` is a wildcard pattern matching any **number**.
  * @example
  *  match(value)
  *   .with(P.number, () => 'will match on numbers only')
@@ -171,7 +171,7 @@ export const number = when(isNumber);
 
 /**
  * ### Boolean wildcard
- * `P.boolean` is wildcard pattern matching any **boolean**.
+ * `P.boolean` is a wildcard pattern matching any **boolean**.
  * @example
  *   .with(P.boolean, () => 'will match on booleans only')
  */
@@ -179,8 +179,17 @@ export const boolean = when(isBoolean);
 
 /**
  * ### Nullish wildcard
- * `P.nullish` is wildcard pattern matching **null** or **undefined**.
+ * `P.nullish` is a wildcard pattern matching **null** or **undefined**.
  * @example
  *   .with(P.nullish, () => 'will match on null or undefined only')
  */
 export const nullish = when(isNullish);
+
+/**
+ * ### instanceOf
+ * `P.instanceOf(SomeClass)` is a pattern matching instances of a given class.
+ * @example
+ *   .with(P.instanceOf(SomeClass), () => 'will match on SomeClass instances')
+ */
+export const instanceOf = <T extends AnyConstructor>(classConstructor: T) =>
+  when<unknown, InstanceType<T>>(isInstanceOf(classConstructor));

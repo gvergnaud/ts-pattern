@@ -1,6 +1,10 @@
+import { NoneSelection } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
-import { InvertPatternForExclude } from '../src/types/InvertPattern';
-import { GuardPattern } from '../src/types/Pattern';
+import {
+  InvertPattern,
+  InvertPatternForExclude,
+} from '../src/types/InvertPattern';
+import { AnonymousSelectPattern, GuardPattern } from '../src/types/Pattern';
 
 describe('InvertPatternForExclude', () => {
   it('should correctly invert type guards', () => {
@@ -58,6 +62,51 @@ describe('InvertPatternForExclude', () => {
         >
       >
     ];
+  });
+
+  describe('optional', () => {
+    type OptionalPattern<a> = GuardPattern<unknown, a, NoneSelection, true>;
+
+    it('an optional pattern in an object should be considered an optional key', () => {
+      type input = { key?: 'a' | 'b' };
+      type pattern = { key: OptionalPattern<'a'> };
+      type inverted = InvertPatternForExclude<pattern, input>;
+
+      type cases = [
+        Expect<
+          Equal<
+            inverted,
+            {
+              key?: 'a' | undefined;
+            }
+          >
+        >
+      ];
+    });
+    it('the inverted value should be the intersection of all the inverted patterns', () => {
+      type x = InvertPatternForExclude<
+        { type2: 'c'; data: OptionalPattern<'f'> },
+        { type: 'a' | 'b'; type2: 'c' | 'd'; data?: 'f' | 'g' }
+      >;
+      type cases = [Expect<Equal<x, { type2: 'c'; data?: 'f' | undefined }>>];
+    });
+
+    it('an optional pattern in an object should be considered an optional key', () => {
+      type input = { key?: 'a' | 'b' };
+      type pattern = { key: OptionalPattern<'a'> };
+      type inverted = InvertPatternForExclude<pattern, input>;
+
+      type cases = [
+        Expect<
+          Equal<
+            inverted,
+            {
+              key?: 'a' | undefined;
+            }
+          >
+        >
+      ];
+    });
   });
 
   describe('issue #44', () => {

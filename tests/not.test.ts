@@ -93,7 +93,7 @@ describe('not', () => {
             type t = Expect<Equal<typeof x, { type: 'success' }>>;
             return 'success';
           })
-          .run();
+          .exhaustive();
 
       expect(get({ type: 'error' })).toEqual('error');
       expect(get({ type: 'success' })).toEqual('success');

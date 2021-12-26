@@ -21,7 +21,8 @@ export type GuardFunction<input, output> =
 export type GuardPattern<
   input,
   output,
-  selections extends SelectionType = NoneSelection
+  selections extends SelectionType = NoneSelection,
+  isOptional extends boolean = false
 > = {
   /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.Guard;

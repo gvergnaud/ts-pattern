@@ -1,7 +1,5 @@
-import * as symbols from '../src/symbols';
 import { match, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
-import { Option } from './utils';
 
 describe('optional', () => {
   it('should match even if the sub pattern is undefined', () => {
@@ -13,6 +11,7 @@ describe('optional', () => {
           return false;
         })
         .with({ a: P.optional('cool') }, (x) => {
+          type t = Expect<Equal<typeof x, { a?: 'cool' | undefined }>>;
           return true;
         })
         .exhaustive();
@@ -28,15 +27,12 @@ describe('optional', () => {
     expect(
       match<Input>({})
         .with({ a: P.optional({ name: 'Hello' }) }, (x) => {
+          type t = Expect<
+            Equal<typeof x, { a?: { name: string; age: number } }>
+          >;
           return true;
         })
         .with({ b: P.string }, (x) => {
-          return false;
-        })
-        .with({ a: undefined }, (x) => {
-          return false;
-        })
-        .with(P.__, (x) => {
           return false;
         })
         .exhaustive()
@@ -117,8 +113,15 @@ describe('optional', () => {
             type: 'a',
             data: P.optional({ type: 'img' }),
           },
-          (string) => {
-            return string;
+          (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                { type: 'a'; data?: { type: 'img'; src: string } | undefined }
+              >
+            >;
+
+            return x;
           }
         )
         .with(
@@ -126,8 +129,9 @@ describe('optional', () => {
             type: 'a',
             data: P.optional({ type: 'text', p: P.select() }),
           },
-          (p) => {
-            return p;
+          (x) => {
+            type t = Expect<Equal<typeof x, string | undefined>>;
+            return x;
           }
         )
         .with(
@@ -135,8 +139,9 @@ describe('optional', () => {
             type: 'b',
             data: P.optional({ type: 'video', src: P.select() }),
           },
-          (p) => {
-            return p;
+          (x) => {
+            type t = Expect<Equal<typeof x, number | undefined>>;
+            return x;
           }
         )
         .with(
@@ -144,8 +149,9 @@ describe('optional', () => {
             type: 'b',
             data: P.optional({ type: 'gif', p: P.select() }),
           },
-          (p) => {
-            return p;
+          (x) => {
+            type t = Expect<Equal<typeof x, string | undefined>>;
+            return x;
           }
         )
         .exhaustive()
