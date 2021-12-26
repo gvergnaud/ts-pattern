@@ -1,5 +1,6 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, P } from '../src';
+import { Option } from './utils';
 
 describe('not', () => {
   describe('pattern containing a not clause', () => {
@@ -147,5 +148,36 @@ describe('not', () => {
         })
         .otherwise(() => 'no')
     ).toBe('hello');
+  });
+
+  it('should successfully exclude cases ', () => {
+    const f = (
+      optionalNumber: Option<{
+        coords: { x: 'left' | 'right'; y: 'top' | 'bottom' };
+      }>
+    ) =>
+      match(optionalNumber)
+        .with(
+          {
+            type: 'some',
+            value: {
+              coords: P.not({ x: 'left' }),
+            },
+          },
+          (x) => {
+            type t = Expect<
+              Equal<
+                typeof x['value']['coords'],
+                {
+                  y: 'top' | 'bottom';
+                  x: 'right';
+                }
+              >
+            >;
+
+            return 'ok';
+          }
+        )
+        .otherwise(() => 'not ok');
   });
 });

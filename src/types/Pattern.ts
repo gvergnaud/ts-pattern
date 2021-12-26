@@ -81,15 +81,22 @@ export type Pattern<a> =
         that match several branches in the union at once.
       */
         keyof Compute<a> extends infer commonkeys
-        ? {
-            readonly [k in Cast<commonkeys, string>]?: k extends keyof a
-              ? // TODO comment on why we need to put a NotPattern here
-                Pattern<a[k]> | NotPattern<a[k], a[k]>
-              : never;
-          } &
-            (a extends object
-              ? { readonly [k in Exclude<keyof a, commonkeys>]?: Pattern<a[k]> }
-              : {})
+        ? Compute<
+            {
+              readonly [k in Cast<commonkeys, string>]?: k extends keyof a
+                ? // This NotPattern is need to preserve type inference
+                  // when excluding a type from the input
+                  Pattern<a[k]> | NotPattern<a[k], a[k]>
+                : never;
+            } &
+              (a extends object
+                ? {
+                    readonly [k in Exclude<keyof a, commonkeys>]?: Pattern<
+                      a[k]
+                    >;
+                  }
+                : never)
+          >
         : never
       : a extends Primitives
       ? a

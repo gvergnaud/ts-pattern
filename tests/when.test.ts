@@ -211,7 +211,7 @@ describe('when', () => {
                 }
               >
             >;
-            return 'okk';
+            return 'ok';
           }
         )
         .with(
@@ -232,7 +232,7 @@ describe('when', () => {
               >
             >;
 
-            return 'okk';
+            return 'ok';
           }
         )
         .with(
