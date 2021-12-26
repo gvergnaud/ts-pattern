@@ -129,10 +129,6 @@ function isNumber<T>(x: T | number): x is number {
   return typeof x === 'number';
 }
 
-function numberIsNaN<T>(x: T | number) {
-  return Number.isNaN(x);
-}
-
 function isString<T>(x: T | string): x is string {
   return typeof x === 'string';
 }
@@ -172,15 +168,6 @@ export const string = when(isString);
  *   .with(P.number, () => 'will match on numbers only')
  */
 export const number = when(isNumber);
-
-/**
- * ### NaN wildcard
- * `P.NaN` is wildcard pattern matching **NaN**
- * @example
- *  match(value)
- *   .with(P.NaN, () => 'will match on NaN')
- */
-export const NaN = when(numberIsNaN);
 
 /**
  * ### Boolean wildcard

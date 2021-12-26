@@ -232,7 +232,7 @@ const matchPattern = <i, p extends Pattern<i>>(
     );
   }
 
-  return value === pattern;
+  return Object.is(value, pattern);
 };
 
 /**

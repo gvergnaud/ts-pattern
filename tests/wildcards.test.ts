@@ -5,7 +5,7 @@ import { Blog } from './utils';
 describe('wildcards', () => {
   it('should match String wildcards', () => {
     const res = match<string | number | boolean | null | undefined>('')
-      .with(P.NaN, () => '')
+      .with(NaN, () => '')
       .with(P.string, (x) => {
         type t = Expect<Equal<typeof x, string>>;
         return true;

@@ -30,12 +30,12 @@ describe('Numbers', () => {
     expect(res).toEqual('good');
   });
 
-  it('P.NaN should match NaN specially', () => {
+  it('NaN should match NaN specially', () => {
     const val: number | null = NaN;
     const res = match(val)
       .with(P.nullish, () => 'bad')
       .with(1, () => 'bad')
-      .with(P.NaN, () => 'good')
+      .with(NaN, () => 'good')
       .with(P.number, () => 'bad')
       .exhaustive();
 
