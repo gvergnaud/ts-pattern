@@ -43,11 +43,11 @@ export const optional = <
   [symbols.Selector]: () => ({}),
 });
 
-type Members<xs> = xs extends Array<infer x> ? x : unknown;
+type Elem<xs> = xs extends Array<infer x> ? x : unknown;
 
 export const listOf = <
   input,
-  p extends unknown extends input ? UnknownPattern : Pattern<Members<input>>
+  p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
 >(
   pattern: p
 ): GuardPattern<input, InvertPattern<p[]>, ListPatternSelection<p>> => {
