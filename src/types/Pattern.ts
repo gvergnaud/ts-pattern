@@ -1,5 +1,5 @@
 import type * as symbols from '../symbols';
-import { Primitives, Compute, Cast, IsPlainObject } from './helpers';
+import { Primitives, Compute, Cast, IsPlainObject, IsUnion } from './helpers';
 import { NoneSelection, SelectionType } from './FindSelected';
 
 /**
@@ -69,12 +69,12 @@ export type UnknownPattern =
  * They can also be a "wildcards", like `__`.
  */
 export type Pattern<a> =
-  | NotPattern<unknown, unknown>
+  | NotPattern<a, unknown>
   | SelectPattern<string>
   | GuardPattern<a, a, any>
   // If all branches are objects, then we match
   // on properties that all objects have (usually the discriminants).
-  | (IsPlainObject<a> extends true
+  | ([IsUnion<a>, IsPlainObject<a>] extends [true, true]
       ? /*
         using (Compute<a>) to avoid the distribution of `a`
         if it is a union type, and let people pass subpatterns
@@ -83,11 +83,7 @@ export type Pattern<a> =
         keyof Compute<a> extends infer commonkeys
         ? Compute<
             {
-              readonly [k in Cast<commonkeys, string>]?: k extends keyof a
-                ? // This NotPattern is need to preserve type inference
-                  // when excluding a type from the input
-                  Pattern<a[k]> | NotPattern<a[k], a[k]>
-                : never;
+              readonly [k in commonkeys & keyof a]?: Pattern<a[k]>;
             } &
               (a extends object
                 ? {

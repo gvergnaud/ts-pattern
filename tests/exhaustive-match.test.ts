@@ -36,15 +36,15 @@ describe('exhaustive()', () => {
 
       match(input)
         .with('a', (x) => {
-          const check: 'a' = x;
+          type t = Expect<Equal<typeof x, 'a'>>;
           return 1;
         })
         .with('b', (x) => {
-          const check: 'b' = x;
+          type t = Expect<Equal<typeof x, 'b'>>;
           return 2;
         })
         .with('c', (x) => {
-          const check: 'c' = x;
+          type t = Expect<Equal<typeof x, 'c'>>;
           return 2;
         })
         .exhaustive();
