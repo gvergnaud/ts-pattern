@@ -1,6 +1,6 @@
 import type * as symbols from '../symbols';
 import { Primitives, Compute, Cast, IsPlainObject } from './helpers';
-import { NoneSelection, SelectionsRecord, SelectionType } from './FindSelected';
+import { NoneSelection, SelectionType } from './FindSelected';
 
 /**
  * GuardValue returns the value guarded by a type guard function.
@@ -14,43 +14,6 @@ export type GuardValue<F> = F extends (value: any) => value is infer b
 export type GuardFunction<input, output> =
   | ((value: input) => value is Cast<output, input>)
   | ((value: input) => boolean);
-
-type AnyMatchPattern = MatchProtocolPattern<any, any, any, any, any>;
-
-export type GetMatchedValue<
-  T extends AnyMatchPattern,
-  input // This is what we need to inject as a type parameter to the generic function
-> = T extends MatchProtocolPattern<any, infer input, infer output, any, any>
-  ? [output] extends [never]
-    ? input
-    : output
-  : never;
-
-export type GetMatchSelection<
-  T extends AnyMatchPattern,
-  input // This is what we need to inject as a type parameter to the generic function
-> = T extends MatchProtocolPattern<any, any, any, infer selection, any>
-  ? [selection] extends [never]
-    ? GetMatchedValue<T, input>
-    : selection
-  : never;
-
-export type MatchProtocolPattern<
-  key extends string,
-  input,
-  narrowed extends input,
-  selected,
-  isExhaustive extends boolean
-> = {
-  readonly [symbols.PatternKind]: symbols.MatchProtocol;
-  readonly [symbols.MatchProtocol]: {
-    readonly predicate:
-      | ((input: input) => input is narrowed)
-      | ((input: input) => boolean);
-    readonly selector: (input: narrowed) => { key: key; value: selected };
-    readonly isExhaustive: isExhaustive;
-  };
-};
 
 // Using internal tags here to dissuade people from using them inside patterns.
 // Theses properties should be used by ts-pattern's internals only.

@@ -1,12 +1,6 @@
 import type * as symbols from '../symbols';
 import type { Cast, IsAny, UnionToIntersection } from './helpers';
-import type {
-  SelectPattern,
-  MatchProtocolPattern,
-  GetMatchSelection,
-  GuardPattern,
-  Pattern,
-} from './Pattern';
+import type { SelectPattern, GuardPattern, Pattern } from './Pattern';
 
 export type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 
