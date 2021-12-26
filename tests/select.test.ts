@@ -176,15 +176,24 @@ describe('select', () => {
           type t = Expect<Equal<typeof x, []>>;
           return 'empty';
         })
-        .with(P.listOf([{ name: select('names') }, __]), ({ names }) => {
-          type t = Expect<Equal<typeof names, string[]>>;
-          type t2 = Expect<Equal<typeof titles, string[][]>>;
-          return (
-            names.join(' and ') +
-            ' have written ' +
-            titles.map((t) => t.map((t) => `"${t}"`).join(', ')).join(', ')
-          );
-        })
+        .with(
+          P.listOf([
+            { name: select('names') },
+            { post: P.listOf({ title: select('titles') }) },
+          ]),
+          ({ names, titles }) => {
+            type t = Expect<Equal<typeof names, string[]>>;
+            type t2 = Expect<Equal<typeof titles, string[][]>>;
+
+            console.log(titles);
+
+            return (
+              names.join(' and ') +
+              ' have written ' +
+              titles.map((t) => t.map((t) => `"${t}"`).join(', ')).join(', ')
+            );
+          }
+        )
         .exhaustive()
     ).toEqual(
       `Gabriel and Alice have written "Hello World", "what's up", "Hola", "coucou"`
@@ -202,16 +211,9 @@ describe('select', () => {
         [{ name: 'Alice' }, { post: [{ title: 'Hola' }, { title: 'coucou' }] }],
       ])
         .with([], (x) => {
-          type t = Expect<Equal<typeof x, Input>>;
+          type t = Expect<Equal<typeof x, []>>;
           return 'empty';
         })
-        .with(
-          P.listOf([
-            { name: select('a') },
-            { post: P.listOf({ title: P.string }) },
-          ]),
-          (x) => ''
-        )
         .with(
           P.listOf([__, { post: P.listOf({ title: select() }) }]),
           (titles) => {

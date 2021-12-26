@@ -127,7 +127,7 @@ describe('when', () => {
             __,
             (x): x is 2 => x === 2,
             (x) => {
-              const inferenceCheck: 2 = x;
+              type t = Expect<Equal<typeof x, 2>>;
               return '2';
             }
           )
@@ -145,7 +145,7 @@ describe('when', () => {
             __,
             (x): x is number => typeof x === 'number',
             (x) => {
-              const inferenceCheck: number = x;
+              type t = Expect<Equal<typeof x, number>>;
               return 'x: number';
             }
           )

@@ -1,6 +1,8 @@
 import {
   FindSelected,
+  ListPatternSelection,
   MixedNamedAndAnonymousSelectError,
+  NoneSelection,
   SeveralAnonymousSelectError,
 } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
@@ -8,6 +10,7 @@ import {
   AnonymousSelectPattern,
   SelectPattern,
   NotPattern,
+  GuardPattern,
 } from '../src/types/Pattern';
 import { Event, State } from './utils';
 
@@ -15,6 +18,15 @@ describe('FindSelected', () => {
   describe('should correctly return kwargs', () => {
     it('Tuples', () => {
       type cases = [
+        Expect<
+          Equal<
+            FindSelected<
+              { a: { b: { c: [3] } } },
+              { a: { b: { c: [SelectPattern<'c'>] } } }
+            >,
+            { c: 3 }
+          >
+        >,
         Expect<
           Equal<
             FindSelected<
@@ -69,23 +81,62 @@ describe('FindSelected', () => {
       ];
     });
 
-    it('Arrays values should be wrapped in arrays', () => {
+    it('list selections should be wrapped in arrays', () => {
       type cases = [
         Expect<
           Equal<
-            FindSelected<State[], [SelectPattern<'state'>]>,
+            FindSelected<
+              State[],
+              GuardPattern<
+                unknown,
+                unknown,
+                ListPatternSelection<SelectPattern<'state'>>
+              >
+            >,
             { state: State[] }
           >
         >,
         Expect<
           Equal<
-            FindSelected<State[][], [[SelectPattern<'state'>]]>,
+            FindSelected<
+              State[][],
+              GuardPattern<
+                unknown,
+                unknown,
+                ListPatternSelection<
+                  GuardPattern<
+                    unknown,
+                    unknown,
+                    ListPatternSelection<SelectPattern<'state'>>
+                  >
+                >
+              >
+            >,
             { state: State[][] }
           >
         >,
         Expect<
           Equal<
-            FindSelected<State[][][], [[[SelectPattern<'state'>]]]>,
+            FindSelected<
+              State[][][],
+              GuardPattern<
+                unknown,
+                unknown,
+                ListPatternSelection<
+                  GuardPattern<
+                    unknown,
+                    unknown,
+                    ListPatternSelection<
+                      GuardPattern<
+                        unknown,
+                        unknown,
+                        ListPatternSelection<SelectPattern<'state'>>
+                      >
+                    >
+                  >
+                >
+              >
+            >,
             { state: State[][][] }
           >
         >
@@ -137,7 +188,11 @@ describe('FindSelected', () => {
               { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
               {
                 a: [{ c: SelectPattern<'c'> }, { e: 7 }];
-                b: { d: SelectPattern<'d'> }[];
+                b: GuardPattern<
+                  unknown,
+                  unknown,
+                  ListPatternSelection<{ d: SelectPattern<'d'> }>
+                >;
               }
             >,
             { c: 3; d: string[] }

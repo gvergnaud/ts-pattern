@@ -144,8 +144,8 @@ const isObject = (value: unknown): value is Object =>
 
 const isGuardPattern = (
   x: unknown
-): x is GuardPattern<unknown, unknown, {}> => {
-  const pattern = x as GuardPattern<unknown, unknown, {}>;
+): x is GuardPattern<unknown, unknown, any> => {
+  const pattern = x as GuardPattern<unknown, unknown, any>;
   return pattern && pattern[symbols.PatternKind] === symbols.Guard;
 };
 
@@ -166,7 +166,12 @@ const matchPattern = <i, p extends Pattern<i>>(
   select: (key: string, value: unknown) => void
 ): boolean => {
   if (isObject(pattern)) {
-    if (isGuardPattern(pattern)) return Boolean(pattern[symbols.Guard](value));
+    if (isGuardPattern(pattern)) {
+      const doesMatch = Boolean(pattern[symbols.Guard](value));
+      const selected = pattern[symbols.Selector](value);
+      Object.keys(selected).forEach((key) => select(key, selected[key]));
+      return doesMatch;
+    }
 
     if (isSelectPattern(pattern)) {
       select(pattern[symbols.Select], value);
@@ -184,26 +189,6 @@ const matchPattern = <i, p extends Pattern<i>>(
 
     if (Array.isArray(pattern)) {
       if (!Array.isArray(value)) return false;
-
-      // List pattern
-      if (pattern.length === 1) {
-        const selected: Record<string, unknown[]> = {};
-
-        const listSelect = (key: string, value: unknown) => {
-          selected[key] = (selected[key] || []).concat([value]);
-        };
-
-        const doesMatch = value.every((v) =>
-          matchPattern(pattern[0], v, listSelect)
-        );
-
-        if (doesMatch) {
-          Object.keys(selected).forEach((key) => select(key, selected[key]));
-        }
-
-        return doesMatch;
-      }
-
       // Tuple pattern
       return pattern.length === value.length
         ? pattern.every((subPattern, i) =>
@@ -272,8 +257,21 @@ export function isMatching<p extends Pattern<any>>(
   pattern: p,
   value: any
 ): value is MatchedValue<any, InvertPattern<p>>;
+
+/**
+ * @internal
+ */
 export function isMatching<p extends Pattern<any>>(
-  ...args: [pattern: p, value?: any]
+  pattern: p,
+  value: any,
+  selector: (key: string, value: unknown) => void
+): value is MatchedValue<any, InvertPattern<p>>;
+export function isMatching<p extends Pattern<any>>(
+  ...args: [
+    pattern: p,
+    value?: any,
+    selector?: (key: string, value: unknown) => void
+  ]
 ): boolean | ((vale: any) => boolean) {
   if (args.length === 1) {
     const [pattern] = args;
@@ -285,7 +283,12 @@ export function isMatching<p extends Pattern<any>>(
     return matchPattern(pattern, value, () => {});
   }
 
+  if (args.length === 3) {
+    const [pattern, value, selector] = args;
+    return matchPattern(pattern, value, selector ?? (() => {}));
+  }
+
   throw new Error(
-    `isMatching wasn't given enough arguments: expected 1 or 2, received ${args.length}.`
+    `isMatching wasn't given the right number of arguments: expected 1 or 2, received ${args.length}.`
   );
 }

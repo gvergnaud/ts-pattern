@@ -1,14 +1,9 @@
-import type {
-  Pattern,
-  GuardValue,
-  GuardPattern,
-  TopLevelPattern,
-} from './Pattern';
+import type { Pattern, GuardValue, GuardPattern } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
 import type { WithDefault, Union } from './helpers';
-import type { FindSelected, SelectionsRecord } from './FindSelected';
+import type { FindSelected } from './FindSelected';
 
 // We fall back to `a` if we weren't able to extract anything more precise
 export type MatchedValue<a, invpattern> = WithDefault<
@@ -39,28 +34,13 @@ export type Match<
    * execute the handler function and return its result.
    **/
   with<
-    p extends TopLevelPattern<i>,
+    p extends Pattern<i>,
     c,
-    value = MatchedValue<i, InvertPattern<p>>
+    value = MatchedValue<i, InvertPattern<p>>,
+    sel = FindSelected<value, p>
   >(
     pattern: p,
-    handler: (
-      selections: FindSelected<value, p>,
-      value: value
-    ) => PickReturnValue<o, c>
-  ): Match<i, o, patternValueTuples | [p, value], Union<inferredOutput, c>>;
-  with<
-    sel extends SelectionsRecord,
-    output,
-    c,
-    p = GuardPattern<i, output, sel>,
-    value = MatchedValue<i, InvertPattern<p>>
-  >(
-    pattern: GuardPattern<i, output, sel>,
-    handler: (
-      selections: FindSelected<value, p>,
-      value: value
-    ) => PickReturnValue<o, c>
+    handler: (selections: sel, value: value) => PickReturnValue<o, c>
   ): Match<i, o, patternValueTuples | [p, value], Union<inferredOutput, c>>;
 
   with<
@@ -80,7 +60,7 @@ export type Match<
     o,
     | patternValueTuples
     | (pred extends (value: any) => value is infer narrowed
-        ? [GuardPattern<unknown, narrowed, {}>, value]
+        ? [GuardPattern<unknown, narrowed>, value]
         : never),
     Union<inferredOutput, c>
   >;
@@ -113,7 +93,7 @@ export type Match<
     o,
     | patternValueTuples
     | (pred extends (value: any) => value is infer narrowed
-        ? [GuardPattern<unknown, narrowed, {}>, value]
+        ? [GuardPattern<unknown, narrowed>, value]
         : never),
     Union<inferredOutput, c>
   >;

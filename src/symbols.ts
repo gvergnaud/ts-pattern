@@ -30,6 +30,10 @@ export const Guard = Symbol('@ts-pattern/guard');
 export type Guard = typeof Guard;
 
 /** @internal This symbol should only be used by ts-pattern's internals. */
+export const Selector = Symbol('@ts-pattern/selector');
+export type Selector = typeof Selector;
+
+/** @internal This symbol should only be used by ts-pattern's internals. */
 export const Not = Symbol('@ts-pattern/not');
 export type Not = typeof Not;
 

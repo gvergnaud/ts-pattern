@@ -1,6 +1,12 @@
 import { isMatching } from '.';
 import * as symbols from './symbols';
-import { Selections, SelectionsRecord } from './types/FindSelected';
+import {
+  ListPatternSelection,
+  NoneSelection,
+  RecordSelection,
+  Selections,
+  SelectionsRecord,
+} from './types/FindSelected';
 import { Cast } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
@@ -17,37 +23,50 @@ type OptionalSelections<sels extends SelectionsRecord> = {
 };
 
 export const optional = <input, p extends Pattern<Exclude<input, undefined>>>(
-  pattern: p,
-  _?: (value: input) => p
+  pattern: p
 ): GuardPattern<
   input,
   Cast<InvertPattern<p> | undefined, input>,
-  OptionalSelections<Selections<input, p>>
+  RecordSelection<OptionalSelections<Selections<input, p>>>
 > => ({
   [symbols.PatternKind]: symbols.Guard,
   [symbols.Guard]: (
     value: input
   ): value is Cast<InvertPattern<p> | undefined, input> =>
     value === undefined || isMatching(pattern, value),
+  [symbols.Selector]: () => ({}),
 });
 
-type ListSelections<sels extends SelectionsRecord> = {
-  [k in keyof sels]: [sels[k][0][], sels[k][1]];
-};
-
-type Members<xs> = xs extends Array<infer x> ? x : never;
+type Members<xs> = xs extends Array<infer x> ? x : unknown;
 
 export const listOf = <input, p extends Pattern<Members<input>>>(
   pattern: p
-): GuardPattern<
-  input,
-  InvertPattern<p>[],
-  ListSelections<Selections<Members<input>, p>>
-> => ({
-  [symbols.PatternKind]: symbols.Guard,
-  [symbols.Guard]: (value: input): value is Cast<InvertPattern<p>[], input> =>
-    Array.isArray(value) && value.every((v) => isMatching(pattern, v)),
-});
+): GuardPattern<input, InvertPattern<p[]>, ListPatternSelection<p>> => {
+  let selected: Record<string, unknown[]> = {};
+
+  const listSelector = (key: string, value: unknown) => {
+    selected[key] = (selected[key] || []).concat([value]);
+  };
+
+  return {
+    [symbols.PatternKind]: symbols.Guard,
+    [symbols.Guard]: (
+      value: input
+    ): value is Cast<InvertPattern<p[]>, input> => {
+      selected = {};
+      return (
+        Array.isArray(value) &&
+        value.every((v) => isMatching(pattern, v, listSelector))
+      );
+    },
+    [symbols.Selector]: () => {
+      // remove reference to selected
+      let copy = selected;
+      selected = {};
+      return copy;
+    },
+  };
+};
 
 export const not = <input, p extends Pattern<input>>(
   pattern: p
@@ -59,9 +78,10 @@ export const not = <input, p extends Pattern<input>>(
 
 export const when = <input, output extends input = never>(
   predicate: GuardFunction<input, output>
-): GuardPattern<input, output, {}> => ({
+): GuardPattern<input, output, NoneSelection> => ({
   [symbols.PatternKind]: symbols.Guard,
   [symbols.Guard]: predicate,
+  [symbols.Selector]: () => ({}),
 });
 
 export function select(): AnonymousSelectPattern;

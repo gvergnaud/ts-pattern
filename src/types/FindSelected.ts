@@ -5,7 +5,32 @@ import type {
   MatchProtocolPattern,
   GetMatchSelection,
   GuardPattern,
+  Pattern,
 } from './Pattern';
+
+export type SelectionsRecord = Record<string, [unknown, unknown[]]>;
+
+export type RecordSelection<rec extends SelectionsRecord> = {
+  type: 'record';
+  record: rec;
+};
+export type PatternSelection<p extends Pattern<any>> = {
+  type: 'fromPattern';
+  pattern: p;
+};
+export type ListPatternSelection<p extends Pattern<any>> = {
+  type: 'listPattern';
+  pattern: p;
+};
+export type NoneSelection = {
+  type: 'none';
+};
+
+export type SelectionType =
+  | RecordSelection<any>
+  | PatternSelection<any>
+  | ListPatternSelection<any>
+  | NoneSelection;
 
 export type FindSelectionUnion<
   i,
@@ -14,13 +39,39 @@ export type FindSelectionUnion<
   path extends any[] = []
 > = IsAny<i> extends true
   ? never
-  : p extends GuardPattern<any, any, infer selections>
-  ? {
-      [k in keyof selections]: [
-        selections[k][0],
-        [...path, ...selections[k][1]]
-      ];
-    }
+  : p extends GuardPattern<any, any, infer sel>
+  ? sel extends RecordSelection<infer selections>
+    ? {
+        [k in keyof selections]: [
+          selections[k][0],
+          [...path, ...selections[k][1]]
+        ];
+      }
+    : sel extends PatternSelection<infer pattern>
+    ? FindSelectionUnion<i, pattern> extends infer selectionUnion
+      ? {
+          [k in keyof selectionUnion]: selectionUnion[k] extends [
+            infer v,
+            infer subpath
+          ]
+            ? [v, subpath]
+            : never;
+        }
+      : never
+    : sel extends ListPatternSelection<infer pattern>
+    ? i extends (infer ii)[]
+      ? FindSelectionUnion<ii, pattern> extends infer selectionUnion
+        ? {
+            [k in keyof selectionUnion]: selectionUnion[k] extends [
+              infer v,
+              infer subpath
+            ]
+              ? [v[], subpath]
+              : never;
+          }
+        : never
+      : never
+    : never
   : p extends SelectPattern<infer k>
   ? { [kk in k]: [i, path] }
   : p extends readonly (infer pp)[]
@@ -83,10 +134,8 @@ export type MixedNamedAndAnonymousSelectError<
   __error: never;
 } & a;
 
-export type SelectionsRecord = Record<string, [unknown, unknown[]]>;
-
 // SelectionToArgs :: [number | string, value][] -> [...args]
-type SelectionToArgs<selections extends SelectionsRecord, i> = [
+export type SelectionToArgs<selections extends SelectionsRecord, i> = [
   keyof selections
 ] extends [never]
   ? i

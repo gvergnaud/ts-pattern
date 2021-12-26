@@ -56,7 +56,7 @@ export type InvertPattern<p> = p extends MatchProtocolPattern<
     ? [InvertPattern<p1>]
     : p extends readonly []
     ? []
-    : [InvertPattern<pp>]
+    : InvertPattern<pp>[]
   : p extends Map<infer pk, infer pv>
   ? Map<pk, InvertPattern<pv>>
   : p extends Set<infer pv>
@@ -123,7 +123,7 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<any, infer p1>
         : never
       : p extends readonly []
       ? []
-      : [InvertPatternForExclude<pp, ii>]
+      : InvertPatternForExclude<pp, ii>[]
     : never
   : p extends Map<infer pk, infer pv>
   ? i extends Map<any, infer iv>
