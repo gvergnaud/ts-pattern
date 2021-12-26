@@ -23,7 +23,12 @@ type OptionalSelections<sels extends SelectionsRecord> = {
   [k in keyof sels]: [sels[k][0] | undefined, sels[k][1]];
 };
 
-export const optional = <input, p extends Pattern<Exclude<input, undefined>>>(
+export const optional = <
+  input,
+  p extends unknown extends input
+    ? UnknownPattern
+    : Pattern<Exclude<input, undefined>>
+>(
   pattern: p
 ): GuardPattern<
   input,
