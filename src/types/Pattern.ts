@@ -22,10 +22,12 @@ export type GuardPattern<
   selections extends SelectionType = NoneSelection,
   isOptional extends boolean = false
 > = {
-  [symbols.PatternKind]: symbols.Guard;
-  [symbols.Guard]: GuardFunction<input, output>;
-  [symbols.Selector]: (v: any) => Record<string, any>;
-  [symbols.IsOptional]: isOptional;
+  [symbols.Matchable](): {
+    predicate: GuardFunction<input, output>;
+    selector: (v: any) => Record<string, any>;
+    selectUndefined?: () => Record<string, undefined>;
+    isOptional: isOptional;
+  };
 };
 
 export type NotPattern<a, b> = {

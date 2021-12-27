@@ -18,24 +18,8 @@ export const PatternKind = Symbol('@ts-pattern/pattern-kind');
 export type PatternKind = typeof PatternKind;
 
 /** @internal This symbol should only be used by ts-pattern's internals. */
-export const Pattern = Symbol('@ts-pattern/pattern');
-export type Pattern = typeof Pattern;
-
-/** @internal This symbol should only be used by ts-pattern's internals. */
 export const ToExclude = Symbol('@ts-pattern/to-exclude');
 export type ToExclude = typeof ToExclude;
-
-/** @internal This symbol should only be used by ts-pattern's internals. */
-export const Guard = Symbol('@ts-pattern/guard');
-export type Guard = typeof Guard;
-
-/** @internal This symbol should only be used by ts-pattern's internals. */
-export const Selector = Symbol('@ts-pattern/selector');
-export type Selector = typeof Selector;
-
-/** @internal This symbol should only be used by ts-pattern's internals. */
-export const IsOptional = Symbol('@ts-pattern/is-optional');
-export type IsOptional = typeof IsOptional;
 
 /** @internal This symbol should only be used by ts-pattern's internals. */
 export const Not = Symbol('@ts-pattern/not');
@@ -45,5 +29,9 @@ export type Not = typeof Not;
 export const Select = Symbol('@ts-pattern/select');
 export type Select = typeof Select;
 
-export const AnonymousSelectKey = '@ts-pattern/__anonymous-select-key';
+/** @internal This symbol should only be used by ts-pattern's internals. */
+export const Matchable = Symbol('@ts-pattern/matchable');
+export type Matchable = typeof Matchable;
+
+export const AnonymousSelectKey = '@ts-pattern/anonymous-select-key';
 export type AnonymousSelectKey = typeof AnonymousSelectKey;

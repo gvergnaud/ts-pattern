@@ -1,8 +1,8 @@
 import {
   matchPattern,
   isObject,
-  isOptionalPattern,
   isSelectPattern,
+  isGuardPattern,
 } from './helpers';
 import * as symbols from './symbols';
 import {
@@ -24,14 +24,14 @@ import {
 
 const selectWithUndefined = (
   pattern: Pattern<any>,
-  select: (key: string, value: any) => void
+  select: (key: string, value: undefined) => void
 ): void => {
   if (isObject(pattern)) {
     if (isSelectPattern(pattern))
       return select(pattern[symbols.Select], undefined);
-    if (isOptionalPattern(pattern)) {
-      const selected = pattern[symbols.Selector](undefined);
-      Object.entries(selected).forEach(([k, v]) => select(k, v));
+    if (isGuardPattern(pattern)) {
+      const selected = pattern[symbols.Matchable]().selectUndefined?.() ?? {};
+      Object.keys(selected).forEach((k) => select(k, undefined));
     }
     if (Array.isArray(pattern))
       return pattern.forEach((p) => selectWithUndefined(p, select));
@@ -52,28 +52,32 @@ export const optional = <
   OptionalPatternSelection<p>,
   true
 > => {
-  let selected: Record<string, unknown[]> = {};
-  const selector = (key: string, value: any) => {
-    selected[key] = value;
-  };
-
   return {
-    [symbols.PatternKind]: symbols.Guard,
-    [symbols.Guard]: (
-      value: input
-    ): value is Cast<InvertPattern<p> | undefined, input> => {
-      selected = {};
+    [symbols.Matchable]() {
+      let selected: Record<string, unknown[]> = {};
+      const selector = (key: string, value: any) => {
+        selected[key] = value;
+      };
 
-      if (value === undefined) {
-        selectWithUndefined(pattern, selector);
-        return true;
-      }
-
-      return matchPattern(pattern as Pattern<input>, value, selector);
+      return {
+        predicate: (
+          value: input
+        ): value is Cast<InvertPattern<p> | undefined, input> => {
+          if (value === undefined) {
+            selectWithUndefined(pattern, selector);
+            return true;
+          }
+          return matchPattern(pattern as Pattern<input>, value, selector);
+        },
+        selector: () => selected,
+        selectUndefined: () => {
+          const selected: Record<string, undefined> = {};
+          selectWithUndefined(pattern, selector);
+          return selected;
+        },
+        isOptional: true,
+      };
     },
-    // TODO: implement this to select on the sub pattern with the value or undefined
-    [symbols.Selector]: () => selected,
-    [symbols.IsOptional]: true,
   };
 };
 
@@ -85,25 +89,32 @@ export const array = <
 >(
   pattern: p
 ): GuardPattern<input, InvertPattern<p[]>, ListPatternSelection<p>, false> => {
-  let selected: Record<string, unknown[]> = {};
-
-  const selector = (key: string, value: unknown) => {
-    selected[key] = (selected[key] || []).concat([value]);
-  };
-
   return {
-    [symbols.PatternKind]: symbols.Guard,
-    [symbols.Guard]: (
-      value: input
-    ): value is Cast<InvertPattern<p[]>, input> => {
-      selected = {};
-      return (
-        Array.isArray(value) &&
-        value.every((v) => matchPattern(pattern, v, selector))
-      );
+    [symbols.Matchable]() {
+      let selected: Record<string, unknown[]> = {};
+
+      const selector = (key: string, value: unknown) => {
+        selected[key] = (selected[key] || []).concat([value]);
+      };
+
+      return {
+        predicate: (value: input): value is Cast<InvertPattern<p[]>, input> => {
+          return (
+            Array.isArray(value) &&
+            value.every((v) => matchPattern(pattern, v, selector))
+          );
+        },
+        selector: () => selected,
+        selectUndefined: () => {
+          const selected: Record<string, undefined> = {};
+          selectWithUndefined(pattern, (key, value) => {
+            selected[key] = value;
+          });
+          return selected;
+        },
+        isOptional: false,
+      };
     },
-    [symbols.Selector]: () => selected,
-    [symbols.IsOptional]: false,
   };
 };
 
@@ -120,10 +131,11 @@ export const not = <
 export const when = <input, output extends input = never>(
   predicate: GuardFunction<input, output>
 ): GuardPattern<input, output, NoneSelection, false> => ({
-  [symbols.PatternKind]: symbols.Guard,
-  [symbols.Guard]: predicate,
-  [symbols.Selector]: () => ({}),
-  [symbols.IsOptional]: false,
+  [symbols.Matchable]: () => ({
+    predicate,
+    selector: () => ({}),
+    isOptional: false,
+  }),
 });
 
 // TODO check if we could infer the type using the same technique

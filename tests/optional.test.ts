@@ -1,4 +1,4 @@
-import { match, P, select } from '../src';
+import { match, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('optional', () => {
@@ -163,7 +163,7 @@ describe('optional', () => {
 
     const f = (input: Input) =>
       match(input)
-        .with({ maybeList: P.optional(P.array({ text: select() })) }, (x) => {
+        .with({ maybeList: P.optional(P.array({ text: P.select() })) }, (x) => {
           type t = Expect<Equal<typeof x, string[] | undefined>>;
           return x;
         })

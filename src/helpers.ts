@@ -16,7 +16,7 @@ export const isGuardPattern = (
   x: unknown
 ): x is GuardPattern<unknown, unknown, any> => {
   const pattern = x as GuardPattern<unknown, unknown, any>;
-  return pattern && pattern[symbols.PatternKind] === symbols.Guard;
+  return pattern && !!pattern[symbols.Matchable];
 };
 
 // @internal
@@ -35,7 +35,7 @@ export const isSelectPattern = (x: unknown): x is SelectPattern<string> => {
 export const isOptionalPattern = (
   x: unknown
 ): x is GuardPattern<unknown, unknown, any, true> => {
-  return isGuardPattern(x) && x[symbols.IsOptional];
+  return isGuardPattern(x) && x[symbols.Matchable]().isOptional;
 };
 
 // tells us if the value matches a given pattern.
@@ -47,8 +47,9 @@ export const matchPattern = <i, p extends Pattern<i>>(
 ): boolean => {
   if (isObject(pattern)) {
     if (isGuardPattern(pattern)) {
-      const doesMatch = Boolean(pattern[symbols.Guard](value));
-      const selected = pattern[symbols.Selector](value);
+      const matchable = pattern[symbols.Matchable]();
+      const doesMatch = Boolean(matchable.predicate(value));
+      const selected = matchable.selector(value);
       Object.keys(selected).forEach((key) => select(key, selected[key]));
       return doesMatch;
     }
