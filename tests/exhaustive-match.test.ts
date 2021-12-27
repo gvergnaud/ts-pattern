@@ -390,17 +390,17 @@ describe('exhaustive()', () => {
         .with({ type: 'a' }, (x) => x.items)
         // FIXME: The union of input['items'] seems to be ANDed together
         // maybe because of the way we Compute unions of objects in Pattern<a>
-        .with({ type: 'b', items: P.listOf({ data: P.string }) }, (x) => [])
+        .with({ type: 'b', items: P.array({ data: P.string }) }, (x) => [])
         .exhaustive();
 
       match(input)
-        .with({ type: 'a', items: P.listOf(__) }, (x) => x.items)
-        .with({ type: 'b', items: P.listOf({ data: P.string }) }, (x) => [])
+        .with({ type: 'a', items: P.array(__) }, (x) => x.items)
+        .with({ type: 'b', items: P.array({ data: P.string }) }, (x) => [])
         .exhaustive();
 
       match<Input>(input)
-        .with({ type: 'a', items: P.listOf({ some: __ }) }, (x) => x.items)
-        .with({ type: 'b', items: P.listOf({ data: P.string }) }, (x) => [])
+        .with({ type: 'a', items: P.array({ some: __ }) }, (x) => x.items)
+        .with({ type: 'b', items: P.array({ data: P.string }) }, (x) => [])
         // @ts-expect-error
         .exhaustive();
     });
@@ -585,7 +585,7 @@ describe('exhaustive()', () => {
             return str;
           })
           .with({ type: __ }, (x) => x.type)
-          .with(P.listOf(__), (x) => {
+          .with(P.array(__), (x) => {
             type t = Expect<
               Equal<typeof x, 'hello'[] | ('hello' | Option<string>)[]>
             >;

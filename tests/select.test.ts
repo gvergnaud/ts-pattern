@@ -26,7 +26,7 @@ describe('select', () => {
           type t2 = Expect<Equal<typeof first, string>>;
           return [first];
         })
-        .with(P.listOf(P.select('texts')), ({ texts }, xs) => {
+        .with(P.array(P.select('texts')), ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, string[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -36,7 +36,7 @@ describe('select', () => {
 
     expect(
       match<{ text: string }[], string[]>([{ text: 'you' }, { text: 'hello' }])
-        .with(P.listOf({ text: select('texts') }), ({ texts }, xs) => {
+        .with(P.array({ text: select('texts') }), ({ texts }, xs) => {
           type t = Expect<Equal<typeof xs, { text: string }[]>>;
           type t2 = Expect<Equal<typeof texts, string[]>>;
           return texts;
@@ -50,7 +50,7 @@ describe('select', () => {
         { text: { content: 'hello' } },
       ])
         .with(
-          P.listOf({ text: { content: select('texts') } }),
+          P.array({ text: { content: select('texts') } }),
           ({ texts }, xs) => {
             type t = Expect<Equal<typeof texts, string[]>>;
             return texts;
@@ -177,9 +177,9 @@ describe('select', () => {
           return 'empty';
         })
         .with(
-          P.listOf([
+          P.array([
             { name: select('names') },
-            { post: P.listOf({ title: select('titles') }) },
+            { post: P.array({ title: select('titles') }) },
           ]),
           ({ names, titles }) => {
             type t = Expect<Equal<typeof names, string[]>>;
@@ -213,7 +213,7 @@ describe('select', () => {
           return 'empty';
         })
         .with(
-          P.listOf([__, { post: P.listOf({ title: select() }) }]),
+          P.array([__, { post: P.array({ title: select() }) }]),
           (titles) => {
             type t1 = Expect<Equal<typeof titles, string[][]>>;
             return titles

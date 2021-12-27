@@ -1,10 +1,14 @@
-import { isMatching } from '.';
+import {
+  matchPattern,
+  isObject,
+  isOptionalPattern,
+  isSelectPattern,
+} from './helpers';
 import * as symbols from './symbols';
 import {
   ListPatternSelection,
   NoneSelection,
   OptionalPatternSelection,
-  SelectionsRecord,
 } from './types/FindSelected';
 import { Cast } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
@@ -18,8 +22,23 @@ import {
   UnknownPattern,
 } from './types/Pattern';
 
-type OptionalSelections<sels extends SelectionsRecord> = {
-  [k in keyof sels]: [sels[k][0] | undefined, sels[k][1]];
+const selectWithUndefined = (
+  pattern: Pattern<any>,
+  select: (key: string, value: any) => void
+): void => {
+  if (isObject(pattern)) {
+    if (isSelectPattern(pattern))
+      return select(pattern[symbols.Select], undefined);
+    if (isOptionalPattern(pattern)) {
+      const selected = pattern[symbols.Selector](undefined);
+      Object.entries(selected).forEach(([k, v]) => select(k, v));
+    }
+    if (Array.isArray(pattern))
+      return pattern.forEach((p) => selectWithUndefined(p, select));
+    return Object.values(pattern).forEach((p) =>
+      selectWithUndefined(p, select)
+    );
+  }
 };
 
 export const optional = <
@@ -32,20 +51,35 @@ export const optional = <
   InvertPattern<p> | undefined,
   OptionalPatternSelection<p>,
   true
-> => ({
-  [symbols.PatternKind]: symbols.Guard,
-  [symbols.Guard]: (
-    value: input
-  ): value is Cast<InvertPattern<p> | undefined, input> =>
-    value === undefined || isMatching(pattern, value),
-  // TODO: implement this to select on the sub pattern with the value or undefined
-  [symbols.Selector]: () => ({}),
-  [symbols.IsOptional]: true,
-});
+> => {
+  let selected: Record<string, unknown[]> = {};
+  const selector = (key: string, value: any) => {
+    selected[key] = value;
+  };
+
+  return {
+    [symbols.PatternKind]: symbols.Guard,
+    [symbols.Guard]: (
+      value: input
+    ): value is Cast<InvertPattern<p> | undefined, input> => {
+      selected = {};
+
+      if (value === undefined) {
+        selectWithUndefined(pattern, selector);
+        return true;
+      }
+
+      return matchPattern(pattern as Pattern<input>, value, selector);
+    },
+    // TODO: implement this to select on the sub pattern with the value or undefined
+    [symbols.Selector]: () => selected,
+    [symbols.IsOptional]: true,
+  };
+};
 
 type Elem<xs> = xs extends Array<infer x> ? x : unknown;
 
-export const listOf = <
+export const array = <
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
 >(
@@ -53,7 +87,7 @@ export const listOf = <
 ): GuardPattern<input, InvertPattern<p[]>, ListPatternSelection<p>, false> => {
   let selected: Record<string, unknown[]> = {};
 
-  const listSelector = (key: string, value: unknown) => {
+  const selector = (key: string, value: unknown) => {
     selected[key] = (selected[key] || []).concat([value]);
   };
 
@@ -65,15 +99,10 @@ export const listOf = <
       selected = {};
       return (
         Array.isArray(value) &&
-        value.every((v) => isMatching(pattern, v, listSelector))
+        value.every((v) => matchPattern(pattern, v, selector))
       );
     },
-    [symbols.Selector]: () => {
-      // remove reference to selected
-      let copy = selected;
-      selected = {};
-      return copy;
-    },
+    [symbols.Selector]: () => selected,
     [symbols.IsOptional]: false,
   };
 };
@@ -195,3 +224,13 @@ export const nullish = when(isNullish);
  */
 export const instanceOf = <T extends AnyConstructor>(classConstructor: T) =>
   when<unknown, InstanceType<T>>(isInstanceOf(classConstructor));
+
+/**
+ * ### infer
+ * `P.infer<typeof somePattern>` will return the type of the value
+ * matched by this pattern
+ * @example
+ * const userPattern = { name: P.string }
+ * type User = P.infer<typeof userPattern>
+ */
+export type infer<p extends Pattern<any>> = InvertPattern<p>;

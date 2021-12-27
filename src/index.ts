@@ -1,11 +1,4 @@
-import type {
-  Pattern,
-  AnonymousSelectPattern,
-  SelectPattern,
-  GuardPattern,
-  NotPattern,
-  GuardValue,
-} from './types/Pattern';
+import type { Pattern, GuardValue } from './types/Pattern';
 
 import type {
   Unset,
@@ -16,7 +9,7 @@ import type {
 
 import * as symbols from './symbols';
 import * as P from './patterns';
-import { InvertPattern } from './types/InvertPattern';
+import { matchPattern } from './helpers';
 
 export { select, when, not, instanceOf, __ } from './patterns';
 export { Pattern, P };
@@ -139,111 +132,6 @@ const builder = <i, o>(
   };
 };
 
-const isObject = (value: unknown): value is Object =>
-  Boolean(value && typeof value === 'object');
-
-const isGuardPattern = (
-  x: unknown
-): x is GuardPattern<unknown, unknown, any> => {
-  const pattern = x as GuardPattern<unknown, unknown, any>;
-  return pattern && pattern[symbols.PatternKind] === symbols.Guard;
-};
-
-const isNotPattern = (x: unknown): x is NotPattern<unknown, unknown> => {
-  const pattern = x as NotPattern<unknown, unknown>;
-  return pattern && pattern[symbols.PatternKind] === symbols.Not;
-};
-
-const isSelectPattern = (x: unknown): x is SelectPattern<string> => {
-  const pattern = x as SelectPattern<string>;
-  return pattern && pattern[symbols.PatternKind] === symbols.Select;
-};
-
-const isOptionalPattern = (
-  x: unknown
-): x is GuardPattern<unknown, unknown, any, true> => {
-  return isGuardPattern(x) && x[symbols.IsOptional];
-};
-
-// tells us if the value matches a given pattern.
-const matchPattern = <i, p extends Pattern<i>>(
-  pattern: p,
-  value: i,
-  select: (key: string, value: unknown) => void
-): boolean => {
-  if (isObject(pattern)) {
-    if (isGuardPattern(pattern)) {
-      const doesMatch = Boolean(pattern[symbols.Guard](value));
-      const selected = pattern[symbols.Selector](value);
-      Object.keys(selected).forEach((key) => select(key, selected[key]));
-      return doesMatch;
-    }
-
-    if (isSelectPattern(pattern)) {
-      select(pattern[symbols.Select], value);
-      return true;
-    }
-
-    if (isNotPattern(pattern))
-      return !matchPattern(
-        pattern[symbols.Not](value) as Pattern<i>,
-        value,
-        select
-      );
-
-    if (!isObject(value)) return false;
-
-    if (Array.isArray(pattern)) {
-      if (!Array.isArray(value)) return false;
-      // Tuple pattern
-      return pattern.length === value.length
-        ? pattern.every((subPattern, i) =>
-            matchPattern(subPattern, value[i], select)
-          )
-        : false;
-    }
-
-    if (pattern instanceof Map) {
-      if (!(value instanceof Map)) return false;
-      return [...pattern.keys()].every((key) =>
-        matchPattern(pattern.get(key), value.get(key), select)
-      );
-    }
-
-    if (pattern instanceof Set) {
-      if (!(value instanceof Set)) return false;
-
-      if (pattern.size === 0) return value.size === 0;
-
-      if (pattern.size === 1) {
-        const [subPattern] = [...pattern.values()];
-        return Object.values(P).includes(subPattern)
-          ? matchPattern([subPattern], [...value.values()], select)
-          : value.has(subPattern);
-      }
-
-      return [...pattern.values()].every((subPattern) => value.has(subPattern));
-    }
-
-    return Object.keys(pattern).every((k: string): boolean => {
-      // @ts-ignore
-      const subPattern = pattern[k];
-
-      return (
-        (k in value || isOptionalPattern(subPattern)) &&
-        matchPattern(
-          subPattern,
-          // @ts-ignore
-          value[k],
-          select
-        )
-      );
-    });
-  }
-
-  return Object.is(value, pattern);
-};
-
 /**
  * Helper function taking a pattern and returning a **type guard** function telling
  * us whether or not a value matches the pattern.
@@ -253,7 +141,7 @@ const matchPattern = <i, p extends Pattern<i>>(
  */
 export function isMatching<p extends Pattern<any>>(
   pattern: p
-): (value: any) => value is MatchedValue<any, InvertPattern<p>>;
+): (value: any) => value is MatchedValue<any, P.infer<p>>;
 /**
  * **type guard** function taking a pattern and a value and returning a boolean telling
  * us whether or not the value matches the pattern.
@@ -265,36 +153,19 @@ export function isMatching<p extends Pattern<any>>(
 export function isMatching<p extends Pattern<any>>(
   pattern: p,
   value: any
-): value is MatchedValue<any, InvertPattern<p>>;
+): value is MatchedValue<any, P.infer<p>>;
 
-/**
- * @internal
- */
 export function isMatching<p extends Pattern<any>>(
-  pattern: p,
-  value: any,
-  selector: (key: string, value: unknown) => void
-): value is MatchedValue<any, InvertPattern<p>>;
-export function isMatching<p extends Pattern<any>>(
-  ...args: [
-    pattern: p,
-    value?: any,
-    selector?: (key: string, value: unknown) => void
-  ]
+  ...args: [pattern: p, value?: any]
 ): boolean | ((vale: any) => boolean) {
   if (args.length === 1) {
     const [pattern] = args;
-    return (value: any): value is MatchedValue<any, InvertPattern<p>> =>
+    return (value: any): value is MatchedValue<any, P.infer<p>> =>
       matchPattern(pattern, value, () => {});
   }
   if (args.length === 2) {
     const [pattern, value] = args;
     return matchPattern(pattern, value, () => {});
-  }
-
-  if (args.length === 3) {
-    const [pattern, value, selector] = args;
-    return matchPattern(pattern, value, selector ?? (() => {}));
   }
 
   throw new Error(

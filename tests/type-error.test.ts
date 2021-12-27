@@ -9,7 +9,7 @@ describe('type errors', () => {
     const f = (n: number) => {
       return (
         match(n)
-          .with(P.listOf(P.number), (s) => {
+          .with(P.array(P.number), (s) => {
             return 'big number';
           })
           // @ts-expect-error: this isn't a list

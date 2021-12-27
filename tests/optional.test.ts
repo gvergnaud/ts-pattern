@@ -1,4 +1,4 @@
-import { match, P } from '../src';
+import { match, P, select } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('optional', () => {
@@ -127,34 +127,52 @@ describe('optional', () => {
         .with(
           {
             type: 'a',
-            data: P.optional({ type: 'text', p: P.select() }),
+            data: P.optional({ type: 'text', p: P.select('p') }),
           },
           (x) => {
-            type t = Expect<Equal<typeof x, string | undefined>>;
-            return x;
+            type t = Expect<Equal<typeof x, { p: string | undefined }>>;
+            return x.p;
           }
         )
         .with(
           {
             type: 'b',
-            data: P.optional({ type: 'video', src: P.select() }),
+            data: P.optional({ type: 'video', src: P.select('src') }),
           },
-          (x) => {
-            type t = Expect<Equal<typeof x, number | undefined>>;
-            return x;
+          ({ src }) => {
+            type t = Expect<Equal<typeof src, number | undefined>>;
+            return src;
           }
         )
         .with(
           {
             type: 'b',
-            data: P.optional({ type: 'gif', p: P.select() }),
+            data: P.optional({ type: 'gif', p: P.select('p') }),
           },
-          (x) => {
-            type t = Expect<Equal<typeof x, string | undefined>>;
-            return x;
+          ({ p }) => {
+            type t = Expect<Equal<typeof p, string | undefined>>;
+            return p;
           }
         )
         .exhaustive()
     ).toBe('paragraph');
+  });
+
+  it('should support list patterns', () => {
+    type Input = { maybeList?: { text: string }[] };
+
+    const f = (input: Input) =>
+      match(input)
+        .with({ maybeList: P.optional(P.array({ text: select() })) }, (x) => {
+          type t = Expect<Equal<typeof x, string[] | undefined>>;
+          return x;
+        })
+        .exhaustive();
+
+    expect(f({})).toBe(undefined);
+    expect(f({ maybeList: [{ text: 'Hello' }, { text: 'Bonjour' }] })).toEqual([
+      'Hello',
+      'Bonjour',
+    ]);
   });
 });

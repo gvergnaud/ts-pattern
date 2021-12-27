@@ -13,7 +13,7 @@ describe('List ([a])', () => {
         type t = Expect<Equal<typeof x, []>>;
         return { kind: 'some', value: [{ id: 0, title: 'LOlol' }] };
       })
-      .with(P.listOf({ id: P.number, title: P.string }), (blogs) => {
+      .with(P.array({ id: P.number, title: P.string }), (blogs) => {
         type t = Expect<Equal<typeof blogs, { id: number; title: string }[]>>;
         return {
           kind: 'some',

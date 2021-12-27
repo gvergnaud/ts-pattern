@@ -177,7 +177,7 @@ describe('when', () => {
           {
             type: 'some',
             value: {
-              list: P.listOf({
+              list: P.array({
                 test: 'a',
                 sublist: ['w'],
                 maybe: P.optional(P.string),
@@ -239,7 +239,7 @@ describe('when', () => {
           {
             type: 'some',
             value: {
-              list: P.listOf({ test: 'a', prop: select() }),
+              list: P.array({ test: 'a', prop: select() }),
             },
           },
           (x) => {
