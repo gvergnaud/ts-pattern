@@ -836,23 +836,6 @@ describe('DistributeMatchingUnions', () => {
     ];
   });
 
-  it('should not distribute optional properties on objects', () => {
-    type cases = [
-      Expect<
-        Equal<
-          DistributeMatchingUnions<
-            {
-              x: 'a' | 'b';
-              y?: string;
-            },
-            { x: 'a'; y: 'hello' }
-          >,
-          { x: 'a'; y?: string } | { x: 'b'; y?: string }
-        >
-      >
-    ];
-  });
-
   it('should not distribute unions for lists, set and maps', () => {
     // The reason is that list can be heterogeneous, so
     // matching on a A[] for a in input of (A|B)[] doesn't

@@ -1,5 +1,11 @@
 import { DeepExclude } from '../src/types/DeepExclude';
+import {
+  DistributeMatchingUnions,
+  FindUnions,
+  FindUnionsMany,
+} from '../src/types/DistributeUnions';
 import { Primitives, Equal, Expect } from '../src/types/helpers';
+import { IsMatching } from '../src/types/IsMatching';
 import { BigUnion, Option, State } from './utils';
 
 type Colors = 'pink' | 'purple' | 'red' | 'yellow' | 'blue';
@@ -55,7 +61,32 @@ describe('DeepExclude', () => {
     });
 
     it('should work with nested object and only distribute what is necessary', () => {
+      type x = DeepExclude<{ str: string | null | undefined }, { str: string }>;
+      type xx = DistributeMatchingUnions<
+        { str: string | null | undefined },
+        { str: string }
+      >;
+      type xxx = FindUnionsMany<
+        { str: string | null | undefined },
+        { str: string }
+      >;
+      type xxxx = IsMatching<
+        { str: string | null | undefined },
+        { str: string }
+      >;
+      type xxxxx = FindUnions<
+        { str: string | null | undefined },
+        { str: string },
+        []
+      >;
+      type y = DeepExclude<
+        { str: string | null | undefined },
+        { str: null | undefined }
+      >;
+
       type cases = [
+        Expect<Equal<x, { str: null } | { str: undefined }>>,
+        Expect<Equal<y, { str: string }>>,
         Expect<
           Equal<
             DeepExclude<{ a: { b: 'x' | 'y' } }, { a: { b: 'x' } }>,
