@@ -8,12 +8,12 @@ export type RecordSelection<rec extends SelectionsRecord> = {
   type: 'record';
   record: rec;
 };
-export type PatternSelection<p extends Pattern<any>> = {
-  type: 'fromPattern';
-  pattern: p;
-};
 export type ListPatternSelection<p extends Pattern<any>> = {
   type: 'listPattern';
+  pattern: p;
+};
+export type OptionalPatternSelection<p extends Pattern<any>> = {
+  type: 'optionalPattern';
   pattern: p;
 };
 export type NoneSelection = {
@@ -22,7 +22,7 @@ export type NoneSelection = {
 
 export type SelectionType =
   | RecordSelection<any>
-  | PatternSelection<any>
+  | OptionalPatternSelection<any>
   | ListPatternSelection<any>
   | NoneSelection;
 
@@ -34,21 +34,16 @@ export type FindSelectionUnion<
 > = IsAny<i> extends true
   ? never
   : p extends GuardPattern<any, any, infer sel, boolean>
-  ? sel extends RecordSelection<infer selections>
-    ? {
-        [k in keyof selections]: [
-          selections[k][0],
-          [...path, ...selections[k][1]]
-        ];
-      }
-    : sel extends PatternSelection<infer pattern>
+  ? sel extends NoneSelection
+    ? never
+    : sel extends OptionalPatternSelection<infer pattern>
     ? FindSelectionUnion<i, pattern> extends infer selectionUnion
       ? {
           [k in keyof selectionUnion]: selectionUnion[k] extends [
             infer v,
             infer subpath
           ]
-            ? [v, subpath]
+            ? [v | undefined, subpath]
             : never;
         }
       : never
@@ -65,6 +60,13 @@ export type FindSelectionUnion<
           }
         : never
       : never
+    : sel extends RecordSelection<infer selections>
+    ? {
+        [k in keyof selections]: [
+          selections[k][0],
+          [...path, ...selections[k][1]]
+        ];
+      }
     : never
   : p extends SelectPattern<infer k>
   ? { [kk in k]: [i, path] }

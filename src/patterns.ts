@@ -3,8 +3,7 @@ import * as symbols from './symbols';
 import {
   ListPatternSelection,
   NoneSelection,
-  RecordSelection,
-  Selections,
+  OptionalPatternSelection,
   SelectionsRecord,
 } from './types/FindSelected';
 import { Cast } from './types/helpers';
@@ -31,7 +30,7 @@ export const optional = <
 ): GuardPattern<
   input,
   InvertPattern<p> | undefined,
-  RecordSelection<OptionalSelections<Selections<input, p>>>,
+  OptionalPatternSelection<p>,
   true
 > => ({
   [symbols.PatternKind]: symbols.Guard,

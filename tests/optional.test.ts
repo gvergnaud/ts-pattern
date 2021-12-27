@@ -1,9 +1,5 @@
 import { match, P } from '../src';
-import { FindSelected, NoneSelection } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
-import { InvertPattern } from '../src/types/InvertPattern';
-import { MatchedValue } from '../src/types/Match';
-import { GuardPattern } from '../src/types/Pattern';
 
 describe('optional', () => {
   it('should match even if the sub pattern is undefined', () => {
