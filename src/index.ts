@@ -159,6 +159,12 @@ const isSelectPattern = (x: unknown): x is SelectPattern<string> => {
   return pattern && pattern[symbols.PatternKind] === symbols.Select;
 };
 
+const isOptionalPattern = (
+  x: unknown
+): x is GuardPattern<unknown, unknown, any, true> => {
+  return isGuardPattern(x) && x[symbols.IsOptional];
+};
+
 // tells us if the value matches a given pattern.
 const matchPattern = <i, p extends Pattern<i>>(
   pattern: p,
@@ -219,17 +225,20 @@ const matchPattern = <i, p extends Pattern<i>>(
       return [...pattern.values()].every((subPattern) => value.has(subPattern));
     }
 
-    return Object.keys(pattern).every(
-      (k: string): boolean =>
-        k in value &&
+    return Object.keys(pattern).every((k: string): boolean => {
+      // @ts-ignore
+      const subPattern = pattern[k];
+
+      return (
+        (k in value || isOptionalPattern(subPattern)) &&
         matchPattern(
-          // @ts-ignore
-          pattern[k],
+          subPattern,
           // @ts-ignore
           value[k],
           select
         )
-    );
+      );
+    });
   }
 
   return Object.is(value, pattern);

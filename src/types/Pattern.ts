@@ -25,6 +25,7 @@ export type GuardPattern<
   [symbols.PatternKind]: symbols.Guard;
   [symbols.Guard]: GuardFunction<input, output>;
   [symbols.Selector]: (v: any) => Record<string, any>;
+  [symbols.IsOptional]: isOptional;
 };
 
 export type NotPattern<a, b> = {
@@ -52,7 +53,7 @@ export type UnknownPattern =
   | Primitives
   | NotPattern<unknown, unknown>
   | SelectPattern<string>
-  | GuardPattern<unknown, unknown, any>;
+  | GuardPattern<unknown, unknown, any, boolean>;
 
 /**
  * ### Pattern
@@ -62,7 +63,7 @@ export type UnknownPattern =
 export type Pattern<a> =
   | NotPattern<a, unknown>
   | SelectPattern<string>
-  | GuardPattern<a, a, any>
+  | GuardPattern<a, a, any, boolean>
   // If all branches are objects, then we match
   // on properties that all objects have (usually the discriminants).
   | ([IsUnion<a>, IsPlainObject<a>] extends [true, true]

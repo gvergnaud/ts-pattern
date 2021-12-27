@@ -34,16 +34,16 @@ export const Selector = Symbol('@ts-pattern/selector');
 export type Selector = typeof Selector;
 
 /** @internal This symbol should only be used by ts-pattern's internals. */
+export const IsOptional = Symbol('@ts-pattern/is-optional');
+export type IsOptional = typeof IsOptional;
+
+/** @internal This symbol should only be used by ts-pattern's internals. */
 export const Not = Symbol('@ts-pattern/not');
 export type Not = typeof Not;
 
 /** @internal This symbol should only be used by ts-pattern's internals. */
 export const Select = Symbol('@ts-pattern/select');
 export type Select = typeof Select;
-
-/** @internal This symbol should only be used by ts-pattern's internals. */
-export const MatchProtocol = Symbol('@ts-pattern/match-protocol');
-export type MatchProtocol = typeof MatchProtocol;
 
 export const AnonymousSelectKey = '@ts-pattern/__anonymous-select-key';
 export type AnonymousSelectKey = typeof AnonymousSelectKey;

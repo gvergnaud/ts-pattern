@@ -38,7 +38,9 @@ export const optional = <
     value: input
   ): value is Cast<InvertPattern<p> | undefined, input> =>
     value === undefined || isMatching(pattern, value),
+  // TODO: implement this to select on the sub pattern with the value or undefined
   [symbols.Selector]: () => ({}),
+  [symbols.IsOptional]: true,
 });
 
 type Elem<xs> = xs extends Array<infer x> ? x : unknown;
@@ -72,6 +74,7 @@ export const listOf = <
       selected = {};
       return copy;
     },
+    [symbols.IsOptional]: false,
   };
 };
 
@@ -92,6 +95,7 @@ export const when = <input, output extends input = never>(
   [symbols.PatternKind]: symbols.Guard,
   [symbols.Guard]: predicate,
   [symbols.Selector]: () => ({}),
+  [symbols.IsOptional]: false,
 });
 
 // TODO check if we could infer the type using the same technique
