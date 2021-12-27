@@ -585,7 +585,12 @@ describe('exhaustive()', () => {
             return str;
           })
           .with({ type: __ }, (x) => x.type)
-          .with(P.listOf(__), (x) => `("hello" | Option<string>)[] | "hello"[]`)
+          .with(P.listOf(__), (x) => {
+            type t = Expect<
+              Equal<typeof x, 'hello'[] | ('hello' | Option<string>)[]>
+            >;
+            return `("hello" | Option<string>)[] | "hello"[]`;
+          })
           .exhaustive()
       ).toEqual('test');
     });

@@ -41,4 +41,18 @@ describe('Numbers', () => {
 
     expect(res).toEqual('good');
   });
+
+  it("when matching only NaN, the expression shouldn't be exhaustive", () => {
+    const f = (val: number) =>
+      match(val)
+        .with(NaN, () => 'NaN')
+        // @ts-expect-error
+        .exhaustive();
+
+    const f2 = (val: number) =>
+      match(val)
+        .with(NaN, () => 'NaN')
+        .with(P.number, () => 'number')
+        .exhaustive();
+  });
 });

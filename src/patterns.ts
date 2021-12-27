@@ -85,7 +85,6 @@ export const not = <
   pattern: p
 ): NotPattern<input, InvertPattern<p>> => ({
   [symbols.PatternKind]: symbols.Not,
-  // Maybe try to make this a function taking input to improve the pattern inference
   [symbols.Not]: (input: input) => pattern as InvertPattern<p>,
 });
 
