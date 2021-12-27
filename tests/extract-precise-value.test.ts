@@ -258,6 +258,45 @@ describe('ExtractPreciseValue', () => {
         >
       ];
     });
+
+    it('should keep optional properties if they are optional on both `a` and `b`', () => {
+      type Input =
+        | {
+            type: 'a';
+            data?: { type: 'img'; src: string } | { type: 'text'; p: string };
+          }
+        | {
+            type: 'b';
+            data?: { type: 'video'; src: number } | { type: 'gif'; p: string };
+          };
+
+      type cases = [
+        Expect<
+          Equal<
+            ExtractPreciseValue<
+              Input,
+              {
+                type: 'a';
+                data?: { type: 'img' } | undefined;
+              }
+            >,
+            {
+              type: 'a';
+              data?: { type: 'img'; src: string } | undefined;
+            }
+          >
+        >,
+        Expect<
+          Equal<
+            ExtractPreciseValue<
+              { data: { type?: 'a'; value: number } },
+              { data: { type?: 'a' } }
+            >,
+            { data: { type?: 'a'; value: number } }
+          >
+        >
+      ];
+    });
   });
 
   describe('Branded strings', () => {

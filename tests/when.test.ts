@@ -196,7 +196,7 @@ describe('when', () => {
                 {
                   type: 'some';
                   value: {
-                    opt: 'x' | undefined;
+                    opt?: 'x' | undefined;
                     list: {
                       test: 'a';
                       sublist: ['w'];

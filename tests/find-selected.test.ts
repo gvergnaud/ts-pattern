@@ -357,6 +357,49 @@ describe('FindSelected', () => {
           >
         ];
       });
+
+      it("shouldn't change optional properties", () => {
+        type p = {
+          type: 'a';
+          data: GuardPattern<
+            | {
+                type: 'img';
+                src: string;
+              }
+            | {
+                type: 'text';
+                p: string;
+              }
+            | {
+                type: 'video';
+                src: number;
+              }
+            | {
+                type: 'gif';
+                p: string;
+              }
+            | undefined,
+            | {
+                type: 'img';
+              }
+            | undefined,
+            NoneSelection,
+            true
+          >;
+        };
+
+        type value = {
+          type: 'a';
+          data?:
+            | {
+                type: 'img';
+                src: string;
+              }
+            | undefined;
+        };
+
+        type t = Expect<Equal<FindSelected<value, p>, value>>;
+      });
     });
   });
 });

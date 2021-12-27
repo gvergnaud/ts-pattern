@@ -15,42 +15,32 @@ export type GuardFunction<input, output> =
   | ((value: input) => value is Cast<output, input>)
   | ((value: input) => boolean);
 
-// Using internal tags here to dissuade people from using them inside patterns.
-// Theses properties should be used by ts-pattern's internals only.
-// Unfortunately they must be publically visible to work at compile time
 export type GuardPattern<
   input,
   output,
+  // type level information on this guard used for inference
   selections extends SelectionType = NoneSelection,
   isOptional extends boolean = false
 > = {
-  /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.Guard;
-  /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.Guard]: GuardFunction<input, output>;
   [symbols.Selector]: (v: any) => Record<string, any>;
 };
 
 export type NotPattern<a, b> = {
-  /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.Not;
-  /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.Not]: (value: a) => b;
 };
 
 export type ToExclude<a> = {
-  /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.ToExclude;
-  /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.ToExclude]: a;
 };
 
 export type AnonymousSelectPattern = SelectPattern<symbols.AnonymousSelectKey>;
 
 export type SelectPattern<k extends string> = {
-  /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.PatternKind]: symbols.Select;
-  /** @internal This property should only be used by ts-pattern's internals. */
   [symbols.Select]: k;
 };
 

@@ -1,6 +1,7 @@
 import type { ToExclude } from './Pattern';
 import type {
   BuiltInObjects,
+  Compute,
   ExcludeObjectIfContainsNever,
   IsAny,
   IsPlainObject,
@@ -86,14 +87,20 @@ export type ExtractPreciseValue<a, b> = unknown extends b
       : [keyof a & keyof b] extends [never]
       ? never
       : ExcludeObjectIfContainsNever<
-          {
-            // we use Required to remove the optional property modifier (?:).
-            // since we use a[k] after that, optional properties will stay
-            // optional if no pattern was more precise.
-            [k in keyof Required<a>]: k extends keyof b
-              ? ExtractPreciseValue<a[k], b[k]>
-              : a[k];
-          },
+          Compute<
+            // Keep other properties of `a`
+            {
+              [k in Exclude<keyof a, keyof b>]: a[k];
+            } &
+              {
+                // use `b` to extract precise values on `a`.
+                // This has the effect of preserving the optional
+                // property modifier (?:) of b in the output type.
+                [k in keyof b]: k extends keyof a
+                  ? ExtractPreciseValue<a[k], b[k]>
+                  : b[k];
+              }
+          >,
           keyof b & string
         >
     : LeastUpperBound<a, b>
