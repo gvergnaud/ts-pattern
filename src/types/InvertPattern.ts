@@ -90,7 +90,7 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<any, infer p1>
   ? DeepExclude<i, p1>
   : p extends SelectPattern<any>
   ? unknown
-  : p extends MatchablePattern<any, infer p1, any, any>
+  : p extends MatchablePattern<any, any, any, any, infer p1>
   ? p1
   : p extends Primitives
   ? IsLiteral<p> extends true

@@ -14,8 +14,14 @@ export const isObject = (value: unknown): value is Object =>
 //   @internal
 export const isMatchablePattern = (
   x: unknown
-): x is MatchablePattern<unknown, unknown, any> => {
-  const pattern = x as MatchablePattern<unknown, unknown, any>;
+): x is MatchablePattern<unknown, unknown, any, boolean, unknown> => {
+  const pattern = x as MatchablePattern<
+    unknown,
+    unknown,
+    any,
+    boolean,
+    unknown
+  >;
   return pattern && !!pattern[symbols.Matchable];
 };
 
@@ -34,7 +40,7 @@ export const isSelectPattern = (x: unknown): x is SelectPattern<string> => {
 // @internal
 export const isOptionalPattern = (
   x: unknown
-): x is MatchablePattern<unknown, unknown, any, true> => {
+): x is MatchablePattern<unknown, unknown, any, true, unknown> => {
   return isMatchablePattern(x) && x[symbols.Matchable]().isOptional;
 };
 

@@ -11,19 +11,22 @@ export type GuardValue<F> = F extends (value: any) => value is infer b
   ? a
   : never;
 
-export type GuardFunction<input, output> =
-  | ((value: input) => value is Cast<output, input>)
+export type GuardFunction<input, narrowed> =
+  | ((value: input) => value is Cast<narrowed, input>)
   | ((value: input) => boolean);
 
 export type MatchablePattern<
   input,
-  output,
-  // type level information on this guard used for inference
+  narrowed,
+  // Type of what this pattern selected from the input
   selections extends SelectionType = NoneSelection,
-  isOptional extends boolean = false
+  isOptional extends boolean = false,
+  // Type to exclude from the input union because
+  // it has been fully matched by this pattern
+  excluded = narrowed
 > = {
   [symbols.Matchable](): {
-    predicate: GuardFunction<input, output>;
+    predicate: GuardFunction<input, narrowed>;
     selector: (v: any) => Record<string, any>;
     getSelectionKeys?: () => string[];
     isOptional: isOptional;
