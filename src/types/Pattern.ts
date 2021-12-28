@@ -1,6 +1,6 @@
 import type * as symbols from '../symbols';
 import { Primitives, Compute, Cast, IsPlainObject, IsUnion } from './helpers';
-import { NoneSelection, SelectionType } from './FindSelected';
+import { NoneSelection, Select, SelectionType } from './FindSelected';
 
 /**
  * GuardValue returns the value guarded by a type guard function.
@@ -15,6 +15,25 @@ export type GuardFunction<input, narrowed> =
   | ((value: input) => value is Cast<narrowed, input>)
   | ((value: input) => boolean);
 
+// We use a separate MatchProtocol type that preserves
+// the type level information (selections and excluded) used
+// only for inference.
+type MatchProtocol<
+  input,
+  narrowed,
+  // Type of what this pattern selected from the input
+  selections extends SelectionType = NoneSelection,
+  isOptional extends boolean = false,
+  // Type to exclude from the input union because
+  // it has been fully matched by this pattern
+  excluded = narrowed
+> = {
+  predicate: GuardFunction<input, narrowed>;
+  selector: (v: any) => Record<string, any>;
+  getSelectionKeys?: () => string[];
+  isOptional: isOptional;
+};
+
 export type MatchablePattern<
   input,
   narrowed,
@@ -25,12 +44,13 @@ export type MatchablePattern<
   // it has been fully matched by this pattern
   excluded = narrowed
 > = {
-  [symbols.Matchable](): {
-    predicate: GuardFunction<input, narrowed>;
-    selector: (v: any) => Record<string, any>;
-    getSelectionKeys?: () => string[];
-    isOptional: isOptional;
-  };
+  [symbols.Matchable](): MatchProtocol<
+    input,
+    narrowed,
+    selections,
+    isOptional,
+    excluded
+  >;
 };
 
 export type NotPattern<a, b> = {
@@ -43,13 +63,6 @@ export type ToExclude<a> = {
   [symbols.ToExclude]: a;
 };
 
-export type AnonymousSelectPattern = SelectPattern<symbols.AnonymousSelectKey>;
-
-export type SelectPattern<k extends string> = {
-  [symbols.PatternKind]: symbols.Select;
-  [symbols.Select]: k;
-};
-
 export type UnknownPattern =
   | [Pattern<unknown>, ...Pattern<unknown>[]]
   | { [k: string]: Pattern<unknown> }
@@ -57,7 +70,6 @@ export type UnknownPattern =
   | Map<unknown, Pattern<unknown>>
   | Primitives
   | NotPattern<unknown, unknown>
-  | SelectPattern<string>
   | MatchablePattern<unknown, unknown, any, boolean>;
 
 /**
@@ -67,7 +79,6 @@ export type UnknownPattern =
  */
 export type Pattern<a> =
   | NotPattern<a, unknown>
-  | SelectPattern<string>
   | MatchablePattern<a, a, any, boolean>
   // If all branches are objects, then we match
   // on properties that all objects have (usually the discriminants).

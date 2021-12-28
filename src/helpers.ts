@@ -1,11 +1,6 @@
 import * as P from './patterns';
 import * as symbols from './symbols';
-import {
-  Pattern,
-  MatchablePattern,
-  NotPattern,
-  SelectPattern,
-} from './types/Pattern';
+import { Pattern, MatchablePattern, NotPattern } from './types/Pattern';
 
 // @internal
 export const isObject = (value: unknown): value is Object =>
@@ -32,12 +27,6 @@ export const isNotPattern = (x: unknown): x is NotPattern<unknown, unknown> => {
 };
 
 // @internal
-export const isSelectPattern = (x: unknown): x is SelectPattern<string> => {
-  const pattern = x as SelectPattern<string>;
-  return pattern && pattern[symbols.PatternKind] === symbols.Select;
-};
-
-// @internal
 export const isOptionalPattern = (
   x: unknown
 ): x is MatchablePattern<unknown, unknown, any, true, unknown> => {
@@ -58,11 +47,6 @@ export const matchPattern = <i, p extends Pattern<i>>(
       const selected = matchable.selector(value);
       Object.keys(selected).forEach((key) => select(key, selected[key]));
       return doesMatch;
-    }
-
-    if (isSelectPattern(pattern)) {
-      select(pattern[symbols.Select], value);
-      return true;
     }
 
     if (isNotPattern(pattern))

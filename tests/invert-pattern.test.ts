@@ -1,10 +1,7 @@
 import { NoneSelection } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
-import {
-  InvertPattern,
-  InvertPatternForExclude,
-} from '../src/types/InvertPattern';
-import { AnonymousSelectPattern, MatchablePattern } from '../src/types/Pattern';
+import { InvertPatternForExclude } from '../src/types/InvertPattern';
+import { MatchablePattern } from '../src/types/Pattern';
 
 describe('InvertPatternForExclude', () => {
   it('should correctly invert type guards', () => {

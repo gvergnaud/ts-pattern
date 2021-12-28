@@ -1,13 +1,9 @@
 import type * as symbols from '../symbols';
 import type { Cast, Equal, IsAny, UnionToIntersection } from './helpers';
-import type { SelectPattern, MatchablePattern, Pattern } from './Pattern';
+import type { MatchablePattern, Pattern } from './Pattern';
 
-export type SelectionsRecord = Record<string, [unknown, unknown[]]>;
+type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 
-export type RecordSelection<rec extends SelectionsRecord> = {
-  type: 'record';
-  record: rec;
-};
 export type ListPatternSelection<p extends Pattern<any>> = {
   type: 'listPattern';
   pattern: p;
@@ -19,12 +15,16 @@ export type OptionalPatternSelection<p extends Pattern<any>> = {
 export type NoneSelection = {
   type: 'none';
 };
+export type Select<key extends string> = {
+  type: 'select';
+  key: key;
+};
 
 export type SelectionType =
-  | RecordSelection<any>
   | OptionalPatternSelection<any>
   | ListPatternSelection<any>
-  | NoneSelection;
+  | NoneSelection
+  | Select<string>;
 
 export type FindSelectionUnion<
   i,
@@ -36,6 +36,8 @@ export type FindSelectionUnion<
   : p extends MatchablePattern<any, any, infer sel, boolean>
   ? sel extends NoneSelection
     ? never
+    : sel extends Select<infer k>
+    ? { [kk in k]: [i, path] }
     : sel extends OptionalPatternSelection<infer pattern>
     ? FindSelectionUnion<i, pattern> extends infer selectionUnion
       ? {
@@ -60,16 +62,7 @@ export type FindSelectionUnion<
           }
         : never
       : never
-    : sel extends RecordSelection<infer selections>
-    ? {
-        [k in keyof selections]: [
-          selections[k][0],
-          [...path, ...selections[k][1]]
-        ];
-      }
     : never
-  : p extends SelectPattern<infer k>
-  ? { [kk in k]: [i, path] }
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]
     ? [i, p] extends [

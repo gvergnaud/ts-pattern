@@ -1,22 +1,16 @@
-import {
-  matchPattern,
-  isObject,
-  isSelectPattern,
-  isMatchablePattern,
-} from './helpers';
+import { matchPattern, isObject, isMatchablePattern } from './helpers';
 import * as symbols from './symbols';
 import {
   ListPatternSelection,
   NoneSelection,
   OptionalPatternSelection,
+  Select,
 } from './types/FindSelected';
 import { Cast } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
-  AnonymousSelectPattern,
   GuardFunction,
   MatchablePattern,
-  SelectPattern,
   NotPattern,
   Pattern,
   UnknownPattern,
@@ -24,7 +18,6 @@ import {
 
 const getSelectionKeys = (pattern: Pattern<any>): string[] => {
   if (isObject(pattern)) {
-    if (isSelectPattern(pattern)) return [pattern[symbols.Select]];
     if (isMatchablePattern(pattern)) {
       return pattern[symbols.Matchable]().getSelectionKeys?.() ?? [];
     }
@@ -138,19 +131,39 @@ export const when = <input, output extends input = never>(
 // TODO check if we could infer the type using the same technique
 // as for guards, and infer it without needing the input type
 // in FindSelected
-export function select(): AnonymousSelectPattern;
-export function select<k extends string>(key: k): SelectPattern<k>;
+export function select(): MatchablePattern<
+  unknown,
+  never,
+  Select<symbols.AnonymousSelectKey>,
+  false,
+  unknown
+>;
+export function select<k extends string>(
+  key: k
+): MatchablePattern<unknown, never, Select<k>, false, unknown>;
 export function select<k extends string>(
   key?: k
-): AnonymousSelectPattern | SelectPattern<k> {
+): MatchablePattern<unknown, never, Select<k>, false, unknown> {
   return key === undefined
     ? {
-        [symbols.PatternKind]: symbols.Select,
-        [symbols.Select]: symbols.AnonymousSelectKey,
+        [symbols.Matchable]() {
+          return {
+            predicate: () => true,
+            selector: (value) => ({ [symbols.AnonymousSelectKey]: value }),
+            getSelectionKeys: () => [symbols.AnonymousSelectKey],
+            isOptional: false,
+          };
+        },
       }
     : {
-        [symbols.PatternKind]: symbols.Select,
-        [symbols.Select]: key,
+        [symbols.Matchable]() {
+          return {
+            predicate: () => true,
+            selector: (value) => ({ [key]: value }),
+            getSelectionKeys: () => [key],
+            isOptional: false,
+          };
+        },
       };
 }
 

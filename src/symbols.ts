@@ -26,10 +26,6 @@ export const Not = Symbol('@ts-pattern/not');
 export type Not = typeof Not;
 
 /** @internal This symbol should only be used by ts-pattern's internals. */
-export const Select = Symbol('@ts-pattern/select');
-export type Select = typeof Select;
-
-/** @internal This symbol should only be used by ts-pattern's internals. */
 export const Matchable = Symbol('@ts-pattern/matchable');
 export type Matchable = typeof Matchable;
 

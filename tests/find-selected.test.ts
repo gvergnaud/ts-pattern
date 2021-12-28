@@ -1,18 +1,25 @@
+import * as symbols from '../src/symbols';
 import {
   FindSelected,
   ListPatternSelection,
   MixedNamedAndAnonymousSelectError,
   NoneSelection,
+  Select,
   SeveralAnonymousSelectError,
 } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
-import {
-  AnonymousSelectPattern,
-  SelectPattern,
-  NotPattern,
-  MatchablePattern,
-} from '../src/types/Pattern';
+import { NotPattern, MatchablePattern } from '../src/types/Pattern';
 import { Event, State } from './utils';
+
+type SelectPattern<k extends string> = MatchablePattern<
+  unknown,
+  never,
+  Select<k>,
+  false,
+  unknown
+>;
+
+type AnonymousSelectPattern = SelectPattern<symbols.AnonymousSelectKey>;
 
 describe('FindSelected', () => {
   describe('should correctly return kwargs', () => {
@@ -22,7 +29,13 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               { a: { b: { c: [3] } } },
-              { a: { b: { c: [SelectPattern<'c'>] } } }
+              {
+                a: {
+                  b: {
+                    c: [SelectPattern<'c'>];
+                  };
+                };
+              }
             >,
             { c: 3 }
           >
