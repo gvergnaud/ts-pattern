@@ -11,7 +11,6 @@ import { InvertPattern } from './types/InvertPattern';
 import {
   GuardFunction,
   MatchablePattern,
-  NotPattern,
   Pattern,
   UnknownPattern,
 } from './types/Pattern';
@@ -42,8 +41,8 @@ export const optional = <
 ): MatchablePattern<
   input,
   InvertPattern<p> | undefined,
-  OptionalPatternSelection<p>,
-  true
+  'optional',
+  OptionalPatternSelection<p>
 > => {
   return {
     [symbols.Matchable]() {
@@ -66,7 +65,7 @@ export const optional = <
         },
         selector: () => selected,
         getSelectionKeys: () => getSelectionKeys(pattern),
-        isOptional: true,
+        matchableType: 'optional',
       };
     },
   };
@@ -82,8 +81,8 @@ export const array = <
 ): MatchablePattern<
   input,
   InvertPattern<p[]>,
-  ListPatternSelection<p>,
-  false
+  'regular',
+  ListPatternSelection<p>
 > => {
   return {
     [symbols.Matchable]() {
@@ -102,29 +101,69 @@ export const array = <
         },
         selector: () => selected,
         getSelectionKeys: () => getSelectionKeys(pattern),
-        isOptional: false,
       };
     },
   };
 };
+
+// export const every = <
+//   input,
+//   ps extends unknown extends input
+//     ? [UnknownPattern, ...UnknownPattern[]]
+//     : [Pattern<input>, ...Pattern<input>[]]
+// >(
+//   ...patterns: ps
+// ): // TODO
+// MatchablePattern<input, InvertPattern<ps>> => ({
+//   [symbols.Matchable]: () => ({
+//     predicate: (value) =>
+//       (patterns as UnknownPattern[]).every((p) =>
+//         matchPattern(p, value, () => {})
+//       ),
+//     selector: () => ({}),
+//     getSelectionKeys: () => [],
+//   }),
+// });
+
+// export const oneOf = <
+//   input,
+//   ps extends unknown extends input
+//     ? [UnknownPattern, ...UnknownPattern[]]
+//     : [Pattern<input>, ...Pattern<input>[]]
+// >(
+//   ...patterns: ps
+// ): // TODO
+// MatchablePattern<input, InvertPattern<ps>> => ({
+//   [symbols.Matchable]: () => ({
+//     predicate: (value) =>
+//       (patterns as UnknownPattern[]).some((p) =>
+//         matchPattern(p, value, () => {})
+//       ),
+//     selector: () => ({}),
+//     getSelectionKeys: () => [],
+//   }),
+// });
 
 export const not = <
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<input>
 >(
   pattern: p
-): NotPattern<input, InvertPattern<p>> => ({
-  [symbols.PatternKind]: symbols.Not,
-  [symbols.Not]: (input: input) => pattern as InvertPattern<p>,
+): MatchablePattern<input, InvertPattern<p>, 'not'> => ({
+  [symbols.Matchable]: () => ({
+    predicate: (value) => !matchPattern(pattern, value, () => {}),
+    selector: () => ({}),
+    getSelectionKeys: () => [],
+    matchableType: 'not',
+  }),
 });
 
-export const when = <input, output extends input = never>(
-  predicate: GuardFunction<input, output>
-): MatchablePattern<input, output, NoneSelection, false> => ({
+export const when = <input, narrowed extends input = never>(
+  predicate: GuardFunction<input, narrowed>
+): MatchablePattern<input, narrowed, 'regular', NoneSelection> => ({
   [symbols.Matchable]: () => ({
     predicate,
     selector: () => ({}),
-    isOptional: false,
   }),
 });
 
@@ -134,16 +173,16 @@ export const when = <input, output extends input = never>(
 export function select(): MatchablePattern<
   unknown,
   never,
+  'regular',
   Select<symbols.AnonymousSelectKey>,
-  false,
   unknown
 >;
 export function select<k extends string>(
   key: k
-): MatchablePattern<unknown, never, Select<k>, false, unknown>;
+): MatchablePattern<unknown, never, 'regular', Select<k>, unknown>;
 export function select<k extends string>(
   key?: k
-): MatchablePattern<unknown, never, Select<k>, false, unknown> {
+): MatchablePattern<unknown, never, 'regular', Select<k>, unknown> {
   return key === undefined
     ? {
         [symbols.Matchable]() {
@@ -151,7 +190,6 @@ export function select<k extends string>(
             predicate: () => true,
             selector: (value) => ({ [symbols.AnonymousSelectKey]: value }),
             getSelectionKeys: () => [symbols.AnonymousSelectKey],
-            isOptional: false,
           };
         },
       }
@@ -161,7 +199,6 @@ export function select<k extends string>(
             predicate: () => true,
             selector: (value) => ({ [key]: value }),
             getSelectionKeys: () => [key],
-            isOptional: false,
           };
         },
       };

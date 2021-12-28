@@ -1,4 +1,3 @@
-import { NoneSelection } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
 import { InvertPatternForExclude } from '../src/types/InvertPattern';
 import { MatchablePattern } from '../src/types/Pattern';
@@ -62,7 +61,7 @@ describe('InvertPatternForExclude', () => {
   });
 
   describe('optional', () => {
-    type OptionalPattern<a> = MatchablePattern<unknown, a, NoneSelection, true>;
+    type OptionalPattern<a> = MatchablePattern<unknown, a, 'optional'>;
 
     it('an optional pattern in an object should be considered an optional key', () => {
       type input = { key?: 'a' | 'b' };

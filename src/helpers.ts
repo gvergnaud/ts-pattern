@@ -1,6 +1,7 @@
 import * as P from './patterns';
 import * as symbols from './symbols';
-import { Pattern, MatchablePattern, NotPattern } from './types/Pattern';
+import { SelectionType } from './types/FindSelected';
+import { Pattern, MatchablePattern, MatchableType } from './types/Pattern';
 
 // @internal
 export const isObject = (value: unknown): value is Object =>
@@ -9,35 +10,30 @@ export const isObject = (value: unknown): value is Object =>
 //   @internal
 export const isMatchablePattern = (
   x: unknown
-): x is MatchablePattern<unknown, unknown, any, boolean, unknown> => {
+): x is MatchablePattern<unknown, unknown, MatchableType, SelectionType> => {
   const pattern = x as MatchablePattern<
     unknown,
     unknown,
-    any,
-    boolean,
-    unknown
+    MatchableType,
+    SelectionType
   >;
   return pattern && !!pattern[symbols.Matchable];
 };
 
 // @internal
-export const isNotPattern = (x: unknown): x is NotPattern<unknown, unknown> => {
-  const pattern = x as NotPattern<unknown, unknown>;
-  return pattern && pattern[symbols.PatternKind] === symbols.Not;
-};
-
-// @internal
 export const isOptionalPattern = (
   x: unknown
-): x is MatchablePattern<unknown, unknown, any, true, unknown> => {
-  return isMatchablePattern(x) && x[symbols.Matchable]().isOptional;
+): x is MatchablePattern<unknown, unknown, 'optional', SelectionType> => {
+  return (
+    isMatchablePattern(x) && x[symbols.Matchable]().matchableType === 'optional'
+  );
 };
 
 // tells us if the value matches a given pattern.
 // @internal
-export const matchPattern = <i, p extends Pattern<i>>(
-  pattern: p,
-  value: i,
+export const matchPattern = (
+  pattern: Pattern<any>,
+  value: any,
   select: (key: string, value: unknown) => void
 ): boolean => {
   if (isObject(pattern)) {
@@ -48,13 +44,6 @@ export const matchPattern = <i, p extends Pattern<i>>(
       Object.keys(selected).forEach((key) => select(key, selected[key]));
       return doesMatch;
     }
-
-    if (isNotPattern(pattern))
-      return !matchPattern(
-        pattern[symbols.Not](value) as Pattern<i>,
-        value,
-        select
-      );
 
     if (!isObject(value)) return false;
 

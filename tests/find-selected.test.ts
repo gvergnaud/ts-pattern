@@ -3,20 +3,27 @@ import {
   FindSelected,
   ListPatternSelection,
   MixedNamedAndAnonymousSelectError,
-  NoneSelection,
   Select,
   SeveralAnonymousSelectError,
 } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
-import { NotPattern, MatchablePattern } from '../src/types/Pattern';
+import { MatchablePattern } from '../src/types/Pattern';
 import { Event, State } from './utils';
 
 type SelectPattern<k extends string> = MatchablePattern<
   unknown,
   never,
+  'regular',
   Select<k>,
-  false,
   unknown
+>;
+
+type NotPattern<input, narrowed> = MatchablePattern<input, narrowed, 'not'>;
+
+type OptionalPattern<input, narrowed> = MatchablePattern<
+  input,
+  narrowed,
+  'optional'
 >;
 
 type AnonymousSelectPattern = SelectPattern<symbols.AnonymousSelectKey>;
@@ -103,6 +110,7 @@ describe('FindSelected', () => {
               MatchablePattern<
                 unknown,
                 unknown,
+                'regular',
                 ListPatternSelection<SelectPattern<'state'>>
               >
             >,
@@ -116,10 +124,12 @@ describe('FindSelected', () => {
               MatchablePattern<
                 unknown,
                 unknown,
+                'regular',
                 ListPatternSelection<
                   MatchablePattern<
                     unknown,
                     unknown,
+                    'regular',
                     ListPatternSelection<SelectPattern<'state'>>
                   >
                 >
@@ -135,14 +145,17 @@ describe('FindSelected', () => {
               MatchablePattern<
                 unknown,
                 unknown,
+                'regular',
                 ListPatternSelection<
                   MatchablePattern<
                     unknown,
                     unknown,
+                    'regular',
                     ListPatternSelection<
                       MatchablePattern<
                         unknown,
                         unknown,
+                        'regular',
                         ListPatternSelection<SelectPattern<'state'>>
                       >
                     >
@@ -204,6 +217,7 @@ describe('FindSelected', () => {
                 b: MatchablePattern<
                   unknown,
                   unknown,
+                  'regular',
                   ListPatternSelection<{ d: SelectPattern<'d'> }>
                 >;
               }
@@ -374,7 +388,7 @@ describe('FindSelected', () => {
       it("shouldn't change optional properties", () => {
         type p = {
           type: 'a';
-          data: MatchablePattern<
+          data: OptionalPattern<
             | {
                 type: 'img';
                 src: string;
@@ -395,9 +409,7 @@ describe('FindSelected', () => {
             | {
                 type: 'img';
               }
-            | undefined,
-            NoneSelection,
-            true
+            | undefined
           >;
         };
 

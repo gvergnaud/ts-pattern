@@ -33,7 +33,7 @@ export type FindSelectionUnion<
   path extends any[] = []
 > = IsAny<i> extends true
   ? never
-  : p extends MatchablePattern<any, any, infer sel, boolean>
+  : p extends MatchablePattern<any, any, any, infer sel>
   ? sel extends NoneSelection
     ? never
     : sel extends Select<infer k>

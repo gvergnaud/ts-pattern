@@ -6,17 +6,12 @@ import {
   ValueOf,
   Compute,
 } from './helpers';
-import type { MatchablePattern, NotPattern, ToExclude } from './Pattern';
+import type { MatchablePattern, ToExclude } from './Pattern';
 
 type OptionalKeys<p> = ValueOf<
   {
-    [k in keyof p]: p[k] extends MatchablePattern<
-      any,
-      any,
-      any,
-      infer isOptional
-    >
-      ? isOptional extends true
+    [k in keyof p]: p[k] extends MatchablePattern<any, any, infer matchableType>
+      ? matchableType extends 'optional'
         ? k
         : never
       : never;
@@ -29,16 +24,16 @@ type OptionalKeys<p> = ValueOf<
  * to transform a pattern into the type of value it represents
  */
 export type InvertPattern<p> = p extends MatchablePattern<
-  infer p1,
-  infer p2,
   any,
+  infer narrowed,
+  'not',
   any
 >
-  ? [p2] extends [never]
-    ? p1
-    : p2
-  : p extends NotPattern<any, infer p1>
-  ? ToExclude<InvertPattern<p1>>
+  ? ToExclude<narrowed>
+  : p extends MatchablePattern<infer input, infer narrowed, any, any>
+  ? [narrowed] extends [never]
+    ? input
+    : narrowed
   : p extends Primitives
   ? p
   : p extends readonly (infer pp)[]
@@ -84,8 +79,13 @@ export type InvertPattern<p> = p extends MatchablePattern<
 /**
  * ### InvertPatternForExclude
  */
-export type InvertPatternForExclude<p, i> = p extends NotPattern<any, infer p1>
-  ? DeepExclude<i, p1>
+export type InvertPatternForExclude<p, i> = p extends MatchablePattern<
+  any,
+  infer narrowed,
+  'not',
+  any
+>
+  ? DeepExclude<i, narrowed>
   : p extends MatchablePattern<any, any, any, any, infer p1>
   ? p1
   : p extends Primitives

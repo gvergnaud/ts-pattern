@@ -1,6 +1,6 @@
 import type * as symbols from '../symbols';
 import { Primitives, Compute, Cast, IsPlainObject, IsUnion } from './helpers';
-import { NoneSelection, Select, SelectionType } from './FindSelected';
+import { NoneSelection, SelectionType } from './FindSelected';
 
 /**
  * GuardValue returns the value guarded by a type guard function.
@@ -15,31 +15,33 @@ export type GuardFunction<input, narrowed> =
   | ((value: input) => value is Cast<narrowed, input>)
   | ((value: input) => boolean);
 
+export type MatchableType = 'not' | 'optional' | 'regular';
+
 // We use a separate MatchProtocol type that preserves
 // the type level information (selections and excluded) used
 // only for inference.
-type MatchProtocol<
+export type MatchProtocol<
   input,
   narrowed,
   // Type of what this pattern selected from the input
+  matchableType extends MatchableType = 'regular',
   selections extends SelectionType = NoneSelection,
-  isOptional extends boolean = false,
   // Type to exclude from the input union because
   // it has been fully matched by this pattern
   excluded = narrowed
 > = {
-  predicate: GuardFunction<input, narrowed>;
-  selector: (v: any) => Record<string, any>;
+  predicate: (value: input) => boolean;
+  selector: (v: input) => Record<string, any>;
   getSelectionKeys?: () => string[];
-  isOptional: isOptional;
+  matchableType?: matchableType;
 };
 
 export type MatchablePattern<
   input,
   narrowed,
   // Type of what this pattern selected from the input
+  matchableType extends MatchableType = 'regular',
   selections extends SelectionType = NoneSelection,
-  isOptional extends boolean = false,
   // Type to exclude from the input union because
   // it has been fully matched by this pattern
   excluded = narrowed
@@ -47,16 +49,13 @@ export type MatchablePattern<
   [symbols.Matchable](): MatchProtocol<
     input,
     narrowed,
+    matchableType,
     selections,
-    isOptional,
     excluded
   >;
 };
 
-export type NotPattern<a, b> = {
-  [symbols.PatternKind]: symbols.Not;
-  [symbols.Not]: (value: a) => b;
-};
+type AnyMatchablePattern = MatchablePattern<unknown, unknown, any, any>;
 
 export type ToExclude<a> = {
   [symbols.PatternKind]: symbols.ToExclude;
@@ -69,8 +68,7 @@ export type UnknownPattern =
   | Set<Pattern<unknown>>
   | Map<unknown, Pattern<unknown>>
   | Primitives
-  | NotPattern<unknown, unknown>
-  | MatchablePattern<unknown, unknown, any, boolean>;
+  | AnyMatchablePattern;
 
 /**
  * ### Pattern
@@ -78,8 +76,7 @@ export type UnknownPattern =
  * They can also be a "wildcards", like `__`.
  */
 export type Pattern<a> =
-  | NotPattern<a, unknown>
-  | MatchablePattern<a, a, any, boolean>
+  | MatchablePattern<a, unknown, any, any>
   // If all branches are objects, then we match
   // on properties that all objects have (usually the discriminants).
   | ([IsUnion<a>, IsPlainObject<a>] extends [true, true]
