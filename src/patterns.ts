@@ -22,23 +22,23 @@ import {
   UnknownPattern,
 } from './types/Pattern';
 
-const selectWithUndefined = (
-  pattern: Pattern<any>,
-  select: (key: string, value: undefined) => void
-): void => {
+const getSelectionKeys = (pattern: Pattern<any>): string[] => {
   if (isObject(pattern)) {
-    if (isSelectPattern(pattern))
-      return select(pattern[symbols.Select], undefined);
+    if (isSelectPattern(pattern)) return [pattern[symbols.Select]];
     if (isGuardPattern(pattern)) {
-      const selected = pattern[symbols.Matchable]().selectUndefined?.() ?? {};
-      Object.keys(selected).forEach((k) => select(k, undefined));
+      return pattern[symbols.Matchable]().getSelectionKeys?.() ?? [];
     }
     if (Array.isArray(pattern))
-      return pattern.forEach((p) => selectWithUndefined(p, select));
-    return Object.values(pattern).forEach((p) =>
-      selectWithUndefined(p, select)
+      return pattern.reduce<string[]>(
+        (acc, p) => acc.concat(getSelectionKeys(p)),
+        []
+      );
+    return Object.values(pattern).reduce<string[]>(
+      (acc, p) => acc.concat(getSelectionKeys(p)),
+      []
     );
   }
+  return [];
 };
 
 export const optional = <
@@ -64,17 +64,15 @@ export const optional = <
           value: input
         ): value is Cast<InvertPattern<p> | undefined, input> => {
           if (value === undefined) {
-            selectWithUndefined(pattern, selector);
+            getSelectionKeys(pattern).forEach((key) =>
+              selector(key, undefined)
+            );
             return true;
           }
           return matchPattern(pattern as Pattern<input>, value, selector);
         },
         selector: () => selected,
-        selectUndefined: () => {
-          const selected: Record<string, undefined> = {};
-          selectWithUndefined(pattern, selector);
-          return selected;
-        },
+        getSelectionKeys: () => getSelectionKeys(pattern),
         isOptional: true,
       };
     },
@@ -105,13 +103,7 @@ export const array = <
           );
         },
         selector: () => selected,
-        selectUndefined: () => {
-          const selected: Record<string, undefined> = {};
-          selectWithUndefined(pattern, (key, value) => {
-            selected[key] = value;
-          });
-          return selected;
-        },
+        getSelectionKeys: () => getSelectionKeys(pattern),
         isOptional: false,
       };
     },

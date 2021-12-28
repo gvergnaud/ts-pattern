@@ -10,7 +10,7 @@ describe('exhaustive()', () => {
 
       match(input)
         .with('b', (x) => {
-          const check: 'b' = x;
+          type t = Expect<Equal<typeof x, 'b'>>;
           return 1;
         })
         // @ts-expect-error
@@ -24,11 +24,11 @@ describe('exhaustive()', () => {
 
       match(input)
         .with('a', (x) => {
-          const check: 'a' = x;
+          type t = Expect<Equal<typeof x, 'a'>>;
           return 1;
         })
         .with('b', (x) => {
-          const check: 'b' = x;
+          type t = Expect<Equal<typeof x, 'b'>>;
           return 2;
         })
         // @ts-expect-error
@@ -56,7 +56,7 @@ describe('exhaustive()', () => {
 
       match(input)
         .with(2, (x) => {
-          const check: 2 = x;
+          type t = Expect<Equal<typeof x, 2>>;
           return 2;
         })
         // @ts-expect-error
@@ -70,11 +70,11 @@ describe('exhaustive()', () => {
 
       match(input)
         .with(1, (x) => {
-          const check: 1 = x;
+          type t = Expect<Equal<typeof x, 1>>;
           return 1;
         })
         .with(2, (x) => {
-          const check: 2 = x;
+          type t = Expect<Equal<typeof x, 2>>;
           return 2;
         })
         // @ts-expect-error
@@ -82,15 +82,15 @@ describe('exhaustive()', () => {
 
       match(input)
         .with(1, (x) => {
-          const check: 1 = x;
+          type t = Expect<Equal<typeof x, 1>>;
           return 1;
         })
         .with(2, (x) => {
-          const check: 2 = x;
+          type t = Expect<Equal<typeof x, 2>>;
           return 2;
         })
         .with(3, (x) => {
-          const check: 3 = x;
+          type t = Expect<Equal<typeof x, 3>>;
           return 2;
         })
         .exhaustive();

@@ -25,7 +25,7 @@ export type GuardPattern<
   [symbols.Matchable](): {
     predicate: GuardFunction<input, output>;
     selector: (v: any) => Record<string, any>;
-    selectUndefined?: () => Record<string, undefined>;
+    getSelectionKeys?: () => string[];
     isOptional: isOptional;
   };
 };
