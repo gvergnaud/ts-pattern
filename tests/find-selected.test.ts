@@ -10,7 +10,7 @@ import {
   AnonymousSelectPattern,
   SelectPattern,
   NotPattern,
-  GuardPattern,
+  MatchablePattern,
 } from '../src/types/Pattern';
 import { Event, State } from './utils';
 
@@ -87,7 +87,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               State[],
-              GuardPattern<
+              MatchablePattern<
                 unknown,
                 unknown,
                 ListPatternSelection<SelectPattern<'state'>>
@@ -100,11 +100,11 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               State[][],
-              GuardPattern<
+              MatchablePattern<
                 unknown,
                 unknown,
                 ListPatternSelection<
-                  GuardPattern<
+                  MatchablePattern<
                     unknown,
                     unknown,
                     ListPatternSelection<SelectPattern<'state'>>
@@ -119,15 +119,15 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               State[][][],
-              GuardPattern<
+              MatchablePattern<
                 unknown,
                 unknown,
                 ListPatternSelection<
-                  GuardPattern<
+                  MatchablePattern<
                     unknown,
                     unknown,
                     ListPatternSelection<
-                      GuardPattern<
+                      MatchablePattern<
                         unknown,
                         unknown,
                         ListPatternSelection<SelectPattern<'state'>>
@@ -188,7 +188,7 @@ describe('FindSelected', () => {
               { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
               {
                 a: [{ c: SelectPattern<'c'> }, { e: 7 }];
-                b: GuardPattern<
+                b: MatchablePattern<
                   unknown,
                   unknown,
                   ListPatternSelection<{ d: SelectPattern<'d'> }>
@@ -361,7 +361,7 @@ describe('FindSelected', () => {
       it("shouldn't change optional properties", () => {
         type p = {
           type: 'a';
-          data: GuardPattern<
+          data: MatchablePattern<
             | {
                 type: 'img';
                 src: string;

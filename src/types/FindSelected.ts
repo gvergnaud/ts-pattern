@@ -1,6 +1,6 @@
 import type * as symbols from '../symbols';
 import type { Cast, Equal, IsAny, UnionToIntersection } from './helpers';
-import type { SelectPattern, GuardPattern, Pattern } from './Pattern';
+import type { SelectPattern, MatchablePattern, Pattern } from './Pattern';
 
 export type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 
@@ -33,7 +33,7 @@ export type FindSelectionUnion<
   path extends any[] = []
 > = IsAny<i> extends true
   ? never
-  : p extends GuardPattern<any, any, infer sel, boolean>
+  : p extends MatchablePattern<any, any, infer sel, boolean>
   ? sel extends NoneSelection
     ? never
     : sel extends OptionalPatternSelection<infer pattern>

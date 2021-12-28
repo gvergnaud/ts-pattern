@@ -8,8 +8,8 @@ import type {
 } from './types/Match';
 
 import * as symbols from './symbols';
-import * as P from './patterns';
 import { matchPattern } from './helpers';
+import * as P from './patterns';
 
 export { select, when, not, instanceOf, __ } from './patterns';
 export { Pattern, P };

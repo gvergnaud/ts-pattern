@@ -2,7 +2,7 @@ import {
   matchPattern,
   isObject,
   isSelectPattern,
-  isGuardPattern,
+  isMatchablePattern,
 } from './helpers';
 import * as symbols from './symbols';
 import {
@@ -15,7 +15,7 @@ import { InvertPattern } from './types/InvertPattern';
 import {
   AnonymousSelectPattern,
   GuardFunction,
-  GuardPattern,
+  MatchablePattern,
   SelectPattern,
   NotPattern,
   Pattern,
@@ -25,7 +25,7 @@ import {
 const getSelectionKeys = (pattern: Pattern<any>): string[] => {
   if (isObject(pattern)) {
     if (isSelectPattern(pattern)) return [pattern[symbols.Select]];
-    if (isGuardPattern(pattern)) {
+    if (isMatchablePattern(pattern)) {
       return pattern[symbols.Matchable]().getSelectionKeys?.() ?? [];
     }
     if (Array.isArray(pattern))
@@ -46,7 +46,7 @@ export const optional = <
   p extends unknown extends input ? UnknownPattern : Pattern<input>
 >(
   pattern: p
-): GuardPattern<
+): MatchablePattern<
   input,
   InvertPattern<p> | undefined,
   OptionalPatternSelection<p>,
@@ -86,7 +86,12 @@ export const array = <
   p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
 >(
   pattern: p
-): GuardPattern<input, InvertPattern<p[]>, ListPatternSelection<p>, false> => {
+): MatchablePattern<
+  input,
+  InvertPattern<p[]>,
+  ListPatternSelection<p>,
+  false
+> => {
   return {
     [symbols.Matchable]() {
       let selected: Record<string, unknown[]> = {};
@@ -122,7 +127,7 @@ export const not = <
 
 export const when = <input, output extends input = never>(
   predicate: GuardFunction<input, output>
-): GuardPattern<input, output, NoneSelection, false> => ({
+): MatchablePattern<input, output, NoneSelection, false> => ({
   [symbols.Matchable]: () => ({
     predicate,
     selector: () => ({}),

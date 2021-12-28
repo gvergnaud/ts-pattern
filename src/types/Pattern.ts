@@ -15,7 +15,7 @@ export type GuardFunction<input, output> =
   | ((value: input) => value is Cast<output, input>)
   | ((value: input) => boolean);
 
-export type GuardPattern<
+export type MatchablePattern<
   input,
   output,
   // type level information on this guard used for inference
@@ -55,7 +55,7 @@ export type UnknownPattern =
   | Primitives
   | NotPattern<unknown, unknown>
   | SelectPattern<string>
-  | GuardPattern<unknown, unknown, any, boolean>;
+  | MatchablePattern<unknown, unknown, any, boolean>;
 
 /**
  * ### Pattern
@@ -65,7 +65,7 @@ export type UnknownPattern =
 export type Pattern<a> =
   | NotPattern<a, unknown>
   | SelectPattern<string>
-  | GuardPattern<a, a, any, boolean>
+  | MatchablePattern<a, a, any, boolean>
   // If all branches are objects, then we match
   // on properties that all objects have (usually the discriminants).
   | ([IsUnion<a>, IsPlainObject<a>] extends [true, true]

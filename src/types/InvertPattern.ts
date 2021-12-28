@@ -8,14 +8,19 @@ import {
 } from './helpers';
 import type {
   SelectPattern,
-  GuardPattern,
+  MatchablePattern,
   NotPattern,
   ToExclude,
 } from './Pattern';
 
 type OptionalKeys<p> = ValueOf<
   {
-    [k in keyof p]: p[k] extends GuardPattern<any, any, any, infer isOptional>
+    [k in keyof p]: p[k] extends MatchablePattern<
+      any,
+      any,
+      any,
+      infer isOptional
+    >
       ? isOptional extends true
         ? k
         : never
@@ -30,7 +35,7 @@ type OptionalKeys<p> = ValueOf<
  */
 export type InvertPattern<p> = p extends SelectPattern<any>
   ? unknown
-  : p extends GuardPattern<infer p1, infer p2, any, any>
+  : p extends MatchablePattern<infer p1, infer p2, any, any>
   ? [p2] extends [never]
     ? p1
     : p2
@@ -85,7 +90,7 @@ export type InvertPatternForExclude<p, i> = p extends NotPattern<any, infer p1>
   ? DeepExclude<i, p1>
   : p extends SelectPattern<any>
   ? unknown
-  : p extends GuardPattern<any, infer p1, any, any>
+  : p extends MatchablePattern<any, infer p1, any, any>
   ? p1
   : p extends Primitives
   ? IsLiteral<p> extends true

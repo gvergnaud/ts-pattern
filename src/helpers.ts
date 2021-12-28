@@ -2,7 +2,7 @@ import * as P from './patterns';
 import * as symbols from './symbols';
 import {
   Pattern,
-  GuardPattern,
+  MatchablePattern,
   NotPattern,
   SelectPattern,
 } from './types/Pattern';
@@ -12,10 +12,10 @@ export const isObject = (value: unknown): value is Object =>
   Boolean(value && typeof value === 'object');
 
 //   @internal
-export const isGuardPattern = (
+export const isMatchablePattern = (
   x: unknown
-): x is GuardPattern<unknown, unknown, any> => {
-  const pattern = x as GuardPattern<unknown, unknown, any>;
+): x is MatchablePattern<unknown, unknown, any> => {
+  const pattern = x as MatchablePattern<unknown, unknown, any>;
   return pattern && !!pattern[symbols.Matchable];
 };
 
@@ -34,8 +34,8 @@ export const isSelectPattern = (x: unknown): x is SelectPattern<string> => {
 // @internal
 export const isOptionalPattern = (
   x: unknown
-): x is GuardPattern<unknown, unknown, any, true> => {
-  return isGuardPattern(x) && x[symbols.Matchable]().isOptional;
+): x is MatchablePattern<unknown, unknown, any, true> => {
+  return isMatchablePattern(x) && x[symbols.Matchable]().isOptional;
 };
 
 // tells us if the value matches a given pattern.
@@ -46,7 +46,7 @@ export const matchPattern = <i, p extends Pattern<i>>(
   select: (key: string, value: unknown) => void
 ): boolean => {
   if (isObject(pattern)) {
-    if (isGuardPattern(pattern)) {
+    if (isMatchablePattern(pattern)) {
       const matchable = pattern[symbols.Matchable]();
       const doesMatch = Boolean(matchable.predicate(value));
       const selected = matchable.selector(value);
