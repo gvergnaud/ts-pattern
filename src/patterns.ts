@@ -102,12 +102,21 @@ export const array = <
 // ): // TODO
 // Matchable<input, InvertPattern<ps>> => ({
 //   [symbols.matcher]: () => ({
-//     predicate: (value) =>
-//       (patterns as UnknownPattern[]).every((p) =>
-//         matchPattern(p, value, () => {})
+//     match: (value) => {
+//       let selections: Record<string, unknown[]> = {};
+//       const selector = (key: string, value: any) => {
+//         selections[key] = value;
+//       };
+//       const matched = (patterns as UnknownPattern[]).every((p) =>
+//         matchPattern(p, value, selector)
+//       );
+//       return { matched, selections };
+//     },
+//     getSelectionKeys: () =>
+//       (patterns as UnknownPattern[]).reduce<string[]>(
+//         (acc, p) => acc.concat(getSelectionKeys(p)),
+//         []
 //       ),
-//     selector: () => ({}),
-//     getSelectionKeys: () => [],
 //   }),
 // });
 
@@ -121,12 +130,21 @@ export const array = <
 // ): // TODO
 // Matchable<input, InvertPattern<ps>> => ({
 //   [symbols.matcher]: () => ({
-//     predicate: (value) =>
-//       (patterns as UnknownPattern[]).some((p) =>
-//         matchPattern(p, value, () => {})
+//     match: (value) => {
+//       let selections: Record<string, unknown[]> = {};
+//       const selector = (key: string, value: any) => {
+//         selections[key] = value;
+//       };
+//       const matched = (patterns as UnknownPattern[]).some((p) =>
+//         matchPattern(p, value, selector)
+//       );
+//       return { matched, selections };
+//     },
+//     getSelectionKeys: () =>
+//       (patterns as UnknownPattern[]).reduce<string[]>(
+//         (acc, p) => acc.concat(getSelectionKeys(p)),
+//         []
 //       ),
-//     selector: () => ({}),
-//     getSelectionKeys: () => [],
 //   }),
 // });
 

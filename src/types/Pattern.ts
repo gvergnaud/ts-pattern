@@ -70,7 +70,7 @@ export type UnknownPattern =
 type Keys<a> = keyof Compute<a> extends infer shared
   ? {
       shared: shared;
-      other: ValueOf<{ [k in keyof a]: k extends shared ? never : k }>;
+      others: ValueOf<{ [k in keyof a]: k extends shared ? never : k }>;
     }
   : never;
 
@@ -89,13 +89,13 @@ export type Pattern<a> =
         if it is a union type, and let people pass subpatterns
         that match several branches in the union at once.
       */
-        Keys<a> extends { shared: infer shared; other: infer other }
+        Keys<a> extends { shared: infer shared; others: infer others }
         ? Compute<
             {
               readonly [k in shared & keyof a]?: Pattern<a[k]>;
             } &
               {
-                readonly [k in Cast<other, string>]?: a extends any
+                readonly [k in Cast<others, string>]?: a extends any
                   ? k extends keyof a
                     ? Pattern<a[k]>
                     : never
