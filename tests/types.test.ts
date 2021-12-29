@@ -272,4 +272,12 @@ describe('types', () => {
         .join('')
     ).toEqual(`<p>Gabriel has 20 posts.</p>`);
   });
+
+  it("should enforce all branches return the right type when it's set", () => {
+    match<number, number>(2)
+      //  @ts-expect-error
+      .with(2, () => 'string')
+      //  @ts-expect-error
+      .otherwise(() => '?');
+  });
 });

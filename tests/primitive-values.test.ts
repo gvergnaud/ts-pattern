@@ -35,9 +35,9 @@ describe('Primitive values', () => {
           type t = Expect<Equal<typeof x, 1>>;
           return '1';
         })
-        .with(2000n, (x) => {
-          type t = Expect<Equal<typeof x, 2000n>>;
-          return '2000n';
+        .with(BigInt(2000), (x) => {
+          type t = Expect<Equal<typeof x, bigint>>;
+          return 'BigInt(2000)';
         })
         .with(2, (x) => {
           type t = Expect<Equal<typeof x, 2>>;
@@ -81,6 +81,6 @@ describe('Primitive values', () => {
     expect(f(Symbol('hello'))).toEqual('symbol');
     expect(f('hello')).toEqual('string');
     expect(f(20)).toEqual('number');
-    expect(f(100n)).toEqual('bigint');
+    expect(f(BigInt(100))).toEqual('bigint');
   });
 });
