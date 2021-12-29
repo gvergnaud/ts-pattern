@@ -2,7 +2,10 @@
   "compilerOptions": {
     "strict": true,
     "downlevelIteration": true,
-    "noEmit": true
+    "noEmit": true,
+    "target": "ES2020",
+    "moduleResolution": "node"
   },
+  
   "exclude": ["src/"]
 }
