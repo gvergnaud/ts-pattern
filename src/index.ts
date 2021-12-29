@@ -61,13 +61,13 @@ const builder = <i, o>(
 
       const patterns: Pattern<i>[] = [];
       const predicates: ((value: i) => unknown)[] = [];
-      for (let i = 0; i < args.length - 1; i++) {
-        const arg = args[i];
-        if (typeof arg === 'function') {
-          predicates.push(arg);
-        } else {
-          patterns.push(arg);
-        }
+
+      // case with guard as second argument
+      if (args.length === 3 && typeof args[1] === 'function') {
+        patterns.push(args[0]);
+        predicates.push(args[1]);
+      } else {
+        patterns.push(...args.slice(0, args.length - 1));
       }
 
       let selected: Record<string, unknown> = {};

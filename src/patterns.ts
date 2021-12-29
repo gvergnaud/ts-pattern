@@ -210,7 +210,7 @@ export function select<k extends string>(
       };
 }
 
-function isUnknown<T>(x: T | unknown): x is unknown {
+function isUnknown(x: unknown): x is unknown {
   return true;
 }
 
@@ -224,6 +224,14 @@ function isString<T>(x: T | string): x is string {
 
 function isBoolean<T>(x: T | boolean): x is boolean {
   return typeof x === 'boolean';
+}
+
+function isBigInt<T>(x: T | bigint): x is bigint {
+  return typeof x === 'bigint';
+}
+
+function isSymbol<T>(x: T | symbol): x is symbol {
+  return typeof x === 'symbol';
 }
 
 function isNullish<T>(x: T | null | undefined): x is null | undefined {
@@ -272,6 +280,22 @@ export const number = when(isNumber);
  *   .with(P.boolean, () => 'will match on booleans only')
  */
 export const boolean = when(isBoolean);
+
+/**
+ * ### BigInt wildcard
+ * `P.bigint` is a wildcard pattern matching any **bigint**.
+ * @example
+ *   .with(P.bigint, () => 'will match on bigints only')
+ */
+export const bigint = when(isBigInt);
+
+/**
+ * ### Symbol wildcard
+ * `P.symbol` is a wildcard pattern matching any **symbol**.
+ * @example
+ *   .with(P.symbol, () => 'will match on symbols only')
+ */
+export const symbol = when(isSymbol);
 
 /**
  * ### Nullish wildcard
