@@ -17,10 +17,10 @@ export type GuardFunction<input, narrowed> =
 
 export type MatchableType = 'not' | 'optional' | 'regular';
 
-// We use a separate MatchProtocol type that preserves
+// We use a separate MatcherProtocol type that preserves
 // the type level information (selections and excluded) used
 // only for inference.
-export type MatchProtocol<
+export type MatcherProtocol<
   input,
   narrowed,
   // Type of what this pattern selected from the input
@@ -36,7 +36,7 @@ export type MatchProtocol<
   matchableType?: matchableType;
 };
 
-export type MatchablePattern<
+export type Matchable<
   input,
   narrowed,
   // Type of what this pattern selected from the input
@@ -46,7 +46,7 @@ export type MatchablePattern<
   // it has been fully matched by this pattern
   excluded = narrowed
 > = {
-  [symbols.Matchable](): MatchProtocol<
+  [symbols.matcher](): MatcherProtocol<
     input,
     narrowed,
     matchableType,
@@ -55,11 +55,10 @@ export type MatchablePattern<
   >;
 };
 
-type AnyMatchablePattern = MatchablePattern<unknown, unknown, any, any>;
+type AnyMatchable = Matchable<unknown, unknown, any, any>;
 
 export type ToExclude<a> = {
-  [symbols.PatternKind]: symbols.ToExclude;
-  [symbols.ToExclude]: a;
+  [symbols.toExclude]: a;
 };
 
 export type UnknownPattern =
@@ -68,7 +67,7 @@ export type UnknownPattern =
   | Set<Pattern<unknown>>
   | Map<unknown, Pattern<unknown>>
   | Primitives
-  | AnyMatchablePattern;
+  | AnyMatchable;
 
 /**
  * ### Pattern
@@ -76,7 +75,7 @@ export type UnknownPattern =
  * They can also be a "wildcards", like `__`.
  */
 export type Pattern<a> =
-  | MatchablePattern<a, unknown, any, any>
+  | Matchable<a, unknown, any, any>
   // If all branches are objects, then we match
   // on properties that all objects have (usually the discriminants).
   | ([IsUnion<a>, IsPlainObject<a>] extends [true, true]

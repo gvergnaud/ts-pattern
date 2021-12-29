@@ -88,8 +88,8 @@ const builder = <i, o>(
             handler,
             select: (value) =>
               Object.keys(selected).length
-                ? symbols.AnonymousSelectKey in selected
-                  ? selected[symbols.AnonymousSelectKey]
+                ? symbols.anonymousSelectKey in selected
+                  ? selected[symbols.anonymousSelectKey]
                   : selected
                 : value,
           },

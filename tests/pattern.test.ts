@@ -1,5 +1,5 @@
 import { Pattern } from '../src';
-import { MatchablePattern } from '../src/types/Pattern';
+import { Matchable } from '../src/types/Pattern';
 
 type ExtendsPattern<a, p extends Pattern<a>> = true;
 
@@ -8,10 +8,7 @@ describe('Pattern', () => {
     type Input = { type: 'a'; x: { y: string } } | { type: 'b' };
 
     type cases = [
-      ExtendsPattern<
-        Input,
-        { type: 'a'; x: { y: MatchablePattern<unknown, string> } }
-      >
+      ExtendsPattern<Input, { type: 'a'; x: { y: Matchable<unknown, string> } }>
     ];
   });
 });

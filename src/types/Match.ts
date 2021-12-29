@@ -1,4 +1,4 @@
-import type { Pattern, GuardValue, MatchablePattern } from './Pattern';
+import type { Pattern, GuardValue, Matchable } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
@@ -57,7 +57,7 @@ export type Match<
     i,
     o,
     pred extends (value: any) => value is infer narrowed
-      ? [...patternValueTuples, [MatchablePattern<unknown, narrowed>, value]]
+      ? [...patternValueTuples, [Matchable<unknown, narrowed>, value]]
       : patternValueTuples,
     Union<inferredOutput, c>
   >;
@@ -89,7 +89,7 @@ export type Match<
     i,
     o,
     pred extends (value: any) => value is infer narrowed
-      ? [...patternValueTuples, [MatchablePattern<unknown, narrowed>, value]]
+      ? [...patternValueTuples, [Matchable<unknown, narrowed>, value]]
       : patternValueTuples,
     Union<inferredOutput, c>
   >;

@@ -1,6 +1,6 @@
 import type * as symbols from '../symbols';
 import type { Cast, Equal, IsAny, UnionToIntersection } from './helpers';
-import type { MatchablePattern, Pattern } from './Pattern';
+import type { Matchable, Pattern } from './Pattern';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 
@@ -33,7 +33,7 @@ export type FindSelectionUnion<
   path extends any[] = []
 > = IsAny<i> extends true
   ? never
-  : p extends MatchablePattern<any, any, any, infer sel>
+  : p extends Matchable<any, any, any, infer sel>
   ? sel extends NoneSelection
     ? never
     : sel extends Select<infer k>
@@ -128,12 +128,12 @@ export type SelectionToArgs<selections extends SelectionsRecord, i> = [
   keyof selections
 ] extends [never]
   ? i
-  : symbols.AnonymousSelectKey extends keyof selections
+  : symbols.anonymousSelectKey extends keyof selections
   ? // If the path is never, it means several anonymous patterns were `&` together
-    [selections[symbols.AnonymousSelectKey][1]] extends [never]
+    [selections[symbols.anonymousSelectKey][1]] extends [never]
     ? SeveralAnonymousSelectError
-    : keyof selections extends symbols.AnonymousSelectKey
-    ? selections[symbols.AnonymousSelectKey][0]
+    : keyof selections extends symbols.anonymousSelectKey
+    ? selections[symbols.anonymousSelectKey][0]
     : MixedNamedAndAnonymousSelectError
   : { [k in keyof selections]: selections[k][0] };
 

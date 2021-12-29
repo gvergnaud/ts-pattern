@@ -1,6 +1,6 @@
 import { Equal, Expect } from '../src/types/helpers';
 import { InvertPatternForExclude } from '../src/types/InvertPattern';
-import { MatchablePattern } from '../src/types/Pattern';
+import { Matchable } from '../src/types/Pattern';
 
 describe('InvertPatternForExclude', () => {
   it('should correctly invert type guards', () => {
@@ -9,7 +9,7 @@ describe('InvertPatternForExclude', () => {
         Equal<
           InvertPatternForExclude<
             {
-              x: MatchablePattern<1 | 2 | 3, 3>;
+              x: Matchable<1 | 2 | 3, 3>;
             },
             { x: 1 | 2 | 3 }
           >,
@@ -20,7 +20,7 @@ describe('InvertPatternForExclude', () => {
         Equal<
           InvertPatternForExclude<
             {
-              x: MatchablePattern<3, 3>;
+              x: Matchable<3, 3>;
             },
             { x: 1 } | { x: 2 } | { x: 3 }
           >,
@@ -32,7 +32,7 @@ describe('InvertPatternForExclude', () => {
 
   it('should work with objects', () => {
     type t = InvertPatternForExclude<
-      { a: MatchablePattern<unknown, string> },
+      { a: Matchable<unknown, string> },
       { a: string; b: number } | [1, 2]
     >;
 
@@ -40,7 +40,7 @@ describe('InvertPatternForExclude', () => {
       Expect<
         Equal<
           InvertPatternForExclude<
-            { a: MatchablePattern<unknown, string> },
+            { a: Matchable<unknown, string> },
             { a: string; b: number } | [1, 2]
           >,
           { a: string }
@@ -61,7 +61,7 @@ describe('InvertPatternForExclude', () => {
   });
 
   describe('optional', () => {
-    type OptionalPattern<a> = MatchablePattern<unknown, a, 'optional'>;
+    type OptionalPattern<a> = Matchable<unknown, a, 'optional'>;
 
     it('an optional pattern in an object should be considered an optional key', () => {
       type input = { key?: 'a' | 'b' };

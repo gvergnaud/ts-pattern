@@ -6,11 +6,11 @@ import {
   ValueOf,
   Compute,
 } from './helpers';
-import type { MatchablePattern, ToExclude } from './Pattern';
+import type { Matchable, ToExclude } from './Pattern';
 
 type OptionalKeys<p> = ValueOf<
   {
-    [k in keyof p]: p[k] extends MatchablePattern<any, any, infer matchableType>
+    [k in keyof p]: p[k] extends Matchable<any, any, infer matchableType>
       ? matchableType extends 'optional'
         ? k
         : never
@@ -23,14 +23,14 @@ type OptionalKeys<p> = ValueOf<
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
-export type InvertPattern<p> = p extends MatchablePattern<
+export type InvertPattern<p> = p extends Matchable<
   any,
   infer narrowed,
   'not',
   any
 >
   ? ToExclude<narrowed>
-  : p extends MatchablePattern<infer input, infer narrowed, any, any>
+  : p extends Matchable<infer input, infer narrowed, any, any>
   ? [narrowed] extends [never]
     ? input
     : narrowed
@@ -79,14 +79,14 @@ export type InvertPattern<p> = p extends MatchablePattern<
 /**
  * ### InvertPatternForExclude
  */
-export type InvertPatternForExclude<p, i> = p extends MatchablePattern<
+export type InvertPatternForExclude<p, i> = p extends Matchable<
   any,
   infer narrowed,
   'not',
   any
 >
   ? DeepExclude<i, narrowed>
-  : p extends MatchablePattern<any, any, any, any, infer p1>
+  : p extends Matchable<any, any, any, any, infer p1>
   ? p1
   : p extends Primitives
   ? IsLiteral<p> extends true

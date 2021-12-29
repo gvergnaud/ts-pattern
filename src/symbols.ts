@@ -14,20 +14,12 @@
  */
 
 /** @internal This symbol should only be used by ts-pattern's internals. */
-export const PatternKind = Symbol('@ts-pattern/pattern-kind');
-export type PatternKind = typeof PatternKind;
+export const toExclude = Symbol('@ts-pattern/to-exclude');
+export type toExclude = typeof toExclude;
 
 /** @internal This symbol should only be used by ts-pattern's internals. */
-export const ToExclude = Symbol('@ts-pattern/to-exclude');
-export type ToExclude = typeof ToExclude;
+export const matcher = Symbol('@ts-pattern/matcher');
+export type matcher = typeof matcher;
 
-/** @internal This symbol should only be used by ts-pattern's internals. */
-export const Not = Symbol('@ts-pattern/not');
-export type Not = typeof Not;
-
-/** @internal This symbol should only be used by ts-pattern's internals. */
-export const Matchable = Symbol('@ts-pattern/matchable');
-export type Matchable = typeof Matchable;
-
-export const AnonymousSelectKey = '@ts-pattern/anonymous-select-key';
-export type AnonymousSelectKey = typeof AnonymousSelectKey;
+export const anonymousSelectKey = '@ts-pattern/anonymous-select-key';
+export type anonymousSelectKey = typeof anonymousSelectKey;

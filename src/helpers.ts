@@ -1,32 +1,30 @@
 import * as P from './patterns';
 import * as symbols from './symbols';
 import { SelectionType } from './types/FindSelected';
-import { Pattern, MatchablePattern, MatchableType } from './types/Pattern';
+import { Pattern, Matchable, MatchableType } from './types/Pattern';
 
 // @internal
 export const isObject = (value: unknown): value is Object =>
   Boolean(value && typeof value === 'object');
 
 //   @internal
-export const isMatchablePattern = (
+export const isMatchable = (
   x: unknown
-): x is MatchablePattern<unknown, unknown, MatchableType, SelectionType> => {
-  const pattern = x as MatchablePattern<
+): x is Matchable<unknown, unknown, MatchableType, SelectionType> => {
+  const pattern = x as Matchable<
     unknown,
     unknown,
     MatchableType,
     SelectionType
   >;
-  return pattern && !!pattern[symbols.Matchable];
+  return pattern && !!pattern[symbols.matcher];
 };
 
 // @internal
 export const isOptionalPattern = (
   x: unknown
-): x is MatchablePattern<unknown, unknown, 'optional', SelectionType> => {
-  return (
-    isMatchablePattern(x) && x[symbols.Matchable]().matchableType === 'optional'
-  );
+): x is Matchable<unknown, unknown, 'optional', SelectionType> => {
+  return isMatchable(x) && x[symbols.matcher]().matchableType === 'optional';
 };
 
 // tells us if the value matches a given pattern.
@@ -37,10 +35,10 @@ export const matchPattern = (
   select: (key: string, value: unknown) => void
 ): boolean => {
   if (isObject(pattern)) {
-    if (isMatchablePattern(pattern)) {
-      const matchable = pattern[symbols.Matchable]();
-      const doesMatch = Boolean(matchable.predicate(value));
-      const selected = matchable.selector(value);
+    if (isMatchable(pattern)) {
+      const matcher = pattern[symbols.matcher]();
+      const doesMatch = Boolean(matcher.predicate(value));
+      const selected = matcher.selector(value);
       Object.keys(selected).forEach((key) => select(key, selected[key]));
       return doesMatch;
     }
