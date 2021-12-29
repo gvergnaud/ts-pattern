@@ -30,10 +30,14 @@ export type MatcherProtocol<
   // it has been fully matched by this pattern
   excluded = narrowed
 > = {
-  predicate: (value: input) => boolean;
-  selector: (v: input) => Record<string, any>;
+  match: (value: input) => MatchResult;
   getSelectionKeys?: () => string[];
   matchableType?: matchableType;
+};
+
+export type MatchResult = {
+  matched: boolean;
+  selections?: Record<string, any>;
 };
 
 export type Matchable<

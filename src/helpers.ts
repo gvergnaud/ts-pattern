@@ -37,10 +37,10 @@ export const matchPattern = (
   if (isObject(pattern)) {
     if (isMatchable(pattern)) {
       const matcher = pattern[symbols.matcher]();
-      const doesMatch = Boolean(matcher.predicate(value));
-      const selected = matcher.selector(value);
-      Object.keys(selected).forEach((key) => select(key, selected[key]));
-      return doesMatch;
+      const { matched, selections = {} } = matcher.match(value);
+      if (matched)
+        Object.keys(selections).forEach((key) => select(key, selections[key]));
+      return matched;
     }
 
     if (!isObject(value)) return false;

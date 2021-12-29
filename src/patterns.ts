@@ -45,24 +45,21 @@ export const optional = <
 > => {
   return {
     [symbols.matcher]() {
-      let selected: Record<string, unknown[]> = {};
-      const selector = (key: string, value: any) => {
-        selected[key] = value;
-      };
-
       return {
-        predicate: (
-          value: input
-        ): value is Cast<InvertPattern<p> | undefined, input> => {
+        match: (value: input) => {
+          let selections: Record<string, unknown[]> = {};
+          const selector = (key: string, value: any) => {
+            selections[key] = value;
+          };
           if (value === undefined) {
             getSelectionKeys(pattern).forEach((key) =>
               selector(key, undefined)
             );
-            return true;
+            return { matched: true, selections };
           }
-          return matchPattern(pattern as Pattern<input>, value, selector);
+          const matched = matchPattern(pattern, value, selector);
+          return { matched, selections };
         },
-        selector: () => selected,
         getSelectionKeys: () => getSelectionKeys(pattern),
         matchableType: 'optional',
       };
@@ -80,20 +77,20 @@ export const array = <
 ): Matchable<input, InvertPattern<p[]>, 'regular', ListPatternSelection<p>> => {
   return {
     [symbols.matcher]() {
-      let selected: Record<string, unknown[]> = {};
-
-      const selector = (key: string, value: unknown) => {
-        selected[key] = (selected[key] || []).concat([value]);
-      };
-
       return {
-        predicate: (value: input): value is Cast<InvertPattern<p[]>, input> => {
-          return (
-            Array.isArray(value) &&
-            value.every((v) => matchPattern(pattern, v, selector))
+        match: (value: input) => {
+          if (!Array.isArray(value)) return { matched: false };
+          let selections: Record<string, unknown[]> = {};
+
+          const selector = (key: string, value: unknown) => {
+            selections[key] = (selections[key] || []).concat([value]);
+          };
+          const matched = value.every((v) =>
+            matchPattern(pattern, v, selector)
           );
+
+          return { matched, selections };
         },
-        selector: () => selected,
         getSelectionKeys: () => getSelectionKeys(pattern),
       };
     },
@@ -145,8 +142,7 @@ export const not = <
   pattern: p
 ): Matchable<input, InvertPattern<p>, 'not'> => ({
   [symbols.matcher]: () => ({
-    predicate: (value) => !matchPattern(pattern, value, () => {}),
-    selector: () => ({}),
+    match: (value) => ({ matched: !matchPattern(pattern, value, () => {}) }),
     getSelectionKeys: () => [],
     matchableType: 'not',
   }),
@@ -156,8 +152,7 @@ export const when = <input, narrowed extends input = never>(
   predicate: GuardFunction<input, narrowed>
 ): Matchable<input, narrowed> => ({
   [symbols.matcher]: () => ({
-    predicate,
-    selector: () => ({}),
+    match: (value) => ({ matched: predicate(value) }),
   }),
 });
 
@@ -181,8 +176,10 @@ export function select<k extends string>(
     ? {
         [symbols.matcher]() {
           return {
-            predicate: () => true,
-            selector: (value) => ({ [symbols.anonymousSelectKey]: value }),
+            match: (value) => ({
+              matched: true,
+              selections: { [symbols.anonymousSelectKey]: value },
+            }),
             getSelectionKeys: () => [symbols.anonymousSelectKey],
           };
         },
@@ -190,8 +187,10 @@ export function select<k extends string>(
     : {
         [symbols.matcher]() {
           return {
-            predicate: () => true,
-            selector: (value) => ({ [key]: value }),
+            match: (value) => ({
+              matched: true,
+              selections: { [key]: value },
+            }),
             getSelectionKeys: () => [key],
           };
         },
