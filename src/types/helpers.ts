@@ -182,3 +182,16 @@ export type Primitives =
   | bigint;
 
 export type Union<a, b> = [b] extends [a] ? a : [a] extends [b] ? b : a | b;
+
+/**
+ * GuardValue returns the value guarded by a type guard function.
+ */
+export type GuardValue<F> = F extends (value: any) => value is infer b
+  ? b
+  : F extends (value: infer a) => unknown
+  ? a
+  : never;
+
+export type GuardFunction<input, narrowed> =
+  | ((value: input) => value is Cast<narrowed, input>)
+  | ((value: input) => boolean);

@@ -1,7 +1,7 @@
 import * as P from './patterns';
 import * as symbols from './symbols';
 import { SelectionType } from './types/FindSelected';
-import { Pattern, Matchable, MatchableType } from './types/Pattern';
+import { Pattern, Matchable, MatcherType } from './types/Pattern';
 
 // @internal
 export const isObject = (value: unknown): value is Object =>
@@ -10,13 +10,8 @@ export const isObject = (value: unknown): value is Object =>
 //   @internal
 export const isMatchable = (
   x: unknown
-): x is Matchable<unknown, unknown, MatchableType, SelectionType> => {
-  const pattern = x as Matchable<
-    unknown,
-    unknown,
-    MatchableType,
-    SelectionType
-  >;
+): x is Matchable<unknown, unknown, MatcherType, SelectionType> => {
+  const pattern = x as Matchable<unknown, unknown, MatcherType, SelectionType>;
   return pattern && !!pattern[symbols.matcher];
 };
 
@@ -24,7 +19,7 @@ export const isMatchable = (
 export const isOptionalPattern = (
   x: unknown
 ): x is Matchable<unknown, unknown, 'optional', SelectionType> => {
-  return isMatchable(x) && x[symbols.matcher]().matchableType === 'optional';
+  return isMatchable(x) && x[symbols.matcher]().matcherType === 'optional';
 };
 
 // tells us if the value matches a given pattern.

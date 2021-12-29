@@ -41,14 +41,23 @@ describe('type errors', () => {
       .exhaustive();
   });
 
-  it('', () => {
-    match<Option<{ x: number }>>({ kind: 'some', value: { x: 2 } })
-      .with({ kind: 'some', value: { x: 2 } }, () => '2')
-      // @ts-expect-error, value.x should be a number
-      .with({ value: { x: '' } }, () => '2')
-      .with({ kind: 'some' }, () => '2')
-      .with({ kind: 'none' }, () => '')
-      .with({ kind: 'some', value: P.__ }, () => '')
-      .exhaustive();
+  it("Patterns shouldn't accept values which will never match", () => {
+    const f1 = (input: Option<{ x: number }>) =>
+      match<Option<{ x: number }>>(input)
+        .with({ kind: 'some', value: { x: 2 } }, () => '2')
+        // @ts-expect-error, value.x should be a number
+        .with({ value: { x: '' } }, () => '2')
+        .with({ kind: 'some' }, () => '2')
+        .with({ kind: 'none' }, () => '')
+        .with({ kind: 'some', value: P.__ }, () => '')
+        .exhaustive();
+
+    const f2 = (input: Option<number>) =>
+      match(input)
+        // @ts-expect-error: value is a number
+        .with({ kind: 'some', value: 'string' }, () => '')
+        .with({ kind: 'none' }, () => 0)
+        // @ts-expect-error: value is a number
+        .exhaustive();
   });
 });

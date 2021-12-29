@@ -1,4 +1,4 @@
-import type { Pattern, GuardValue } from './types/Pattern';
+import type { Pattern } from './types/Pattern';
 
 import type {
   Unset,
@@ -10,6 +10,7 @@ import type {
 import * as symbols from './symbols';
 import { matchPattern } from './helpers';
 import * as P from './patterns';
+import { GuardValue } from './types/helpers';
 
 export { select, when, not, instanceOf, __ } from './patterns';
 export { Pattern, P };

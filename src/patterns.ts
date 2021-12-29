@@ -5,14 +5,9 @@ import {
   OptionalPatternSelection,
   Select,
 } from './types/FindSelected';
-import { Cast } from './types/helpers';
+import { GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
-import {
-  GuardFunction,
-  Matchable,
-  Pattern,
-  UnknownPattern,
-} from './types/Pattern';
+import { Matchable, Pattern, UnknownPattern } from './types/Pattern';
 
 const getSelectionKeys = (pattern: Pattern<any>): string[] => {
   if (isObject(pattern)) {
@@ -61,7 +56,7 @@ export const optional = <
           return { matched, selections };
         },
         getSelectionKeys: () => getSelectionKeys(pattern),
-        matchableType: 'optional',
+        matcherType: 'optional',
       };
     },
   };
@@ -144,7 +139,7 @@ export const not = <
   [symbols.matcher]: () => ({
     match: (value) => ({ matched: !matchPattern(pattern, value, () => {}) }),
     getSelectionKeys: () => [],
-    matchableType: 'not',
+    matcherType: 'not',
   }),
 });
 

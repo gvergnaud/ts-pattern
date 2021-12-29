@@ -10,8 +10,8 @@ import type { Matchable, ToExclude } from './Pattern';
 
 type OptionalKeys<p> = ValueOf<
   {
-    [k in keyof p]: p[k] extends Matchable<any, any, infer matchableType>
-      ? matchableType extends 'optional'
+    [k in keyof p]: p[k] extends Matchable<any, any, infer matcherType>
+      ? matcherType extends 'optional'
         ? k
         : never
       : never;

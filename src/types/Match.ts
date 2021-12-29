@@ -1,8 +1,8 @@
-import type { Pattern, GuardValue, Matchable } from './Pattern';
+import type { Pattern, Matchable } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
-import type { WithDefault, Union } from './helpers';
+import type { WithDefault, Union, GuardValue } from './helpers';
 import type { FindSelected } from './FindSelected';
 
 // We fall back to `a` if we weren't able to extract anything more precise

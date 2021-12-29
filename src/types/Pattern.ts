@@ -1,21 +1,15 @@
 import type * as symbols from '../symbols';
-import { Primitives, Compute, Cast, IsPlainObject, IsUnion } from './helpers';
+import {
+  Primitives,
+  Compute,
+  Cast,
+  IsPlainObject,
+  IsUnion,
+  ValueOf,
+} from './helpers';
 import { NoneSelection, SelectionType } from './FindSelected';
 
-/**
- * GuardValue returns the value guarded by a type guard function.
- */
-export type GuardValue<F> = F extends (value: any) => value is infer b
-  ? b
-  : F extends (value: infer a) => unknown
-  ? a
-  : never;
-
-export type GuardFunction<input, narrowed> =
-  | ((value: input) => value is Cast<narrowed, input>)
-  | ((value: input) => boolean);
-
-export type MatchableType = 'not' | 'optional' | 'regular';
+export type MatcherType = 'not' | 'optional' | 'regular';
 
 // We use a separate MatcherProtocol type that preserves
 // the type level information (selections and excluded) used
@@ -24,7 +18,7 @@ export type MatcherProtocol<
   input,
   narrowed,
   // Type of what this pattern selected from the input
-  matchableType extends MatchableType = 'regular',
+  matcherType extends MatcherType = 'regular',
   selections extends SelectionType = NoneSelection,
   // Type to exclude from the input union because
   // it has been fully matched by this pattern
@@ -32,7 +26,7 @@ export type MatcherProtocol<
 > = {
   match: (value: input) => MatchResult;
   getSelectionKeys?: () => string[];
-  matchableType?: matchableType;
+  matcherType?: matcherType;
 };
 
 export type MatchResult = {
@@ -40,30 +34,30 @@ export type MatchResult = {
   selections?: Record<string, any>;
 };
 
-export type Matchable<
+export interface Matchable<
   input,
   narrowed,
   // Type of what this pattern selected from the input
-  matchableType extends MatchableType = 'regular',
+  matcherType extends MatcherType = 'regular',
   selections extends SelectionType = NoneSelection,
   // Type to exclude from the input union because
   // it has been fully matched by this pattern
   excluded = narrowed
-> = {
+> {
   [symbols.matcher](): MatcherProtocol<
     input,
     narrowed,
-    matchableType,
+    matcherType,
     selections,
     excluded
   >;
-};
+}
 
 type AnyMatchable = Matchable<unknown, unknown, any, any>;
 
-export type ToExclude<a> = {
+export interface ToExclude<a> {
   [symbols.toExclude]: a;
-};
+}
 
 export type UnknownPattern =
   | [Pattern<unknown>, ...Pattern<unknown>[]]
@@ -72,6 +66,13 @@ export type UnknownPattern =
   | Map<unknown, Pattern<unknown>>
   | Primitives
   | AnyMatchable;
+
+type Keys<a> = keyof Compute<a> extends infer shared
+  ? {
+      shared: shared;
+      other: ValueOf<{ [k in keyof a]: k extends shared ? never : k }>;
+    }
+  : never;
 
 /**
  * ### Pattern
@@ -88,18 +89,18 @@ export type Pattern<a> =
         if it is a union type, and let people pass subpatterns
         that match several branches in the union at once.
       */
-        keyof Compute<a> extends infer commonkeys
+        Keys<a> extends { shared: infer shared; other: infer other }
         ? Compute<
             {
-              readonly [k in commonkeys & keyof a]?: Pattern<a[k]>;
+              readonly [k in shared & keyof a]?: Pattern<a[k]>;
             } &
-              (a extends object
-                ? {
-                    readonly [k in Exclude<keyof a, commonkeys>]?: Pattern<
-                      a[k]
-                    >;
-                  }
-                : never)
+              {
+                readonly [k in Cast<other, string>]?: a extends any
+                  ? k extends keyof a
+                    ? Pattern<a[k]>
+                    : never
+                  : never;
+              }
           >
         : never
       : a extends Primitives
