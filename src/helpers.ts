@@ -16,7 +16,7 @@ export const isMatchable = (
 };
 
 // @internal
-export const isOptionalPattern = (
+const isOptionalPattern = (
   x: unknown
 ): x is Matchable<unknown, unknown, 'optional', SelectionType> => {
   return isMatchable(x) && x[symbols.matcher]().matcherType === 'optional';
