@@ -879,39 +879,52 @@ describe('exhaustive()', () => {
   describe('issue #44', () => {
     it("shouldn't exclude cases if the pattern contains unknown keys", () => {
       type Person = {
-        sex: 'Male' | 'Female';
-        age: 'Adult' | 'Child';
+        sex: 'a' | 'b';
+        age: 'c' | 'd';
       };
 
-      function withTypo(person: Person): string {
+      function withTypo(person: Person) {
         return (
           match(person)
             //   this pattern contains an addition unknown key
-            .with({ sex: 'Female', oopsThisIsATypo: 'Adult' }, (x) => 'Woman')
+            .with({ sex: 'b', oopsThisIsATypo: 'c' }, (x) => {
+              // The unknown key should be added to the object type
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  {
+                    age: 'c' | 'd';
+                    sex: 'b';
+                    oopsThisIsATypo: string;
+                  }
+                >
+              >;
+              return 1;
+            })
             // those are correct
-            .with({ sex: 'Female', age: 'Child' }, () => 'Girl')
-            .with({ sex: 'Male', age: 'Adult' }, () => 'Man')
-            .with({ sex: 'Male', age: 'Child' }, () => 'Boy')
+            .with({ sex: 'b', age: 'd' }, () => 2)
+            .with({ sex: 'a', age: 'c' }, () => 3)
+            .with({ sex: 'a', age: 'd' }, () => 4)
             // this pattern shouldn't be considered exhaustive
             // @ts-expect-error
             .exhaustive()
         );
       }
 
-      function withoutTypo(person: Person): string {
+      function withoutTypo(person: Person) {
         return (
           match(person)
-            .with({ sex: 'Female', age: 'Adult' }, (x) => 'Woman')
-            .with({ sex: 'Female', age: 'Child' }, () => 'Girl')
-            .with({ sex: 'Male', age: 'Adult' }, () => 'Man')
-            .with({ sex: 'Male', age: 'Child' }, () => 'Boy')
+            .with({ sex: 'b', age: 'c' }, (x) => 1)
+            .with({ sex: 'b', age: 'd' }, () => 2)
+            .with({ sex: 'a', age: 'c' }, () => 3)
+            .with({ sex: 'a', age: 'd' }, () => 4)
             // this should be ok
             .exhaustive()
         );
       }
 
-      expect(() => withTypo({ sex: 'Female', age: 'Adult' })).toThrow();
-      expect(withoutTypo({ sex: 'Female', age: 'Adult' })).toBe('Woman');
+      expect(() => withTypo({ sex: 'b', age: 'c' })).toThrow();
+      expect(withoutTypo({ sex: 'b', age: 'c' })).toBe(1);
     });
   });
 });
