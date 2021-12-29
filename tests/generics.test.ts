@@ -1,14 +1,14 @@
-import { match, __ } from '../src';
+import { match, when, __ } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import { none, Option, some } from './utils';
 
 describe('generics', () => {
-  it('should have basic support for objects containing generics', () => {
-    type State<T> =
-      | { t: 'success'; value: T }
-      | { t: 'error'; error: Error }
-      | { t: 'loading' };
+  type State<T> =
+    | { t: 'success'; value: T }
+    | { t: 'error'; error: Error }
+    | { t: 'loading' };
 
+  it('should have basic support for objects containing generics', () => {
     const f = <T>(input: State<T>) => {
       return match(input)
         .with({ t: 'success' }, (x) => {
@@ -60,5 +60,42 @@ describe('generics', () => {
           return 'error :(';
         })
         .exhaustive();
+  });
+
+  it('Basic generic type guards (with no type level manipulation of the input) should work', () => {
+    const isSuccess = <T>(x: any): x is { t: 'success'; value: T } =>
+      Boolean(x && typeof x === 'object' && x.t === 'success');
+
+    const isDoubleSuccess = <T>(x: any): x is { t: 'success'; value: [T, T] } =>
+      Boolean(
+        x &&
+          typeof x === 'object' &&
+          x.t === 'success' &&
+          Array.isArray(x.value) &&
+          x.value.length === 2
+      );
+
+    const f = <T>(input: State<[number, number] | number>) => {
+      return match({ input })
+        .with({ input: when(isSuccess) }, (x) => {
+          type t = Expect<
+            Equal<
+              typeof x,
+              { input: { t: 'success'; value: number | [number, number] } }
+            >
+          >;
+          return 'ok';
+        })
+        .with({ input: when(isDoubleSuccess) }, (x) => {
+          type t = Expect<
+            Equal<
+              typeof x,
+              { input: { t: 'success'; value: [number, number] } }
+            >
+          >;
+          return 'ok';
+        })
+        .otherwise(() => 'nope');
+    };
   });
 });
