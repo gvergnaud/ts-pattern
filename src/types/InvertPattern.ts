@@ -5,6 +5,7 @@ import {
   IsLiteral,
   ValueOf,
   Compute,
+  Cast,
 } from './helpers';
 import type { Matchable, ToExclude } from './Pattern';
 
@@ -18,20 +19,38 @@ type OptionalKeys<p> = ValueOf<
   }
 >;
 
+type ReduceUnion<tuple extends any[], output = never> = tuple extends readonly [
+  infer p,
+  ...infer tail
+]
+  ? ReduceUnion<tail, output | InvertPattern<p>>
+  : output;
+
+type ReduceIntersection<
+  tuple extends any[],
+  output = unknown
+> = tuple extends readonly [infer p, ...infer tail]
+  ? ReduceIntersection<tail, output & InvertPattern<p>>
+  : output;
+
 /**
  * ### InvertPattern
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
 export type InvertPattern<p> = p extends Matchable<
-  any,
+  infer input,
   infer narrowed,
-  'not',
+  infer matcherType,
   any
 >
-  ? ToExclude<narrowed>
-  : p extends Matchable<infer input, infer narrowed, any, any>
-  ? [narrowed] extends [never]
+  ? matcherType extends 'not'
+    ? ToExclude<narrowed>
+    : matcherType extends 'and'
+    ? ReduceIntersection<Cast<narrowed, any[]>>
+    : matcherType extends 'or'
+    ? ReduceUnion<Cast<narrowed, any[]>>
+    : [narrowed] extends [never]
     ? input
     : narrowed
   : p extends Primitives
@@ -76,18 +95,47 @@ export type InvertPattern<p> = p extends Matchable<
     >
   : p;
 
+export type ReduceIntersectionForExclude<
+  tuple extends any[],
+  i,
+  output = unknown
+> = tuple extends readonly [infer p, ...infer tail]
+  ? ReduceIntersectionForExclude<
+      tail,
+      i,
+      output & InvertPatternForExclude<p, i, unknown>
+    >
+  : output;
+
+export type ReduceUnionForExclude<
+  tuple extends any[],
+  i,
+  output = never
+> = tuple extends readonly [infer p, ...infer tail]
+  ? ReduceUnionForExclude<
+      tail,
+      i,
+      output | InvertPatternForExclude<p, i, never>
+    >
+  : output;
+
 /**
  * ### InvertPatternForExclude
  */
-export type InvertPatternForExclude<p, i> = p extends Matchable<
+export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
   any,
   infer narrowed,
-  'not',
-  any
+  infer matcherType,
+  any,
+  infer excluded
 >
-  ? DeepExclude<i, narrowed>
-  : p extends Matchable<any, any, any, any, infer p1>
-  ? p1
+  ? matcherType extends 'not'
+    ? DeepExclude<i, narrowed>
+    : matcherType extends 'and'
+    ? ReduceIntersectionForExclude<Cast<narrowed, any[]>, i>
+    : matcherType extends 'or'
+    ? ReduceUnionForExclude<Cast<narrowed, any[]>, i>
+    : excluded
   : p extends Primitives
   ? IsLiteral<p> extends true
     ? p
@@ -99,49 +147,52 @@ export type InvertPatternForExclude<p, i> = p extends Matchable<
     ? p extends readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
       ? i extends readonly [infer i1, infer i2, infer i3, infer i4, infer i5]
         ? [
-            InvertPatternForExclude<p1, i1>,
-            InvertPatternForExclude<p2, i2>,
-            InvertPatternForExclude<p3, i3>,
-            InvertPatternForExclude<p4, i4>,
-            InvertPatternForExclude<p5, i5>
+            InvertPatternForExclude<p1, i1, empty>,
+            InvertPatternForExclude<p2, i2, empty>,
+            InvertPatternForExclude<p3, i3, empty>,
+            InvertPatternForExclude<p4, i4, empty>,
+            InvertPatternForExclude<p5, i5, empty>
           ]
         : never
       : p extends readonly [infer p1, infer p2, infer p3, infer p4]
       ? i extends readonly [infer i1, infer i2, infer i3, infer i4]
         ? [
-            InvertPatternForExclude<p1, i1>,
-            InvertPatternForExclude<p2, i2>,
-            InvertPatternForExclude<p3, i3>,
-            InvertPatternForExclude<p4, i4>
+            InvertPatternForExclude<p1, i1, empty>,
+            InvertPatternForExclude<p2, i2, empty>,
+            InvertPatternForExclude<p3, i3, empty>,
+            InvertPatternForExclude<p4, i4, empty>
           ]
         : never
       : p extends readonly [infer p1, infer p2, infer p3]
       ? i extends readonly [infer i1, infer i2, infer i3]
         ? [
-            InvertPatternForExclude<p1, i1>,
-            InvertPatternForExclude<p2, i2>,
-            InvertPatternForExclude<p3, i3>
+            InvertPatternForExclude<p1, i1, empty>,
+            InvertPatternForExclude<p2, i2, empty>,
+            InvertPatternForExclude<p3, i3, empty>
           ]
         : never
       : p extends readonly [infer p1, infer p2]
       ? i extends readonly [infer i1, infer i2]
-        ? [InvertPatternForExclude<p1, i1>, InvertPatternForExclude<p2, i2>]
+        ? [
+            InvertPatternForExclude<p1, i1, empty>,
+            InvertPatternForExclude<p2, i2, empty>
+          ]
         : never
       : p extends readonly [infer p1]
       ? i extends readonly [infer i1]
-        ? [InvertPatternForExclude<p1, i1>]
+        ? [InvertPatternForExclude<p1, i1, empty>]
         : never
       : p extends readonly []
       ? []
-      : InvertPatternForExclude<pp, ii>[]
+      : InvertPatternForExclude<pp, ii, empty>[]
     : never
   : p extends Map<infer pk, infer pv>
   ? i extends Map<any, infer iv>
-    ? Map<pk, InvertPatternForExclude<pv, iv>>
+    ? Map<pk, InvertPatternForExclude<pv, iv, empty>>
     : never
   : p extends Set<infer pv>
   ? i extends Set<infer iv>
-    ? Set<InvertPatternForExclude<pv, iv>>
+    ? Set<InvertPatternForExclude<pv, iv, empty>>
     : never
   : IsPlainObject<p> extends true
   ? i extends object
@@ -150,12 +201,12 @@ export type InvertPatternForExclude<p, i> = p extends Matchable<
       : Compute<
           {
             [k in Exclude<keyof p, OptionalKeys<p>>]: k extends keyof i
-              ? InvertPatternForExclude<p[k], i[k]>
+              ? InvertPatternForExclude<p[k], i[k], empty>
               : InvertPattern<p[k]>;
           } &
             {
               [k in OptionalKeys<p>]?: k extends keyof i
-                ? InvertPatternForExclude<p[k], i[k]>
+                ? InvertPatternForExclude<p[k], i[k], empty>
                 : InvertPattern<p[k]>;
             }
         >

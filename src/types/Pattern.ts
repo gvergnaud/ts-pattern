@@ -9,7 +9,7 @@ import {
 } from './helpers';
 import { NoneSelection, SelectionType } from './FindSelected';
 
-export type MatcherType = 'not' | 'optional' | 'regular';
+export type MatcherType = 'not' | 'optional' | 'or' | 'and' | 'regular';
 
 // We use a separate MatcherProtocol type that preserves
 // the type level information (selections and excluded) used
