@@ -381,5 +381,59 @@ describe('and, and or patterns', () => {
       expect(f({ value: { type: 'a', v: 20 } })).toEqual('a');
       expect(f({ value: { type: 'c', v: true } })).toEqual('other');
     });
+
+    it('unions containing selects should consider all selections optional', () => {
+      type Input = {
+        value:
+          | { type: 'a'; n: number }
+          | { type: 'b'; s: string }
+          | { type: 'c'; b: boolean };
+      };
+      const f = (input: Input) => {
+        return match(input)
+          .with(
+            {
+              value: P.union(
+                { type: 'a', n: P.select('n') },
+                { type: 'b', s: P.select('s') }
+              ),
+            },
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  {
+                    n: number | undefined;
+                    s: string | undefined;
+                  }
+                >
+              >;
+              return x;
+            }
+          )
+          .with(
+            {
+              value: P.union({ type: 'a', n: P.select() }, { type: 'b' }),
+            },
+            (x) => {
+              type t = Expect<Equal<typeof x, number | undefined>>;
+              return x;
+            }
+          )
+
+          .with({ value: { type: 'c' } }, () => 'other')
+          .exhaustive();
+      };
+
+      expect(f({ value: { type: 'a', n: 20 } })).toEqual({
+        n: 20,
+        s: undefined,
+      });
+      expect(f({ value: { type: 'b', s: 'str' } })).toEqual({
+        a: undefined,
+        s: 'str',
+      });
+      expect(f({ value: { type: 'c', b: true } })).toEqual('other');
+    });
   });
 });
