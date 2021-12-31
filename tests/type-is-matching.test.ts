@@ -1,4 +1,4 @@
-import { Equal, Expect } from '../src/types/helpers';
+import { Equal, Expect, IsPlainObject, Primitives } from '../src/types/helpers';
 import { IsMatching } from '../src/types/IsMatching';
 import { Option } from './utils';
 
@@ -244,6 +244,26 @@ describe('IsMatching', () => {
               Map<string, { x: ['c'] }>
             >,
             false
+          >
+        >
+      ];
+    });
+
+    it('pattern is a union types', () => {
+      type cases = [
+        Expect<Equal<IsMatching<'d', 'd' | 'e'>, true>>,
+        Expect<Equal<IsMatching<'f', 'd' | 'e'>, false>>,
+        Expect<
+          Equal<
+            IsMatching<
+              | { type: 'd'; value: boolean }
+              | { type: 'e'; value: string[] }
+              | { type: 'f'; value: number[] },
+              {
+                type: 'd' | 'e';
+              }
+            >,
+            true
           >
         >
       ];

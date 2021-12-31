@@ -498,50 +498,25 @@ describe('DeepExclude', () => {
   });
 
   it('should work when `b` contains a union', () => {
-    type x = DeepExclude<
-      {
-        type: 'c';
-        value:
-          | { type: 'd'; value: boolean }
-          | { type: 'e'; value: string[] }
-          | { type: 'f'; value: number[] };
-      },
-      {
-        type: 'c';
-        value: {
-          type: 'd' | 'e';
-        };
-      }
-    >;
-
-    type y = FindUnionsMany<
-      {
-        type: 'c';
-        value:
-          | { type: 'd'; value: boolean }
-          | { type: 'e'; value: string[] }
-          | { type: 'f'; value: number[] };
-      },
-      {
-        type: 'c';
-        value: {
-          type: 'd' | 'e';
-        };
-      }
-    >;
-
-    // This should be true.
-    type w = IsMatching<
-      | { type: 'd'; value: boolean }
-      | { type: 'e'; value: string[] }
-      | { type: 'f'; value: number[] },
-      {
-        type: 'd' | 'e';
-      }
-    >;
-
     type t = Expect<
-      Equal<x, { type: 'c'; value: { type: 'f'; value: number[] } }>
+      Equal<
+        DeepExclude<
+          {
+            type: 'c';
+            value:
+              | { type: 'd'; value: boolean }
+              | { type: 'e'; value: string[] }
+              | { type: 'f'; value: number[] };
+          },
+          {
+            type: 'c';
+            value: {
+              type: 'd' | 'e';
+            };
+          }
+        >,
+        { type: 'c'; value: { type: 'f'; value: number[] } }
+      >
     >;
   });
 });
