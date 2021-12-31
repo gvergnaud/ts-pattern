@@ -60,13 +60,18 @@ export interface ToExclude<a> {
 }
 
 export type UnknownPattern =
-  | [Pattern<unknown>, ...Pattern<unknown>[]]
-  | { [k: string]: Pattern<unknown> }
+  | readonly [Pattern<unknown>, ...Pattern<unknown>[]]
+  | { readonly [k: string]: Pattern<unknown> }
   | Set<Pattern<unknown>>
   | Map<unknown, Pattern<unknown>>
   | Primitives
   | AnyMatchable;
 
+/*
+  using (Compute<a>) to avoid the distribution of `a`
+  if it is a union type, and let people pass subpatterns
+  that match several branches in the union at once.
+*/
 type Keys<a> = keyof Compute<a> extends infer shared
   ? {
       shared: shared;

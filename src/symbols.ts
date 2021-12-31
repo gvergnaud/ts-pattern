@@ -3,7 +3,7 @@
  * Guard, Not, and Select, and AnonymousSelect patterns
  *
  * Symbols have the advantage of not appearing in auto-complete suggestions in
- * user defined patterns, and eliminate the admittedly unlikely risk of property
+ * user defined patterns, and eliminate the risk of property
  * overlap between ts-pattern internals and user defined patterns.
  *
  * These symbols have to be visible to tsc for type inference to work, but
@@ -13,11 +13,9 @@
  * @internal
  */
 
-/** @internal This symbol should only be used by ts-pattern's internals. */
 export const toExclude = Symbol('@ts-pattern/to-exclude');
 export type toExclude = typeof toExclude;
 
-/** @internal This symbol should only be used by ts-pattern's internals. */
 export const matcher = Symbol('@ts-pattern/matcher');
 export type matcher = typeof matcher;
 
