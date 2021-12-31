@@ -93,3 +93,18 @@ export const matchPattern = (
 
   return Object.is(value, pattern);
 };
+
+export const getSelectionKeys = (pattern: Pattern<any>): string[] => {
+  if (isObject(pattern)) {
+    if (isMatchable(pattern)) {
+      return pattern[symbols.matcher]().getSelectionKeys?.() ?? [];
+    }
+    if (Array.isArray(pattern)) return flatMap(pattern, getSelectionKeys);
+    return flatMap(Object.values(pattern), getSelectionKeys);
+  }
+  return [];
+};
+
+// @internal
+export const flatMap = <T, U>(xs: T[], f: (v: T) => U[]): U[] =>
+  xs.reduce<U[]>((acc, p) => acc.concat(f(p)), []);

@@ -1,23 +1,9 @@
-import { matchPattern, isObject, isMatchable } from './helpers';
+import { matchPattern, getSelectionKeys, flatMap } from './helpers';
 import * as symbols from './symbols';
 import { Some } from './types/FindSelected';
 import { GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import { Matchable, Pattern, UnknownPattern } from './types/Pattern';
-
-const flatMap = <T, U>(xs: T[], f: (v: T) => U[]): U[] =>
-  xs.reduce<U[]>((acc, p) => acc.concat(f(p)), []);
-
-const getSelectionKeys = (pattern: Pattern<any>): string[] => {
-  if (isObject(pattern)) {
-    if (isMatchable(pattern)) {
-      return pattern[symbols.matcher]().getSelectionKeys?.() ?? [];
-    }
-    if (Array.isArray(pattern)) return flatMap(pattern, getSelectionKeys);
-    return flatMap(Object.values(pattern), getSelectionKeys);
-  }
-  return [];
-};
 
 export const optional = <
   input,
