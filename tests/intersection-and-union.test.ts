@@ -300,6 +300,50 @@ describe('and, and or patterns', () => {
           .with(P.string, () => 'string')
           .exhaustive();
       };
+
+      const f3 = (n: number | string) => {
+        return (
+          match(n)
+            .with(
+              P.intersection(
+                P.__,
+                P.__,
+                P.when((n): n is number => typeof n === 'number'),
+                P.__,
+                P.select()
+              ),
+              (x) => {
+                type t = Expect<Equal<typeof x, number>>;
+                return 'big number';
+              }
+            )
+            // @ts-expect-error: string isn't handled
+            .exhaustive()
+        );
+      };
+    });
+
+    it('should work with selects', () => {
+      const f2 = (n: number | string) => {
+        return match({ n })
+          .with(
+            {
+              n: P.intersection(
+                P.__,
+                P.__,
+                P.when((n): n is number => typeof n === 'number'),
+                P.__,
+                P.select()
+              ),
+            },
+            (x) => {
+              type t = Expect<Equal<typeof x, number>>;
+              return 'big number';
+            }
+          )
+          .with({ n: P.string }, () => 'string')
+          .exhaustive();
+      };
     });
   });
 });

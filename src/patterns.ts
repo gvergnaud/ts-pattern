@@ -116,6 +116,7 @@ export const intersection = <
         (acc, p) => acc.concat(getSelectionKeys(p)),
         []
       ),
+    matcherType: 'and',
   }),
 });
 
@@ -143,6 +144,7 @@ export const union = <
         (acc, p) => acc.concat(getSelectionKeys(p)),
         []
       ),
+    matcherType: 'or',
   }),
 });
 

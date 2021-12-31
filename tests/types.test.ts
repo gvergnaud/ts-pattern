@@ -247,7 +247,7 @@ describe('types', () => {
         return 'ok';
       })
       .with([P.string], (x) => {
-        type t = Expect<Equal<typeof x, string[]>>;
+        type t = Expect<Equal<typeof x, [string]>>;
         return 'ok';
       })
       .with([P.number, P.number], (x) => {
