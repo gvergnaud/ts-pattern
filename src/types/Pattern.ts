@@ -79,73 +79,111 @@ type Keys<a> = keyof Compute<a> extends infer shared
     }
   : never;
 
+type HasObjects<a> = true extends (a extends object ? IsPlainObject<a> : false)
+  ? true
+  : false;
+
+type FilterObjects<a> = a extends object
+  ? IsPlainObject<a> extends true
+    ? a
+    : never
+  : never;
+
+type ExcludeObjects<a> = a extends object
+  ? IsPlainObject<a> extends true
+    ? never
+    : a
+  : a;
+
+type PartitionObjects<a> = {
+  objects: FilterObjects<a>;
+  others: ExcludeObjects<a>;
+};
+
+type StructuralPattern<a> =
+  // If all branches are objects, then we match
+  // on properties that all objects have (usually the discriminants).
+  [IsUnion<a>, HasObjects<a>] extends [true, true]
+    ? PartitionObjects<a> extends {
+        objects: infer objects;
+        others: infer othersValues;
+      }
+      ?
+          | (Keys<objects> extends {
+              shared: infer sharedKeys;
+              others: infer otherKeys;
+            }
+              ? Compute<
+                  {
+                    readonly [k in sharedKeys & keyof objects]?: Pattern<
+                      objects[k]
+                    >;
+                  } &
+                    {
+                      readonly [k in Cast<
+                        otherKeys,
+                        string
+                      >]?: objects extends any
+                        ? k extends keyof objects
+                          ? Pattern<objects[k]>
+                          : never
+                        : never;
+                    }
+                >
+              : never)
+          | ([othersValues] extends [never]
+              ? never
+              : othersValues extends any
+              ? // No Matchable here because it's already handled by the
+                // the one at the current level
+                StructuralPattern<othersValues>
+              : never)
+      : never
+    : a extends Primitives
+    ? a
+    : unknown extends a
+    ? UnknownPattern
+    : a extends readonly (infer i)[]
+    ? a extends readonly [infer a1, infer a2, infer a3, infer a4, infer a5]
+      ? readonly [
+          Pattern<a1>,
+          Pattern<a2>,
+          Pattern<a3>,
+          Pattern<a4>,
+          Pattern<a5>
+        ]
+      : a extends readonly [infer a1, infer a2, infer a3, infer a4]
+      ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>, Pattern<a4>]
+      : a extends readonly [infer a1, infer a2, infer a3]
+      ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>]
+      : a extends readonly [infer a1, infer a2]
+      ? readonly [Pattern<a1>, Pattern<a2>]
+      : a extends readonly [infer a1]
+      ? readonly [Pattern<a1>]
+      :
+          | readonly []
+          | readonly [Pattern<i>]
+          | readonly [Pattern<i>, Pattern<i>]
+          | readonly [Pattern<i>, Pattern<i>, Pattern<i>]
+          | readonly [Pattern<i>, Pattern<i>, Pattern<i>, Pattern<i>]
+          | readonly [
+              Pattern<i>,
+              Pattern<i>,
+              Pattern<i>,
+              Pattern<i>,
+              Pattern<i>
+            ]
+    : a extends Map<infer k, infer v>
+    ? Map<k, Pattern<v>>
+    : a extends Set<infer v>
+    ? Set<Pattern<v>>
+    : a extends object
+    ? { readonly [k in keyof a]?: Pattern<a[k]> }
+    : a;
+
 /**
  * ### Pattern
  * Patterns can be any (nested) javascript value.
  * They can also be a "wildcards", like `__`.
  */
-export type Pattern<a> =
-  | Matchable<a, unknown, any, any>
-  // If all branches are objects, then we match
-  // on properties that all objects have (usually the discriminants).
-  | ([IsUnion<a>, IsPlainObject<a>] extends [true, true]
-      ? /*
-        using (Compute<a>) to avoid the distribution of `a`
-        if it is a union type, and let people pass subpatterns
-        that match several branches in the union at once.
-      */
-        Keys<a> extends { shared: infer shared; others: infer others }
-        ? Compute<
-            {
-              readonly [k in shared & keyof a]?: Pattern<a[k]>;
-            } &
-              {
-                readonly [k in Cast<others, string>]?: a extends any
-                  ? k extends keyof a
-                    ? Pattern<a[k]>
-                    : never
-                  : never;
-              }
-          >
-        : never
-      : a extends Primitives
-      ? a
-      : unknown extends a
-      ? UnknownPattern
-      : a extends readonly (infer i)[]
-      ? a extends readonly [infer a1, infer a2, infer a3, infer a4, infer a5]
-        ? readonly [
-            Pattern<a1>,
-            Pattern<a2>,
-            Pattern<a3>,
-            Pattern<a4>,
-            Pattern<a5>
-          ]
-        : a extends readonly [infer a1, infer a2, infer a3, infer a4]
-        ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>, Pattern<a4>]
-        : a extends readonly [infer a1, infer a2, infer a3]
-        ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>]
-        : a extends readonly [infer a1, infer a2]
-        ? readonly [Pattern<a1>, Pattern<a2>]
-        : a extends readonly [infer a1]
-        ? readonly [Pattern<a1>]
-        :
-            | readonly []
-            | readonly [Pattern<i>]
-            | readonly [Pattern<i>, Pattern<i>]
-            | readonly [Pattern<i>, Pattern<i>, Pattern<i>]
-            | readonly [Pattern<i>, Pattern<i>, Pattern<i>, Pattern<i>]
-            | readonly [
-                Pattern<i>,
-                Pattern<i>,
-                Pattern<i>,
-                Pattern<i>,
-                Pattern<i>
-              ]
-      : a extends Map<infer k, infer v>
-      ? Map<k, Pattern<v>>
-      : a extends Set<infer v>
-      ? Set<Pattern<v>>
-      : a extends object
-      ? { readonly [k in keyof a]?: Pattern<a[k]> }
-      : a);
+export type Pattern<a> = Matchable<a, unknown, any, any> | StructuralPattern<a>;

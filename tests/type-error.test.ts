@@ -57,7 +57,6 @@ describe('type errors', () => {
         // @ts-expect-error: value is a number
         .with({ kind: 'some', value: 'string' }, () => '')
         .with({ kind: 'none' }, () => 0)
-        // @ts-expect-error: value is a number
         .exhaustive();
   });
 });
