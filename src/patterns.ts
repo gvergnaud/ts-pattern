@@ -1,6 +1,6 @@
 import { matchPattern, isObject, isMatchable } from './helpers';
 import * as symbols from './symbols';
-import { None, Some } from './types/FindSelected';
+import { Some } from './types/FindSelected';
 import { GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import { Matchable, Pattern, UnknownPattern } from './types/Pattern';

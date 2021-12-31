@@ -8,7 +8,7 @@ export type None = {
   type: 'none';
 };
 export type Some<key extends string> = {
-  type: 'select';
+  type: 'some';
   key: key;
 };
 
