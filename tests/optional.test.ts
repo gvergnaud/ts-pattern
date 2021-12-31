@@ -66,6 +66,17 @@ describe('optional', () => {
           return '1';
         })
         .with({ a: P.not(undefined) }, (x) => {
+          type t = Expect<
+            Equal<
+              typeof x,
+              {
+                a: {
+                  name: string;
+                  age: number;
+                };
+              }
+            >
+          >;
           return '1';
         })
         .exhaustive()
