@@ -45,7 +45,7 @@ export type InvertPattern<p> = p extends Matchable<
   any
 >
   ? matcherType extends 'not'
-    ? ToExclude<narrowed>
+    ? ToExclude<InvertPattern<narrowed>>
     : matcherType extends 'array'
     ? InvertPattern<narrowed>[]
     : matcherType extends 'optional'
@@ -134,11 +134,15 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
   infer excluded
 >
   ? matcherType extends 'not'
-    ? DeepExclude<i, narrowed>
+    ? InvertPatternForExclude<narrowed, i, unknown> extends infer inv
+      ? [inv] extends [never]
+        ? empty
+        : DeepExclude<i, inv>
+      : empty
     : matcherType extends 'array'
     ? i extends readonly (infer ii)[]
       ? InvertPatternForExclude<narrowed, ii, empty>[]
-      : never
+      : empty
     : matcherType extends 'optional'
     ? InvertPatternForExclude<narrowed, i, empty> | undefined
     : matcherType extends 'and'
@@ -151,7 +155,7 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
     ? p
     : IsLiteral<i> extends true
     ? p
-    : never
+    : empty
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]
     ? p extends readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
@@ -163,7 +167,7 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
             InvertPatternForExclude<p4, i4, empty>,
             InvertPatternForExclude<p5, i5, empty>
           ]
-        : never
+        : empty
       : p extends readonly [infer p1, infer p2, infer p3, infer p4]
       ? i extends readonly [infer i1, infer i2, infer i3, infer i4]
         ? [
@@ -172,7 +176,7 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
             InvertPatternForExclude<p3, i3, empty>,
             InvertPatternForExclude<p4, i4, empty>
           ]
-        : never
+        : empty
       : p extends readonly [infer p1, infer p2, infer p3]
       ? i extends readonly [infer i1, infer i2, infer i3]
         ? [
@@ -180,34 +184,34 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
             InvertPatternForExclude<p2, i2, empty>,
             InvertPatternForExclude<p3, i3, empty>
           ]
-        : never
+        : empty
       : p extends readonly [infer p1, infer p2]
       ? i extends readonly [infer i1, infer i2]
         ? [
             InvertPatternForExclude<p1, i1, empty>,
             InvertPatternForExclude<p2, i2, empty>
           ]
-        : never
+        : empty
       : p extends readonly [infer p1]
       ? i extends readonly [infer i1]
         ? [InvertPatternForExclude<p1, i1, empty>]
-        : never
+        : empty
       : p extends readonly []
       ? []
       : InvertPatternForExclude<pp, ii, empty>[]
-    : never
+    : empty
   : p extends Map<infer pk, infer pv>
   ? i extends Map<any, infer iv>
     ? Map<pk, InvertPatternForExclude<pv, iv, empty>>
-    : never
+    : empty
   : p extends Set<infer pv>
   ? i extends Set<infer iv>
     ? Set<InvertPatternForExclude<pv, iv, empty>>
-    : never
+    : empty
   : IsPlainObject<p> extends true
   ? i extends object
     ? [keyof p & keyof i] extends [never]
-      ? never
+      ? empty
       : Compute<
           {
             [k in Exclude<keyof p, OptionalKeys<p>>]: k extends keyof i
@@ -220,5 +224,5 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
                 : InvertPattern<p[k]>;
             }
         >
-    : never
-  : never;
+    : empty
+  : empty;

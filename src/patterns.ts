@@ -138,12 +138,14 @@ export const union = <
   }),
 });
 
+type Not<input, narrowed> = Matchable<input, narrowed>;
+
 export const not = <
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<input>
 >(
   pattern: p
-): Matchable<input, InvertPattern<p>, 'not'> => ({
+): Matchable<input, p, 'not'> => ({
   [symbols.matcher]: () => ({
     match: (value) => ({ matched: !matchPattern(pattern, value, () => {}) }),
     getSelectionKeys: () => [],
@@ -151,9 +153,11 @@ export const not = <
   }),
 });
 
+type Gard<input, narrowed> = Matchable<input, narrowed>;
+
 export const when = <input, narrowed extends input = never>(
   predicate: GuardFunction<input, narrowed>
-): Matchable<input, narrowed> => ({
+): Gard<input, narrowed> => ({
   [symbols.matcher]: () => ({
     match: (value) => ({ matched: predicate(value) }),
   }),
