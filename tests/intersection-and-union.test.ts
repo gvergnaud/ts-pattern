@@ -435,5 +435,125 @@ describe('and, and or patterns', () => {
       });
       expect(f({ value: { type: 'c', b: true } })).toEqual('other');
     });
+
+    it('P.not should work with unions and intersections', () => {
+      type Input = {
+        value:
+          | { type: 'a'; n: number }
+          | { type: 'b'; s: string }
+          | { type: 'c'; b: boolean };
+      };
+      const f = (input: Input) => {
+        return match(input)
+          .with({ value: P.not({ type: P.union('a', 'b') }) }, (x) => {
+            type t = Expect<
+              Equal<typeof x, { value: { type: 'c'; b: boolean } }>
+            >;
+            return 'not a or b';
+          })
+          .with({ value: P.union({ type: 'a' }, { type: 'b' }) }, (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                { value: { type: 'a'; n: number } | { type: 'b'; s: string } }
+              >
+            >;
+            return 'a or b';
+          })
+          .exhaustive();
+      };
+
+      expect(f({ value: { type: 'b', s: 'str' } })).toEqual('a or b');
+      expect(f({ value: { type: 'c', b: true } })).toEqual('not a or b');
+    });
+
+    it('P.array should work with unions and intersections', () => {
+      type Input = {
+        value: (
+          | { type: 'a'; n: number }
+          | { type: 'b'; s: string }
+          | { type: 'c'; b: boolean }
+        )[];
+      };
+      const f = (input: Input) => {
+        return match(input)
+          .with(
+            {
+              value: P.array({ type: P.union('a', 'b') }),
+            },
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  {
+                    value: (
+                      | { type: 'a'; n: number }
+                      | { type: 'b'; s: string }
+                    )[];
+                  }
+                >
+              >;
+              return x.value.map((x) => x.type).join(',');
+            }
+          )
+          .with({ value: P.array(P.__) }, () => 'other')
+          .exhaustive();
+      };
+
+      expect(
+        f({
+          value: [
+            { type: 'b', s: 'str' },
+            { type: 'a', n: 2 },
+          ],
+        })
+      ).toEqual('b,a');
+      expect(
+        f({
+          value: [
+            { type: 'a', n: 2 },
+            { type: 'c', b: true },
+          ],
+        })
+      ).toEqual('other');
+    });
+
+    it('P.optional should work with unions and intersections', () => {
+      type Input = {
+        value?:
+          | { type: 'a'; n: number }
+          | { type: 'b'; s: string }
+          | { type: 'c'; b: boolean };
+      };
+      const f = (input: Input) => {
+        return match(input)
+          .with({ value: P.optional({ type: P.union('a', 'b') }) }, (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                {
+                  value?:
+                    | { type: 'a'; n: number }
+                    | { type: 'b'; s: string }
+                    | undefined;
+                }
+              >
+            >;
+            return 'maybe a or b';
+          })
+          .with({ value: { type: 'c' } }, (x) => {
+            type t = Expect<
+              Equal<typeof x, { value: { type: 'c'; b: boolean } }>
+            >;
+            return 'c';
+          })
+          .exhaustive();
+      };
+
+      expect(f({ value: { type: 'a', n: 20 } })).toEqual('maybe a or b');
+      expect(f({ value: { type: 'b', s: 'str' } })).toEqual('maybe a or b');
+      expect(f({})).toEqual('maybe a or b');
+      expect(f({ value: { type: 'c', b: true } })).toEqual('c');
+    });
   });
 });
