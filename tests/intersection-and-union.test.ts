@@ -323,13 +323,12 @@ describe('and, and or patterns', () => {
       };
     });
 
-    it('should work with selects', () => {
-      const f2 = (n: number | string) => {
+    it('intersection should work with selects', () => {
+      const f = (n: number | string) => {
         return match({ n })
           .with(
             {
               n: P.intersection(
-                P.__,
                 P.__,
                 P.when((n): n is number => typeof n === 'number'),
                 P.__,
@@ -338,12 +337,49 @@ describe('and, and or patterns', () => {
             },
             (x) => {
               type t = Expect<Equal<typeof x, number>>;
-              return 'big number';
+              return x;
             }
           )
           .with({ n: P.string }, () => 'string')
           .exhaustive();
       };
+
+      expect(f(20)).toEqual(20);
+      expect(f('20')).toEqual('string');
+    });
+
+    it('union & intersections should work with selects', () => {
+      type Input = {
+        value:
+          | { type: 'a'; v: number }
+          | { type: 'b'; v: string }
+          | { type: 'c'; v: boolean };
+      };
+      const f = (input: Input) => {
+        return match(input)
+          .with(
+            {
+              value: P.intersection(
+                P.select(),
+                P.union({ type: 'a' }, { type: 'b' })
+              ),
+            },
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  { type: 'a'; v: number } | { type: 'b'; v: string }
+                >
+              >;
+              return x.type;
+            }
+          )
+          .with({ value: { type: 'c' } }, () => 'other')
+          .exhaustive();
+      };
+
+      expect(f({ value: { type: 'a', v: 20 } })).toEqual('a');
+      expect(f({ value: { type: 'c', v: true } })).toEqual('other');
     });
   });
 });

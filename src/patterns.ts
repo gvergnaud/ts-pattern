@@ -1,28 +1,26 @@
 import { matchPattern, isObject, isMatchable } from './helpers';
 import * as symbols from './symbols';
 import {
+  EverySelection,
   ListPatternSelection,
   OptionalPatternSelection,
   Select,
+  SomeSelection,
 } from './types/FindSelected';
 import { GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import { Matchable, Pattern, UnknownPattern } from './types/Pattern';
+
+const flatMap = <T, U>(xs: T[], f: (v: T) => U[]): U[] =>
+  xs.reduce<U[]>((acc, p) => acc.concat(f(p)), []);
 
 const getSelectionKeys = (pattern: Pattern<any>): string[] => {
   if (isObject(pattern)) {
     if (isMatchable(pattern)) {
       return pattern[symbols.matcher]().getSelectionKeys?.() ?? [];
     }
-    if (Array.isArray(pattern))
-      return pattern.reduce<string[]>(
-        (acc, p) => acc.concat(getSelectionKeys(p)),
-        []
-      );
-    return Object.values(pattern).reduce<string[]>(
-      (acc, p) => acc.concat(getSelectionKeys(p)),
-      []
-    );
+    if (Array.isArray(pattern)) return flatMap(pattern, getSelectionKeys);
+    return flatMap(Object.values(pattern), getSelectionKeys);
   }
   return [];
 };
@@ -99,7 +97,7 @@ export const intersection = <
     : [Pattern<input>, ...Pattern<input>[]]
 >(
   ...patterns: ps
-): Matchable<input, ps, 'and'> => ({
+): Matchable<input, ps, 'and', EverySelection<ps>> => ({
   [symbols.matcher]: () => ({
     match: (value) => {
       let selections: Record<string, unknown[]> = {};
@@ -127,13 +125,16 @@ export const union = <
     : [Pattern<input>, ...Pattern<input>[]]
 >(
   ...patterns: ps
-): Matchable<input, ps, 'or'> => ({
+): Matchable<input, ps, 'or', SomeSelection<ps>> => ({
   [symbols.matcher]: () => ({
     match: (value) => {
       let selections: Record<string, unknown[]> = {};
       const selector = (key: string, value: any) => {
         selections[key] = value;
       };
+      flatMap(patterns as UnknownPattern[], getSelectionKeys).forEach((key) =>
+        selector(key, undefined)
+      );
       const matched = (patterns as UnknownPattern[]).some((p) =>
         matchPattern(p, value, selector)
       );
