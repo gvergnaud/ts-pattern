@@ -62,6 +62,10 @@ export type ExtractPreciseValue<a, b> = unknown extends b
             '0' | '1'
           >
         : LeastUpperBound<a, b>
+      : b extends readonly [infer b1]
+      ? a extends readonly [infer a1]
+        ? ExcludeObjectIfContainsNever<[ExtractPreciseValue<a1, b1>], '0'>
+        : LeastUpperBound<a, b>
       : ExtractPreciseValue<aItem, bItem> extends infer preciseValue
       ? [preciseValue] extends [never]
         ? never

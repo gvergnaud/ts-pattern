@@ -191,4 +191,16 @@ describe('tuple ([a, b])', () => {
 
     expect(output).toEqual('a + c');
   });
+
+  it('should work with nested tuples', () => {
+    type State = {};
+    type Msg = [type: 'Login'] | [type: 'UrlChange', url: string];
+
+    function update(state: State, msg: Msg) {
+      return match<[State, Msg], string>([state, msg])
+        .with([P.__, ['Login']], () => 'ok')
+        .with([P.__, ['UrlChange', P.select()]], () => 'not ok')
+        .exhaustive();
+    }
+  });
 });
