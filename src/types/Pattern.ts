@@ -7,9 +7,15 @@ import {
   IsUnion,
   ValueOf,
 } from './helpers';
-import { NoneSelection, SelectionType } from './FindSelected';
+import { None, SelectionType } from './FindSelected';
 
-export type MatcherType = 'not' | 'optional' | 'or' | 'and' | 'regular';
+export type MatcherType =
+  | 'not'
+  | 'optional'
+  | 'or'
+  | 'and'
+  | 'array'
+  | 'default';
 
 // We use a separate MatcherProtocol type that preserves
 // the type level information (selections and excluded) used
@@ -18,8 +24,8 @@ export type MatcherProtocol<
   input,
   narrowed,
   // Type of what this pattern selected from the input
-  matcherType extends MatcherType = 'regular',
-  selections extends SelectionType = NoneSelection,
+  matcherType extends MatcherType = 'default',
+  selections extends SelectionType = None,
   // Type to exclude from the input union because
   // it has been fully matched by this pattern
   excluded = narrowed
@@ -38,8 +44,8 @@ export interface Matchable<
   input,
   narrowed,
   // Type of what this pattern selected from the input
-  matcherType extends MatcherType = 'regular',
-  selections extends SelectionType = NoneSelection,
+  matcherType extends MatcherType = 'default',
+  selections extends SelectionType = None,
   // Type to exclude from the input union because
   // it has been fully matched by this pattern
   excluded = narrowed

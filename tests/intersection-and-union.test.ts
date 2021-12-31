@@ -477,10 +477,22 @@ describe('and, and or patterns', () => {
       };
       const f = (input: Input) => {
         return match(input)
+          .with({ value: P.array({ type: P.union('a', 'b') }) }, (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                {
+                  value: (
+                    | { type: 'a'; n: number }
+                    | { type: 'b'; s: string }
+                  )[];
+                }
+              >
+            >;
+            return x.value.map((x) => x.type).join(',');
+          })
           .with(
-            {
-              value: P.array({ type: P.union('a', 'b') }),
-            },
+            { value: P.array(P.union({ type: 'a' }, { type: 'b' })) },
             (x) => {
               type t = Expect<
                 Equal<
@@ -527,20 +539,23 @@ describe('and, and or patterns', () => {
       };
       const f = (input: Input) => {
         return match(input)
-          .with({ value: P.optional({ type: P.union('a', 'b') }) }, (x) => {
-            type t = Expect<
-              Equal<
-                typeof x,
-                {
-                  value?:
-                    | { type: 'a'; n: number }
-                    | { type: 'b'; s: string }
-                    | undefined;
-                }
-              >
-            >;
-            return 'maybe a or b';
-          })
+          .with(
+            { value: P.optional(P.union({ type: 'a' }, { type: 'b' })) },
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  {
+                    value?:
+                      | { type: 'a'; n: number }
+                      | { type: 'b'; s: string }
+                      | undefined;
+                  }
+                >
+              >;
+              return 'maybe a or b';
+            }
+          )
           .with({ value: { type: 'c' } }, (x) => {
             type t = Expect<
               Equal<typeof x, { value: { type: 'c'; b: boolean } }>

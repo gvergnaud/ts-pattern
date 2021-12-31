@@ -1,12 +1,6 @@
 import { matchPattern, isObject, isMatchable } from './helpers';
 import * as symbols from './symbols';
-import {
-  EverySelection,
-  ListPatternSelection,
-  OptionalPatternSelection,
-  Select,
-  SomeSelection,
-} from './types/FindSelected';
+import { None, Some } from './types/FindSelected';
 import { GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import { Matchable, Pattern, UnknownPattern } from './types/Pattern';
@@ -30,12 +24,7 @@ export const optional = <
   p extends unknown extends input ? UnknownPattern : Pattern<input>
 >(
   pattern: p
-): Matchable<
-  input,
-  InvertPattern<p> | undefined,
-  'optional',
-  OptionalPatternSelection<p>
-> => {
+): Matchable<input, p, 'optional'> => {
   return {
     [symbols.matcher]() {
       return {
@@ -67,7 +56,7 @@ export const array = <
   p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
 >(
   pattern: p
-): Matchable<input, InvertPattern<p[]>, 'regular', ListPatternSelection<p>> => {
+): Matchable<input, p, 'array'> => {
   return {
     [symbols.matcher]() {
       return {
@@ -97,7 +86,7 @@ export const intersection = <
     : [Pattern<input>, ...Pattern<input>[]]
 >(
   ...patterns: ps
-): Matchable<input, ps, 'and', EverySelection<ps>> => ({
+): Matchable<input, ps, 'and'> => ({
   [symbols.matcher]: () => ({
     match: (value) => {
       let selections: Record<string, unknown[]> = {};
@@ -125,7 +114,7 @@ export const union = <
     : [Pattern<input>, ...Pattern<input>[]]
 >(
   ...patterns: ps
-): Matchable<input, ps, 'or', SomeSelection<ps>> => ({
+): Matchable<input, ps, 'or'> => ({
   [symbols.matcher]: () => ({
     match: (value) => {
       let selections: Record<string, unknown[]> = {};
@@ -176,16 +165,16 @@ export const when = <input, narrowed extends input = never>(
 export function select(): Matchable<
   unknown,
   never,
-  'regular',
-  Select<symbols.anonymousSelectKey>,
+  'default',
+  Some<symbols.anonymousSelectKey>,
   unknown
 >;
 export function select<k extends string>(
   key: k
-): Matchable<unknown, never, 'regular', Select<k>, unknown>;
+): Matchable<unknown, never, 'default', Some<k>, unknown>;
 export function select<k extends string>(
   key?: k
-): Matchable<unknown, never, 'regular', Select<k>, unknown> {
+): Matchable<unknown, never, 'default', Some<k>, unknown> {
   return key === undefined
     ? {
         [symbols.matcher]() {

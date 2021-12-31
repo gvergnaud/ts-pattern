@@ -4,41 +4,15 @@ import type { Matchable, Pattern } from './Pattern';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 
-export type ListPatternSelection<p extends Pattern<any>> = {
-  type: 'listPattern';
-  pattern: p;
-};
-
-export type OptionalPatternSelection<p extends Pattern<any>> = {
-  type: 'optionalPattern';
-  pattern: p;
-};
-
-export type SomeSelection<ps extends Pattern<any>[]> = {
-  type: 'someSelection';
-  patterns: ps;
-};
-
-export type EverySelection<ps extends Pattern<any>[]> = {
-  type: 'everySelection';
-  patterns: ps;
-};
-
-export type NoneSelection = {
+export type None = {
   type: 'none';
 };
-export type Select<key extends string> = {
+export type Some<key extends string> = {
   type: 'select';
   key: key;
 };
 
-export type SelectionType =
-  | OptionalPatternSelection<any>
-  | ListPatternSelection<any>
-  | NoneSelection
-  | SomeSelection<any>
-  | EverySelection<any>
-  | Select<string>;
+export type SelectionType = None | Some<string>;
 
 type MapOptional<selections> = {
   [k in keyof selections]: selections[k] extends [infer v, infer subpath]
@@ -67,21 +41,21 @@ export type FindSelectionUnion<
   path extends any[] = []
 > = IsAny<i> extends true
   ? never
-  : p extends Matchable<any, any, infer matcherType, infer sel>
-  ? sel extends NoneSelection
-    ? never
-    : sel extends Select<infer k>
-    ? { [kk in k]: [i, path] }
-    : sel extends OptionalPatternSelection<infer pattern>
-    ? MapOptional<FindSelectionUnion<i, pattern>>
-    : sel extends ListPatternSelection<infer pattern>
+  : p extends Matchable<any, infer pattern, infer matcherType, infer sel>
+  ? matcherType extends 'array'
     ? i extends (infer ii)[]
       ? MapList<FindSelectionUnion<ii, pattern>>
       : never
-    : sel extends SomeSelection<infer patterns>
-    ? MapOptional<ReduceFindSelectionUnion<i, patterns>>
-    : sel extends EverySelection<infer patterns>
-    ? ReduceFindSelectionUnion<i, patterns>
+    : matcherType extends 'optional'
+    ? MapOptional<FindSelectionUnion<i, pattern>>
+    : matcherType extends 'or'
+    ? MapOptional<ReduceFindSelectionUnion<i, Cast<pattern, any[]>>>
+    : matcherType extends 'and'
+    ? ReduceFindSelectionUnion<i, Cast<pattern, any[]>>
+    : sel extends None
+    ? never
+    : sel extends Some<infer k>
+    ? { [kk in k]: [i, path] }
     : never
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]

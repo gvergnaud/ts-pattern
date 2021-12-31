@@ -1,5 +1,3 @@
-import { DeepExclude } from '../src/types/DeepExclude';
-import { NoneSelection } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
 import { InvertPatternForExclude } from '../src/types/InvertPattern';
 import { Matchable } from '../src/types/Pattern';

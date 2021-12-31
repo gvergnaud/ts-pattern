@@ -24,8 +24,8 @@ describe('optional', () => {
   it('should support a nested pattern', () => {
     type Input = { a?: { name: string; age: number } } | { b: '' };
 
-    expect(
-      match<Input>({})
+    const f = (input: Input) =>
+      match<Input>(input)
         .with({ a: P.optional({ name: 'Hello' }) }, (x) => {
           type t = Expect<
             Equal<typeof x, { a?: { name: string; age: number } }>
@@ -35,8 +35,13 @@ describe('optional', () => {
         .with({ b: P.string }, (x) => {
           return false;
         })
-        .exhaustive()
-    ).toBe(true);
+        .with({ a: { name: P.string } }, () => false)
+        .exhaustive();
+
+    // Not Hello
+    expect(f({ a: { name: 'Bonjour', age: 20 } })).toBe(false);
+    expect(f({ a: { name: 'Hello', age: 20 } })).toBe(true);
+    expect(f({})).toBe(true);
   });
 
   it('should support anonymous select', () => {

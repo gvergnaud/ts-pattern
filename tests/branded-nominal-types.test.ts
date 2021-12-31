@@ -8,7 +8,7 @@ describe('Branded strings', () => {
     fooBarId: BrandedId;
   };
 
-  it('should treat branded strings as regular string, and not as objects', () => {
+  it('should treat branded strings as default string, and not as objects', () => {
     const state: State = {
       fooBar: { type: 'foo', id: '' as BrandedId, value: 'value' },
       fooBarId: '' as BrandedId,
