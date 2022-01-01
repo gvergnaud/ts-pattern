@@ -11,7 +11,7 @@ import {
   OrP,
   NotP,
   GuardP,
-  SelectP,
+  SelectP
 } from './types/Pattern';
 
 export const optional = <
@@ -29,18 +29,16 @@ export const optional = <
             selections[key] = value;
           };
           if (value === undefined) {
-            getSelectionKeys(pattern).forEach((key) =>
-              selector(key, undefined)
-            );
+            getSelectionKeys(pattern).forEach(key => selector(key, undefined));
             return { matched: true, selections };
           }
           const matched = matchPattern(pattern, value, selector);
           return { matched, selections };
         },
         getSelectionKeys: () => getSelectionKeys(pattern),
-        matcherType: 'optional',
+        matcherType: 'optional'
       };
-    },
+    }
   };
 };
 
@@ -62,15 +60,13 @@ export const array = <
           const selector = (key: string, value: unknown) => {
             selections[key] = (selections[key] || []).concat([value]);
           };
-          const matched = value.every((v) =>
-            matchPattern(pattern, v, selector)
-          );
+          const matched = value.every(v => matchPattern(pattern, v, selector));
 
           return { matched, selections };
         },
-        getSelectionKeys: () => getSelectionKeys(pattern),
+        getSelectionKeys: () => getSelectionKeys(pattern)
       };
-    },
+    }
   };
 };
 
@@ -83,12 +79,12 @@ export const intersection = <
   ...patterns: ps
 ): AndP<input, ps> => ({
   [symbols.matcher]: () => ({
-    match: (value) => {
+    match: value => {
       let selections: Record<string, unknown[]> = {};
       const selector = (key: string, value: any) => {
         selections[key] = value;
       };
-      const matched = (patterns as UnknownPattern[]).every((p) =>
+      const matched = (patterns as UnknownPattern[]).every(p =>
         matchPattern(p, value, selector)
       );
       return { matched, selections };
@@ -98,8 +94,8 @@ export const intersection = <
         (acc, p) => acc.concat(getSelectionKeys(p)),
         []
       ),
-    matcherType: 'and',
-  }),
+    matcherType: 'and'
+  })
 });
 
 export const union = <
@@ -111,15 +107,15 @@ export const union = <
   ...patterns: ps
 ): OrP<input, ps> => ({
   [symbols.matcher]: () => ({
-    match: (value) => {
+    match: value => {
       let selections: Record<string, unknown[]> = {};
       const selector = (key: string, value: any) => {
         selections[key] = value;
       };
-      flatMap(patterns as UnknownPattern[], getSelectionKeys).forEach((key) =>
+      flatMap(patterns as UnknownPattern[], getSelectionKeys).forEach(key =>
         selector(key, undefined)
       );
-      const matched = (patterns as UnknownPattern[]).some((p) =>
+      const matched = (patterns as UnknownPattern[]).some(p =>
         matchPattern(p, value, selector)
       );
       return { matched, selections };
@@ -129,8 +125,8 @@ export const union = <
         (acc, p) => acc.concat(getSelectionKeys(p)),
         []
       ),
-    matcherType: 'or',
-  }),
+    matcherType: 'or'
+  })
 });
 
 export const not = <
@@ -140,18 +136,18 @@ export const not = <
   pattern: p
 ): NotP<input, p> => ({
   [symbols.matcher]: () => ({
-    match: (value) => ({ matched: !matchPattern(pattern, value, () => {}) }),
+    match: value => ({ matched: !matchPattern(pattern, value, () => {}) }),
     getSelectionKeys: () => [],
-    matcherType: 'not',
-  }),
+    matcherType: 'not'
+  })
 });
 
 export const when = <input, narrowed extends input = never>(
   predicate: GuardFunction<input, narrowed>
 ): GuardP<input, narrowed> => ({
   [symbols.matcher]: () => ({
-    match: (value) => ({ matched: predicate(value) }),
-  }),
+    match: value => ({ matched: predicate(value) })
+  })
 });
 
 export function select(): SelectP<symbols.anonymousSelectKey>;
@@ -162,13 +158,13 @@ export function select<k extends string>(
   return {
     [symbols.matcher]() {
       return {
-        match: (value) => ({
+        match: value => ({
           matched: true,
-          selections: { [key ?? symbols.anonymousSelectKey]: value },
+          selections: { [key ?? symbols.anonymousSelectKey]: value }
         }),
-        getSelectionKeys: () => [key ?? symbols.anonymousSelectKey],
+        getSelectionKeys: () => [key ?? symbols.anonymousSelectKey]
       };
-    },
+    }
   };
 }
 

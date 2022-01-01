@@ -4,12 +4,13 @@
     "declarationDir": ".",
     "outDir": "lib/",
     "target": "esnext",
-    "module": "esnext",
+    "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "moduleResolution": "node"
   },
-  "include": ["src/"],
-  "exclude": ["tests/", "lib/"]
+  "exclude": ["src/"]
 }

@@ -58,11 +58,11 @@ const builder = <i, o>(
 
       const doesMatch = (value: i) =>
         Boolean(
-          patterns.some((pattern) =>
+          patterns.some(pattern =>
             matchPattern(pattern, value, (key, value) => {
               selected[key] = value;
             })
-          ) && predicates.every((predicate) => predicate(value as any))
+          ) && predicates.every(predicate => predicate(value as any))
         );
 
       return builder(
@@ -71,13 +71,13 @@ const builder = <i, o>(
           {
             test: doesMatch,
             handler,
-            select: (value) =>
+            select: value =>
               Object.keys(selected).length
                 ? symbols.anonymousSelectKey in selected
                   ? selected[symbols.anonymousSelectKey]
                   : selected
-                : value,
-          },
+                : value
+          }
         ])
       );
     },
@@ -92,8 +92,8 @@ const builder = <i, o>(
           {
             test: predicate,
             handler,
-            select: (value) => value,
-          },
+            select: value => value
+          }
         ])
       ),
 
@@ -106,13 +106,13 @@ const builder = <i, o>(
           {
             test: () => true,
             handler,
-            select: (value) => value,
-          },
+            select: value => value
+          }
         ])
       ).run(),
 
     exhaustive: () => run(),
 
-    run,
+    run
   };
 };
