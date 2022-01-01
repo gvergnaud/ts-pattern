@@ -1,7 +1,9 @@
 import { Primitives, IsPlainObject, IsUnion } from './helpers';
 
-export type IsMatching<a, p> = IsUnion<p> extends true
-  ? true extends (p extends any ? IsMatching<a, p> : never)
+export type IsMatching<a, p> = true extends IsUnion<a> | IsUnion<p>
+  ? true extends (
+      p extends any ? (a extends any ? IsMatching<a, p> : never) : never
+    )
     ? true
     : false
   : // Special case for unknown, because this is the type

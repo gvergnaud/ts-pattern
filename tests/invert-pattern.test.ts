@@ -49,15 +49,28 @@ describe('InvertPatternForExclude', () => {
     ];
   });
 
-  it('should work with tuples', () => {
-    type cases = [
-      Expect<
-        Equal<
-          InvertPatternForExclude<[1, 2], { a: string; b: number } | [1, 2]>,
-          [1, 2]
+  describe('Tuples', () => {
+    it('should work with tuples', () => {
+      type cases = [
+        Expect<
+          Equal<
+            InvertPatternForExclude<[1, 2], { a: string; b: number } | [1, 2]>,
+            readonly [1, 2]
+          >
         >
-      >
-    ];
+      ];
+    });
+
+    it('should return readonly tuples because both mutable and readonly are assignable to them', () => {
+      type cases = [
+        Expect<
+          Equal<
+            InvertPatternForExclude<[[[1, 2]]], { a: string } | [[[1, 2]]]>,
+            readonly [readonly [readonly [1, 2]]]
+          >
+        >
+      ];
+    });
   });
 
   describe('optional', () => {

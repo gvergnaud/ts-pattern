@@ -191,6 +191,39 @@ describe('DeepExclude', () => {
         >
       ];
     });
+
+    it('should work with nested unary tuples', () => {
+      type State = {};
+      type Msg = [type: 'Login'] | [type: 'UrlChange', url: string];
+      type Input = [State, Msg];
+
+      type cases = [
+        Expect<Equal<DeepExclude<[[number]], [[unknown]]>, never>>,
+        Expect<Equal<DeepExclude<[[[number]]], [[[unknown]]]>, never>>,
+        Expect<Equal<DeepExclude<[[[[number]]]], [[[[unknown]]]]>, never>>,
+        Expect<
+          Equal<
+            DeepExclude<[[[number]]], readonly [readonly [readonly [unknown]]]>,
+            never
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<
+              readonly [[[[{ t: number }]]]],
+              readonly [[[[{ t: unknown }]]]]
+            >,
+            never
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<[{}, Msg], [unknown, ['UrlChange', unknown]]>,
+            [{}, [type: 'Login']]
+          >
+        >
+      ];
+    });
   });
 
   describe('List', () => {

@@ -167,6 +167,9 @@ describe('IsMatching', () => {
     });
 
     it('Tuples', () => {
+      type State = {};
+      type Msg = [type: 'Login'] | [type: 'UrlChange', url: string];
+
       type cases = [
         Expect<Equal<IsMatching<['a', 'c' | 'd'], ['a', 'd']>, true>>,
         Expect<Equal<IsMatching<['a', 'c' | 'd'], ['a', unknown]>, true>>,
@@ -177,7 +180,6 @@ describe('IsMatching', () => {
         Expect<Equal<IsMatching<['a'], []>, false>>,
         Expect<Equal<IsMatching<['a'], ['a', 'b', 'c']>, false>>,
         Expect<Equal<IsMatching<[], ['a', 'b', 'c']>, false>>,
-
         Expect<
           Equal<
             IsMatching<
@@ -186,7 +188,17 @@ describe('IsMatching', () => {
             >,
             true
           >
-        >
+        >,
+        Expect<
+          Equal<
+            IsMatching<[State, Msg], [unknown, ['UrlChange', unknown]]>,
+            true
+          >
+        >,
+        Expect<
+          Equal<IsMatching<[State, Msg], [unknown, ['Login', unknown]]>, false>
+        >,
+        Expect<Equal<IsMatching<[State, Msg], [unknown, ['Login']]>, true>>
       ];
     });
 
