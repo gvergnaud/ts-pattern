@@ -5,9 +5,8 @@ export type IsMatching<a, p> = true extends IsUnion<a> | IsUnion<p>
       p extends any ? (a extends any ? IsMatching<a, p> : never) : never
     )
     ? true
-    : false
-  : // Special case for unknown, because this is the type
-  // of the inverted `__` wildcard pattern, which should
+    : false // Special case for unknown, because this is the type
+  : // of the inverted `__` wildcard pattern, which should
   // match everything.
   unknown extends p
   ? true
@@ -65,8 +64,7 @@ export type IsMatching<a, p> = true extends IsUnion<a> | IsUnion<p>
     ? true
     : false
   : IsPlainObject<p> extends true
-  ? true extends (
-      // `true extends union` means "if some cases of the a union are matching"
+  ? true extends ( // `true extends union` means "if some cases of the a union are matching"
       a extends any // loop over the `a` union
         ? [keyof p & keyof a] extends [never] // if no common keys
           ? false

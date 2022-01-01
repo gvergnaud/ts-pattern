@@ -22,43 +22,43 @@ describe('types', () => {
 
   it('guard patterns should typecheck', () => {
     const pattern1: Pattern<Input> = when(() => true);
-    const pattern2: Pattern<Input> = when(x => {
+    const pattern2: Pattern<Input> = when((x) => {
       type t = Expect<Equal<typeof x, Input>>;
       return true;
     });
 
     const pattern3: Pattern<Input> = [
-      when(state => {
+      when((state) => {
         type t = Expect<Equal<typeof state, State>>;
         return !!state;
       }),
-      when(event => {
+      when((event) => {
         type t = Expect<Equal<typeof event, Event>>;
         return !!event;
-      })
+      }),
     ];
 
     const pattern3_1: Pattern<Input> = [
       __,
-      { type: when((t: Event['type']) => true) }
+      { type: when((t: Event['type']) => true) },
     ];
 
     const pattern4: Pattern<Input> = [
       {
         status: 'success',
-        data: when(d => {
+        data: when((d) => {
           type t = Expect<Equal<typeof d, string>>;
           return true;
-        })
+        }),
       },
-      __
+      __,
     ];
 
     const pattern4_1: Pattern<Input> = [{ status: 'error', data: '' }, __];
 
     const pattern5: Pattern<Input> = [
       __,
-      { type: when((t: Event['type']) => true) }
+      { type: when((t: Event['type']) => true) },
     ];
 
     const isFetch = (type: string): type is 'fetch' => type === 'fetch';
@@ -66,37 +66,37 @@ describe('types', () => {
     const pattern6: Pattern<Input> = [__, { type: when(isFetch) }];
 
     const pattern7: Pattern<{ x: string }> = {
-      x: when(x => {
+      x: when((x) => {
         type t = Expect<Equal<typeof x, string>>;
         return true;
-      })
+      }),
     };
 
     const pattern8: Pattern<[{ x: string }]> = [
       {
-        x: when(x => {
+        x: when((x) => {
           type t = Expect<Equal<typeof x, string>>;
           return true;
-        })
-      }
+        }),
+      },
     ];
 
     const pattern9: Pattern<[{ x: string }, { y: number }]> = [
       {
-        x: when(x => {
+        x: when((x) => {
           type t = Expect<Equal<typeof x, string>>;
           return true;
-        })
+        }),
       },
       {
-        y: when(y => {
+        y: when((y) => {
           type t = Expect<Equal<typeof y, number>>;
           return true;
-        })
-      }
+        }),
+      },
     ];
 
-    const pattern10: Pattern<string | number> = when(x => {
+    const pattern10: Pattern<string | number> = when((x) => {
       type t = Expect<Equal<typeof x, string | number>>;
       return true;
     });
@@ -106,36 +106,36 @@ describe('types', () => {
     type Input = { type: string; hello?: { yo: number } } | string;
 
     const res = match<Input>({ type: 'hello' })
-      .with(__, x => {
+      .with(__, (x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
-      .with(P.string, x => {
+      .with(P.string, (x) => {
         type t = Expect<Equal<typeof x, string>>;
         return 'ok';
       })
       .with(
-        when(x => true),
-        x => {
+        when((x) => true),
+        (x) => {
           type t = Expect<Equal<typeof x, Input>>;
           return 'ok';
         }
       )
       .with(
-        when<Input>(x => {
+        when<Input>((x) => {
           type t = Expect<Equal<typeof x, Input>>;
           return true;
         }),
-        x => {
+        (x) => {
           type t = Expect<Equal<typeof x, Input>>;
           return 'ok';
         }
       )
-      .with(not('hello' as const), x => {
+      .with(not('hello' as const), (x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
-      .with(not(P.string), x => {
+      .with(not(P.string), (x) => {
         type t = Expect<
           Equal<
             typeof x,
@@ -149,11 +149,11 @@ describe('types', () => {
         >;
         return 'ok';
       })
-      .with(not(when(x => true)), x => {
+      .with(not(when((x) => true)), (x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
-      .with({ type: __ }, x => {
+      .with({ type: __ }, (x) => {
         type t = Expect<
           Equal<
             typeof x,
@@ -167,19 +167,19 @@ describe('types', () => {
         >;
         return 'ok';
       })
-      .with({ type: P.string }, x => {
+      .with({ type: P.string }, (x) => {
         type t = Expect<
           Equal<typeof x, { type: string; hello?: { yo: number } | undefined }>
         >;
         return 'ok';
       })
-      .with({ type: when(x => true) }, x => {
+      .with({ type: when((x) => true) }, (x) => {
         type t = Expect<
           Equal<typeof x, { type: string; hello?: { yo: number } | undefined }>
         >;
         return 'ok';
       })
-      .with({ type: not('hello' as 'hello') }, x => {
+      .with({ type: not('hello' as 'hello') }, (x) => {
         type t = Expect<
           Equal<
             typeof x,
@@ -195,19 +195,19 @@ describe('types', () => {
         >;
         return 'ok';
       })
-      .with({ type: not(P.string) }, x => {
+      .with({ type: not(P.string) }, (x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
-      .with({ type: not(when(x => true)) }, x => {
+      .with({ type: not(when((x) => true)) }, (x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
-      .with(not({ type: when(x => true) }), x => {
+      .with(not({ type: when((x) => true) }), (x) => {
         type t = Expect<Equal<typeof x, string>>;
         return 'ok';
       })
-      .with(not({ type: P.string }), x => {
+      .with(not({ type: P.string }), (x) => {
         type t = Expect<Equal<typeof x, string>>;
         return 'ok';
       })
@@ -226,31 +226,31 @@ describe('types', () => {
       | [number, number];
 
     match<Input>({ type: 'hello' })
-      .with({ type: __ }, x => {
+      .with({ type: __ }, (x) => {
         type t = Expect<Equal<typeof x, { type: string }>>;
         return 'ok';
       })
-      .with(P.string, x => {
+      .with(P.string, (x) => {
         type t = Expect<Equal<typeof x, string>>;
         return 'ok';
       })
-      .with(P.number, x => {
+      .with(P.number, (x) => {
         type t = Expect<Equal<typeof x, number>>;
         return 'ok';
       })
-      .with(P.boolean, x => {
+      .with(P.boolean, (x) => {
         type t = Expect<Equal<typeof x, boolean>>;
         return 'ok';
       })
-      .with({ type: P.string }, x => {
+      .with({ type: P.string }, (x) => {
         type t = Expect<Equal<typeof x, { type: string }>>;
         return 'ok';
       })
-      .with([P.string], x => {
+      .with([P.string], (x) => {
         type t = Expect<Equal<typeof x, [string]>>;
         return 'ok';
       })
-      .with([P.number, P.number], x => {
+      .with([P.number, P.number], (x) => {
         type t = Expect<Equal<typeof x, [number, number]>>;
         return 'ok';
       })
@@ -261,14 +261,14 @@ describe('types', () => {
     const users: unknown = [{ name: 'Gabriel', postCount: 20 }];
 
     const typedUsers = match(users)
-      .with([{ name: P.string, postCount: P.number }], users => users)
+      .with([{ name: P.string, postCount: P.number }], (users) => users)
       .otherwise(() => []);
 
     // type of `typedUsers` is { name: string, postCount: number }[]
 
     expect(
       typedUsers
-        .map(user => `<p>${user.name} has ${user.postCount} posts.</p>`)
+        .map((user) => `<p>${user.name} has ${user.postCount} posts.</p>`)
         .join('')
     ).toEqual(`<p>Gabriel has 20 posts.</p>`);
   });

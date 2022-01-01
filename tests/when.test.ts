@@ -10,7 +10,7 @@ describe('when', () => {
       { value: 3, expected: false },
       { value: 100, expected: false },
       { value: 20, expected: true },
-      { value: 39, expected: true }
+      { value: 39, expected: true },
     ];
 
     values.forEach(({ value, expected }) => {
@@ -30,7 +30,7 @@ describe('when', () => {
     const res = match(n)
       .with(
         when((x): x is 13 => x === 13),
-        x => {
+        (x) => {
           type t = Expect<Equal<typeof x, 13>>;
           return true;
         }
@@ -46,21 +46,21 @@ describe('when', () => {
         .when(
           (option): option is { kind: 'some'; value: A } =>
             option.kind === 'some',
-          option => ({
+          (option) => ({
             kind: 'some',
-            value: mapper(option.value)
+            value: mapper(option.value),
           })
         )
         .when(
           (option): option is { kind: 'none' } => option.kind === 'none',
-          option => option
+          (option) => option
         )
         .run();
 
     const input = { kind: 'some' as const, value: 20 };
     const expectedOutput = { kind: 'some' as const, value: `number is 20` };
 
-    const res = map(input, x => `number is ${x}`);
+    const res = map(input, (x) => `number is ${x}`);
 
     type t = Expect<Equal<typeof res, Option<string>>>;
 
@@ -73,7 +73,7 @@ describe('when', () => {
         { value: { status: 'success', data: 'yo' }, expected: false },
         { value: { status: 'success', data: 'coucou' }, expected: true },
         { value: { status: 'idle' }, expected: false },
-        { value: { status: 'loading' }, expected: false }
+        { value: { status: 'loading' }, expected: false },
       ];
 
       values.forEach(({ value, expected }) => {
@@ -81,8 +81,8 @@ describe('when', () => {
           match(value)
             .with(
               { status: 'success' },
-              x => x.data.length > 3,
-              x => {
+              (x) => x.data.length > 3,
+              (x) => {
                 type t = Expect<
                   Equal<typeof x, { status: 'success'; data: string }>
                 >;
@@ -91,16 +91,17 @@ describe('when', () => {
             )
             .with(
               { status: 'success', data: select('data') },
-              x => x.data.length > 3 && x.data.length < 10,
-              x => {
+              (x) => x.data.length > 3 && x.data.length < 10,
+              (x) => {
                 type t = Expect<Equal<typeof x, { data: string }>>;
                 return true;
               }
             )
             .with(
               { status: 'success', data: select('data') },
-              x => x.data.length > 3 && x.data.length < 10 && x.data.length % 2,
-              x => {
+              (x) =>
+                x.data.length > 3 && x.data.length < 10 && x.data.length % 2,
+              (x) => {
                 type t = Expect<Equal<typeof x, { data: string }>>;
                 return true;
               }
@@ -117,7 +118,7 @@ describe('when', () => {
         { value: 5, expected: '2 < x < 10' },
         { value: 100, expected: 'x: number' },
         { value: '100', expected: '2 < x.length < 10' },
-        { value: 'Gabriel Vergnaud', expected: 'x: string' }
+        { value: 'Gabriel Vergnaud', expected: 'x: string' },
       ];
 
       values.forEach(({ value, expected }) => {
@@ -125,25 +126,25 @@ describe('when', () => {
           .with(
             __,
             (x): x is 2 => x === 2,
-            x => {
+            (x) => {
               type t = Expect<Equal<typeof x, 2>>;
               return '2';
             }
           )
           .with(
             P.string,
-            x => x.length > 2 && x.length < 10,
+            (x) => x.length > 2 && x.length < 10,
             () => '2 < x.length < 10'
           )
           .with(
             P.number,
-            x => x > 2 && x < 10,
+            (x) => x > 2 && x < 10,
             () => '2 < x < 10'
           )
           .with(
             __,
             (x): x is number => typeof x === 'number',
-            x => {
+            (x) => {
               type t = Expect<Equal<typeof x, number>>;
               return 'x: number';
             }
@@ -180,15 +181,15 @@ describe('when', () => {
                 test: 'a',
                 sublist: ['w'],
                 maybe: P.optional(P.string),
-                prop: P.when(x => {
+                prop: P.when((x) => {
                   type t = Expect<Equal<typeof x, string>>;
                   return true;
-                })
+                }),
               }),
-              opt: P.optional('x')
-            }
+              opt: P.optional('x'),
+            },
           },
-          x => {
+          (x) => {
             type t = Expect<
               Equal<
                 typeof x,
@@ -217,10 +218,10 @@ describe('when', () => {
           {
             type: 'some',
             value: {
-              coords: P.not({ x: 'left' })
-            }
+              coords: P.not({ x: 'left' }),
+            },
           },
-          x => {
+          (x) => {
             type t = Expect<
               Equal<
                 typeof x['value']['coords'],
@@ -238,10 +239,10 @@ describe('when', () => {
           {
             type: 'some',
             value: {
-              list: P.array({ test: 'a', prop: select() })
-            }
+              list: P.array({ test: 'a', prop: select() }),
+            },
           },
-          x => {
+          (x) => {
             type t = Expect<Equal<typeof x, string[]>>;
           }
         )
@@ -262,13 +263,13 @@ describe('when', () => {
           { type: 'some' },
           // `someNumber` is infered to be a { type: "some"; value: number }
           // based on the pattern provided as first argument.
-          someNumber =>
+          (someNumber) =>
             someNumber.value % 5 === 0 && someNumber.value % 3 === 0,
           () => 'fizzbuzz'
         )
         .with(
           {
-            type: 'some'
+            type: 'some',
           },
           // you can also use destructuring
           ({ value }) => value % 5 === 0,
@@ -280,7 +281,7 @@ describe('when', () => {
         .with(
           {
             type: 'some',
-            value: when(value => value % 3 === 0)
+            value: when((value) => value % 3 === 0),
           },
           () => 'fizz'
         )

@@ -33,7 +33,7 @@ export const matchPattern = (
       const matcher = pattern[symbols.matcher]();
       const { matched, selections = {} } = matcher.match(value);
       if (matched) {
-        Object.keys(selections).forEach(key => select(key, selections[key]));
+        Object.keys(selections).forEach((key) => select(key, selections[key]));
       }
       return matched;
     }
@@ -52,7 +52,7 @@ export const matchPattern = (
 
     if (pattern instanceof Map) {
       if (!(value instanceof Map)) return false;
-      return Array.from(pattern.keys()).every(key =>
+      return Array.from(pattern.keys()).every((key) =>
         matchPattern(pattern.get(key), value.get(key), select)
       );
     }
@@ -65,13 +65,13 @@ export const matchPattern = (
       if (pattern.size === 1) {
         const [subPattern] = Array.from(pattern.values());
         return isMatchable(subPattern)
-          ? Array.from(value.values()).every(v =>
+          ? Array.from(value.values()).every((v) =>
               matchPattern(subPattern, v, select)
             )
           : value.has(subPattern);
       }
 
-      return Array.from(pattern.values()).every(subPattern =>
+      return Array.from(pattern.values()).every((subPattern) =>
         value.has(subPattern)
       );
     }

@@ -120,10 +120,8 @@ export type BuiltInObjects =
   | { readonly [Symbol.toStringTag]: string }
   | any[];
 
-export type IsPlainObject<o, excludeUnion = BuiltInObjects> = o extends object
-  ? // to excluded branded string types,
-    // like `string & { __brand: "id" }`
-    // and built-in objects
+export type IsPlainObject<o, excludeUnion = BuiltInObjects> = o extends object // to excluded branded string types, // like `string & { __brand: "id" }`
+  ? // and built-in objects
     o extends string | excludeUnion
     ? false
     : true

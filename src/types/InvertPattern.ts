@@ -9,15 +9,13 @@ import {
 } from './helpers';
 import type { Matchable, ToExclude } from './Pattern';
 
-type OptionalKeys<p> = ValueOf<
-  {
-    [k in keyof p]: p[k] extends Matchable<any, any, infer matcherType>
-      ? matcherType extends 'optional'
-        ? k
-        : never
-      : never;
-  }
->;
+type OptionalKeys<p> = ValueOf<{
+  [k in keyof p]: p[k] extends Matchable<any, any, infer matcherType>
+    ? matcherType extends 'optional'
+      ? k
+      : never
+    : never;
+}>;
 
 type ReduceUnion<tuple extends any[], output = never> = tuple extends readonly [
   infer p,
@@ -92,10 +90,9 @@ export type InvertPattern<p> = p extends Matchable<
   ? Compute<
       {
         [k in Exclude<keyof p, OptionalKeys<p>>]: InvertPattern<p[k]>;
-      } &
-        {
-          [k in OptionalKeys<p>]?: InvertPattern<p[k]>;
-        }
+      } & {
+        [k in OptionalKeys<p>]?: InvertPattern<p[k]>;
+      }
     >
   : p;
 
@@ -217,12 +214,11 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
             [k in Exclude<keyof p, OptionalKeys<p>>]: k extends keyof i
               ? InvertPatternForExclude<p[k], i[k], empty>
               : InvertPattern<p[k]>;
-          } &
-            {
-              [k in OptionalKeys<p>]?: k extends keyof i
-                ? InvertPatternForExclude<p[k], i[k], empty>
-                : InvertPattern<p[k]>;
-            }
+          } & {
+            [k in OptionalKeys<p>]?: k extends keyof i
+              ? InvertPatternForExclude<p[k], i[k], empty>
+              : InvertPattern<p[k]>;
+          }
         >
     : empty
   : empty;

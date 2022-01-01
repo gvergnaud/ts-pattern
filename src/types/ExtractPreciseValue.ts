@@ -95,15 +95,14 @@ export type ExtractPreciseValue<a, b> = unknown extends b
             // Keep other properties of `a`
             {
               [k in Exclude<keyof a, keyof b>]: a[k];
-            } &
-              {
-                // use `b` to extract precise values on `a`.
-                // This has the effect of preserving the optional
-                // property modifier (?:) of b in the output type.
-                [k in keyof b]: k extends keyof a
-                  ? ExtractPreciseValue<a[k], b[k]>
-                  : b[k];
-              }
+            } & {
+              // use `b` to extract precise values on `a`.
+              // This has the effect of preserving the optional
+              // property modifier (?:) of b in the output type.
+              [k in keyof b]: k extends keyof a
+                ? ExtractPreciseValue<a[k], b[k]>
+                : b[k];
+            }
           >,
           keyof b & string
         >

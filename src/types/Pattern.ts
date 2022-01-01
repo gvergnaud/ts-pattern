@@ -144,17 +144,16 @@ type StructuralPattern<a> =
                     readonly [k in sharedKeys & keyof objects]?: Pattern<
                       objects[k]
                     >;
-                  } &
-                    {
-                      readonly [k in Cast<
-                        otherKeys,
-                        string
-                      >]?: objects extends any
-                        ? k extends keyof objects
-                          ? Pattern<objects[k]>
-                          : never
-                        : never;
-                    }
+                  } & {
+                    readonly [k in Cast<
+                      otherKeys,
+                      string
+                    >]?: objects extends any
+                      ? k extends keyof objects
+                        ? Pattern<objects[k]>
+                        : never
+                      : never;
+                  }
                 >
               : never)
           | ([othersValues] extends [never]

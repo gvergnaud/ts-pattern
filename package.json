@@ -9,7 +9,8 @@
     "build": "rimraf lib && rollup -c",
     "prepublishOnly": "npm run test && npm run build",
     "test": "jest",
-    "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics"
+    "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics",
+    "fmt": "prettier --write ."
   },
   "files": [
     "lib/**/*"
