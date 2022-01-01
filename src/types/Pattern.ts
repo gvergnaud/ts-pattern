@@ -7,7 +7,7 @@ import {
   IsUnion,
   ValueOf,
 } from './helpers';
-import { None, SelectionType } from './FindSelected';
+import { None, Some, SelectionType } from './FindSelected';
 
 export type MatcherType =
   | 'not'
@@ -60,6 +60,26 @@ export interface Matchable<
 }
 
 type AnyMatchable = Matchable<unknown, unknown, any, any>;
+
+export type OptionalP<input, p> = Matchable<input, p, 'optional'>;
+
+export type ArrayP<input, p> = Matchable<input, p, 'array'>;
+
+export type AndP<input, ps> = Matchable<input, ps, 'and'>;
+
+export type OrP<input, ps> = Matchable<input, ps, 'or'>;
+
+export type NotP<input, p> = Matchable<input, p, 'not'>;
+
+export type GuardP<input, narrowed> = Matchable<input, narrowed>;
+
+export type SelectP<key extends string> = Matchable<
+  unknown,
+  never,
+  'default',
+  Some<key>,
+  unknown
+>;
 
 export interface ToExclude<a> {
   [symbols.toExclude]: a;

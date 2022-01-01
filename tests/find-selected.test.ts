@@ -2,26 +2,19 @@ import * as symbols from '../src/symbols';
 import {
   FindSelected,
   MixedNamedAndAnonymousSelectError,
-  Some,
   SeveralAnonymousSelectError,
 } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
-import { Matchable } from '../src/types/Pattern';
+import {
+  Matchable,
+  SelectP,
+  NotP,
+  OptionalP,
+  ArrayP,
+} from '../src/types/Pattern';
 import { Event, State } from './utils';
 
-type SelectPattern<k extends string> = Matchable<
-  unknown,
-  never,
-  'default',
-  Some<k>,
-  unknown
->;
-
-type NotPattern<input, narrowed> = Matchable<input, narrowed, 'not'>;
-
-type OptionalPattern<input, narrowed> = Matchable<input, narrowed, 'optional'>;
-
-type AnonymousSelectPattern = SelectPattern<symbols.anonymousSelectKey>;
+type AnonymousSelectP = SelectP<symbols.anonymousSelectKey>;
 
 describe('FindSelected', () => {
   describe('should correctly return kwargs', () => {
@@ -34,7 +27,7 @@ describe('FindSelected', () => {
               {
                 a: {
                   b: {
-                    c: [SelectPattern<'c'>];
+                    c: [SelectP<'c'>];
                   };
                 };
               }
@@ -44,10 +37,7 @@ describe('FindSelected', () => {
         >,
         Expect<
           Equal<
-            FindSelected<
-              [State, Event],
-              [SelectPattern<'state'>, SelectPattern<'event'>]
-            >,
+            FindSelected<[State, Event], [SelectP<'state'>, SelectP<'event'>]>,
             { state: State; event: Event }
           >
         >,
@@ -55,11 +45,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               [1, 2, 3],
-              [
-                SelectPattern<'first'>,
-                SelectPattern<'second'>,
-                SelectPattern<'third'>
-              ]
+              [SelectP<'first'>, SelectP<'second'>, SelectP<'third'>]
             >,
             { first: 1; second: 2; third: 3 }
           >
@@ -68,12 +54,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               [1, 2, 3, 4],
-              [
-                SelectPattern<'1'>,
-                SelectPattern<'2'>,
-                SelectPattern<'3'>,
-                SelectPattern<'4'>
-              ]
+              [SelectP<'1'>, SelectP<'2'>, SelectP<'3'>, SelectP<'4'>]
             >,
             { '1': 1; '2': 2; '3': 3; '4': 4 }
           >
@@ -83,11 +64,11 @@ describe('FindSelected', () => {
             FindSelected<
               [1, 2, 3, 4, 5],
               [
-                SelectPattern<'1'>,
-                SelectPattern<'2'>,
-                SelectPattern<'3'>,
-                SelectPattern<'4'>,
-                SelectPattern<'5'>
+                SelectP<'1'>,
+                SelectP<'2'>,
+                SelectP<'3'>,
+                SelectP<'4'>,
+                SelectP<'5'>
               ]
             >,
             { '1': 1; '2': 2; '3': 3; '4': 4; '5': 5 }
@@ -100,10 +81,7 @@ describe('FindSelected', () => {
       type cases = [
         Expect<
           Equal<
-            FindSelected<
-              State[],
-              Matchable<unknown, SelectPattern<'state'>, 'array'>
-            >,
+            FindSelected<State[], ArrayP<unknown, SelectP<'state'>>>,
             { state: State[] }
           >
         >,
@@ -111,11 +89,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               State[][],
-              Matchable<
-                unknown,
-                Matchable<unknown, SelectPattern<'state'>, 'array'>,
-                'array'
-              >
+              ArrayP<unknown, ArrayP<unknown, SelectP<'state'>>>
             >,
             { state: State[][] }
           >
@@ -124,14 +98,9 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               State[][][],
-              Matchable<
+              ArrayP<
                 unknown,
-                Matchable<
-                  unknown,
-                  Matchable<unknown, SelectPattern<'state'>, 'array'>,
-                  'array'
-                >,
-                'array'
+                ArrayP<unknown, ArrayP<unknown, SelectP<'state'>>>
               >
             >,
             { state: State[][][] }
@@ -146,7 +115,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               { a: { b: { c: 3 } } },
-              { a: { b: { c: SelectPattern<'c'> } } }
+              { a: { b: { c: SelectP<'c'> } } }
             >,
             { c: 3 }
           >
@@ -157,8 +126,8 @@ describe('FindSelected', () => {
               { a: { b: { c: 3 }; d: { e: 7 } } },
               {
                 a: {
-                  b: { c: SelectPattern<'c'> };
-                  d: { e: SelectPattern<'e'> };
+                  b: { c: SelectP<'c'> };
+                  d: { e: SelectP<'e'> };
                 };
               }
             >,
@@ -174,7 +143,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               { a: { b: { c: [3, 4] } } },
-              { a: { b: { c: [SelectPattern<'c'>, unknown] } } }
+              { a: { b: { c: [SelectP<'c'>, unknown] } } }
             >,
             { c: 3 }
           >
@@ -184,8 +153,8 @@ describe('FindSelected', () => {
             FindSelected<
               { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
               {
-                a: [{ c: SelectPattern<'c'> }, { e: 7 }];
-                b: Matchable<unknown, { d: SelectPattern<'d'> }, 'array'>;
+                a: [{ c: SelectP<'c'> }, { e: 7 }];
+                b: Matchable<unknown, { d: SelectP<'d'> }, 'array'>;
               }
             >,
             { c: 3; d: string[] }
@@ -203,7 +172,7 @@ describe('FindSelected', () => {
             FindSelected<
               { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
               {
-                a: [{ c: AnonymousSelectPattern }, { e: 7 }];
+                a: [{ c: AnonymousSelectP }, { e: 7 }];
               }
             >,
             3
@@ -219,10 +188,7 @@ describe('FindSelected', () => {
             FindSelected<
               { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
               {
-                a: [
-                  { c: AnonymousSelectPattern },
-                  { e: AnonymousSelectPattern }
-                ];
+                a: [{ c: AnonymousSelectP }, { e: AnonymousSelectP }];
               }
             >,
             SeveralAnonymousSelectError
@@ -233,8 +199,8 @@ describe('FindSelected', () => {
             FindSelected<
               { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
               {
-                a: [unknown, { e: AnonymousSelectPattern }];
-                b: AnonymousSelectPattern;
+                a: [unknown, { e: AnonymousSelectP }];
+                b: AnonymousSelectP;
               }
             >,
             SeveralAnonymousSelectError
@@ -244,7 +210,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               [{ c: 3 }, { e: 7 }],
-              [{ c: AnonymousSelectPattern }, { e: AnonymousSelectPattern }]
+              [{ c: AnonymousSelectP }, { e: AnonymousSelectP }]
             >,
             SeveralAnonymousSelectError
           >
@@ -253,7 +219,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               [{ c: 3 }, { e: 7 }],
-              [AnonymousSelectPattern, { e: AnonymousSelectPattern }]
+              [AnonymousSelectP, { e: AnonymousSelectP }]
             >,
             SeveralAnonymousSelectError
           >
@@ -262,7 +228,7 @@ describe('FindSelected', () => {
           Equal<
             FindSelected<
               [{ c: 3 }, { e: 7 }],
-              [AnonymousSelectPattern, AnonymousSelectPattern]
+              [AnonymousSelectP, AnonymousSelectP]
             >,
             SeveralAnonymousSelectError
           >
@@ -273,8 +239,8 @@ describe('FindSelected', () => {
               { type: 'point'; x: number; y: number },
               {
                 type: 'point';
-                x: AnonymousSelectPattern;
-                y: AnonymousSelectPattern;
+                x: AnonymousSelectP;
+                y: AnonymousSelectP;
               }
             >,
             SeveralAnonymousSelectError
@@ -303,9 +269,9 @@ describe('FindSelected', () => {
               Input,
               {
                 type: 'text';
-                text: AnonymousSelectPattern;
+                text: AnonymousSelectP;
                 author: {
-                  name: SelectPattern<'authorName'>;
+                  name: SelectP<'authorName'>;
                 };
               }
             >,
@@ -328,7 +294,7 @@ describe('FindSelected', () => {
             Equal<
               FindSelected<
                 { text: any },
-                { str: NotPattern<null | undefined, null | undefined> }
+                { str: NotP<null | undefined, null | undefined> }
               >,
               { text: any }
             >
@@ -343,7 +309,7 @@ describe('FindSelected', () => {
             Equal<
               FindSelected<
                 { text: unknown },
-                { str: NotPattern<null | undefined, null | undefined> }
+                { str: NotP<null | undefined, null | undefined> }
               >,
               { text: unknown }
             >
@@ -354,7 +320,7 @@ describe('FindSelected', () => {
       it("shouldn't change optional properties", () => {
         type p = {
           type: 'a';
-          data: OptionalPattern<
+          data: OptionalP<
             | {
                 type: 'img';
                 src: string;

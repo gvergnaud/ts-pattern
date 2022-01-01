@@ -1,16 +1,25 @@
 import { matchPattern, getSelectionKeys, flatMap } from './helpers';
 import * as symbols from './symbols';
-import { Some } from './types/FindSelected';
 import { GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
-import { Matchable, Pattern, UnknownPattern } from './types/Pattern';
+import {
+  Pattern,
+  UnknownPattern,
+  OptionalP,
+  ArrayP,
+  AndP,
+  OrP,
+  NotP,
+  GuardP,
+  SelectP,
+} from './types/Pattern';
 
 export const optional = <
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<input>
 >(
   pattern: p
-): Matchable<input, p, 'optional'> => {
+): OptionalP<input, p> => {
   return {
     [symbols.matcher]() {
       return {
@@ -42,7 +51,7 @@ export const array = <
   p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
 >(
   pattern: p
-): Matchable<input, p, 'array'> => {
+): ArrayP<input, p> => {
   return {
     [symbols.matcher]() {
       return {
@@ -72,7 +81,7 @@ export const intersection = <
     : [Pattern<input>, ...Pattern<input>[]]
 >(
   ...patterns: ps
-): Matchable<input, ps, 'and'> => ({
+): AndP<input, ps> => ({
   [symbols.matcher]: () => ({
     match: (value) => {
       let selections: Record<string, unknown[]> = {};
@@ -100,7 +109,7 @@ export const union = <
     : [Pattern<input>, ...Pattern<input>[]]
 >(
   ...patterns: ps
-): Matchable<input, ps, 'or'> => ({
+): OrP<input, ps> => ({
   [symbols.matcher]: () => ({
     match: (value) => {
       let selections: Record<string, unknown[]> = {};
@@ -124,14 +133,12 @@ export const union = <
   }),
 });
 
-type Not<input, narrowed> = Matchable<input, narrowed>;
-
 export const not = <
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<input>
 >(
   pattern: p
-): Matchable<input, p, 'not'> => ({
+): NotP<input, p> => ({
   [symbols.matcher]: () => ({
     match: (value) => ({ matched: !matchPattern(pattern, value, () => {}) }),
     getSelectionKeys: () => [],
@@ -139,55 +146,30 @@ export const not = <
   }),
 });
 
-type Gard<input, narrowed> = Matchable<input, narrowed>;
-
 export const when = <input, narrowed extends input = never>(
   predicate: GuardFunction<input, narrowed>
-): Gard<input, narrowed> => ({
+): GuardP<input, narrowed> => ({
   [symbols.matcher]: () => ({
     match: (value) => ({ matched: predicate(value) }),
   }),
 });
 
-// TODO check if we could infer the type using the same technique
-// as for guards, and infer it without needing the input type
-// in FindSelected
-export function select(): Matchable<
-  unknown,
-  never,
-  'default',
-  Some<symbols.anonymousSelectKey>,
-  unknown
->;
-export function select<k extends string>(
-  key: k
-): Matchable<unknown, never, 'default', Some<k>, unknown>;
+export function select(): SelectP<symbols.anonymousSelectKey>;
+export function select<k extends string>(key: k): SelectP<k>;
 export function select<k extends string>(
   key?: k
-): Matchable<unknown, never, 'default', Some<k>, unknown> {
-  return key === undefined
-    ? {
-        [symbols.matcher]() {
-          return {
-            match: (value) => ({
-              matched: true,
-              selections: { [symbols.anonymousSelectKey]: value },
-            }),
-            getSelectionKeys: () => [symbols.anonymousSelectKey],
-          };
-        },
-      }
-    : {
-        [symbols.matcher]() {
-          return {
-            match: (value) => ({
-              matched: true,
-              selections: { [key]: value },
-            }),
-            getSelectionKeys: () => [key],
-          };
-        },
+): SelectP<k | symbols.anonymousSelectKey> {
+  return {
+    [symbols.matcher]() {
+      return {
+        match: (value) => ({
+          matched: true,
+          selections: { [key ?? symbols.anonymousSelectKey]: value },
+        }),
+        getSelectionKeys: () => [key ?? symbols.anonymousSelectKey],
       };
+    },
+  };
 }
 
 function isUnknown(x: unknown): x is unknown {
