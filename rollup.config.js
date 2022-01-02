@@ -54,7 +54,7 @@ export default [
         browser: false,
       }),
     ],
-    treeshake: 'smallest'
+    treeshake: 'smallest',
   },
 
   // CommonJS
@@ -87,6 +87,6 @@ export default [
         browser: false,
       }),
     ],
-    treeshake: 'smallest'
+    treeshake: 'smallest',
   },
 ];
