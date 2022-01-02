@@ -5,7 +5,6 @@ import {
   MixedNamedAndAnonymousSelectError,
   SeveralAnonymousSelectError,
 } from '../src/types/FindSelected';
-import { number } from '../src/patterns';
 
 describe('select', () => {
   it('should work with tuples', () => {
