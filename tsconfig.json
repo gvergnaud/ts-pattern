@@ -3,7 +3,7 @@
     "declaration": true,
     "declarationDir": ".",
     "outDir": "lib/",
-    "target": "esnext",
+    "target": "ES2015",
     "module": "esnext",
     "strict": true,
     "esModuleInterop": true,

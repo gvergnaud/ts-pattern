@@ -6,17 +6,15 @@ import { babel } from '@rollup/plugin-babel';
 import * as path from 'path';
 import pkg from './package.json';
 
-const moduleName = 'TSPattern';
+const moduleName = pkg.name;
 const inputFileName = 'src/index.ts';
 const author = pkg.author;
-const banner = `
-  /**
-   * @license
-   * author: ${author}
-   * ${moduleName}.js v${pkg.version}
-   * Released under the ${pkg.license} license.
-   */
-`;
+const banner = `/**
+ * @license
+ * author: ${author}
+ * ${moduleName} v${pkg.version}
+ * Released under the ${pkg.license} license.
+ */`;
 
 const external = [
   ...Object.keys(pkg.dependencies || {}),
@@ -24,39 +22,6 @@ const external = [
 ];
 
 export default [
-  {
-    input: inputFileName,
-    output: [
-      {
-        name: moduleName,
-        file: pkg.main,
-        format: 'iife',
-        banner,
-      },
-      {
-        name: moduleName,
-        file: pkg.main.replace('.js', '.min.js'),
-        format: 'iife',
-        banner,
-        plugins: [terser()],
-      },
-    ],
-    external,
-    plugins: [
-      pluginTypescript({ tsconfig: './tsconfig.json' }),
-      pluginCommonjs({
-        extensions: ['.js', '.ts'],
-      }),
-      babel({
-        babelHelpers: 'bundled',
-        configFile: path.resolve(__dirname, '.babelrc.js'),
-      }),
-      pluginNodeResolve({
-        browser: true,
-      }),
-    ],
-  },
-
   // ES
   {
     input: inputFileName,
@@ -66,6 +31,13 @@ export default [
         format: 'es',
         banner,
         exports: 'named',
+      },
+      {
+        file: pkg.module.replace('.mjs', '.min.mjs'),
+        format: 'es',
+        banner,
+        exports: 'named',
+        plugins: [terser()],
       },
     ],
     external,
@@ -92,6 +64,12 @@ export default [
         file: pkg.main,
         format: 'cjs',
         banner,
+      },
+      {
+        file: pkg.main.replace('.js', '.min.js'),
+        format: 'cjs',
+        banner,
+        plugins: [terser()],
       },
     ],
     external,

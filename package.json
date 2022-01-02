@@ -2,9 +2,16 @@
   "name": "ts-pattern",
   "version": "4.0.0-rc.0",
   "description": " The exhaustive Pattern Matching library for TypeScript.",
-  "main": "lib/index.js",
-  "module": "lib/index.esm.js",
-  "types": "lib/index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "module": "./lib/index.mjs",
+  "exports": {
+    ".": {
+      "require": "./lib/index.js",
+      "import": "./lib/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "build": "rimraf lib && rollup -c",
     "prepublishOnly": "npm run test && npm run build",
