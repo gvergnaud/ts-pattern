@@ -4,11 +4,18 @@
   "description": " The exhaustive Pattern Matching library for TypeScript.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "build": "rimraf lib && tsc",
     "prepublishOnly": "npm run test && npm run build",
     "test": "jest",
-    "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics"
+    "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics",
+    "fmt": "prettier ./src/** ./tests/** -w"
   },
   "files": [
     "lib/**/*"
