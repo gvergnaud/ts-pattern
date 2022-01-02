@@ -14,6 +14,14 @@ import {
   SelectP,
 } from './types/Pattern';
 
+/**
+ * ### Optional pattern
+ * `P.optional(subpattern)` takes a sub pattern and returns a pattern which matches if the
+ * key is undefined or if it is defined and the sub pattern matches its value.
+ * @example
+ *  match(value)
+ *   .with({ greeting: P.optional('Hello') }, () => 'will match { greeting?: "Hello" }')
+ */
 export const optional = <
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<input>
@@ -46,6 +54,14 @@ export const optional = <
 
 type Elem<xs> = xs extends Array<infer x> ? x : unknown;
 
+/**
+ * ### Array pattern
+ * `P.array(subpattern)` takes a sub pattern and returns a pattern, which matches
+ * arrays if all their elements match the sub pattern.
+ * @example
+ *  match(value)
+ *   .with({ users: P.array({ name: P.string }) }, () => 'will match { name: string }[]')
+ */
 export const array = <
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
@@ -74,6 +90,23 @@ export const array = <
   };
 };
 
+/**
+ * ### Intersection pattern
+ * `P.intersection(...patterns)` returns a pattern which matches
+ * only if **every** patterns provided in parameter match the input.
+ * @example
+ *  match(value)
+ *   .with(
+ *     {
+ *       user: P.intersection(
+ *         { firstname: P.string },
+ *         { lastname: P.string },
+ *         { age: P.when(age => age > 21) }
+ *       )
+ *     },
+ *     ({ user }) => 'will match { firstname: string, lastname: string, age: number } if age > 21'
+ *   )
+ */
 export const intersection = <
   input,
   ps extends unknown extends input
@@ -102,6 +135,19 @@ export const intersection = <
   }),
 });
 
+/**
+ * ### Union pattern
+ * `P.union(...patterns)` returns a pattern which matches
+ * if **at least one** of the patterns provided in parameter match the input.
+ * @example
+ *  match(value)
+ *   .with(
+ *     {
+ *       type: P.union('a', 'b', 'c')
+ *     },
+ *     ({ user }) => 'will match { type: "a" | "b" | "c" }'
+ *   )
+ */
 export const union = <
   input,
   ps extends unknown extends input
@@ -133,6 +179,15 @@ export const union = <
   }),
 });
 
+/**
+ * ### Not pattern
+ * `P.not(pattern)` returns a pattern which matches if the sub pattern
+ * doesn't match.
+ * @example
+ *  match<{ a: string | number }>(value)
+ *   .with({ a: P.not(P.string) }, (x) => 'will match { a: number }'
+ *   )
+ */
 export const not = <
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<input>
@@ -146,6 +201,15 @@ export const not = <
   }),
 });
 
+/**
+ * ### When pattern
+ * `P.when((value) => boolean)` returns a pattern which matches
+ * if the predicate returns true for the current input.
+ * @example
+ *  match<{ age: number }>(value)
+ *   .with({ age: P.when(age => age > 21) }, (x) => 'will match if value.age > 21'
+ *   )
+ */
 export const when = <input, narrowed extends input = never>(
   predicate: GuardFunction<input, narrowed>
 ): GuardP<input, narrowed> => ({
@@ -154,6 +218,15 @@ export const when = <input, narrowed extends input = never>(
   }),
 });
 
+/**
+ * ### Select pattern
+ * `P.select()` is a pattern which will always match,
+ * and will inject the selected piece of input in the handler function.
+ * @example
+ *  match<{ age: number }>(value)
+ *   .with({ age: P.select() }, (age) => 'age: number'
+ *   )
+ */
 export function select(): SelectP<symbols.anonymousSelectKey>;
 export function select<k extends string>(key: k): SelectP<k>;
 export function select<k extends string>(
