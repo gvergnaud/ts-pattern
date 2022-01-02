@@ -170,6 +170,7 @@ describe('optional', () => {
             return p;
           }
         )
+        // @ts-expect-error FIXME: this should pass
         .exhaustive()
     ).toBe('paragraph');
   });

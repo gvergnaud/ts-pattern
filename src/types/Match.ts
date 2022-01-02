@@ -24,7 +24,7 @@ type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 export type Match<
   i,
   o,
-  patternValueTuples extends [any, any][] = [],
+  patternValueTuples extends [any, any] = never,
   inferredOutput = never
 > = {
   /**
@@ -39,7 +39,7 @@ export type Match<
       selections: FindSelected<value, p>,
       value: value
     ) => PickReturnValue<o, c>
-  ): Match<i, o, [...patternValueTuples, [p, value]], Union<inferredOutput, c>>;
+  ): Match<i, o, patternValueTuples | [p, value], Union<inferredOutput, c>>;
 
   with<
     pat extends Pattern<i>,
@@ -57,7 +57,7 @@ export type Match<
     i,
     o,
     pred extends (value: any) => value is infer narrowed
-      ? [...patternValueTuples, [Matchable<unknown, narrowed>, value]]
+      ? patternValueTuples | [Matchable<unknown, narrowed>, value]
       : patternValueTuples,
     Union<inferredOutput, c>
   >;
@@ -72,7 +72,7 @@ export type Match<
   ): Match<
     i,
     o,
-    [...patternValueTuples, ...MakeTuples<ps, value>],
+    patternValueTuples | (p extends any ? [p, value] : never),
     Union<inferredOutput, c>
   >;
 
@@ -89,7 +89,7 @@ export type Match<
     i,
     o,
     pred extends (value: any) => value is infer narrowed
-      ? [...patternValueTuples, [Matchable<unknown, narrowed>, value]]
+      ? patternValueTuples | [Matchable<unknown, narrowed>, value]
       : patternValueTuples,
     Union<inferredOutput, c>
   >;
@@ -129,17 +129,7 @@ export type Match<
   run: () => PickReturnValue<o, inferredOutput>;
 };
 
-type DeepExcludeAll<a, tupleList extends any[]> = tupleList extends [
-  [infer p, infer v],
-  ...infer tail
-]
-  ? DeepExcludeAll<DeepExclude<a, InvertPatternForExclude<p, v>>, tail>
-  : a;
-
-type MakeTuples<
-  ps extends any[],
-  value,
-  output extends any[] = []
-> = ps extends [infer p, ...infer tail]
-  ? MakeTuples<tail, value, [...output, [p, value]]>
-  : output;
+type DeepExcludeAll<a, tuple extends [any, any]> = DeepExclude<
+  a,
+  tuple extends any ? InvertPatternForExclude<tuple[0], tuple[1]> : never
+>;
