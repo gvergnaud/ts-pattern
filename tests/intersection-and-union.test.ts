@@ -571,4 +571,19 @@ describe('and, and or patterns', () => {
       expect(f({ value: { type: 'c', b: true } })).toEqual('c');
     });
   });
+
+  it('unknown input', () => {
+    match<unknown>({})
+      .with(
+        // It would be nice if as const wasn't necessary with unknown inputs
+        { a: P.optional(P.union('hello' as const, 'bonjour' as const)) },
+        (x) => {
+          type t = Expect<
+            Equal<typeof x, { a?: 'hello' | 'bonjour' | undefined }>
+          >;
+          return 'ok';
+        }
+      )
+      .otherwise(() => 'ko');
+  });
 });
