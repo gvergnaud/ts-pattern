@@ -22,12 +22,10 @@ import {
  *  match(value)
  *   .with({ greeting: P.optional('Hello') }, () => 'will match { greeting?: "Hello" }')
  */
-export const optional = <
+export function optional<
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<input>
->(
-  pattern: p
-): OptionalP<input, p> => {
+>(pattern: p): OptionalP<input, p> {
   return {
     [symbols.matcher]() {
       return {
@@ -50,7 +48,7 @@ export const optional = <
       };
     },
   };
-};
+}
 
 type Elem<xs> = xs extends Array<infer x> ? x : unknown;
 
@@ -62,12 +60,10 @@ type Elem<xs> = xs extends Array<infer x> ? x : unknown;
  *  match(value)
  *   .with({ users: P.array({ name: P.string }) }, () => 'will match { name: string }[]')
  */
-export const array = <
+export function array<
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
->(
-  pattern: p
-): ArrayP<input, p> => {
+>(pattern: p): ArrayP<input, p> {
   return {
     [symbols.matcher]() {
       return {
@@ -88,7 +84,7 @@ export const array = <
       };
     },
   };
-};
+}
 
 /**
  * ### Intersection pattern
@@ -107,33 +103,33 @@ export const array = <
  *     ({ user }) => 'will match { firstname: string, lastname: string, age: number } if age > 21'
  *   )
  */
-export const intersection = <
+export function intersection<
   input,
   ps extends unknown extends input
     ? [UnknownPattern, ...UnknownPattern[]]
     : [Pattern<input>, ...Pattern<input>[]]
->(
-  ...patterns: ps
-): AndP<input, ps> => ({
-  [symbols.matcher]: () => ({
-    match: (value) => {
-      let selections: Record<string, unknown[]> = {};
-      const selector = (key: string, value: any) => {
-        selections[key] = value;
-      };
-      const matched = (patterns as UnknownPattern[]).every((p) =>
-        matchPattern(p, value, selector)
-      );
-      return { matched, selections };
-    },
-    getSelectionKeys: () =>
-      (patterns as UnknownPattern[]).reduce<string[]>(
-        (acc, p) => acc.concat(getSelectionKeys(p)),
-        []
-      ),
-    matcherType: 'and',
-  }),
-});
+>(...patterns: ps): AndP<input, ps> {
+  return {
+    [symbols.matcher]: () => ({
+      match: (value) => {
+        let selections: Record<string, unknown[]> = {};
+        const selector = (key: string, value: any) => {
+          selections[key] = value;
+        };
+        const matched = (patterns as UnknownPattern[]).every((p) =>
+          matchPattern(p, value, selector)
+        );
+        return { matched, selections };
+      },
+      getSelectionKeys: () =>
+        (patterns as UnknownPattern[]).reduce<string[]>(
+          (acc, p) => acc.concat(getSelectionKeys(p)),
+          []
+        ),
+      matcherType: 'and',
+    }),
+  };
+}
 
 /**
  * ### Union pattern
@@ -148,36 +144,36 @@ export const intersection = <
  *     ({ user }) => 'will match { type: "a" | "b" | "c" }'
  *   )
  */
-export const union = <
+export function union<
   input,
   ps extends unknown extends input
     ? [UnknownPattern, ...UnknownPattern[]]
     : [Pattern<input>, ...Pattern<input>[]]
->(
-  ...patterns: ps
-): OrP<input, ps> => ({
-  [symbols.matcher]: () => ({
-    match: (value) => {
-      let selections: Record<string, unknown[]> = {};
-      const selector = (key: string, value: any) => {
-        selections[key] = value;
-      };
-      flatMap(patterns as UnknownPattern[], getSelectionKeys).forEach((key) =>
-        selector(key, undefined)
-      );
-      const matched = (patterns as UnknownPattern[]).some((p) =>
-        matchPattern(p, value, selector)
-      );
-      return { matched, selections };
-    },
-    getSelectionKeys: () =>
-      (patterns as UnknownPattern[]).reduce<string[]>(
-        (acc, p) => acc.concat(getSelectionKeys(p)),
-        []
-      ),
-    matcherType: 'or',
-  }),
-});
+>(...patterns: ps): OrP<input, ps> {
+  return {
+    [symbols.matcher]: () => ({
+      match: (value) => {
+        let selections: Record<string, unknown[]> = {};
+        const selector = (key: string, value: any) => {
+          selections[key] = value;
+        };
+        flatMap(patterns as UnknownPattern[], getSelectionKeys).forEach((key) =>
+          selector(key, undefined)
+        );
+        const matched = (patterns as UnknownPattern[]).some((p) =>
+          matchPattern(p, value, selector)
+        );
+        return { matched, selections };
+      },
+      getSelectionKeys: () =>
+        (patterns as UnknownPattern[]).reduce<string[]>(
+          (acc, p) => acc.concat(getSelectionKeys(p)),
+          []
+        ),
+      matcherType: 'or',
+    }),
+  };
+}
 
 /**
  * ### Not pattern
@@ -188,18 +184,18 @@ export const union = <
  *   .with({ a: P.not(P.string) }, (x) => 'will match { a: number }'
  *   )
  */
-export const not = <
+export function not<
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<input>
->(
-  pattern: p
-): NotP<input, p> => ({
-  [symbols.matcher]: () => ({
-    match: (value) => ({ matched: !matchPattern(pattern, value, () => {}) }),
-    getSelectionKeys: () => [],
-    matcherType: 'not',
-  }),
-});
+>(pattern: p): NotP<input, p> {
+  return {
+    [symbols.matcher]: () => ({
+      match: (value) => ({ matched: !matchPattern(pattern, value, () => {}) }),
+      getSelectionKeys: () => [],
+      matcherType: 'not',
+    }),
+  };
+}
 
 /**
  * ### When pattern
@@ -210,13 +206,15 @@ export const not = <
  *   .with({ age: P.when(age => age > 21) }, (x) => 'will match if value.age > 21'
  *   )
  */
-export const when = <input, narrowed extends input = never>(
+export function when<input, narrowed extends input = never>(
   predicate: GuardFunction<input, narrowed>
-): GuardP<input, narrowed> => ({
-  [symbols.matcher]: () => ({
-    match: (value) => ({ matched: predicate(value) }),
-  }),
-});
+): GuardP<input, narrowed> {
+  return {
+    [symbols.matcher]: () => ({
+      match: (value) => ({ matched: predicate(value) }),
+    }),
+  };
+}
 
 /**
  * ### Select pattern
@@ -377,9 +375,9 @@ export const nullish = when(isNullish);
  * @example
  *   .with(P.instanceOf(SomeClass), () => 'will match on SomeClass instances')
  */
-export const instanceOf = <T extends AnyConstructor>(classConstructor: T) =>
-  when<unknown, InstanceType<T>>(isInstanceOf(classConstructor));
-
+export function instanceOf<T extends AnyConstructor>(classConstructor: T) {
+  return when<unknown, InstanceType<T>>(isInstanceOf(classConstructor));
+}
 /**
  * ### infer
  * `P.infer<typeof somePattern>` will return the type of the value
