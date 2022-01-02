@@ -15,6 +15,7 @@ export type MatcherType =
   | 'or'
   | 'and'
   | 'array'
+  | 'select'
   | 'default';
 
 // We use a separate MatcherProtocol type that preserves
@@ -73,13 +74,11 @@ export type NotP<input, p> = Matchable<input, p, 'not'>;
 
 export type GuardP<input, narrowed> = Matchable<input, narrowed>;
 
-export type SelectP<key extends string> = Matchable<
-  unknown,
-  never,
-  'default',
-  Some<key>,
-  unknown
->;
+export type SelectP<
+  key extends string,
+  input = unknown,
+  p = GuardP<unknown, unknown>
+> = Matchable<input, p, 'select', Some<key>>;
 
 export interface ToExclude<a> {
   [symbols.toExclude]: a;

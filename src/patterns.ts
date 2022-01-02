@@ -229,17 +229,48 @@ export const when = <input, narrowed extends input = never>(
  */
 export function select(): SelectP<symbols.anonymousSelectKey>;
 export function select<k extends string>(key: k): SelectP<k>;
-export function select<k extends string>(
-  key?: k
-): SelectP<k | symbols.anonymousSelectKey> {
+export function select<
+  input,
+  p extends unknown extends input ? UnknownPattern : Pattern<input>
+>(pattern: p): SelectP<symbols.anonymousSelectKey, input, p>;
+export function select<
+  input,
+  p extends unknown extends input ? UnknownPattern : Pattern<input>,
+  k extends string
+>(key: k, pattern: p): SelectP<k, input, p>;
+export function select(
+  ...args: [keyOrPattern?: unknown | string, pattern?: unknown]
+): SelectP<string> {
+  const key: string | undefined =
+    typeof args[0] === 'string' ? args[0] : undefined;
+  const pattern: unknown =
+    args.length === 2
+      ? args[1]
+      : typeof args[0] === 'string'
+      ? undefined
+      : args[0];
   return {
     [symbols.matcher]() {
       return {
-        match: (value) => ({
-          matched: true,
-          selections: { [key ?? symbols.anonymousSelectKey]: value },
-        }),
-        getSelectionKeys: () => [key ?? symbols.anonymousSelectKey],
+        match: (value) => {
+          let selections: Record<string, unknown> = {
+            [key ?? symbols.anonymousSelectKey]: value,
+          };
+          const selector = (key: string, value: any) => {
+            selections[key] = value;
+          };
+          return {
+            matched:
+              pattern === undefined
+                ? true
+                : matchPattern(pattern, value, selector),
+            selections: selections,
+          };
+        },
+        getSelectionKeys: () =>
+          [key ?? symbols.anonymousSelectKey].concat(
+            pattern === undefined ? [] : getSelectionKeys(pattern)
+          ),
       };
     },
   };

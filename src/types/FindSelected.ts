@@ -52,8 +52,10 @@ export type FindSelectionUnion<
     ? MapOptional<ReduceFindSelectionUnion<i, Cast<pattern, any[]>>>
     : matcherType extends 'and'
     ? ReduceFindSelectionUnion<i, Cast<pattern, any[]>>
-    : sel extends None
-    ? never
+    : matcherType extends 'select'
+    ? sel extends Some<infer k>
+      ? { [kk in k]: [i, path] } | FindSelectionUnion<i, pattern, path>
+      : never
     : sel extends Some<infer k>
     ? { [kk in k]: [i, path] }
     : never

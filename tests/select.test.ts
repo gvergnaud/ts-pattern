@@ -5,6 +5,7 @@ import {
   MixedNamedAndAnonymousSelectError,
   SeveralAnonymousSelectError,
 } from '../src/types/FindSelected';
+import { number } from '../src/patterns';
 
 describe('select', () => {
   it('should work with tuples', () => {
@@ -241,5 +242,107 @@ describe('select', () => {
         return 'ok';
       })
       .run();
+  });
+
+  describe('select with subpattern', () => {
+    type Input =
+      | {
+          type: 'a';
+          value:
+            | { type: 'img'; src: string }
+            | { type: 'text'; content: string; length: number };
+        }
+      | {
+          type: 'b';
+          value:
+            | { type: 'user'; username: string }
+            | { type: 'org'; orgId: number };
+        };
+
+    it('should support only selecting if the value matches a subpattern', () => {
+      const f = (input: Input) =>
+        match(input)
+          .with({ type: 'a', value: select({ type: 'img' }) }, (x) => {
+            type t = Expect<Equal<typeof x, { type: 'img'; src: string }>>;
+            return x.src;
+          })
+          .with({ type: 'a', value: select('text', { type: 'text' }) }, (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                { text: { type: 'text'; content: string; length: number } }
+              >
+            >;
+            return x.text.content;
+          })
+          .with({ type: 'b', value: select({ type: 'user' }) }, (x) => {
+            type t = Expect<
+              Equal<typeof x, { type: 'user'; username: string }>
+            >;
+            return x.username;
+          })
+          .with({ type: 'b', value: select('org', { type: 'org' }) }, (x) => {
+            type t = Expect<
+              Equal<typeof x, { org: { type: 'org'; orgId: number } }>
+            >;
+            return x.org.orgId;
+          })
+          .exhaustive();
+
+      expect(f({ type: 'a', value: { type: 'img', src: 'Hello' } })).toEqual(
+        'Hello'
+      );
+
+      expect(
+        f({
+          type: 'a',
+          value: { type: 'text', length: 2, content: 'some text' },
+        })
+      ).toEqual('some text');
+
+      expect(
+        f({ type: 'b', value: { type: 'user', username: 'Gabriel' } })
+      ).toEqual('Gabriel');
+
+      expect(
+        f({
+          type: 'b',
+          value: { type: 'org', orgId: 2 },
+        })
+      ).toEqual(2);
+    });
+
+    it('should be possible to nest named selections', () => {
+      const f = (input: Input) =>
+        match(input)
+          .with(
+            {
+              type: 'a',
+              value: select('text', {
+                type: 'text',
+                content: select('content'),
+                length: select('length'),
+              }),
+            },
+            ({ text, content, length }) => {
+              type t1 = Expect<
+                Equal<
+                  typeof text,
+                  { type: 'text'; content: string; length: number }
+                >
+              >;
+              type t2 = Expect<Equal<typeof content, string>>;
+              type t3 = Expect<Equal<typeof length, number>>;
+              return [text, length, content];
+            }
+          )
+          .otherwise(() => null);
+
+      expect(
+        f({ type: 'a', value: { type: 'text', length: 2, content: 'yo' } })
+      ).toEqual([{ type: 'text', length: 2, content: 'yo' }, 2, 'yo']);
+
+      expect(f({ type: 'a', value: { type: 'img', src: 'yo' } })).toEqual(null);
+    });
   });
 });
