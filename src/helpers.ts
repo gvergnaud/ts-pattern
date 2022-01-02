@@ -1,4 +1,3 @@
-import * as P from './patterns';
 import * as symbols from './symbols';
 import { SelectionType } from './types/FindSelected';
 import { Pattern, Matchable, MatcherType } from './types/Pattern';
@@ -65,8 +64,10 @@ export const matchPattern = (
 
       if (pattern.size === 1) {
         const [subPattern] = Array.from(pattern.values());
-        return Object.values(P).includes(subPattern)
-          ? matchPattern([subPattern], Array.from(value.values()), select)
+        return isMatchable(subPattern)
+          ? Array.from(value.values()).every((v) =>
+              matchPattern(subPattern, v, select)
+            )
           : value.has(subPattern);
       }
 
