@@ -141,9 +141,11 @@ export type FindUnions<
   ? []
   : [IsPlainObject<a>, IsPlainObject<p>] extends [true, true]
   ? Flatten<
-      Values<{
-        [k in keyof a & keyof p]: FindUnions<a[k], p[k], [...path, k]>;
-      }>
+      Values<
+        {
+          [k in keyof a & keyof p]: FindUnions<a[k], p[k], [...path, k]>;
+        }
+      >
     >
   : [];
 
