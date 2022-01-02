@@ -1,5 +1,5 @@
-import { matchPattern, getSelectionKeys, flatMap } from './helpers';
-import * as symbols from './symbols';
+import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers';
+import * as symbols from './internals/symbols';
 import { GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {

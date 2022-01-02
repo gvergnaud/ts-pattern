@@ -1,8 +1,8 @@
 import { Pattern } from './types/Pattern';
 import { GuardValue } from './types/helpers';
 import { Match, PickReturnValue, Unset } from './types/Match';
-import * as symbols from './symbols';
-import { matchPattern } from './helpers';
+import * as symbols from './internals/symbols';
+import { matchPattern } from './internals/helpers';
 
 /**
  * #### match

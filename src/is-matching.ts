@@ -1,7 +1,7 @@
 import { Pattern } from './types/Pattern';
 import { MatchedValue } from './types/Match';
 import * as P from './patterns';
-import { matchPattern } from './helpers';
+import { matchPattern } from './internals/helpers';
 
 /**
  * Helper function taking a pattern and returning a **type guard** function telling

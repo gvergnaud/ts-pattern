@@ -1,6 +1,12 @@
+/**
+ * @module
+ * @private
+ * @internal
+ */
+
 import * as symbols from './symbols';
-import { SelectionType } from './types/FindSelected';
-import { Pattern, Matchable, MatcherType } from './types/Pattern';
+import { SelectionType } from '../types/FindSelected';
+import { Pattern, Matchable, MatcherType } from '../types/Pattern';
 
 // @internal
 export const isObject = (value: unknown): value is Object =>
@@ -95,6 +101,7 @@ export const matchPattern = (
   return Object.is(value, pattern);
 };
 
+// @internal
 export const getSelectionKeys = (pattern: Pattern<any>): string[] => {
   if (isObject(pattern)) {
     if (isMatchable(pattern)) {

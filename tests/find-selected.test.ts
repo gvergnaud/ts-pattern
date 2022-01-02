@@ -1,4 +1,4 @@
-import * as symbols from '../src/symbols';
+import * as symbols from '../src/internals/symbols';
 import {
   FindSelected,
   MixedNamedAndAnonymousSelectError,

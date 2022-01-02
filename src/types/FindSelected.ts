@@ -1,4 +1,4 @@
-import type * as symbols from '../symbols';
+import type * as symbols from '../internals/symbols';
 import type { Cast, Equal, IsAny, UnionToIntersection } from './helpers';
 import type { Matchable, Pattern } from './Pattern';
 
