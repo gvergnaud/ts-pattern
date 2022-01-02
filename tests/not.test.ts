@@ -193,4 +193,52 @@ describe('not', () => {
         .exhaustive()
     ).toThrow();
   });
+
+  it('Doc example', () => {
+    type Input =
+      | string
+      | number
+      | boolean
+      | { key: string }
+      | string[]
+      | [number, number];
+
+    const notMatch = (value: Input) =>
+      match(value)
+        .with(P.not(P.string), (value) => `value is NOT a string: ${value}`)
+        .with(P.not(P.number), (value) => `value is NOT a number: ${value}`)
+        .with(P.not(P.boolean), (value) => `value is NOT a boolean: ${value}`)
+        .with(
+          P.not({ key: P.string }),
+          (value) => `value is NOT an object. ${value}`
+        )
+        .with(
+          P.not(P.array(P.string)),
+          (value) => `value is NOT an array of strings: ${value}`
+        )
+        .with(
+          P.not([P.number, P.number]),
+          (value) => `value is NOT tuple of two numbers: ${value}`
+        )
+        .exhaustive();
+
+    const inputs: { input: Input; expected: string }[] = [
+      { input: 'Hello', expected: 'value is NOT a number: Hello' },
+      { input: 20, expected: 'value is NOT a string: 20' },
+      { input: true, expected: 'value is NOT a string: true' },
+      {
+        input: { key: 'value' },
+        expected: 'value is NOT a string: [object Object]',
+      },
+      {
+        input: ['bonjour', 'hola'],
+        expected: 'value is NOT a string: bonjour,hola',
+      },
+      { input: [1, 2], expected: 'value is NOT a string: 1,2' },
+    ];
+
+    inputs.forEach(({ input, expected }) =>
+      expect(notMatch(input)).toEqual(expected)
+    );
+  });
 });
