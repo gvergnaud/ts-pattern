@@ -375,7 +375,9 @@ export const nullish = when(isNullish);
  * @example
  *   .with(P.instanceOf(SomeClass), () => 'will match on SomeClass instances')
  */
-export function instanceOf<T extends AnyConstructor>(classConstructor: T) {
+export function instanceOf<T extends AnyConstructor>(
+  classConstructor: T
+): GuardP<unknown, InstanceType<T>> {
   return when<unknown, InstanceType<T>>(isInstanceOf(classConstructor));
 }
 /**
