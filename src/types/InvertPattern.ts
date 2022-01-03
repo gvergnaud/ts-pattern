@@ -44,12 +44,12 @@ export type InvertPattern<p> = p extends Matchable<
 >
   ? matcherType extends 'not'
     ? ToExclude<InvertPattern<narrowed>>
+    : matcherType extends 'select'
+    ? InvertPattern<narrowed>
     : matcherType extends 'array'
     ? InvertPattern<narrowed>[]
     : matcherType extends 'optional'
     ? InvertPattern<narrowed> | undefined
-    : matcherType extends 'select'
-    ? InvertPattern<narrowed>
     : matcherType extends 'and'
     ? ReduceIntersection<Cast<narrowed, any[]>>
     : matcherType extends 'or'
@@ -138,14 +138,14 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
         ? empty
         : DeepExclude<i, inv>
       : empty
+    : matcherType extends 'select'
+    ? InvertPatternForExclude<narrowed, i, empty>
     : matcherType extends 'array'
     ? i extends readonly (infer ii)[]
       ? InvertPatternForExclude<narrowed, ii, empty>[]
       : empty
     : matcherType extends 'optional'
     ? InvertPatternForExclude<narrowed, i, empty> | undefined
-    : matcherType extends 'select'
-    ? InvertPatternForExclude<narrowed, i, empty>
     : matcherType extends 'and'
     ? ReduceIntersectionForExclude<Cast<narrowed, any[]>, i>
     : matcherType extends 'or'

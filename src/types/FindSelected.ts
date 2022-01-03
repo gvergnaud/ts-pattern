@@ -42,7 +42,11 @@ export type FindSelectionUnion<
 > = IsAny<i> extends true
   ? never
   : p extends Matchable<any, infer pattern, infer matcherType, infer sel>
-  ? matcherType extends 'array'
+  ? matcherType extends 'select'
+    ? sel extends Some<infer k>
+      ? { [kk in k]: [i, path] } | FindSelectionUnion<i, pattern, path>
+      : never
+    : matcherType extends 'array'
     ? i extends (infer ii)[]
       ? MapList<FindSelectionUnion<ii, pattern>>
       : never
@@ -52,10 +56,6 @@ export type FindSelectionUnion<
     ? MapOptional<ReduceFindSelectionUnion<i, Cast<pattern, any[]>>>
     : matcherType extends 'and'
     ? ReduceFindSelectionUnion<i, Cast<pattern, any[]>>
-    : matcherType extends 'select'
-    ? sel extends Some<infer k>
-      ? { [kk in k]: [i, path] } | FindSelectionUnion<i, pattern, path>
-      : never
     : sel extends Some<infer k>
     ? { [kk in k]: [i, path] }
     : never
