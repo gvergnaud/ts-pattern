@@ -16,7 +16,8 @@
     "test": "jest",
     "clear-test": "jest --clearCache",
     "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics",
-    "fmt": "prettier ./src/** ./tests/** -w"
+    "fmt": "prettier ./src/** ./tests/** -w",
+    "check": "tsc --noEmit --extendedDiagnostics"
   },
   "files": [
     "lib/**/*"
