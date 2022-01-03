@@ -13,7 +13,7 @@ describe('InvertPatternForExclude', () => {
             },
             { x: 1 | 2 | 3 }
           >,
-          { x: 3 }
+          Readonly<{ x: 3 }>
         >
       >,
       Expect<
@@ -24,7 +24,7 @@ describe('InvertPatternForExclude', () => {
             },
             { x: 1 } | { x: 2 } | { x: 3 }
           >,
-          { x: 3 } | { x: 3 } | { x: 3 }
+          Readonly<{ x: 3 } | { x: 3 } | { x: 3 }>
         >
       >
     ];
@@ -43,7 +43,7 @@ describe('InvertPatternForExclude', () => {
             { a: Matchable<unknown, string> },
             { a: string; b: number } | [1, 2]
           >,
-          { a: string }
+          Readonly<{ a: string }>
         >
       >
     ];
@@ -85,9 +85,9 @@ describe('InvertPatternForExclude', () => {
         Expect<
           Equal<
             inverted,
-            {
+            Readonly<{
               key?: 'a' | undefined;
-            }
+            }>
           >
         >
       ];
@@ -97,7 +97,9 @@ describe('InvertPatternForExclude', () => {
         { type2: 'c'; data: OptionalPattern<'f'> },
         { type: 'a' | 'b'; type2: 'c' | 'd'; data?: 'f' | 'g' }
       >;
-      type cases = [Expect<Equal<x, { type2: 'c'; data?: 'f' | undefined }>>];
+      type cases = [
+        Expect<Equal<x, Readonly<{ type2: 'c'; data?: 'f' | undefined }>>>
+      ];
     });
 
     it('an optional pattern in an object should be considered an optional key', () => {
@@ -109,9 +111,9 @@ describe('InvertPatternForExclude', () => {
         Expect<
           Equal<
             inverted,
-            {
+            Readonly<{
               key?: 'a' | undefined;
-            }
+            }>
           >
         >
       ];
@@ -121,7 +123,7 @@ describe('InvertPatternForExclude', () => {
   describe('issue #44', () => {
     it('if the pattern contains unknown keys, inverted this pattern should keep them', () => {
       type input = { sex: 'a' | 'b'; age: 'c' | 'd' };
-      type pattern = { sex: 'a'; unknownKey: 'c' };
+      type pattern = Readonly<{ sex: 'a'; unknownKey: 'c' }>;
       type inverted = InvertPatternForExclude<pattern, input>;
 
       type cases = [Expect<Equal<inverted, pattern>>];

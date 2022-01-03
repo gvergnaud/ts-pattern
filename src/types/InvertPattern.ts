@@ -215,11 +215,11 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
       ? empty
       : Compute<
           {
-            [k in Exclude<keyof p, OptionalKeys<p>>]: k extends keyof i
+            readonly [k in Exclude<keyof p, OptionalKeys<p>>]: k extends keyof i
               ? InvertPatternForExclude<p[k], i[k], empty>
               : InvertPattern<p[k]>;
           } & {
-            [k in OptionalKeys<p>]?: k extends keyof i
+            readonly [k in OptionalKeys<p>]?: k extends keyof i
               ? InvertPatternForExclude<p[k], i[k], empty>
               : InvertPattern<p[k]>;
           }
