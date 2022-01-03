@@ -8,6 +8,7 @@ import type {
   IsPlainObject,
   Length,
   UnionToTuple,
+  TupleKey,
 } from './helpers';
 import { IsMatching } from './IsMatching';
 
@@ -40,21 +41,12 @@ export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
   : BuildMany<a, Distribute<FindUnionsMany<a, p>>>;
 
 // FindUnionsMany :: a -> Union<a> -> PropertyKey[] -> UnionConfig[]
-export type FindUnionsMany<
+export type FindUnionsMany<a, p, path extends PropertyKey[] = []> = IsMatching<
   a,
-  p,
-  path extends PropertyKey[] = []
-> = UnionToTuple<
-  (
-    p extends any
-      ? IsMatching<a, p> extends true
-        ? FindUnions<a, p, path>
-        : []
-      : never
-  ) extends (infer T)[]
-    ? T
-    : never
->;
+  p
+> extends true
+  ? FindUnions<a, p, path>
+  : [];
 
 /**
  * The reason we don't look further down the tree with lists,
@@ -96,56 +88,43 @@ export type FindUnions<
         path: path;
       }
     ]
-  : [a, p] extends [readonly any[], readonly any[]]
-  ? [a, p] extends [
-      readonly [infer a1, infer a2, infer a3, infer a4, infer a5],
-      readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
-    ]
-    ? [
-        ...FindUnions<a1, p1, [...path, 0]>,
-        ...FindUnions<a2, p2, [...path, 1]>,
-        ...FindUnions<a3, p3, [...path, 2]>,
-        ...FindUnions<a4, p4, [...path, 3]>,
-        ...FindUnions<a5, p5, [...path, 4]>
-      ]
-    : [a, p] extends [
-        readonly [infer a1, infer a2, infer a3, infer a4],
-        readonly [infer p1, infer p2, infer p3, infer p4]
-      ]
-    ? [
-        ...FindUnions<a1, p1, [...path, 0]>,
-        ...FindUnions<a2, p2, [...path, 1]>,
-        ...FindUnions<a3, p3, [...path, 2]>,
-        ...FindUnions<a4, p4, [...path, 3]>
-      ]
-    : [a, p] extends [
-        readonly [infer a1, infer a2, infer a3],
-        readonly [infer p1, infer p2, infer p3]
-      ]
-    ? [
-        ...FindUnions<a1, p1, [...path, 0]>,
-        ...FindUnions<a2, p2, [...path, 1]>,
-        ...FindUnions<a3, p3, [...path, 2]>
-      ]
-    : [a, p] extends [
-        readonly [infer a1, infer a2],
-        readonly [infer p1, infer p2]
-      ]
-    ? [...FindUnions<a1, p1, [...path, 0]>, ...FindUnions<a2, p2, [...path, 1]>]
-    : [a, p] extends [readonly [infer a1], readonly [infer p1]]
-    ? FindUnions<a1, p1, [...path, 0]>
+  : a extends readonly [any, ...any[]]
+  ? [FilterTuples<p>] extends [infer tuplePatterns]
+    ? Flatten<
+        Values<{
+          [k in TupleKey & keyof tuplePatterns]: a extends any
+            ? tuplePatterns extends any
+              ? k extends keyof a
+                ? FindUnions<a[k], tuplePatterns[k], [...path, k]>
+                : never
+              : never
+            : never;
+        }>
+      >
     : []
-  : a extends Set<any>
-  ? []
-  : a extends Map<any, any>
-  ? []
-  : [IsPlainObject<a>, IsPlainObject<p>] extends [true, true]
-  ? Flatten<
-      Values<{
-        [k in keyof a & keyof p]: FindUnions<a[k], p[k], [...path, k]>;
-      }>
-    >
+  : IsPlainObject<a> extends true
+  ? [FilterPlainObjects<p>] extends [infer plainObjectPatterns]
+    ? Flatten<
+        Values<{
+          [k in AllKeys<plainObjectPatterns>]: a extends any
+            ? plainObjectPatterns extends any
+              ? k extends keyof a
+                ? FindUnions<a[k], plainObjectPatterns[k], [...path, k]>
+                : never
+              : never
+            : never;
+        }>
+      >
+    : []
   : [];
+
+export type FilterTuples<a> = a extends readonly [any, ...any[]] ? a : never;
+export type FilterPlainObjects<a> = a extends object
+  ? IsPlainObject<a> extends true
+    ? a
+    : never
+  : never;
+export type AllKeys<a> = a extends any ? keyof a : never;
 
 // Distribute :: UnionConfig[] -> Union<[a, path][]>
 export type Distribute<unions extends any[]> = unions extends [

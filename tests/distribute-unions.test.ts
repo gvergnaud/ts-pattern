@@ -3,9 +3,11 @@ import {
   Distribute,
   DistributeMatchingUnions,
   FindUnionsMany,
+  AllKeys,
 } from '../src/types/DistributeUnions';
 
 import { Equal, Expect } from '../src/types/helpers';
+import { IsMatching } from '../src/types/IsMatching';
 import { Option } from './utils';
 
 describe('FindAllUnions', () => {
@@ -934,5 +936,36 @@ describe('DistributeMatchingUnions', () => {
         >
       >
     ];
+  });
+
+  it('', () => {
+    type i = ['a' | 'b', 'c' | 'd'] | ['f' | 'g', 'e' | 'a' | 'z' | 'y'];
+    type p =
+      | { t: 'a'; value: 'c' }
+      | { t: 'b'; value: 'e'; third: { value: 'g' } };
+  });
+
+  it("shouldn't contain both the undistributed and the distributed value if the pattern is a union type", () => {
+    type i =
+      | { t: 'a'; value: 'c' | 'd' }
+      | { t: 'b'; value: 'e' | 'f'; third: { value: 'g' | 'h' } };
+    type p =
+      | { t: 'a'; value: 'c' }
+      | { t: 'b'; value: 'e'; third: { value: 'g' } };
+
+    type x = DistributeMatchingUnions<i, p>;
+    type y = FindUnionsMany<i, p>;
+
+    type t = Expect<
+      Equal<
+        x,
+        | { t: 'a'; value: 'c' }
+        | { t: 'a'; value: 'd' }
+        | { t: 'b'; value: 'e'; third: { value: 'g' } }
+        | { t: 'b'; value: 'f'; third: { value: 'g' } }
+        | { t: 'b'; value: 'e'; third: { value: 'h' } }
+        | { t: 'b'; value: 'f'; third: { value: 'h' } }
+      >
+    >;
   });
 });

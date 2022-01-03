@@ -1,6 +1,8 @@
 import { DeepExclude } from '../src/types/DeepExclude';
 import {
+  AllKeys,
   DistributeMatchingUnions,
+  FilterPlainObjects,
   FindUnions,
   FindUnionsMany,
 } from '../src/types/DistributeUnions';
@@ -418,26 +420,52 @@ describe('DeepExclude', () => {
 
   describe('Multiple patterns', () => {
     it('should work when pattern is a union', () => {
-      type cases = [
-        Expect<
-          Equal<
-            DeepExclude<
-              { x: 'a' | 'b'; y: 'c' | 'd'; z: 'e' | 'f' },
-              { x: 'a'; y: 'c' } | { x: 'b'; y: 'c' }
-            >,
-            { x: 'b'; y: 'd'; z: 'e' | 'f' } | { x: 'a'; y: 'd'; z: 'e' | 'f' }
-          >
-        >,
-        Expect<
-          Equal<
-            DeepExclude<
-              { a: { b: 'x' | 'y' | 'z' }; c: 'u' | 'v' },
-              { c: 'u' } | { a: { b: 'x' } }
-            >,
-            { a: { b: 'y' }; c: 'v' } | { a: { b: 'z' }; c: 'v' }
-          >
+      type allInputs =
+        | null
+        | undefined
+        | number
+        | string
+        | boolean
+        | { a: string; b: number }
+        | [boolean, number]
+        | Map<string, { x: number }>
+        | Set<number>;
+
+      type patterns =
+        | string
+        | number
+        | boolean
+        | readonly [true, never]
+        | Map<string, unknown>
+        | Set<number>
+        | { a: string }
+        | readonly [false, never]
+        | readonly [false, number]
+        | readonly [true, number]
+        | null
+        | undefined;
+
+      type t = Expect<Equal<DeepExclude<allInputs, patterns>, never>>;
+
+      type t2 = Expect<
+        Equal<
+          DeepExclude<
+            { x: 'a' | 'b'; y: 'c' | 'd'; z: 'e' | 'f' },
+            { x: 'a'; y: 'c' } | { x: 'b'; y: 'c' }
+          >,
+          { x: 'b'; y: 'd'; z: 'e' | 'f' } | { x: 'a'; y: 'd'; z: 'e' | 'f' }
         >
-      ];
+      >;
+
+      type t3 = Expect<
+        Equal<
+          DeepExclude<
+            { a: { b: 'x' | 'y' | 'z' }; c: 'u' | 'v' },
+            { c: 'u' } | { a: { b: 'x' } }
+          >,
+          { a: { b: 'y' }; c: 'v' } | { a: { b: 'z' }; c: 'v' }
+        >
+      >;
     });
   });
 

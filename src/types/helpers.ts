@@ -195,3 +195,5 @@ export type GuardValue<F> = F extends (value: any) => value is infer b
 export type GuardFunction<input, narrowed> =
   | ((value: input) => value is Cast<narrowed, input>)
   | ((value: input) => boolean);
+
+export type TupleKey = 0 | 1 | 2 | 3 | 4 | 5;
