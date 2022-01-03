@@ -45,22 +45,25 @@ describe('optional', () => {
   });
 
   it('should support anonymous select', () => {
-    type Input = { a?: { name: string; age: number } } | { b: '' };
+    type Input =
+      | { type: 'a'; a?: { name: string; age: number } }
+      | { type: 'b'; b?: 'test' };
 
-    expect(
-      match<Input>({})
-        .with({ a: P.optional({ name: P.select() }) }, (x) => {
+    const f = (input: Input) =>
+      match(input)
+        .with({ type: 'a', a: P.optional({ name: P.select() }) }, (x) => {
           type t = Expect<Equal<typeof x, string | undefined>>;
           return x;
         })
-        .with({ a: P.optional(P.select()) }, (x) => {
+        .with({ type: 'a', a: P.optional(P.select()) }, (x) => {
           type t = Expect<
             Equal<typeof x, { name: string; age: number } | undefined>
           >;
           return x;
         })
-        .with({ b: P.string }, (x) => {
-          return '1';
+        .with({ type: 'b', b: P.optional(P.select(P.union('test'))) }, (x) => {
+          type t = Expect<Equal<typeof x, 'test' | undefined>>;
+          return x;
         })
         .with({ a: undefined }, (x) => {
           return '1';
@@ -70,6 +73,7 @@ describe('optional', () => {
             Equal<
               typeof x,
               {
+                type: 'a';
                 a: {
                   name: string;
                   age: number;
@@ -79,8 +83,10 @@ describe('optional', () => {
           >;
           return '1';
         })
-        .exhaustive()
-    ).toBe(undefined);
+        .exhaustive();
+
+    expect(f({ type: 'a' })).toBe(undefined);
+    expect(f({ type: 'b', b: 'test' })).toBe('test');
   });
 
   it('should support named select', () => {
