@@ -3,9 +3,10 @@ import {
   Primitives,
   Compute,
   Cast,
-  IsPlainObject,
   IsUnion,
-  ValueOf,
+  HasObjects,
+  PartitionObjects,
+  PartitionKeys,
 } from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
 
@@ -92,39 +93,6 @@ export type UnknownPattern =
   | Primitives
   | AnyMatchable;
 
-/*
-  using (Compute<a>) to avoid the distribution of `a`
-  if it is a union type, and let people pass subpatterns
-  that match several branches in the union at once.
-*/
-type Keys<a> = keyof Compute<a> extends infer shared
-  ? {
-      shared: shared;
-      others: ValueOf<{ [k in keyof a]: k extends shared ? never : k }>;
-    }
-  : never;
-
-type HasObjects<a> = true extends (a extends object ? IsPlainObject<a> : false)
-  ? true
-  : false;
-
-type FilterObjects<a> = a extends object
-  ? IsPlainObject<a> extends true
-    ? a
-    : never
-  : never;
-
-type ExcludeObjects<a> = a extends object
-  ? IsPlainObject<a> extends true
-    ? never
-    : a
-  : a;
-
-type PartitionObjects<a> = {
-  objects: FilterObjects<a>;
-  others: ExcludeObjects<a>;
-};
-
 type StructuralPattern<a> =
   // If all branches are objects, then we match
   // on properties that all objects have (usually the discriminants).
@@ -134,7 +102,7 @@ type StructuralPattern<a> =
         others: infer othersValues;
       }
       ?
-          | (Keys<objects> extends {
+          | (PartitionKeys<objects> extends {
               shared: infer sharedKeys;
               others: infer otherKeys;
             }
