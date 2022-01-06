@@ -1,7 +1,6 @@
 import type * as symbols from '../internals/symbols';
 import {
   Primitives,
-  Compute,
   Cast,
   IsUnion,
   HasObjects,
@@ -106,22 +105,18 @@ type StructuralPattern<a> =
               shared: infer sharedKeys;
               others: infer otherKeys;
             }
-              ? Compute<
-                  {
-                    readonly [k in sharedKeys & keyof objects]?: Pattern<
-                      objects[k]
-                    >;
-                  } & {
-                    readonly [k in Cast<
-                      otherKeys,
-                      string
-                    >]?: objects extends any
-                      ? k extends keyof objects
-                        ? Pattern<objects[k]>
-                        : never
-                      : never;
-                  }
-                >
+              ? {
+                  readonly [k in Cast<
+                    sharedKeys | otherKeys,
+                    string
+                  >]?: k extends sharedKeys
+                    ? Pattern<objects[Cast<k, keyof objects>]>
+                    : objects extends any
+                    ? k extends keyof objects
+                      ? Pattern<objects[k]>
+                      : never
+                    : never;
+                }
               : never)
           | ([othersValues] extends [never]
               ? never
