@@ -346,5 +346,58 @@ describe('select', () => {
 
       expect(f({ type: 'a', value: { type: 'img', src: 'yo' } })).toEqual(null);
     });
+
+    it('should work with union subpatterns', () => {
+      type Input = {
+        value:
+          | { type: 'a'; v: string }
+          | { type: 'b'; v: number }
+          | { type: 'c'; v: boolean };
+      };
+
+      // select directly followed by union
+      const f = (input: Input) =>
+        match(input)
+          .with(
+            { value: P.select(P.union({ type: 'a' }, { type: 'b' })) },
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  { type: 'a'; v: string } | { type: 'b'; v: number }
+                >
+              >;
+
+              return x.v;
+            }
+          )
+          .with({ value: { type: 'c' } }, () => 'c')
+          .exhaustive();
+
+      // select with an object that's a union by union
+      const f2 = (input: Input) =>
+        match(input)
+          .with({ value: P.select({ type: P.union('a', 'b') }) }, (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                { type: 'a'; v: string } | { type: 'b'; v: number }
+              >
+            >;
+
+            return x.v;
+          })
+          .with({ value: { type: 'c' } }, () => 'c')
+          .exhaustive();
+
+      expect(f({ value: { type: 'a', v: 'hello' } })).toEqual('hello');
+      expect(f2({ value: { type: 'a', v: 'hello' } })).toEqual('hello');
+
+      expect(f({ value: { type: 'b', v: 10 } })).toEqual(10);
+      expect(f2({ value: { type: 'b', v: 10 } })).toEqual(10);
+
+      expect(f({ value: { type: 'c', v: true } })).toEqual('c');
+      expect(f2({ value: { type: 'c', v: true } })).toEqual('c');
+    });
   });
 });

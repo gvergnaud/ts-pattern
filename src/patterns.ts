@@ -69,11 +69,13 @@ export function array<
       return {
         match: (value: input) => {
           if (!Array.isArray(value)) return { matched: false };
+
           let selections: Record<string, unknown[]> = {};
 
           const selector = (key: string, value: unknown) => {
             selections[key] = (selections[key] || []).concat([value]);
           };
+
           const matched = value.every((v) =>
             matchPattern(pattern, v, selector)
           );
@@ -226,11 +228,16 @@ export function when<input, narrowed extends input = never>(
  *   )
  */
 export function select(): SelectP<symbols.anonymousSelectKey>;
-export function select<k extends string>(key: k): SelectP<k>;
 export function select<
   input,
-  p extends unknown extends input ? UnknownPattern : Pattern<input>
->(pattern: p): SelectP<symbols.anonymousSelectKey, input, p>;
+  patternOrKey extends
+    | string
+    | (unknown extends input ? UnknownPattern : Pattern<input>)
+>(
+  patternOrKey: patternOrKey
+): patternOrKey extends string
+  ? SelectP<patternOrKey>
+  : SelectP<symbols.anonymousSelectKey, input, patternOrKey>;
 export function select<
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<input>,
