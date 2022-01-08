@@ -85,10 +85,10 @@ export interface ToExclude<a> {
 }
 
 export type UnknownPattern =
-  | readonly [Pattern<unknown>, ...Pattern<unknown>[]]
-  | { readonly [k: string]: Pattern<unknown> }
-  | Set<Pattern<unknown>>
-  | Map<unknown, Pattern<unknown>>
+  | readonly [UnknownPattern, ...UnknownPattern[]]
+  | { readonly [k: string]: UnknownPattern }
+  | Set<UnknownPattern>
+  | Map<unknown, UnknownPattern>
   | Primitives
   | AnyMatchable;
 

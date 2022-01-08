@@ -586,4 +586,42 @@ describe('and, and or patterns', () => {
       )
       .otherwise(() => 'ko');
   });
+
+  it('Should work with P.typed()', () => {
+    class A {
+      constructor(public foo: 'bar' | 'baz') {}
+    }
+
+    class B {
+      constructor(public str: string) {}
+    }
+
+    const f = (input: A | B) =>
+      match(input)
+        .with(
+          P.typed<A | B>().intersection(P.instanceOf(A), { foo: 'bar' }),
+          // prop: A & { foo: 'bar' }
+          (prop) => {
+            type t = Expect<Equal<typeof prop, A & { foo: 'bar' }>>;
+            return 'branch 1';
+          }
+        )
+        .with(
+          P.typed<A | B>().intersection(P.instanceOf(A), { foo: 'baz' }),
+          // prop: A & { foo: 'baz' }
+          (prop) => {
+            type t = Expect<Equal<typeof prop, A & { foo: 'baz' }>>;
+            return 'branch 2';
+          }
+        )
+        .with(
+          P.instanceOf(B),
+          // prop: B
+          (prop) => {
+            type t = Expect<Equal<typeof prop, B>>;
+            return 'branch 3';
+          }
+        )
+        .exhaustive();
+  });
 });

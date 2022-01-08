@@ -124,10 +124,7 @@ export function intersection<
         return { matched, selections };
       },
       getSelectionKeys: () =>
-        (patterns as UnknownPattern[]).reduce<string[]>(
-          (acc, p) => acc.concat(getSelectionKeys(p)),
-          []
-        ),
+        flatMap(patterns as UnknownPattern[], getSelectionKeys),
       matcherType: 'and',
     }),
   };
@@ -168,10 +165,7 @@ export function union<
         return { matched, selections };
       },
       getSelectionKeys: () =>
-        (patterns as UnknownPattern[]).reduce<string[]>(
-          (acc, p) => acc.concat(getSelectionKeys(p)),
-          []
-        ),
+        flatMap(patterns as UnknownPattern[], getSelectionKeys),
       matcherType: 'or',
     }),
   };
@@ -396,3 +390,49 @@ export function instanceOf<T extends AnyConstructor>(
  * type User = P.infer<typeof userPattern>
  */
 export type infer<p extends Pattern<any>> = InvertPattern<p>;
+
+/**
+ * ### typed
+ * `P.typed<SomeType>()` is a way to set the input type this
+ * pattern should match.
+ *
+ * It returns all utility functions to create patterns,
+ * Like `array`, `union`, `intersection`, etc.
+ */
+export function typed<input>(): {
+  array<p extends Pattern<Elem<input>>>(pattern: p): ArrayP<input, p>;
+
+  optional<p extends Pattern<input>>(pattern: p): OptionalP<input, p>;
+
+  intersection<ps extends [Pattern<input>, ...Pattern<input>[]]>(
+    ...patterns: ps
+  ): AndP<input, ps>;
+
+  union<ps extends [Pattern<input>, ...Pattern<input>[]]>(
+    ...patterns: ps
+  ): OrP<input, ps>;
+
+  not<p extends Pattern<input>>(pattern: p): NotP<input, p>;
+
+  when<narrowed extends input = never>(
+    predicate: GuardFunction<input, narrowed>
+  ): GuardP<input, narrowed>;
+
+  select<pattern extends Pattern<input>>(
+    pattern: pattern
+  ): SelectP<symbols.anonymousSelectKey, input, pattern>;
+  select<p extends Pattern<input>, k extends string>(
+    key: k,
+    pattern: p
+  ): SelectP<k, input, p>;
+} {
+  return {
+    array: array as any,
+    optional: optional as any,
+    intersection: intersection as any,
+    union: union as any,
+    not: not as any,
+    select: select as any,
+    when: when as any,
+  };
+}
