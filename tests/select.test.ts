@@ -402,5 +402,36 @@ describe('select', () => {
       expect(f({ value: { type: 'c', v: true } })).toEqual('c');
       expect(f2({ value: { type: 'c', v: true } })).toEqual('c');
     });
+
+    it('Should work with unions without discriminants', () => {
+      type Input =
+        | { type: 'a'; value: string }
+        | { type: 'b'; value: number }
+        | {
+            type: 'c';
+            value:
+              | { type: 'd'; value: boolean }
+              | { type: 'e'; value: string[] }
+              | { type: 'f'; value: number[] };
+          };
+
+      const f = (input: Input) =>
+        match(input)
+          .with({ type: P.union('a', 'b') }, (x) => {
+            return 'branch 1';
+          })
+          .with(
+            {
+              type: 'c',
+              value: { value: P.select(P.union(P.boolean, P.array(P.string))) },
+            },
+            (x) => {
+              type t = Expect<Equal<typeof x, boolean | string[]>>;
+              return 'branch 2';
+            }
+          )
+          .with({ type: 'c', value: { type: 'f' } }, () => 'branch 3')
+          .exhaustive();
+    });
   });
 });
