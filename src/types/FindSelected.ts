@@ -1,5 +1,11 @@
 import type * as symbols from '../internals/symbols';
-import type { Cast, Equal, IsAny, UnionToIntersection } from './helpers';
+import type {
+  Cast,
+  Equal,
+  IsAny,
+  TupleKeys,
+  UnionToIntersection,
+} from './helpers';
 import type { Matchable, Pattern } from './Pattern';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
@@ -59,43 +65,21 @@ export type FindSelectionUnion<
     : sel extends Some<infer k>
     ? { [kk in k]: [i, path] }
     : never
+  : p extends readonly [any, ...any[]]
+  ? i extends readonly [any, ...any[]]
+    ? {
+        [k in TupleKeys & keyof i & keyof p]: FindSelectionUnion<
+          i[k],
+          p[k],
+          [...path, k]
+        >;
+      }[TupleKeys & keyof i & keyof p]
+    : i extends readonly (infer ii)[]
+    ? FindSelectionUnion<ii, p[number], [...path, 0]>
+    : never
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]
-    ? [i, p] extends [
-        readonly [infer i1, infer i2, infer i3, infer i4, infer i5],
-        readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
-      ]
-      ?
-          | FindSelectionUnion<i1, p1, [...path, 1]>
-          | FindSelectionUnion<i2, p2, [...path, 2]>
-          | FindSelectionUnion<i3, p3, [...path, 3]>
-          | FindSelectionUnion<i4, p4, [...path, 4]>
-          | FindSelectionUnion<i5, p5, [...path, 5]>
-      : [i, p] extends [
-          readonly [infer i1, infer i2, infer i3, infer i4],
-          readonly [infer p1, infer p2, infer p3, infer p4]
-        ]
-      ?
-          | FindSelectionUnion<i1, p1, [...path, 1]>
-          | FindSelectionUnion<i2, p2, [...path, 2]>
-          | FindSelectionUnion<i3, p3, [...path, 3]>
-          | FindSelectionUnion<i4, p4, [...path, 4]>
-      : [i, p] extends [
-          readonly [infer i1, infer i2, infer i3],
-          readonly [infer p1, infer p2, infer p3]
-        ]
-      ?
-          | FindSelectionUnion<i1, p1, [...path, 1]>
-          | FindSelectionUnion<i2, p2, [...path, 2]>
-          | FindSelectionUnion<i3, p3, [...path, 3]>
-      : [i, p] extends [
-          readonly [infer i1, infer i2],
-          readonly [infer p1, infer p2]
-        ]
-      ?
-          | FindSelectionUnion<i1, p1, [...path, 1]>
-          | FindSelectionUnion<i2, p2, [...path, 2]>
-      : FindSelectionUnion<ii, pp, [...path, 1]>
+    ? FindSelectionUnion<ii, pp, [...path, 0]>
     : never
   : p extends object
   ? i extends object
@@ -134,6 +118,7 @@ export type SelectionToArgs<selections extends SelectionsRecord, i> = [
   : { [k in keyof selections]: selections[k][0] };
 
 export type Selections<i, p> = Cast<
+  // Intersection isn't really correct, we should OR values together
   UnionToIntersection<{} | FindSelectionUnion<i, p>>,
   SelectionsRecord
 >;

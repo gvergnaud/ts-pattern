@@ -216,6 +216,8 @@ export type Primitives =
   | symbol
   | bigint;
 
+export type TupleKeys = 0 | 1 | 2 | 3 | 4;
+
 export type Union<a, b> = [b] extends [a] ? a : [a] extends [b] ? b : a | b;
 
 /**
