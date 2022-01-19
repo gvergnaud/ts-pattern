@@ -1,12 +1,5 @@
 import type * as symbols from '../internals/symbols';
-import type {
-  Cast,
-  Equal,
-  IsAny,
-  TupleKeys,
-  UnionToIntersection,
-  UnionToTuple,
-} from './helpers';
+import type { Cast, Equal, IsAny, TupleKeys, UnionToTuple } from './helpers';
 import type { Matchable, Pattern } from './Pattern';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
@@ -104,18 +97,15 @@ export type MixedNamedAndAnonymousSelectError<
   __error: never;
 } & a;
 
-export type SelectionToArgs<selections extends SelectionsRecord, i> = [
-  keyof selections
-] extends [never]
-  ? i
-  : symbols.anonymousSelectKey extends keyof selections
-  ? // If the path is never, it means several anonymous patterns were `&` together
-    [selections[symbols.anonymousSelectKey][1]] extends [never]
-    ? SeveralAnonymousSelectError
-    : keyof selections extends symbols.anonymousSelectKey
-    ? selections[symbols.anonymousSelectKey][0]
-    : MixedNamedAndAnonymousSelectError
-  : { [k in keyof selections]: selections[k][0] };
+export type SelectionToArgs<selections extends SelectionsRecord> =
+  symbols.anonymousSelectKey extends keyof selections
+    ? // If the path is never, it means several anonymous patterns were `&` together
+      [selections[symbols.anonymousSelectKey][1]] extends [never]
+      ? SeveralAnonymousSelectError
+      : keyof selections extends symbols.anonymousSelectKey
+      ? selections[symbols.anonymousSelectKey][0]
+      : MixedNamedAndAnonymousSelectError
+    : { [k in keyof selections]: selections[k][0] };
 
 type ConcatSelections<
   a extends SelectionsRecord,
@@ -138,12 +128,14 @@ type ReduceToRecord<
   ? ReduceToRecord<rest, ConcatSelections<Cast<sel, SelectionsRecord>, output>>
   : output;
 
-export type Selections<i, p> = ReduceToRecord<
-  UnionToTuple<FindSelectionUnion<i, p>>
->;
+export type Selections<i, p> = FindSelectionUnion<i, p> extends infer u
+  ? [u] extends [never]
+    ? i
+    : SelectionToArgs<ReduceToRecord<UnionToTuple<u>>>
+  : i;
 
 export type FindSelected<i, p> =
   // This happens if the provided pattern didn't extend Pattern<i>,
   // Because the compiler falls back on the general `Pattern<i>` type
   // in this case.
-  Equal<p, Pattern<i>> extends true ? i : SelectionToArgs<Selections<i, p>, i>;
+  Equal<p, Pattern<i>> extends true ? i : Selections<i, p>;
