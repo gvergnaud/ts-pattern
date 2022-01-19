@@ -5,6 +5,7 @@ import type {
   IsAny,
   TupleKeys,
   UnionToIntersection,
+  UnionToTuple,
 } from './helpers';
 import type { Matchable, Pattern } from './Pattern';
 
@@ -103,7 +104,6 @@ export type MixedNamedAndAnonymousSelectError<
   __error: never;
 } & a;
 
-// SelectionToArgs :: [number | string, value][] -> [...args]
 export type SelectionToArgs<selections extends SelectionsRecord, i> = [
   keyof selections
 ] extends [never]
@@ -117,10 +117,29 @@ export type SelectionToArgs<selections extends SelectionsRecord, i> = [
     : MixedNamedAndAnonymousSelectError
   : { [k in keyof selections]: selections[k][0] };
 
-export type Selections<i, p> = Cast<
-  // Intersection isn't really correct, we should OR values together
-  UnionToIntersection<{} | FindSelectionUnion<i, p>>,
-  SelectionsRecord
+type ConcatSelections<
+  a extends SelectionsRecord,
+  b extends SelectionsRecord
+> = {
+  // keys both on output and sel
+  [k in keyof a & keyof b]: [a[k][0] | b[k][0], a[k][1] & b[k][1]]; // the path has to be the same
+} & {
+  // keys of a
+  [k in Exclude<keyof a, keyof b>]: a[k];
+} & {
+  // keyso of b
+  [k in Exclude<keyof b, keyof a>]: b[k];
+};
+
+type ReduceToRecord<
+  selections extends any[],
+  output extends SelectionsRecord = {}
+> = selections extends [infer sel, ...infer rest]
+  ? ReduceToRecord<rest, ConcatSelections<Cast<sel, SelectionsRecord>, output>>
+  : output;
+
+export type Selections<i, p> = ReduceToRecord<
+  UnionToTuple<FindSelectionUnion<i, p>>
 >;
 
 export type FindSelected<i, p> =

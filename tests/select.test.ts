@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, P } from '../src';
+import { match, P, select } from '../src';
 import { State, Event } from './utils';
 import {
   MixedNamedAndAnonymousSelectError,
@@ -214,7 +214,7 @@ describe('select', () => {
         })
         .with(
           P.typed<Input>().array([
-            P.__,
+            { name: P.__ },
             { post: P.array({ title: P.select() }) },
           ]),
           (titles) => {
