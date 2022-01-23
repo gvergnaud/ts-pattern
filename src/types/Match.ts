@@ -33,7 +33,11 @@ export type Match<
    * If the input matches the pattern provided as first argument,
    * execute the handler function and return its result.
    **/
-  with<p extends Pattern<i>, c, value = MatchedValue<i, InvertPattern<p>>>(
+  with<
+    p extends Pattern<i>,
+    c,
+    value extends MatchedValue<i, InvertPattern<p>>
+  >(
     pattern: p,
     handler: (
       selections: FindSelected<value, p>,
@@ -45,8 +49,8 @@ export type Match<
     p1 extends Pattern<i>,
     p2 extends Pattern<i>,
     c,
-    p = p1 | p2,
-    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
+    p extends p1 | p2,
+    value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
   >(
     pattern1: p1,
     pattern2: p2,
@@ -62,7 +66,7 @@ export type Match<
     pat extends Pattern<i>,
     pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
     c,
-    value = GuardValue<pred>
+    value extends GuardValue<pred>
   >(
     pattern: pat,
     predicate: pred,
@@ -83,8 +87,8 @@ export type Match<
   with<
     ps extends [Pattern<i>, ...Pattern<i>[]],
     c,
-    p = ps[number],
-    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
+    p extends ps[number],
+    value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
   >(
     ...args: [...patterns: ps, handler: (value: value) => PickReturnValue<o, c>]
   ): Match<
@@ -100,10 +104,10 @@ export type Match<
    * When the first function returns a truthy value,
    * execute the handler function and return its result.
    **/
-  when: <pred extends (value: i) => unknown, c, value = GuardValue<pred>>(
+  when<pred extends (value: i) => unknown, c, value extends GuardValue<pred>>(
     predicate: pred,
     handler: (value: value) => PickReturnValue<o, c>
-  ) => Match<
+  ): Match<
     i,
     o,
     | patternValueTuples
@@ -121,9 +125,9 @@ export type Match<
    *
    * Equivalent to `.with(__, () => x).run()`
    **/
-  otherwise: <c>(
+  otherwise<c>(
     handler: (value: i) => PickReturnValue<o, c>
-  ) => PickReturnValue<o, Union<inferredOutput, c>>;
+  ): PickReturnValue<o, Union<inferredOutput, c>>;
 
   /**
    * #### Match.exhaustive
@@ -145,7 +149,7 @@ export type Match<
    * #### Match.run
    * Runs the pattern matching expression and return the result.
    * */
-  run: () => PickReturnValue<o, inferredOutput>;
+  run(): PickReturnValue<o, inferredOutput>;
 };
 
 type DeepExcludeAll<a, tuple extends [any, any]> = DeepExclude<
