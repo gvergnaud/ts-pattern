@@ -33,7 +33,11 @@ export type Match<
    * If the input matches the pattern provided as first argument,
    * execute the handler function and return its result.
    **/
-  with<p extends Pattern<i>, c, value = MatchedValue<i, InvertPattern<p>>>(
+  with<
+    p extends Pattern<i>,
+    c,
+    value extends MatchedValue<i, InvertPattern<p>>
+  >(
     pattern: p,
     handler: (
       selections: FindSelected<value, p>,
@@ -45,7 +49,7 @@ export type Match<
     pat extends Pattern<i>,
     pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
     c,
-    value = GuardValue<pred>
+    value extends GuardValue<pred>
   >(
     pattern: pat,
     predicate: pred,
@@ -65,8 +69,8 @@ export type Match<
   with<
     ps extends [Pattern<i>, ...Pattern<i>[]],
     c,
-    p = ps[number],
-    value = p extends any ? MatchedValue<i, InvertPattern<p>> : never
+    p extends ps[number],
+    value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
   >(
     ...args: [...patterns: ps, handler: (value: value) => PickReturnValue<o, c>]
   ): Match<
@@ -82,7 +86,7 @@ export type Match<
    * When the first function returns a truthy value,
    * execute the handler function and return its result.
    **/
-  when: <pred extends (value: i) => unknown, c, value = GuardValue<pred>>(
+  when: <pred extends (value: i) => unknown, c, value extends GuardValue<pred>>(
     predicate: pred,
     handler: (value: value) => PickReturnValue<o, c>
   ) => Match<

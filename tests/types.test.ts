@@ -280,4 +280,20 @@ describe('types', () => {
       //  @ts-expect-error
       .otherwise(() => '?');
   });
+
+  it('issue #73: should enforce the handler as the right type', () => {
+    const f = (x: number) => x.toLocaleString();
+    const g = (x: string) => x.toUpperCase();
+    const input = Math.random() > 0.5;
+    expect(() =>
+      match(input)
+        // @ts-expect-error
+        .with(true, f)
+        // @ts-expect-error
+        .with(false, g)
+        // @ts-expect-error
+        .with(true, (n: string) => '')
+        .exhaustive()
+    ).toThrow();
+  });
 });
