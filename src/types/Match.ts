@@ -86,10 +86,10 @@ export type Match<
    * When the first function returns a truthy value,
    * execute the handler function and return its result.
    **/
-  when: <pred extends (value: i) => unknown, c, value extends GuardValue<pred>>(
+  when<pred extends (value: i) => unknown, c, value extends GuardValue<pred>>(
     predicate: pred,
     handler: (value: value) => PickReturnValue<o, c>
-  ) => Match<
+  ): Match<
     i,
     o,
     pred extends (value: any) => value is infer narrowed
@@ -106,9 +106,9 @@ export type Match<
    *
    * Equivalent to `.with(__, () => x).run()`
    **/
-  otherwise: <c>(
+  otherwise<c>(
     handler: (value: i) => PickReturnValue<o, c>
-  ) => PickReturnValue<o, Union<inferredOutput, c>>;
+  ): PickReturnValue<o, Union<inferredOutput, c>>;
 
   /**
    * #### Match.exhaustive
@@ -130,7 +130,7 @@ export type Match<
    * #### Match.run
    * Runs the pattern matching expression and return the result.
    * */
-  run: () => PickReturnValue<o, inferredOutput>;
+  run(): PickReturnValue<o, inferredOutput>;
 };
 
 type DeepExcludeAll<a, tupleList extends any[]> = tupleList extends [
