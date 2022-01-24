@@ -284,9 +284,8 @@ describe('types', () => {
   it('issue #73: should enforce the handler as the right type', () => {
     const f = (x: number) => x.toLocaleString();
     const g = (x: string) => x.toUpperCase();
-    const input = Math.random() > 0.5;
     expect(() =>
-      match(input)
+      match(false)
         // @ts-expect-error
         .with(true, f)
         // @ts-expect-error
