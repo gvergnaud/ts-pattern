@@ -59,21 +59,19 @@ export type FindSelectionUnion<
     : sel extends Some<infer k>
     ? { [kk in k]: [i, path] }
     : never
-  : p extends readonly [any, ...any[]]
-  ? i extends readonly [any, ...any[]]
-    ? {
-        [k in TupleKeys & keyof i & keyof p]: FindSelectionUnion<
-          i[k],
-          p[k],
-          [...path, k]
-        >;
-      }[TupleKeys & keyof i & keyof p]
-    : i extends readonly (infer ii)[]
-    ? FindSelectionUnion<ii, p[number], [...path, 0]>
-    : never
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]
-    ? FindSelectionUnion<ii, pp, [...path, 0]>
+    ? p extends readonly [any, ...any[]]
+      ? i extends readonly [any, ...any[]]
+        ? {
+            [k in TupleKeys & keyof i & keyof p]: FindSelectionUnion<
+              i[k],
+              p[k],
+              [...path, k]
+            >;
+          }[TupleKeys & keyof i & keyof p]
+        : FindSelectionUnion<ii, p[number], [...path, 0]>
+      : FindSelectionUnion<ii, pp, [...path, 0]>
     : never
   : p extends object
   ? i extends object
