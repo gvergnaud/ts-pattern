@@ -5,7 +5,8 @@ import {
   IsUnion,
   HasObjects,
   PartitionObjects,
-  PartitionKeys,
+  IntersectObjects,
+  Compute,
 } from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
 
@@ -101,21 +102,11 @@ type StructuralPattern<a> =
         others: infer othersValues;
       }
       ?
-          | (PartitionKeys<objects> extends {
-              shared: infer sharedKeys;
-              others: infer otherKeys;
-            }
+          | (IntersectObjects<objects> extends infer intersectedObjects
               ? {
-                  readonly [k in Cast<
-                    sharedKeys | otherKeys,
-                    string
-                  >]?: k extends sharedKeys
-                    ? Pattern<objects[Cast<k, keyof objects>]>
-                    : objects extends any
-                    ? k extends keyof objects
-                      ? Pattern<objects[k]>
-                      : never
-                    : never;
+                  readonly [k in keyof intersectedObjects]?: Pattern<
+                    Exclude<intersectedObjects[k], undefined>
+                  >;
                 }
               : never)
           | ([othersValues] extends [never]
@@ -165,7 +156,7 @@ type StructuralPattern<a> =
     : a extends Set<infer v>
     ? Set<Pattern<v>>
     : a extends object
-    ? { readonly [k in keyof a]?: Pattern<a[k]> }
+    ? { readonly [k in keyof a]?: Pattern<Exclude<a[k], undefined>> }
     : a;
 
 /**

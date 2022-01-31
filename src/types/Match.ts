@@ -1,4 +1,4 @@
-import type { Pattern, Matchable } from './Pattern';
+import type { Pattern, Matchable, UnknownPattern } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';

@@ -182,7 +182,7 @@ export function union<
  */
 export function not<
   input,
-  p extends unknown extends input ? UnknownPattern : Pattern<input>
+  p extends unknown extends input ? UnknownPattern : Pattern<input> | undefined
 >(pattern: p): NotP<input, p> {
   return {
     [symbols.matcher]: () => ({

@@ -133,15 +133,15 @@ export type Compute<a extends any> = a extends BuiltInObjects
   ? a
   : { [k in keyof a]: a[k] } & unknown;
 
-/*
-  using (Compute<a>) to avoid the distribution of `a`
-  if it is a union type, and let people pass subpatterns
-  that match several branches in the union at once.
-*/
-export type PartitionKeys<a> = keyof Compute<a> extends infer shared
+export type IntersectObjects<a> = (
+  a extends any ? keyof a : never
+) extends infer allKeys
   ? {
-      shared: shared;
-      others: ValueOf<{ [k in keyof a]: k extends shared ? never : k }>;
+      [k in Cast<allKeys, PropertyKey>]: a extends any
+        ? k extends keyof a
+          ? a[k]
+          : never
+        : never;
     }
   : never;
 

@@ -1,5 +1,10 @@
 import { Pattern } from '../src';
-import { Equal, Expect } from '../src/types/helpers';
+import {
+  Equal,
+  Expect,
+  IntersectObjects,
+  PartitionObjects,
+} from '../src/types/helpers';
 import { Matchable } from '../src/types/Pattern';
 
 type ExtendsPattern<a, p extends Pattern<a>> = true;
@@ -27,8 +32,8 @@ describe('Pattern', () => {
               unknown
             >
           | {
-              readonly kind?: Pattern<'some' | 'none'> | undefined;
-              readonly value?: Pattern<number> | undefined;
+              readonly kind?: Pattern<'some' | 'none'>;
+              readonly value?: Pattern<number>;
             }
         >
       >
@@ -36,76 +41,77 @@ describe('Pattern', () => {
   });
 
   it('Should return a single object pattern when the input is a union of objects and other types', () => {
-    type cases = [
-      Expect<
-        Equal<
-          Pattern<{ kind: 'some'; value: number } | { kind: 'none' } | string>,
-          | Matchable<
-              string | { kind: 'some'; value: number } | { kind: 'none' },
-              unknown,
-              any,
-              any,
-              unknown
-            >
-          | {
-              readonly kind?: Pattern<'some' | 'none'> | undefined;
-              readonly value?: Pattern<number> | undefined;
-            }
-          | string
-        >
-      >,
-      Expect<
-        Equal<
-          Pattern<{ a?: { name: string; age: number } } | { b: '' }>,
-          | Matchable<
-              { a?: { name: string; age: number } } | { b: '' },
-              unknown,
-              any,
-              any,
-              unknown
-            >
-          | {
-              readonly a?:
-                | Pattern<{ name: string; age: number } | undefined>
-                | undefined;
-              readonly b?: Pattern<''> | undefined;
-            }
-        >
-      >,
-      Expect<
-        Equal<
-          Pattern<{ name: string; age: number } | undefined>,
-          | Matchable<
-              { name: string; age: number } | undefined,
-              unknown,
-              any,
-              any,
-              unknown
-            >
-          | {
-              readonly name?: Pattern<string> | undefined;
-              readonly age?: Pattern<number> | undefined;
-            }
-          | undefined
-        >
-      >,
-      Expect<
-        Equal<
-          Pattern<{ name: string; age: number } | [type: 'Hello']>,
-          | Matchable<
-              { name: string; age: number } | [type: 'Hello'],
-              unknown,
-              any,
-              any,
-              unknown
-            >
-          | {
-              readonly name?: Pattern<string> | undefined;
-              readonly age?: Pattern<number> | undefined;
-            }
-          | readonly [type: Pattern<'Hello'>]
-        >
+    type t = Pattern<
+      { kind: 'some'; value: number } | { kind: 'none' } | string
+    >;
+
+    type t1 = Expect<
+      Equal<
+        Pattern<{ kind: 'some'; value: number } | { kind: 'none' } | string>,
+        | Matchable<
+            string | { kind: 'some'; value: number } | { kind: 'none' },
+            unknown,
+            any,
+            any,
+            unknown
+          >
+        | {
+            readonly kind?: Pattern<'some' | 'none'>;
+            readonly value?: Pattern<number>;
+          }
+        | string
       >
-    ];
+    >;
+
+    type t2 = Expect<
+      Equal<
+        Pattern<{ a?: { name: string; age: number } } | { b: '' }>,
+        | Matchable<
+            { a?: { name: string; age: number } } | { b: '' },
+            unknown,
+            any,
+            any,
+            unknown
+          >
+        | {
+            readonly a?: Pattern<{ name: string; age: number }>;
+            readonly b?: Pattern<''>;
+          }
+      >
+    >;
+    type t3 = Expect<
+      Equal<
+        Pattern<{ name: string; age: number } | undefined>,
+        | Matchable<
+            { name: string; age: number } | undefined,
+            unknown,
+            any,
+            any,
+            unknown
+          >
+        | {
+            readonly name?: Pattern<string>;
+            readonly age?: Pattern<number>;
+          }
+        | undefined
+      >
+    >;
+    type t4 = Expect<
+      Equal<
+        Pattern<{ name: string; age: number } | [type: 'Hello']>,
+        | Matchable<
+            { name: string; age: number } | [type: 'Hello'],
+            unknown,
+            any,
+            any,
+            unknown
+          >
+        | {
+            readonly name?: Pattern<string>;
+            readonly age?: Pattern<number>;
+          }
+        | readonly [type: Pattern<'Hello'>]
+      >
+    >;
   });
 });

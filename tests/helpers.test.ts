@@ -7,6 +7,7 @@ import {
   Iterator,
   LeastUpperBound,
   Slice,
+  IntersectObjects,
 } from '../src/types/helpers';
 
 describe('helpers', () => {
@@ -120,6 +121,55 @@ describe('helpers', () => {
       class B {}
       class A extends B {}
       type t = Expect<Equal<LeastUpperBound<A | B, B>, B>>;
+    });
+  });
+
+  describe('IntersectObjects', () => {
+    it('', () => {
+      type x = IntersectObjects<
+        | { k: 'a'; value: number; a: string }
+        | { k: 'b'; value: string; b: string }
+        | { k: 'c'; value: number; c: string }
+      >;
+
+      type t = Expect<
+        Equal<
+          x,
+          {
+            k: 'a' | 'b' | 'c';
+            value: number | string;
+            a: string;
+            b: string;
+            c: string;
+          }
+        >
+      >;
+
+      type t2 = Expect<
+        Equal<
+          IntersectObjects<
+            | { k: 'a'; value: number }
+            | { k: 'b'; value: string }
+            | { k: 'c'; value: number }
+          >,
+          {
+            k: 'a' | 'b' | 'c';
+            value: number | string;
+          }
+        >
+      >;
+
+      type t3 = Expect<
+        Equal<
+          IntersectObjects<
+            | { type: 1; data: number }
+            | { type: 'two'; data: string }
+            | { type: 3; data: boolean }
+            | { type: 4 }
+          >,
+          { type: 1 | 'two' | 3 | 4; data: number | string | boolean }
+        >
+      >;
     });
   });
 });
