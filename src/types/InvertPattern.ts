@@ -43,21 +43,15 @@ export type InvertPattern<p> = p extends Matchable<
   infer matcherType,
   any
 >
-  ? matcherType extends 'not'
-    ? ToExclude<InvertPattern<narrowed>>
-    : matcherType extends 'select'
-    ? InvertPattern<narrowed>
-    : matcherType extends 'array'
-    ? InvertPattern<narrowed>[]
-    : matcherType extends 'optional'
-    ? InvertPattern<narrowed> | undefined
-    : matcherType extends 'and'
-    ? ReduceIntersection<Cast<narrowed, any[]>>
-    : matcherType extends 'or'
-    ? ReduceUnion<Cast<narrowed, any[]>>
-    : [narrowed] extends [never]
-    ? input
-    : narrowed
+  ? {
+      not: ToExclude<InvertPattern<narrowed>>;
+      select: InvertPattern<narrowed>;
+      array: InvertPattern<narrowed>[];
+      optional: InvertPattern<narrowed> | undefined;
+      and: ReduceIntersection<Cast<narrowed, any[]>>;
+      or: ReduceUnion<Cast<narrowed, any[]>>;
+      default: [narrowed] extends [never] ? input : narrowed;
+    }[matcherType]
   : p extends Primitives
   ? p
   : p extends readonly (infer pp)[]
@@ -139,29 +133,27 @@ type ExcludeIfExists<a, b> = [b] extends [never]
  */
 export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
   infer matchableInput,
-  infer narrowedOrSubpattern,
+  infer subpattern,
   infer matcherType,
   any,
   infer excluded
 >
-  ? matcherType extends 'not'
-    ? ExcludeIfExists<
+  ? {
+      select: InvertPatternForExclude<subpattern, i, empty>;
+      array: i extends readonly (infer ii)[]
+        ? InvertPatternForExclude<subpattern, ii, empty>[]
+        : empty;
+      optional: InvertPatternForExclude<subpattern, i, empty> | undefined;
+      and: ReduceIntersectionForExclude<Cast<subpattern, any[]>, i>;
+      or: ReduceUnionForExclude<Cast<subpattern, any[]>, i>;
+      not: ExcludeIfExists<
+        // we use matchableInput if possible because it represent the
+        // union of all possible value, but i is only one of these values.
         unknown extends matchableInput ? i : matchableInput,
-        InvertPatternForExclude<narrowedOrSubpattern, i>
-      >
-    : matcherType extends 'select'
-    ? InvertPatternForExclude<narrowedOrSubpattern, i, empty>
-    : matcherType extends 'array'
-    ? i extends readonly (infer ii)[]
-      ? InvertPatternForExclude<narrowedOrSubpattern, ii, empty>[]
-      : empty
-    : matcherType extends 'optional'
-    ? InvertPatternForExclude<narrowedOrSubpattern, i, empty> | undefined
-    : matcherType extends 'and'
-    ? ReduceIntersectionForExclude<Cast<narrowedOrSubpattern, any[]>, i>
-    : matcherType extends 'or'
-    ? ReduceUnionForExclude<Cast<narrowedOrSubpattern, any[]>, i>
-    : excluded
+        InvertPatternForExclude<subpattern, i>
+      >;
+      default: excluded;
+    }[matcherType]
   : p extends Primitives
   ? IsLiteral<p> extends true
     ? p
