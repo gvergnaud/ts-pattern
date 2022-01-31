@@ -50,7 +50,7 @@ export function optional<
   };
 }
 
-type Elem<xs> = xs extends Array<infer x> ? x : unknown;
+type Elem<xs> = xs extends Array<infer x> ? x : never;
 
 /**
  * ### Array pattern
