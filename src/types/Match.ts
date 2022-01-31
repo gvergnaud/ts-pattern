@@ -75,16 +75,49 @@ export type Match<
   >;
 
   with<
-    ps extends [inputPattern, ...inputPattern[]],
+    p1 extends inputPattern,
+    p2 extends inputPattern,
     c,
-    p extends ps[number],
+    p extends p1 | p2,
     value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
   >(
-    ...args: [...patterns: ps, handler: (value: value) => PickReturnValue<o, c>]
+    p1: p1,
+    p2: p2,
+    handler: (value: value) => PickReturnValue<o, c>
   ): Match<
     i,
     o,
-    [...patternValueTuples, ...MakeTuples<ps, value>],
+    [...patternValueTuples, [p1, value], [p2, value]],
+    Union<inferredOutput, c>,
+    inputPattern
+  >;
+
+  with<
+    p1 extends inputPattern,
+    p2 extends inputPattern,
+    p3 extends inputPattern,
+    ps extends inputPattern[],
+    c,
+    p extends p1 | p2 | p3 | ps[number],
+    value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
+  >(
+    ...args: [
+      p1: p1,
+      p2: p2,
+      p3: p3,
+      ...patterns: ps,
+      handler: (value: value) => PickReturnValue<o, c>
+    ]
+  ): Match<
+    i,
+    o,
+    [
+      ...patternValueTuples,
+      [p1, value],
+      [p2, value],
+      [p3, value],
+      ...MakeTuples<ps, value>
+    ],
     Union<inferredOutput, c>,
     inputPattern
   >;
