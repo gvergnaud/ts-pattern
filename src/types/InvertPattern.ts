@@ -6,6 +6,7 @@ import {
   ValueOf,
   Compute,
   Cast,
+  Equal,
 } from './helpers';
 import type { Matchable, ToExclude } from './Pattern';
 
@@ -122,34 +123,44 @@ export type ReduceUnionForExclude<
     >
   : output;
 
+type ExcludeIfExists<a, b> = [b] extends [never]
+  ? never
+  : DeepExclude<a, b> extends infer excluded
+  ? Equal<a, excluded> extends true
+    ? // unknown is much faster because
+      // this won't lead to fully distrubiting the input type
+      // and is equivalent to `a`
+      unknown
+    : excluded
+  : never;
+
 /**
  * ### InvertPatternForExclude
  */
 export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
-  any,
-  infer narrowed,
+  infer matchableInput,
+  infer narrowedOrSubpattern,
   infer matcherType,
   any,
   infer excluded
 >
   ? matcherType extends 'not'
-    ? InvertPatternForExclude<narrowed, i, unknown> extends infer inv
-      ? [inv] extends [never]
-        ? empty
-        : DeepExclude<i, inv>
-      : empty
+    ? ExcludeIfExists<
+        unknown extends matchableInput ? i : matchableInput,
+        InvertPatternForExclude<narrowedOrSubpattern, i>
+      >
     : matcherType extends 'select'
-    ? InvertPatternForExclude<narrowed, i, empty>
+    ? InvertPatternForExclude<narrowedOrSubpattern, i, empty>
     : matcherType extends 'array'
     ? i extends readonly (infer ii)[]
-      ? InvertPatternForExclude<narrowed, ii, empty>[]
+      ? InvertPatternForExclude<narrowedOrSubpattern, ii, empty>[]
       : empty
     : matcherType extends 'optional'
-    ? InvertPatternForExclude<narrowed, i, empty> | undefined
+    ? InvertPatternForExclude<narrowedOrSubpattern, i, empty> | undefined
     : matcherType extends 'and'
-    ? ReduceIntersectionForExclude<Cast<narrowed, any[]>, i>
+    ? ReduceIntersectionForExclude<Cast<narrowedOrSubpattern, any[]>, i>
     : matcherType extends 'or'
-    ? ReduceUnionForExclude<Cast<narrowed, any[]>, i>
+    ? ReduceUnionForExclude<Cast<narrowedOrSubpattern, any[]>, i>
     : excluded
   : p extends Primitives
   ? IsLiteral<p> extends true
