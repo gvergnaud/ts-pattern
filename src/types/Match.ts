@@ -53,28 +53,6 @@ export type Match<
   >;
 
   with<
-    pat extends inputPattern,
-    pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
-    c,
-    value extends GuardValue<pred>
-  >(
-    pattern: pat,
-    predicate: pred,
-    handler: (
-      selections: FindSelected<value, pat>,
-      value: value
-    ) => PickReturnValue<o, c>
-  ): Match<
-    i,
-    o,
-    pred extends (value: any) => value is infer narrowed
-      ? [...patternValueTuples, [Matchable<unknown, narrowed>, value]]
-      : patternValueTuples,
-    Union<inferredOutput, c>,
-    inputPattern
-  >;
-
-  with<
     p1 extends inputPattern,
     p2 extends inputPattern,
     c,
@@ -118,6 +96,28 @@ export type Match<
       [p3, value],
       ...MakeTuples<ps, value>
     ],
+    Union<inferredOutput, c>,
+    inputPattern
+  >;
+
+  with<
+    pat extends inputPattern,
+    pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
+    c,
+    value extends GuardValue<pred>
+  >(
+    pattern: pat,
+    predicate: pred,
+    handler: (
+      selections: FindSelected<value, pat>,
+      value: value
+    ) => PickReturnValue<o, c>
+  ): Match<
+    i,
+    o,
+    pred extends (value: any) => value is infer narrowed
+      ? [...patternValueTuples, [Matchable<unknown, narrowed>, value]]
+      : patternValueTuples,
     Union<inferredOutput, c>,
     inputPattern
   >;

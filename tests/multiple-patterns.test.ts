@@ -236,4 +236,30 @@ describe('Multiple patterns', () => {
         .with({ t: 'b' }, (x) => 2)
         .run();
   });
+
+  it('issue #74: inference must work on every pattern in the list', () => {
+    match({ a: [1, 2, 3, 4] })
+      .with(
+        {
+          a: P.when((arr) => {
+            type t = Expect<Equal<typeof arr, number[]>>;
+            return arr.length === 4;
+          }),
+        },
+        {
+          a: P.when((arr) => {
+            type t = Expect<Equal<typeof arr, number[]>>;
+            return arr.length === 4;
+          }),
+        },
+        {
+          a: P.when((arr) => {
+            type t = Expect<Equal<typeof arr, number[]>>;
+            return arr.length === 4;
+          }),
+        },
+        ({ a }) => {}
+      )
+      .exhaustive();
+  });
 });
