@@ -252,16 +252,14 @@ describe('when', () => {
   });
 
   it('should narrow the type of the input based on the pattern', () => {
-    type Option<T> = { type: 'some'; value: T } | { type: 'none' };
-
     const optionalFizzBuzz = (optionalNumber: Option<number>) =>
       match(optionalNumber)
         // You can add up to 3 guard functions after your
         // pattern. They must all return true for the
         // handler to be executed.
         .with(
-          { type: 'some' },
-          // `someNumber` is infered to be a { type: "some"; value: number }
+          { kind: 'some' },
+          // `someNumber` is infered to be a { kind: "some"; value: number }
           // based on the pattern provided as first argument.
           (someNumber) =>
             someNumber.value % 5 === 0 && someNumber.value % 3 === 0,
@@ -269,7 +267,7 @@ describe('when', () => {
         )
         .with(
           {
-            type: 'some',
+            kind: 'some',
           },
           // you can also use destructuring
           ({ value }) => value % 5 === 0,
@@ -280,15 +278,15 @@ describe('when', () => {
         // a subset of your input.
         .with(
           {
-            type: 'some',
+            kind: 'some',
             value: when((value) => value % 3 === 0),
           },
           () => 'fizz'
         )
         // for all other numbers, just convert them to a string.
-        .with({ type: 'some' }, ({ value }) => value.toString())
+        .with({ kind: 'some' }, ({ value }) => value.toString())
         // if it's a none, return "nope"
-        .with({ type: 'none' }, () => 'nope')
-        .run();
+        .with({ kind: 'none' }, () => 'nope')
+        .exhaustive();
   });
 });

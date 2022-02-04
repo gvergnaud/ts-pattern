@@ -59,4 +59,20 @@ describe('type errors', () => {
         .with({ kind: 'none' }, () => 0)
         .exhaustive();
   });
+
+  it("shouldn't allow when guards with an invalid input", () => {
+    const optionalFizzBuzz = (optionalNumber: Option<number>) =>
+      match(optionalNumber)
+        .with(
+          {
+            kind: 'some',
+            // @ts-expect-error
+            value: P.when((value: string) => value.startsWith('hello')),
+          },
+          () => 'fizz'
+        )
+        .with({ kind: 'none' }, () => 'nope')
+        .with({ kind: 'some' }, () => 'some')
+        .exhaustive();
+  });
 });
