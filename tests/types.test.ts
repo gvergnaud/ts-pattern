@@ -122,7 +122,7 @@ describe('types', () => {
         }
       )
       .with(
-        when<Input>((x) => {
+        P.typed<Input>().when((x) => {
           type t = Expect<Equal<typeof x, Input>>;
           return true;
         }),

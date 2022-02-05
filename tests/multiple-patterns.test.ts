@@ -260,6 +260,7 @@ describe('Multiple patterns', () => {
         },
         ({ a }) => {}
       )
+      .with({ a: P.array(P.number) }, () => {})
       .exhaustive();
   });
 });

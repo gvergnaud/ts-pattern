@@ -17,7 +17,7 @@ describe('when', () => {
       expect(
         match(value)
           .with(
-            when((x: number) => x > 10 && x < 50),
+            P.typed<number>().when((x) => x > 10 && x < 50),
             () => true
           )
           .otherwise(() => false)
@@ -65,6 +65,39 @@ describe('when', () => {
     type t = Expect<Equal<typeof res, Option<string>>>;
 
     expect(res).toEqual(expectedOutput);
+  });
+
+  it('should correctly infer the input type, even when used in another function pattern', () => {
+    const f = (x: { a: number[] }) =>
+      match(x)
+        .with(
+          {
+            a: P.array(
+              P.when((x) => {
+                type t = Expect<Equal<typeof x, number>>;
+                return true;
+              })
+            ),
+          },
+          () => 'true'
+        )
+        .otherwise(() => 'false');
+  });
+
+  it('should accept other values  than booleans in output', () => {
+    const f = (x: { a: number[] }) =>
+      match(x)
+        .with(
+          {
+            a: P.when(() => {
+              return 'anything truthy';
+            }),
+          },
+          () => 'true'
+        )
+        .otherwise(() => 'false');
+
+    expect(f({ a: [] })).toEqual('true');
   });
 
   describe('`with` with `when` clauses', () => {

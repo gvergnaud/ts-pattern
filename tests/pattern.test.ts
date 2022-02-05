@@ -1,10 +1,5 @@
 import { Pattern } from '../src';
-import {
-  Equal,
-  Expect,
-  IntersectObjects,
-  PartitionObjects,
-} from '../src/types/helpers';
+import { Equal, Expect } from '../src/types/helpers';
 import { Matchable } from '../src/types/Pattern';
 
 type ExtendsPattern<a, p extends Pattern<a>> = true;
@@ -32,8 +27,11 @@ describe('Pattern', () => {
               unknown
             >
           | {
-              readonly kind?: Pattern<'some' | 'none'>;
+              readonly kind?: Pattern<'some'>;
               readonly value?: Pattern<number>;
+            }
+          | {
+              readonly kind?: Pattern<'none'>;
             }
         >
       >
@@ -56,8 +54,11 @@ describe('Pattern', () => {
             unknown
           >
         | {
-            readonly kind?: Pattern<'some' | 'none'>;
+            readonly kind?: Pattern<'some'>;
             readonly value?: Pattern<number>;
+          }
+        | {
+            readonly kind?: Pattern<'none'>;
           }
         | string
       >
@@ -75,6 +76,8 @@ describe('Pattern', () => {
           >
         | {
             readonly a?: Pattern<{ name: string; age: number }>;
+          }
+        | {
             readonly b?: Pattern<''>;
           }
       >

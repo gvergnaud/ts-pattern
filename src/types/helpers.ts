@@ -145,42 +145,6 @@ export type IntersectObjects<a> = (
     }
   : never;
 
-export type HasObjects<a> = true extends (
-  a extends object ? IsPlainObject<a> : false
-)
-  ? true
-  : false;
-
-export type FilterObjects<a> = a extends object
-  ? IsPlainObject<a> extends true
-    ? a
-    : never
-  : never;
-
-export type ExcludeObjects<a> = a extends object
-  ? IsPlainObject<a> extends true
-    ? never
-    : a
-  : a;
-
-export type PartitionObjects<a> = {
-  objects: FilterObjects<a>;
-  others: ExcludeObjects<a>;
-};
-
-// All :: Bool[] -> Bool
-export type All<xs> = xs extends readonly [infer head, ...infer tail]
-  ? boolean extends head
-    ? false
-    : head extends true
-    ? All<tail>
-    : false
-  : true;
-
-export type Or<a extends boolean, b extends boolean> = true extends a | b
-  ? true
-  : false;
-
 export type WithDefault<a, def> = [a] extends [never] ? def : a;
 
 export type IsLiteral<T> = T extends null | undefined
