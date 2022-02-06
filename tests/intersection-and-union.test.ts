@@ -530,6 +530,124 @@ describe('and, and or patterns', () => {
       ).toEqual('other');
     });
 
+    it('Composing P.union and P.array should work on union of arrays', () => {
+      type Input = {
+        value:
+          | { type: 'a'; n: number }[]
+          | { type: 'b'; s: string }[]
+          | { type: 'c'; b: boolean }[];
+      };
+
+      const f = (input: Input) => {
+        return match(input)
+          .with({ value: P.array({ type: P.union('a', 'b') }) }, (x) => {
+            type t = Expect<
+              Equal<
+                typeof x,
+                {
+                  value:
+                    | { type: 'a'; n: number }[]
+                    | { type: 'b'; s: string }[];
+                }
+              >
+            >;
+            return x.value[0].type;
+          })
+          .with(
+            { value: P.array(P.union({ type: 'a' }, { type: 'b' })) },
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  {
+                    value:
+                      | { type: 'a'; n: number }[]
+                      | { type: 'b'; s: string }[];
+                  }
+                >
+              >;
+              return x.value[0].type;
+            }
+          )
+          .with({ value: P.array(P.__) }, () => 'other')
+          .exhaustive();
+      };
+
+      expect(
+        f({
+          value: [
+            { type: 'b', s: 'str' },
+            { type: 'b', s: '2' },
+          ],
+        })
+      ).toEqual('b');
+      expect(
+        f({
+          value: [
+            { type: 'a', n: 2 },
+            { type: 'a', n: 3 },
+          ],
+        })
+      ).toEqual('a');
+    });
+
+    it('Composing P.union and P.array should work on union of objects containing arrays', () => {
+      type Input =
+        | {
+            value: { type: 'a'; n: number }[];
+          }
+        | {
+            value: { type: 'b'; s: string }[];
+          }
+        | {
+            value: { type: 'c'; b: boolean }[];
+          };
+
+      const f = (input: Input) => {
+        return (
+          match(input)
+            .with(
+              { value: P.array(P.union({ type: 'a' }, { type: 'b' })) },
+              (x) => {
+                type t = Expect<
+                  Equal<
+                    typeof x,
+                    | {
+                        value: { type: 'a'; n: number }[];
+                      }
+                    | {
+                        value: { type: 'b'; s: string }[];
+                      }
+                  >
+                >;
+                return x.value[0].type;
+              }
+            )
+            // @ts-expect-error: FIXME: ideal this should work
+            .with({ value: P.array({ type: P.union('a', 'b') }) }, (x) => {})
+            .with({ value: P.array(P.__) }, () => 'other')
+            .exhaustive()
+        );
+      };
+
+      expect(
+        f({
+          value: [
+            { type: 'b', s: 'str' },
+            { type: 'b', s: '2' },
+          ],
+        })
+      ).toEqual('b');
+      expect(
+        f({
+          value: [
+            { type: 'a', n: 2 },
+            { type: 'a', n: 3 },
+          ],
+        })
+      ).toEqual('a');
+    });
+
     it('P.optional should work with unions and intersections', () => {
       type Input = {
         value?:
