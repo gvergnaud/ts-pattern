@@ -1,6 +1,6 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, P } from '../src';
-import { Option } from './utils';
+import { Option } from './types-catalog/utils';
 
 describe('not', () => {
   it('should work at the top level', () => {

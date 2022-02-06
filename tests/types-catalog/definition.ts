@@ -1,4 +1,4 @@
-import { match, P } from '../src';
+import { Compute } from '../../src/types/helpers';
 
 export interface RequestStyle {
   palette?: string;
@@ -230,63 +230,63 @@ export type GenericQuery =
  * For any new kind of request, use the request_type determinant property
  */
 export interface MetricRequest {
-  ['QueryKeys.METRICS']: MetricQuery;
+  metrics_query: MetricQuery;
   preTemplateQuery?: string;
   _query_options?: object;
 }
 export interface LogRequest {
-  ['QueryKeys.LOGS']: LogQuery;
+  logs_query: LogQuery;
 }
 export interface ApmRequest {
-  ['QueryKeys.APM']: APMQuery;
+  apm_query: APMQuery;
 }
 export interface ApmStatsRequest {
-  ['QueryKeys.APM_STATS']: ApmStatsQuery;
+  apm_stats_query: ApmStatsQuery;
 }
 export interface RumRequest {
-  ['QueryKeys.RUM']: RumQuery;
+  rum_query: RumQuery;
 }
 export interface ProfilingMetricsRequest {
-  ['QueryKeys.PROFILING_METRICS']: ProfilingMetricsQuery;
+  profiling_metrics_query: ProfilingMetricsQuery;
 }
 export interface SecurityRequest {
-  ['QueryKeys.SECURITY']: SecurityQuery;
+  security_query: SecurityQuery;
 }
 export interface LegacyEventRequest {
-  ['QueryKeys.LEGACY_EVENTS']: LegacyEventQuery;
+  legacy_events_query: LegacyEventQuery;
 }
 export interface EventRequest {
-  ['QueryKeys.EVENTS']: EventQuery;
+  events_query: EventQuery;
 }
 export interface MonitorEvaluationRequest {
-  ['QueryKeys.MONITOR_EVALUATION']: MonitorEvaluationQuery;
+  monitor_evaluation_query: MonitorEvaluationQuery;
 }
 export interface ProcessRequest {
-  ['QueryKeys.PROCESS']: ProcessQuery;
+  process_query: ProcessQuery;
 }
 export interface CiPipelineRequest {
-  ['QueryKeys.CI_PIPELINE']: CiPipelineQuery;
+  ci_pipeline_query: CiPipelineQuery;
 }
 export interface CiTestRequest {
-  ['QueryKeys.CI_TEST']: CiTestQuery;
+  ci_test_query: CiTestQuery;
 }
 export interface ComplianceFindingsRequest {
-  ['QueryKeys.COMPLIANCE_FINDINGS']: ComplianceFindingsQuery;
+  compliance_findings_query: ComplianceFindingsQuery;
 }
 export interface DatabaseRequest {
-  ['QueryKeys.DATABASE_QUERY']: DatabaseQuery;
+  database_query_query: DatabaseQuery;
 }
 export interface IssuesRequest {
-  ['QueryKeys.ISSUES_QUERY']: IssuesQuery;
+  issues_query_query: IssuesQuery;
 }
 export interface AuditRequest {
-  ['QueryKeys.AUDIT']: AuditQuery;
+  audit_query: AuditQuery;
 }
 export interface AppsecEventRequest {
-  ['QueryKeys.APPSEC_EVENTS']: AppsecEventQuery;
+  appsec_events_query: AppsecEventQuery;
 }
 export interface AppsecSpanRequest {
-  ['QueryKeys.APPSEC_SPANS']: AppsecSpanQuery;
+  appsec_spans_query: AppsecSpanQuery;
 }
 
 /* Formulas + Functions Query Definition Format */
@@ -484,13 +484,13 @@ export type FormulaRequest = TimeseriesFormulaRequest | ScalarFormulaRequest;
 export type DDSQLTimeseriesRequest = {
   request_type: 'ddsql';
   response_format: 'timeseries';
-  ['QueryKeys.DDSQL']: string;
+  ddsql_query: string;
 };
 
 export type DDSQLTableRequest = {
   request_type: 'ddsql';
   response_format: 'scalar';
-  ['QueryKeys.DDSQL']: string;
+  ddsql_query: string;
 };
 
 export type DDSQLRequest = DDSQLTimeseriesRequest | DDSQLTableRequest;
@@ -588,14 +588,14 @@ export interface TimeseriesRequest {
   on_right_yaxis?: boolean;
 }
 
-export type TimeseriesTileDefRequest = Request<
+export type TimeseriesDefinitionRequest = Request<
   TimeseriesDataSourceRequest,
   TimeseriesRequest
 >;
 
-export interface TimeseriesTileDef {
+export interface TimeseriesDefinition {
   viz: 'timeseries';
-  requests: TimeseriesTileDefRequest[];
+  requests: TimeseriesDefinitionRequest[];
   yaxis?: Axis;
   right_yaxis?: Axis;
   events?: Event[];
@@ -609,7 +609,11 @@ export type TableFormula = Formula & {
   conditional_formats?: ConditionalFormat[];
 };
 
-export type TableFormulaRequest = { formulas?: TableFormula[] };
+export type TableFormulaRequest = {
+  formulas?: TableFormula[];
+  response_format: 'scalar';
+  queries: FormulaQueries;
+};
 
 export type QueryTableDataSourceRequest =
   | MetricRequest
@@ -632,29 +636,29 @@ export interface QueryTableRequest {
   conditional_formats?: ConditionalFormat[];
 }
 
-export type QueryTableTileDefRequest = Request<
+export type QueryTableDefinitionRequest = Request<
   QueryTableDataSourceRequest,
   QueryTableRequest
 >;
 
 export type HasSearchBar = 'always' | 'never' | 'auto';
 
-export interface QueryTableTileDef {
+export interface QueryTableDefinition {
   viz: 'query_table';
-  requests: QueryTableTileDefRequest[];
+  requests: QueryTableDefinitionRequest[];
   has_search_bar?: HasSearchBar;
   custom_links?: CustomLink[];
 }
 
 /* Hostmap */
 
-export type HostmapTileDefRequest = Request<MetricRequest>;
+export type HostmapDefinitionRequest = Request<MetricRequest>;
 
-export interface HostmapTileDef {
+export interface HostmapDefinition {
   viz: 'hostmap';
   requests: {
-    fill?: HostmapTileDefRequest;
-    size?: HostmapTileDefRequest;
+    fill?: HostmapDefinitionRequest;
+    size?: HostmapDefinitionRequest;
   };
   node_type?: 'ClusterNodeType.host' | 'ClusterNodeType.container';
   no_metric_hosts?: boolean;
@@ -678,14 +682,14 @@ export interface HeatmapRequest {
   style?: RequestStyle;
 }
 
-export type HeatmapTileDefRequest = Request<
+export type HeatmapDefinitionRequest = Request<
   MetricRequest | ProcessRequest,
   HeatmapRequest
 >;
 
-export interface HeatmapTileDef {
+export interface HeatmapDefinition {
   viz: 'heatmap';
-  requests: HeatmapTileDefRequest[];
+  requests: HeatmapDefinitionRequest[];
   yaxis?: Axis;
   events?: Event[];
   custom_links?: CustomLink[];
@@ -715,22 +719,22 @@ export interface ChangeMetricRequest extends MetricRequest {
   compare_to?: CompareToOptions;
 }
 
-export type ChangeTileDefRequest = Request<
+export type ChangeDefinitionRequest = Request<
   ChangeMetricRequest | ScalarFormulaRequest,
   ChangeRequest
 >;
 
-export interface ChangeTileDef {
+export interface ChangeDefinition {
   viz: 'change';
-  requests: ChangeTileDefRequest[];
+  requests: ChangeDefinitionRequest[];
   custom_links?: CustomLink[];
 }
 
 /* Service Map */
 
-export interface ServiceMapTileDef {
+export interface ServiceMapDefinition {
   viz: 'servicemap';
-  // for typescript to correctly handle the TileDef union type, it's important for the requests to be marked as always being undefined
+  // for typescript to correctly handle the Definition union type, it's important for the requests to be marked as always being undefined
   requests?: undefined;
   service: string; // service name
   filters: string[]; // array of filter tags
@@ -748,7 +752,7 @@ export type TreemapDataSourceRequest =
   | ScalarFormulaRequest
   | TreemapProcessMemoryRequest;
 
-export type TreemapTileDefRequest = Request<TreemapDataSourceRequest, {}>;
+export type TreemapDefinitionRequest = Request<TreemapDataSourceRequest, {}>;
 
 export type TreemapSizeBy = 'pct_cpu' | 'pct_mem';
 
@@ -756,9 +760,9 @@ export type TreemapColorBy = 'user';
 
 export type TreemapGroupBy = 'family' | 'process' | 'user';
 
-export interface TreemapTileDef {
+export interface TreemapDefinition {
   viz: 'treemap';
-  requests: TreemapTileDefRequest[];
+  requests: TreemapDefinitionRequest[];
   size_by?: TreemapSizeBy;
   color_by?: TreemapColorBy;
   group_by?: TreemapGroupBy;
@@ -777,14 +781,14 @@ type TopListDataSourceRequest =
   | ScalarFormulaRequest
   | DDSQLTableRequest;
 
-export type TopListTileDefRequest = Request<
+export type TopListDefinitionRequest = Request<
   TopListDataSourceRequest,
   TopListRequest
 >;
 
-export interface TopListTileDef {
+export interface TopListDefinition {
   viz: 'toplist';
-  requests: TopListTileDefRequest[];
+  requests: TopListDefinitionRequest[];
   custom_links?: CustomLink[];
 }
 
@@ -795,7 +799,7 @@ export type ListStreamColumn<F = string> = {
   field: F;
 };
 
-export type ListStreamViz = ListStreamTileDef['viz'];
+export type ListStreamViz = ListStreamDefinition['viz'];
 
 interface BaseListStreamQuery {
   data_source: ListStreamViz;
@@ -858,31 +862,31 @@ export interface AuditStreamRequest extends ListStreamRequest {
   query: AuditStreamQuery;
 }
 
-export interface LogsStreamTileDef {
+export interface LogsStreamDefinition {
   viz: 'logs_stream';
   requests: [LogsStreamRequest];
 }
 
-export interface LogsPatternStreamTileDef {
+export interface LogsPatternStreamDefinition {
   viz: 'logs_pattern_stream';
   requests: [LogsPatternStreamRequest];
 }
 
-export interface LogsTransactionStreamTileDef {
+export interface LogsTransactionStreamDefinition {
   viz: 'logs_transaction_stream';
   requests: [LogsTransactionStreamRequest];
 }
 
-export interface AuditStreamTileDef {
+export interface AuditStreamDefinition {
   viz: 'audit_stream';
   requests: [AuditStreamRequest];
 }
 
-export type ListStreamTileDef =
-  | LogsStreamTileDef
-  | LogsPatternStreamTileDef
-  | LogsTransactionStreamTileDef
-  | AuditStreamTileDef;
+export type ListStreamDefinition =
+  | LogsStreamDefinition
+  | LogsPatternStreamDefinition
+  | LogsTransactionStreamDefinition
+  | AuditStreamDefinition;
 
 /* Distribution */
 
@@ -896,14 +900,14 @@ export interface DistributionRequest {
   style?: RequestStyle;
 }
 
-export type DistributionTileDefRequest = Request<
+export type DistributionDefinitionRequest = Request<
   DistributionDataSourceRequest,
   DistributionRequest
 >;
 
-export interface DistributionTileDef {
+export interface DistributionDefinition {
   viz: 'distribution';
-  requests: DistributionTileDefRequest[];
+  requests: DistributionDefinitionRequest[];
   xaxis?: DistributionXAxis;
   yaxis?: DistributionYAxis;
   markers?: Markers;
@@ -931,14 +935,14 @@ export interface ScatterplotRequest {
   aggregator?: Aggregator;
 }
 
-export type ScatterplotTileDefRequest = Request<
+export type ScatterplotDefinitionRequest = Request<
   ScatterplotDataSourceRequest,
   ScatterplotRequest
 >;
 
-export interface ScatterplotTileDef {
+export interface ScatterplotDefinition {
   viz: 'scatterplot';
-  requests: ScatterplotTileDefRequest[];
+  requests: ScatterplotDefinitionRequest[];
   custom_links?: CustomLink[];
   xaxis?: Axis;
   yaxis?: Axis;
@@ -958,7 +962,7 @@ type QueryValueDataSourceRequest =
   | ScalarFormulaRequest
   | DDSQLTableRequest;
 
-export type QueryValueTileDefRequest = Request<
+export type QueryValueDefinitionRequest = Request<
   QueryValueDataSourceRequest,
   QueryValueRequest
 >;
@@ -968,9 +972,9 @@ export type TimeseriesBackground = {
   yaxis?: Axis;
 };
 
-export interface QueryValueTileDef {
+export interface QueryValueDefinition {
   viz: 'query_value';
-  requests: QueryValueTileDefRequest[];
+  requests: QueryValueDefinitionRequest[];
   autoscale?: boolean;
   custom_unit?: string;
   precision?: number;
@@ -984,7 +988,7 @@ export interface AlertValueRequest {
   alert_id?: string | undefined;
   alert_name?: string; // Used in the graph editor, not saved to the backend
 }
-export interface AlertValueTileDef {
+export interface AlertValueDefinition {
   viz: 'alert_value';
   requests: AlertValueRequest[];
   custom_unit?: string;
@@ -1000,15 +1004,15 @@ export interface GeomapView {
   focus: string;
 }
 
-export type GeomapTileDefRequest =
+export type GeomapDefinitionRequest =
   | MetricRequest
   | LogsToolkitRequest
   | ScalarFormulaRequest
   | DDSQLTableRequest;
 
-export interface GeomapTileDef {
+export interface GeomapDefinition {
   viz: 'geomap';
-  requests: GeomapTileDefRequest[];
+  requests: GeomapDefinitionRequest[];
   custom_links?: CustomLink[];
   style: GeomapStyle;
   view: GeomapView;
@@ -1021,7 +1025,7 @@ export interface AlertGraphRequest {
   alert_name?: string; // Used in the graph editor, not saved to the backend
 }
 
-export interface AlertGraphTileDef {
+export interface AlertGraphDefinition {
   requests: [AlertGraphRequest];
   viz: 'alert_graph';
 }
@@ -1031,9 +1035,9 @@ export interface AlertGraphTileDef {
 export type ServiceSummaryLayout = 'one_column' | 'two_column' | 'three_column';
 export type ServiceSummarySize = 'small' | 'medium' | 'large';
 
-export interface ServiceSummaryTileDef {
+export interface ServiceSummaryDefinition {
   viz: 'trace_service';
-  // for typescript to correctly handle the TileDef union type, it's important for the requests to be marked as always being undefined
+  // for typescript to correctly handle the Definition union type, it's important for the requests to be marked as always being undefined
   requests?: undefined;
   env: string;
   service: string;
@@ -1069,7 +1073,7 @@ export interface FunnelRequest {
   request_type: 'funnel';
 }
 
-export interface FunnelTileDef {
+export interface FunnelDefinition {
   viz: 'funnel';
   requests: FunnelRequest[];
 }
@@ -1084,7 +1088,7 @@ type SunburstRequest = {
   };
 };
 
-export type SunburstTileDefRequest = Request<
+export type SunburstDefinitionRequest = Request<
   ScalarFormulaRequest,
   SunburstRequest
 >;
@@ -1098,16 +1102,16 @@ export type SunburstLegend =
   | { type: 'automatic'; hide_value?: boolean; hide_percent?: boolean }
   | SunburstKnownLegend;
 
-export type SunburstTileDef = {
+export type SunburstDefinition = {
   viz: 'sunburst';
-  requests: SunburstTileDefRequest[];
+  requests: SunburstDefinitionRequest[];
   hide_total?: boolean;
   legend?: SunburstLegend;
 };
 
 /* Note Widget */
 
-export interface NoteTileDef {
+export interface NoteDefinition {
   viz: 'note';
   content: string;
   background_color?: string;
@@ -1122,11 +1126,13 @@ export interface NoteTileDef {
 
 /* Wildcard */
 
-export type WildcardTileDefRequest = DDSQLTableRequest | ScalarFormulaRequest;
+export type WildcardDefinitionRequest =
+  | DDSQLTableRequest
+  | ScalarFormulaRequest;
 
-export type WildcardTileDef = {
+export type WildcardDefinition = {
   viz: 'wildcard';
-  requests: WildcardTileDefRequest[];
+  requests: WildcardDefinitionRequest[];
   specification: {
     type: 'vega' | 'vega-lite';
     contents: object;
@@ -1135,13 +1141,13 @@ export type WildcardTileDef = {
 
 /* IFrame */
 
-export type IFrameTileDef = {
+export type IFrameDefinition = {
   viz: 'iframe';
   url: string;
 };
 /* Image */
 
-export type ImageTileDef = {
+export type ImageDefinition = {
   viz: 'image';
   url: string;
   url_dark_theme?: string;
@@ -1153,110 +1159,36 @@ export type ImageTileDef = {
 
 /* SloList */
 
-export type SloListTileDef = {
+export type SloListDefinition = {
   viz: 'slo_list';
   requests: SloListRequest[];
 };
 
-type TileDef =
-  | TimeseriesTileDef
-  | QueryTableTileDef
-  | HostmapTileDef
-  | HeatmapTileDef
-  | ChangeTileDef
-  | ServiceMapTileDef
-  | TreemapTileDef
-  | TopListTileDef
-  | LogsStreamTileDef
-  | LogsPatternStreamTileDef
-  | LogsTransactionStreamTileDef
-  | AuditStreamTileDef
-  | ListStreamTileDef
-  | DistributionTileDef
-  | ScatterplotTileDef
-  | QueryValueTileDef
-  | AlertValueTileDef
-  | GeomapTileDef
-  | AlertGraphTileDef
-  | ServiceSummaryTileDef
-  | FunnelTileDef
-  | SunburstTileDef
-  | NoteTileDef
-  | WildcardTileDef
-  | IFrameTileDef
-  | ImageTileDef
-  | SloListTileDef;
-
-const f = (td: TileDef) =>
-  match(td)
-    .with(
-      {
-        viz: 'timeseries',
-        requests: P.array({
-          queries: P.array(
-            P.union({ data_source: 'metrics', query: P.select() }, P.__)
-          ),
-        }),
-      },
-      (metricQueries) => {}
-    )
-    .with(
-      {
-        requests: P.array(
-          P.union(
-            { response_format: 'timeseries' },
-            { response_format: 'scalar' }
-          )
-        ),
-      },
-      () => 'formulas requests'
-    )
-    .with(
-      {
-        //   BUG
-        requests: P.array({ response_format: P.union('timeseries', 'scalar') }),
-      },
-      () => 'formulas requests'
-    )
-    .with(
-      {
-        requests: [{ response_format: P.union('timeseries', 'scalar') }],
-      },
-      () => 'formulas requests'
-    )
-    .with(
-      { style: P.optional({ palette: P.__ }) },
-      (withPalette) => withPalette.viz
-    )
-    .with({ autoscale: P.__ }, ({ viz }) => viz)
-    .with(
-      { requests: P.array({ 'QueryKeys.DDSQL': P.select() }) },
-      (queries) => queries
-    )
-    .with(
-      { viz: 'sunburst', requests: P.array({ response_format: P.select() }) },
-      (scalars) => scalars
-    )
-    .with(
-      {
-        viz: P.union(
-          'alert_graph',
-          'alert_value',
-          'geomap',
-          'funnel',
-          'timeseries',
-          'heatmap'
-        ),
-      },
-      () => ''
-    )
-    .with(
-      { viz: 'query_table' },
-      { viz: 'query_value' },
-      { viz: 'image' },
-      { viz: 'servicemap' },
-      { viz: 'treemap' },
-      () => ''
-    )
-    .otherwise(() => '');
-//.exhaustive();
+export type Definition =
+  | TimeseriesDefinition
+  | QueryTableDefinition
+  | HostmapDefinition
+  | HeatmapDefinition
+  | ChangeDefinition
+  | ServiceMapDefinition
+  | TreemapDefinition
+  | TopListDefinition
+  | LogsStreamDefinition
+  | LogsPatternStreamDefinition
+  | LogsTransactionStreamDefinition
+  | AuditStreamDefinition
+  | ListStreamDefinition
+  | DistributionDefinition
+  | ScatterplotDefinition
+  | QueryValueDefinition
+  | AlertValueDefinition
+  | GeomapDefinition
+  | AlertGraphDefinition
+  | ServiceSummaryDefinition
+  | FunnelDefinition
+  | SunburstDefinition
+  | NoteDefinition
+  | WildcardDefinition
+  | IFrameDefinition
+  | ImageDefinition
+  | SloListDefinition;

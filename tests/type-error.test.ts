@@ -1,6 +1,6 @@
 import { match, __, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
-import { Option } from './utils';
+import { Option } from './types-catalog/utils';
 
 type Country = 'France' | 'Germany' | 'Spain' | 'USA';
 

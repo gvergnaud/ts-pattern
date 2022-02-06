@@ -1,6 +1,6 @@
 import { BuildMany } from '../src/types/BuildMany';
 import { Equal, Expect } from '../src/types/helpers';
-import { State } from './utils';
+import { State } from './types-catalog/utils';
 
 describe('BuildMany', () => {
   it('should correctly update the content of a readonly tuple', () => {

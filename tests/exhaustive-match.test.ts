@@ -1,6 +1,13 @@
 import { match, not, P, Pattern, select, when, __ } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
-import { Option, some, none, BigUnion, State, Event } from './utils';
+import {
+  Option,
+  some,
+  none,
+  BigUnion,
+  State,
+  Event,
+} from './types-catalog/utils';
 
 describe('exhaustive()', () => {
   describe('should exclude matched patterns from subsequent `.with()` clauses', () => {

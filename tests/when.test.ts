@@ -1,6 +1,6 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, __, when, select, P } from '../src';
-import { Option, State } from './utils';
+import { Option, State } from './types-catalog/utils';
 
 describe('when', () => {
   it('should work for simple cases', () => {
