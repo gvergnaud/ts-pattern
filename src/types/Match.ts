@@ -176,6 +176,23 @@ export type Match<
   run(): PickReturnValue<o, inferredOutput>;
 };
 
+/**
+ * Potential for optimization here:
+ *
+ * Since DeepExclude distributes the union of the input type, it can
+ * generate very large union types on patterns touching several unions at once.
+ * If we were sorting patterns from those which distribute the smallest
+ * amount of union types to those which distribute the largest, we would eliminate
+ * cheap cases more quickly and have less cases in the input type for patterns
+ * that will be expensive to exclude.
+ *
+ * This pre supposes that we have a cheap way of telling if the number
+ * of union types a pattern touches and a cheap way of sorting the tuple
+ * of patterns.
+ * - For the first part, we could reuse `FindMatchingUnions` and pick the `length`
+ *   of the returned tuple.
+ * - For the second part though I'm not aware a cheap way of sorting a tuple.
+ */
 type DeepExcludeAll<a, tupleList extends any[]> = tupleList extends [
   [infer p, infer v],
   ...infer tail

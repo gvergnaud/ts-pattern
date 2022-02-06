@@ -18,11 +18,11 @@ export type MatcherProtocol<
   input,
   narrowed,
   // Type of what this pattern selected from the input
-  matcherType extends MatcherType = 'default',
-  selections extends SelectionType = None,
+  matcherType extends MatcherType,
+  selections extends SelectionType,
   // Type to exclude from the input union because
   // it has been fully matched by this pattern
-  excluded = narrowed
+  excluded
 > = {
   match: <I extends input>(value: I) => MatchResult;
   getSelectionKeys?: () => string[];

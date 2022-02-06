@@ -151,7 +151,7 @@ export function union<
 >(...patterns: ps): OrP<input, ps> {
   return {
     [symbols.matcher]: () => ({
-      match: (value) => {
+      match: <I extends input>(value: I) => {
         let selections: Record<string, unknown[]> = {};
         const selector = (key: string, value: any) => {
           selections[key] = value;
@@ -186,7 +186,9 @@ export function not<
 >(pattern: p): NotP<input, p> {
   return {
     [symbols.matcher]: () => ({
-      match: (value) => ({ matched: !matchPattern(pattern, value, () => {}) }),
+      match: <I extends input>(value: I) => ({
+        matched: !matchPattern(pattern, value, () => {}),
+      }),
       getSelectionKeys: () => [],
       matcherType: 'not',
     }),
@@ -210,7 +212,9 @@ export function when<input, p extends (value: input) => unknown>(
 > {
   return {
     [symbols.matcher]: () => ({
-      match: (value) => ({ matched: Boolean(predicate(value)) }),
+      match: <I extends input>(value: I) => ({
+        matched: Boolean(predicate(value)),
+      }),
     }),
   };
 }
