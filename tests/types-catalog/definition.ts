@@ -484,13 +484,13 @@ export type FormulaRequest = TimeseriesFormulaRequest | ScalarFormulaRequest;
 export type DDSQLTimeseriesRequest = {
   request_type: 'ddsql';
   response_format: 'timeseries';
-  ddsql_query: string;
+  sql_query: string;
 };
 
 export type DDSQLTableRequest = {
   request_type: 'ddsql';
   response_format: 'scalar';
-  ddsql_query: string;
+  sql_query: string;
 };
 
 export type DDSQLRequest = DDSQLTimeseriesRequest | DDSQLTableRequest;
