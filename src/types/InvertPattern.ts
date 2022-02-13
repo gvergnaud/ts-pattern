@@ -84,13 +84,19 @@ export type InvertPattern<p> = p extends Matchable<
   : p extends Set<infer pv>
   ? Set<InvertPattern<pv>>
   : IsPlainObject<p> extends true
-  ? Compute<
-      {
-        [k in Exclude<keyof p, OptionalKeys<p>>]: InvertPattern<p[k]>;
-      } & {
-        [k in OptionalKeys<p>]?: InvertPattern<p[k]>;
-      }
-    >
+  ? OptionalKeys<p> extends infer optKeys
+    ? [optKeys] extends [never]
+      ? {
+          [k in Exclude<keyof p, optKeys>]: InvertPattern<p[k]>;
+        }
+      : Compute<
+          {
+            [k in Exclude<keyof p, optKeys>]: InvertPattern<p[k]>;
+          } & {
+            [k in Cast<optKeys, keyof p>]?: InvertPattern<p[k]>;
+          }
+        >
+    : never
   : p;
 
 export type ReduceIntersectionForExclude<
@@ -216,16 +222,24 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
   ? i extends object
     ? [keyof p & keyof i] extends [never]
       ? empty
-      : Compute<
-          {
-            readonly [k in Exclude<keyof p, OptionalKeys<p>>]: k extends keyof i
-              ? InvertPatternForExclude<p[k], i[k], empty>
-              : InvertPattern<p[k]>;
-          } & {
-            readonly [k in OptionalKeys<p>]?: k extends keyof i
+      : OptionalKeys<p> extends infer optKeys
+      ? [optKeys] extends [never]
+        ? {
+            readonly [k in keyof p]: k extends keyof i
               ? InvertPatternForExclude<p[k], i[k], empty>
               : InvertPattern<p[k]>;
           }
-        >
+        : Compute<
+            {
+              readonly [k in Exclude<keyof p, optKeys>]: k extends keyof i
+                ? InvertPatternForExclude<p[k], i[k], empty>
+                : InvertPattern<p[k]>;
+            } & {
+              readonly [k in Cast<optKeys, keyof p>]?: k extends keyof i
+                ? InvertPatternForExclude<p[k], i[k], empty>
+                : InvertPattern<p[k]>;
+            }
+          >
+      : empty
     : empty
   : empty;
