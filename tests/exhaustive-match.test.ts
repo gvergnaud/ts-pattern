@@ -395,8 +395,6 @@ describe('exhaustive()', () => {
 
       match(input)
         .with({ type: 'a' }, (x) => x.items)
-        // FIXME: The union of input['items'] seems to be ANDed together
-        // maybe because of the way we Compute unions of objects in Pattern<a>
         .with({ type: 'b', items: P.array({ data: P.string }) }, (x) => [])
         .exhaustive();
 
