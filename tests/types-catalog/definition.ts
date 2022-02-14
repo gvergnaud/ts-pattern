@@ -1,5 +1,3 @@
-import { Compute } from '../../src/types/helpers';
-
 export interface RequestStyle {
   palette?: string;
 }
@@ -463,14 +461,11 @@ export type Formula = {
   };
 };
 
-export type TimeseriesFormulaRequest = Request<
-  {
-    response_format: 'timeseries';
-    formulas?: Formula[];
-    queries: FormulaQueries;
-  },
-  TimeseriesRequest
->;
+export interface TimeseriesFormulaRequest extends TimeseriesRequest {
+  response_format: 'timeseries';
+  formulas?: Formula[];
+  queries: FormulaQueries;
+}
 
 export type ScalarFormulaRequest = {
   response_format: 'scalar';
@@ -512,7 +507,7 @@ export type LogsToolkitRequest =
   | AppsecEventRequest
   | DatabaseRequest;
 
-export type DataSourceRequest =
+type DataSourceRequest =
   | MetricRequest
   | LogsToolkitRequest
   | ApmStatsRequest
@@ -520,8 +515,6 @@ export type DataSourceRequest =
   | MonitorEvaluationRequest
   | ProcessRequest
   | FormulaRequest
-  | ListStreamRequest
-  | FunnelRequest
   | DDSQLRequest;
 
 /**
@@ -530,18 +523,6 @@ export type DataSourceRequest =
  * in a tile def. They describe visual requirements e.g. should be displayed as
  * bars, will be displayed as a distribution graph...
  */
-
-export type VizRequest =
-  | TimeseriesRequest
-  | DistributionRequest
-  | HeatmapRequest
-  | ChangeRequest
-  | QueryTableRequest
-  | QueryValueRequest
-  | ScatterplotRequest
-  | TopListRequest;
-
-export type Request<D = DataSourceRequest, V = unknown> = D & V;
 
 /**
  * Tile Defs
@@ -588,12 +569,10 @@ export interface TimeseriesRequest {
   on_right_yaxis?: boolean;
 }
 
-export type TimeseriesDefinitionRequest = Request<
-  TimeseriesDataSourceRequest,
-  TimeseriesRequest
->;
+export type TimeseriesDefinitionRequest = TimeseriesDataSourceRequest &
+  TimeseriesRequest;
 
-export interface TimeseriesDefinition {
+interface TimeseriesDefinition {
   viz: 'timeseries';
   requests: TimeseriesDefinitionRequest[];
   yaxis?: Axis;
@@ -636,14 +615,12 @@ export interface QueryTableRequest {
   conditional_formats?: ConditionalFormat[];
 }
 
-export type QueryTableDefinitionRequest = Request<
-  QueryTableDataSourceRequest,
-  QueryTableRequest
->;
+export type QueryTableDefinitionRequest = QueryTableDataSourceRequest &
+  QueryTableRequest;
 
 export type HasSearchBar = 'always' | 'never' | 'auto';
 
-export interface QueryTableDefinition {
+interface QueryTableDefinition {
   viz: 'query_table';
   requests: QueryTableDefinitionRequest[];
   has_search_bar?: HasSearchBar;
@@ -652,9 +629,9 @@ export interface QueryTableDefinition {
 
 /* Hostmap */
 
-export type HostmapDefinitionRequest = Request<MetricRequest>;
+export type HostmapDefinitionRequest = MetricRequest;
 
-export interface HostmapDefinition {
+interface HostmapDefinition {
   viz: 'hostmap';
   requests: {
     fill?: HostmapDefinitionRequest;
@@ -676,18 +653,13 @@ export interface HostmapDefinition {
 
 /* Heatmap */
 
-export type HeatmapDataSourceRequest = MetricRequest | ProcessRequest;
-
 export interface HeatmapRequest {
   style?: RequestStyle;
 }
 
-export type HeatmapDefinitionRequest = Request<
-  MetricRequest | ProcessRequest,
-  HeatmapRequest
->;
+interface HeatmapDefinitionRequest extends MetricRequest, HeatmapRequest {}
 
-export interface HeatmapDefinition {
+interface HeatmapDefinition {
   viz: 'heatmap';
   requests: HeatmapDefinitionRequest[];
   yaxis?: Axis;
@@ -695,44 +667,9 @@ export interface HeatmapDefinition {
   custom_links?: CustomLink[];
 }
 
-/* Change */
-
-export type CompareToOptions =
-  | 'hour_before'
-  | 'day_before'
-  | 'week_before'
-  | 'month_before';
-
-export type ChangeTypeOptions = 'absolute' | 'relative';
-
-export type OrderByOptions = 'change' | 'name' | 'present' | 'past';
-
-export interface ChangeRequest {
-  change_type?: ChangeTypeOptions;
-  increase_good?: boolean;
-  show_present?: boolean;
-  order_by?: OrderByOptions;
-  order_dir?: OrderDir;
-}
-
-export interface ChangeMetricRequest extends MetricRequest {
-  compare_to?: CompareToOptions;
-}
-
-export type ChangeDefinitionRequest = Request<
-  ChangeMetricRequest | ScalarFormulaRequest,
-  ChangeRequest
->;
-
-export interface ChangeDefinition {
-  viz: 'change';
-  requests: ChangeDefinitionRequest[];
-  custom_links?: CustomLink[];
-}
-
 /* Service Map */
 
-export interface ServiceMapDefinition {
+interface ServiceMapDefinition {
   viz: 'servicemap';
   // for typescript to correctly handle the Definition union type, it's important for the requests to be marked as always being undefined
   requests?: undefined;
@@ -752,17 +689,15 @@ export type TreemapDataSourceRequest =
   | ScalarFormulaRequest
   | TreemapProcessMemoryRequest;
 
-export type TreemapDefinitionRequest = Request<TreemapDataSourceRequest, {}>;
-
 export type TreemapSizeBy = 'pct_cpu' | 'pct_mem';
 
 export type TreemapColorBy = 'user';
 
 export type TreemapGroupBy = 'family' | 'process' | 'user';
 
-export interface TreemapDefinition {
+interface TreemapDefinition {
   viz: 'treemap';
-  requests: TreemapDefinitionRequest[];
+  requests: TreemapDataSourceRequest[];
   size_by?: TreemapSizeBy;
   color_by?: TreemapColorBy;
   group_by?: TreemapGroupBy;
@@ -781,112 +716,14 @@ type TopListDataSourceRequest =
   | ScalarFormulaRequest
   | DDSQLTableRequest;
 
-export type TopListDefinitionRequest = Request<
-  TopListDataSourceRequest,
-  TopListRequest
->;
+export type TopListDefinitionRequest = TopListDataSourceRequest &
+  TopListRequest;
 
-export interface TopListDefinition {
+interface TopListDefinition {
   viz: 'toplist';
   requests: TopListDefinitionRequest[];
   custom_links?: CustomLink[];
 }
-
-/* List Stream */
-
-export type ListStreamColumn<F = string> = {
-  width: 'auto' | 'compact' | 'full';
-  field: F;
-};
-
-export type ListStreamViz = ListStreamDefinition['viz'];
-
-interface BaseListStreamQuery {
-  data_source: ListStreamViz;
-  query_string: string;
-  indexes?: string[];
-}
-
-export interface LogsStreamQuery extends BaseListStreamQuery {
-  data_source: 'logs_stream';
-}
-
-type LogsPatternGroupBy = { facet: string };
-
-export interface LogsPatternStreamQuery extends BaseListStreamQuery {
-  data_source: 'logs_pattern_stream';
-  group_by?: LogsPatternGroupBy[];
-}
-
-export type LogsTransactionGroupBy = { facet: string };
-type LogsTransactionCompute = {
-  facet: string;
-  aggregation: EventsAggregator;
-};
-
-export interface LogsTransactionStreamQuery extends BaseListStreamQuery {
-  data_source: 'logs_transaction_stream';
-  group_by: [LogsTransactionGroupBy];
-  compute: LogsTransactionCompute[];
-}
-
-export interface AuditStreamQuery extends BaseListStreamQuery {
-  data_source: 'audit_stream';
-}
-
-export type ListStreamQuery =
-  | LogsStreamQuery
-  | LogsPatternStreamQuery
-  | LogsTransactionStreamQuery
-  | AuditStreamQuery;
-
-export interface ListStreamRequest {
-  columns: ListStreamColumn[];
-  query: ListStreamQuery;
-  response_format: 'event_list';
-}
-
-export interface LogsStreamRequest extends ListStreamRequest {
-  query: LogsStreamQuery;
-}
-
-export interface LogsPatternStreamRequest extends ListStreamRequest {
-  query: LogsPatternStreamQuery;
-}
-
-export interface LogsTransactionStreamRequest extends ListStreamRequest {
-  query: LogsTransactionStreamQuery;
-}
-
-export interface AuditStreamRequest extends ListStreamRequest {
-  query: AuditStreamQuery;
-}
-
-export interface LogsStreamDefinition {
-  viz: 'logs_stream';
-  requests: [LogsStreamRequest];
-}
-
-export interface LogsPatternStreamDefinition {
-  viz: 'logs_pattern_stream';
-  requests: [LogsPatternStreamRequest];
-}
-
-export interface LogsTransactionStreamDefinition {
-  viz: 'logs_transaction_stream';
-  requests: [LogsTransactionStreamRequest];
-}
-
-export interface AuditStreamDefinition {
-  viz: 'audit_stream';
-  requests: [AuditStreamRequest];
-}
-
-export type ListStreamDefinition =
-  | LogsStreamDefinition
-  | LogsPatternStreamDefinition
-  | LogsTransactionStreamDefinition
-  | AuditStreamDefinition;
 
 /* Distribution */
 
@@ -900,12 +737,10 @@ export interface DistributionRequest {
   style?: RequestStyle;
 }
 
-export type DistributionDefinitionRequest = Request<
-  DistributionDataSourceRequest,
-  DistributionRequest
->;
+export type DistributionDefinitionRequest = DistributionDataSourceRequest &
+  DistributionRequest;
 
-export interface DistributionDefinition {
+interface DistributionDefinition {
   viz: 'distribution';
   requests: DistributionDefinitionRequest[];
   xaxis?: DistributionXAxis;
@@ -935,12 +770,10 @@ export interface ScatterplotRequest {
   aggregator?: Aggregator;
 }
 
-export type ScatterplotDefinitionRequest = Request<
-  ScatterplotDataSourceRequest,
-  ScatterplotRequest
->;
+export type ScatterplotDefinitionRequest = ScatterplotDataSourceRequest &
+  ScatterplotRequest;
 
-export interface ScatterplotDefinition {
+interface ScatterplotDefinition {
   viz: 'scatterplot';
   requests: ScatterplotDefinitionRequest[];
   custom_links?: CustomLink[];
@@ -962,38 +795,14 @@ type QueryValueDataSourceRequest =
   | ScalarFormulaRequest
   | DDSQLTableRequest;
 
-export type QueryValueDefinitionRequest = Request<
-  QueryValueDataSourceRequest,
-  QueryValueRequest
->;
+export type QueryValueDefinitionRequest = QueryValueDataSourceRequest &
+  QueryValueRequest;
 
 export type TimeseriesBackground = {
   type: 'bars' | 'area';
   yaxis?: Axis;
 };
 
-export interface QueryValueDefinition {
-  viz: 'query_value';
-  requests: QueryValueDefinitionRequest[];
-  autoscale?: boolean;
-  custom_unit?: string;
-  precision?: number;
-  custom_links?: CustomLink[];
-  timeseries_background?: TimeseriesBackground;
-}
-
-/* Alert Value */
-export interface AlertValueRequest {
-  request_type: 'alert_value';
-  alert_id?: string | undefined;
-  alert_name?: string; // Used in the graph editor, not saved to the backend
-}
-export interface AlertValueDefinition {
-  viz: 'alert_value';
-  requests: AlertValueRequest[];
-  custom_unit?: string;
-  precision?: number;
-}
 /* Geo Map */
 
 export interface GeomapStyle {
@@ -1010,72 +819,12 @@ export type GeomapDefinitionRequest =
   | ScalarFormulaRequest
   | DDSQLTableRequest;
 
-export interface GeomapDefinition {
+interface GeomapDefinition {
   viz: 'geomap';
   requests: GeomapDefinitionRequest[];
   custom_links?: CustomLink[];
   style: GeomapStyle;
   view: GeomapView;
-}
-
-/* Alert Graph */
-
-export interface AlertGraphRequest {
-  alert_id?: string | undefined;
-  alert_name?: string; // Used in the graph editor, not saved to the backend
-}
-
-export interface AlertGraphDefinition {
-  requests: [AlertGraphRequest];
-  viz: 'alert_graph';
-}
-
-/* Service Summary */
-
-export type ServiceSummaryLayout = 'one_column' | 'two_column' | 'three_column';
-export type ServiceSummarySize = 'small' | 'medium' | 'large';
-
-export interface ServiceSummaryDefinition {
-  viz: 'trace_service';
-  // for typescript to correctly handle the Definition union type, it's important for the requests to be marked as always being undefined
-  requests?: undefined;
-  env: string;
-  service: string;
-  span_name: string;
-  show_hits?: boolean;
-  show_errors?: boolean;
-  show_latency?: boolean;
-  show_breakdown?: boolean;
-  show_distribution?: boolean;
-  show_resource_list?: boolean;
-  size_format?: ServiceSummarySize;
-  display_format?: ServiceSummaryLayout;
-}
-
-/* Funnel */
-
-export type RumFunnelStep = {
-  facet: string;
-  value: string;
-};
-
-export interface RumFunnelQuery {
-  data_source: 'rum';
-  query_string: string;
-  steps: RumFunnelStep[];
-}
-
-// Union of all possible Funnel queries
-export type FunnelQuery = RumFunnelQuery;
-
-export interface FunnelRequest {
-  query: FunnelQuery;
-  request_type: 'funnel';
-}
-
-export interface FunnelDefinition {
-  viz: 'funnel';
-  requests: FunnelRequest[];
 }
 
 type PlotPaletteName = 'red' | 'blue' | 'orange';
@@ -1088,10 +837,9 @@ type SunburstRequest = {
   };
 };
 
-export type SunburstDefinitionRequest = Request<
-  ScalarFormulaRequest,
-  SunburstRequest
->;
+export interface SunburstDefinitionRequest
+  extends ScalarFormulaRequest,
+    SunburstRequest {}
 
 export type SunburstKnownLegend =
   | { type: 'table' }
@@ -1102,27 +850,12 @@ export type SunburstLegend =
   | { type: 'automatic'; hide_value?: boolean; hide_percent?: boolean }
   | SunburstKnownLegend;
 
-export type SunburstDefinition = {
+type SunburstDefinition = {
   viz: 'sunburst';
   requests: SunburstDefinitionRequest[];
   hide_total?: boolean;
   legend?: SunburstLegend;
 };
-
-/* Note Widget */
-
-export interface NoteDefinition {
-  viz: 'note';
-  content: string;
-  background_color?: string;
-  font_size?: string;
-  text_align?: 'left' | 'center' | 'right';
-  vertical_align?: 'top' | 'center' | 'bottom';
-  has_padding?: boolean;
-  show_tick?: boolean;
-  tick_pos?: string;
-  tick_edge?: 'bottom' | 'left' | 'right' | 'top';
-}
 
 /* Wildcard */
 
@@ -1130,7 +863,7 @@ export type WildcardDefinitionRequest =
   | DDSQLTableRequest
   | ScalarFormulaRequest;
 
-export type WildcardDefinition = {
+type WildcardDefinition = {
   viz: 'wildcard';
   requests: WildcardDefinitionRequest[];
   specification: {
@@ -1139,56 +872,16 @@ export type WildcardDefinition = {
   };
 };
 
-/* IFrame */
-
-export type IFrameDefinition = {
-  viz: 'iframe';
-  url: string;
-};
-/* Image */
-
-export type ImageDefinition = {
-  viz: 'image';
-  url: string;
-  url_dark_theme?: string;
-  has_background?: boolean;
-  has_border?: boolean;
-  vertical_align?: 'top' | 'center' | 'bottom';
-  horizontal_align?: 'left' | 'center' | 'right';
-};
-
-/* SloList */
-
-export type SloListDefinition = {
-  viz: 'slo_list';
-  requests: SloListRequest[];
-};
-
 export type Definition =
   | TimeseriesDefinition
   | QueryTableDefinition
   | HostmapDefinition
   | HeatmapDefinition
-  | ChangeDefinition
   | ServiceMapDefinition
   | TreemapDefinition
   | TopListDefinition
-  | LogsStreamDefinition
-  | LogsPatternStreamDefinition
-  | LogsTransactionStreamDefinition
-  | AuditStreamDefinition
-  | ListStreamDefinition
   | DistributionDefinition
   | ScatterplotDefinition
-  | QueryValueDefinition
-  | AlertValueDefinition
   | GeomapDefinition
-  | AlertGraphDefinition
-  | ServiceSummaryDefinition
-  | FunnelDefinition
   | SunburstDefinition
-  | NoteDefinition
-  | WildcardDefinition
-  | IFrameDefinition
-  | ImageDefinition
-  | SloListDefinition;
+  | WildcardDefinition;

@@ -1,22 +1,6 @@
-import { match, P, Pattern } from '../src';
-import { Compute, Equal, Expect } from '../src/types/helpers';
-import {
-  Definition,
-  FormulaQueries,
-  QueryTableDefinitionRequest,
-  TimeseriesDefinitionRequest,
-} from './types-catalog/definition';
-
-type Elem<xs> = xs extends Array<infer x> ? x : never;
-
-type y = Pattern<
-  Elem<
-    | Compute<TimeseriesDefinitionRequest>[]
-    | Compute<QueryTableDefinitionRequest>[]
-  >
->;
-
-type y2 = Pattern<Elem<FormulaQueries>>;
+import { match, P } from '../src';
+import { Equal, Expect } from '../src/types/helpers';
+import { Definition } from './types-catalog/definition';
 
 describe('real world example of a complex input type', () => {
   const f = (def: Definition) =>
@@ -111,17 +95,6 @@ describe('real world example of a complex input type', () => {
       )
       .with(
         {
-          requests: [
-            P.union(
-              { response_format: 'scalar' },
-              { response_format: 'timeseries' }
-            ),
-          ],
-        },
-        () => 'formulas requests'
-      )
-      .with(
-        {
           requests: [{ response_format: P.union('timeseries', 'scalar') }],
         },
         () => 'formulas requests'
@@ -130,7 +103,6 @@ describe('real world example of a complex input type', () => {
         { style: P.optional({ palette: P.__ }) },
         (withPalette) => withPalette.viz
       )
-      .with({ autoscale: P.__ }, ({ viz }) => viz)
       .with(
         { requests: P.array({ sql_query: P.select() }) },
         (queries) => queries
@@ -142,25 +114,26 @@ describe('real world example of a complex input type', () => {
       .with(
         {
           viz: P.union(
-            'alert_graph',
-            'alert_value',
             'geomap',
-            'funnel',
             'timeseries',
-            'heatmap'
+            'heatmap',
+            'scatterplot',
+            'sunburst',
+            'wildcard',
+            'query_table'
           ),
         },
         () => ''
       )
       .with(
-        { viz: 'query_table' },
-        { viz: 'query_value' },
-        { viz: 'image' },
         { viz: 'servicemap' },
+        { viz: 'distribution' },
         { viz: 'treemap' },
+        { viz: 'toplist' },
+        { viz: 'hostmap' },
         () => ''
       )
-      .otherwise(() => '');
+      .exhaustive();
 
   it('should return the correct output', () => {
     expect(
