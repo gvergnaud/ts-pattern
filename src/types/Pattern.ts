@@ -103,7 +103,15 @@ type StructuralPattern<a> =
       }
       ?
           | (IntersectObjects<objects> extends infer intersectedObjects
-              ? {
+              ? /**
+                 * FIXME: it looks like the optional modifier
+                 * is what makes typescript unable to provide useful
+                 * hints for object keys when typing the pattern.
+                 * it seems to only be the case when the type of object
+                 * isn't statically defined somwhere, but when it's
+                 * computed dynamically.
+                 */
+                {
                   readonly [k in keyof intersectedObjects]?: Pattern<
                     Exclude<intersectedObjects[k], undefined>
                   >;
