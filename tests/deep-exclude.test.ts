@@ -6,7 +6,7 @@ import {
 } from '../src/types/DistributeUnions';
 import { Primitives, Equal, Expect } from '../src/types/helpers';
 import { IsMatching } from '../src/types/IsMatching';
-import { BigUnion, Option, State } from './utils';
+import { BigUnion, Option, State } from './types-catalog/utils';
 
 type Colors = 'pink' | 'purple' | 'red' | 'yellow' | 'blue';
 

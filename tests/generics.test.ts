@@ -1,6 +1,6 @@
 import { match, when, __ } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
-import { none, Option, some } from './utils';
+import { none, Option, some } from './types-catalog/utils';
 
 describe('generics', () => {
   type State<T> =

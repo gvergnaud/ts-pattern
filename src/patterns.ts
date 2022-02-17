@@ -29,7 +29,7 @@ export function optional<
   return {
     [symbols.matcher]() {
       return {
-        match: (value: input) => {
+        match: <I extends input>(value: I) => {
           let selections: Record<string, unknown[]> = {};
           const selector = (key: string, value: any) => {
             selections[key] = value;
@@ -67,7 +67,7 @@ export function array<
   return {
     [symbols.matcher]() {
       return {
-        match: (value: input) => {
+        match: <I extends input>(value: I) => {
           if (!Array.isArray(value)) return { matched: false };
 
           let selections: Record<string, unknown[]> = {};
@@ -151,7 +151,7 @@ export function union<
 >(...patterns: ps): OrP<input, ps> {
   return {
     [symbols.matcher]: () => ({
-      match: (value) => {
+      match: <I extends input>(value: I) => {
         let selections: Record<string, unknown[]> = {};
         const selector = (key: string, value: any) => {
           selections[key] = value;
@@ -186,7 +186,9 @@ export function not<
 >(pattern: p): NotP<input, p> {
   return {
     [symbols.matcher]: () => ({
-      match: (value) => ({ matched: !matchPattern(pattern, value, () => {}) }),
+      match: <I extends input>(value: I) => ({
+        matched: !matchPattern(pattern, value, () => {}),
+      }),
       getSelectionKeys: () => [],
       matcherType: 'not',
     }),
@@ -202,12 +204,17 @@ export function not<
  *   .with({ age: P.when(age => age > 21) }, (x) => 'will match if value.age > 21'
  *   )
  */
-export function when<input, narrowed extends input = never>(
-  predicate: GuardFunction<input, narrowed>
-): GuardP<input, narrowed> {
+export function when<input, p extends (value: input) => unknown>(
+  predicate: p
+): GuardP<
+  input,
+  p extends (value: any) => value is infer narrowed ? narrowed : never
+> {
   return {
     [symbols.matcher]: () => ({
-      match: (value) => ({ matched: predicate(value) }),
+      match: <I extends input>(value: I) => ({
+        matched: Boolean(predicate(value)),
+      }),
     }),
   };
 }
@@ -379,7 +386,7 @@ export const nullish = when(isNullish);
 export function instanceOf<T extends AnyConstructor>(
   classConstructor: T
 ): GuardP<unknown, InstanceType<T>> {
-  return when<unknown, InstanceType<T>>(isInstanceOf(classConstructor));
+  return when(isInstanceOf(classConstructor));
 }
 /**
  * ### infer

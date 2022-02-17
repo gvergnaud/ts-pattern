@@ -1,6 +1,6 @@
 import { match, __, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
-import { Option } from './utils';
+import { Option } from './types-catalog/utils';
 
 type Country = 'France' | 'Germany' | 'Spain' | 'USA';
 
@@ -61,18 +61,56 @@ describe('type errors', () => {
   });
 
   it("shouldn't allow when guards with an invalid input", () => {
-    const optionalFizzBuzz = (optionalNumber: Option<number>) =>
+    const startsWith = (start: string) => (value: string) =>
+      value.startsWith(start);
+
+    const equals =
+      <T>(n: T) =>
+      (n2: T) =>
+        n === n2;
+
+    const f = (optionalNumber: Option<number>) =>
       match(optionalNumber)
         .with(
           {
             kind: 'some',
-            // @ts-expect-error
-            value: P.when((value: string) => value.startsWith('hello')),
+            // @ts-expect-error: string isn't assigable to number
+            value: P.when(startsWith('hello')),
+          },
+          () => 'fizz'
+        )
+        .with(
+          {
+            kind: 'some',
+            // @ts-expect-error: string isn't assigable to number
+            value: P.when((x: string) => x),
+          },
+          () => 'fizz'
+        )
+        .with(
+          {
+            kind: 'some',
+            value: P.when((x: number) => x),
+          },
+          () => 'fizz'
+        )
+        .with(
+          {
+            kind: 'some',
+            value: P.when(equals(2)),
+          },
+          () => 'fizz'
+        )
+        .with(
+          {
+            kind: 'some',
+            // @ts-expect-error: string isn't assigable to number
+            value: P.when(equals('yo')),
           },
           () => 'fizz'
         )
         .with({ kind: 'none' }, () => 'nope')
-        .with({ kind: 'some' }, () => 'some')
+        // @ts-expect-error
         .exhaustive();
   });
 });

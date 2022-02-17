@@ -1,6 +1,6 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, P, select } from '../src';
-import { State, Event } from './utils';
+import { State, Event } from './types-catalog/utils';
 import {
   MixedNamedAndAnonymousSelectError,
   SeveralAnonymousSelectError,

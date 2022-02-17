@@ -1,5 +1,5 @@
 import { match, __, P } from '../src';
-import { Option } from './utils';
+import { Option } from './types-catalog/utils';
 import { Expect, Equal } from '../src/types/helpers';
 
 describe('Multiple patterns', () => {
@@ -260,6 +260,7 @@ describe('Multiple patterns', () => {
         },
         ({ a }) => {}
       )
+      .with({ a: P.array(P.number) }, () => {})
       .exhaustive();
   });
 });

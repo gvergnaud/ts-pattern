@@ -12,7 +12,7 @@ import {
   OptionalP,
   ArrayP,
 } from '../src/types/Pattern';
-import { Event, State } from './utils';
+import { Event, State } from './types-catalog/utils';
 
 type AnonymousSelectP = SelectP<symbols.anonymousSelectKey>;
 

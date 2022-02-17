@@ -1,6 +1,6 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, __, when, not, Pattern, P } from '../src';
-import { State, Event } from './utils';
+import { State, Event } from './types-catalog/utils';
 
 describe('types', () => {
   type Input = [State, Event];
@@ -122,7 +122,7 @@ describe('types', () => {
         }
       )
       .with(
-        when<Input>((x) => {
+        P.typed<Input>().when((x) => {
           type t = Expect<Equal<typeof x, Input>>;
           return true;
         }),

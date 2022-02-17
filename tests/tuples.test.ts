@@ -1,6 +1,6 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, __, P } from '../src';
-import { State, Event } from './utils';
+import { State, Event } from './types-catalog/utils';
 
 describe('tuple ([a, b])', () => {
   it('should match tuple patterns', () => {
