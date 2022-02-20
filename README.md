@@ -79,7 +79,7 @@ yarn add ts-pattern
 | ------------------------------------------------------- | ---------------- | ---------------- | ---------------- |
 | v4.x                                                    | ✅               | ❌               | ❌               |
 | [v3.x](https://github.com/gvergnaud/ts-pattern/tree/v3) | ✅               | ✅               | ⚠️               |
-| v2.x                                                    | ✅               | ✅               | ✅               |
+| [v2.x](https://github.com/gvergnaud/ts-pattern/tree/v2) | ✅               | ✅               | ✅               |
 
 ✅ Full support
 
