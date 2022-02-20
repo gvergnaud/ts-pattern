@@ -75,11 +75,11 @@ yarn add ts-pattern
 
 ### compatibility with different TypeScript versions
 
-| ts-pattern | TypeScript v4.5+ | TypeScript v4.2+ | TypeScript v4.1+ |
-| ---------- | ---------------- | ---------------- | ---------------- |
-| v4.x       | ✅               | ❌               | ❌               |
-| v3.x       | ✅               | ✅               | ⚠️               |
-| v2.x       | ✅               | ✅               | ✅               |
+| ts-pattern                                              | TypeScript v4.5+ | TypeScript v4.2+ | TypeScript v4.1+ |
+| ------------------------------------------------------- | ---------------- | ---------------- | ---------------- |
+| v4.x                                                    | ✅               | ❌               | ❌               |
+| [v3.x](https://github.com/gvergnaud/ts-pattern/tree/v3) | ✅               | ✅               | ⚠️               |
+| v2.x                                                    | ✅               | ✅               | ✅               |
 
 ✅ Full support
 
@@ -88,6 +88,8 @@ yarn add ts-pattern
 ❌ No support
 
 # Documentation
+
+Note: This is the documentation for **TS-Pattern v4**. Find the documentation for [**TS-Pattern v3 here**](https://github.com/gvergnaud/ts-pattern/tree/v3).
 
 - [Code Sandbox Examples](#code-sandbox-examples)
 - [Getting Started](#getting-started)
@@ -125,13 +127,16 @@ yarn add ts-pattern
 
 ## Code Sandbox Examples
 
-- [Basic Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/basic.tsx)
-- [Gif fetcher app Demo (with React)](https://codesandbox.io/s/ts-pattern-gif-search-demo-n8h4k?file=/src/App.tsx)
-- [Reducer Demo (with React)](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
-- [Untyped Input Demo (Handling an API response)](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/api.tsx)
-- [`when` Guard Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/when.tsx)
-- [`not` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.tsx)
-- [`select` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/select.tsx)
+- TS-Pattern v4
+  - Unfortunatelly Codesandbox doesn't support TypeScript v4.5 yet, so v4 demos aren't available.
+- [TS-Pattern v3](<(https://github.com/gvergnaud/ts-pattern/tree/v3)>)
+  - [Basic Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/basic.tsx)
+  - [React gif fetcher app Demo](https://codesandbox.io/s/ts-pattern-gif-search-demo-n8h4k?file=/src/App.tsx)
+  - [React.useReducer Demo](https://codesandbox.io/s/ts-pattern-reducer-example-c4yuq?file=/src/App.tsx)
+  - [Handling untyped API response Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/api.tsx)
+  - [`when` Guard Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/when.tsx)
+  - [`not` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/not.tsx)
+  - [`select` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-0s6d8?file=/src/examples/select.tsx)
 
 ## Getting Started
 
