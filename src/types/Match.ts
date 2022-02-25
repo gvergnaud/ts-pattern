@@ -1,4 +1,5 @@
-import type { Pattern, Matchable, UnknownPattern } from './Pattern';
+import type * as symbols from '../internals/symbols';
+import type { Pattern, Matchable } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
@@ -11,9 +12,7 @@ export type MatchedValue<a, invpattern> = WithDefault<
   a
 >;
 
-export type Unset = '@ts-pattern/unset';
-
-export type PickReturnValue<a, b> = a extends Unset ? b : a;
+export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;
 
 type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 

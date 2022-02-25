@@ -19,5 +19,8 @@ export type toExclude = typeof toExclude;
 export const matcher = Symbol('@ts-pattern/matcher');
 export type matcher = typeof matcher;
 
+export const unset = Symbol('@ts-pattern/unset');
+export type unset = typeof unset;
+
 export const anonymousSelectKey = '@ts-pattern/anonymous-select-key';
 export type anonymousSelectKey = typeof anonymousSelectKey;

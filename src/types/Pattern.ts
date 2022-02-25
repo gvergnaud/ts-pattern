@@ -73,6 +73,8 @@ export type SelectP<
   p = Matchable<unknown, unknown>
 > = Matchable<input, p, 'select', Some<key>>;
 
+export type AnonymousSelectP = SelectP<symbols.anonymousSelectKey>;
+
 export interface ToExclude<a> {
   [symbols.toExclude]: a;
 }

@@ -12,6 +12,7 @@ import {
   NotP,
   GuardP,
   SelectP,
+  AnonymousSelectP,
 } from './types/Pattern';
 
 /**
@@ -228,7 +229,7 @@ export function when<input, p extends (value: input) => unknown>(
  *   .with({ age: P.select() }, (age) => 'age: number'
  *   )
  */
-export function select(): SelectP<symbols.anonymousSelectKey>;
+export function select(): AnonymousSelectP;
 export function select<
   input,
   patternOrKey extends

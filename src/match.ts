@@ -1,6 +1,6 @@
 import { Pattern } from './types/Pattern';
 import { GuardValue } from './types/helpers';
-import { Match, PickReturnValue, Unset } from './types/Match';
+import { Match, PickReturnValue } from './types/Match';
 import * as symbols from './internals/symbols';
 import { matchPattern } from './internals/helpers';
 
@@ -12,7 +12,7 @@ import { matchPattern } from './internals/helpers';
  * It returns a `Match` builder, on which you can chain
  * several `.with(pattern, handler)` clauses.
  */
-export const match = <i, o = Unset>(value: i): Match<i, o> =>
+export const match = <i, o = symbols.unset>(value: i): Match<i, o> =>
   builder(value, []) as any;
 
 const builder = <i, o>(
