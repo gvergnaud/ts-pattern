@@ -24,8 +24,7 @@ export type Match<
   i,
   o,
   patternValueTuples extends [any, any][] = [],
-  inferredOutput = never,
-  inputPattern = Pattern<i>
+  inferredOutput = never
 > = {
   /**
    * #### Match.with
@@ -34,7 +33,7 @@ export type Match<
    * execute the handler function and return its result.
    **/
   with<
-    p extends inputPattern,
+    p extends Pattern<i>,
     c,
     value extends MatchedValue<i, InvertPattern<p>>
   >(
@@ -43,17 +42,11 @@ export type Match<
       selections: FindSelected<value, p>,
       value: value
     ) => PickReturnValue<o, c>
-  ): Match<
-    i,
-    o,
-    [...patternValueTuples, [p, value]],
-    Union<inferredOutput, c>,
-    inputPattern
-  >;
+  ): Match<i, o, [...patternValueTuples, [p, value]], Union<inferredOutput, c>>;
 
   with<
-    p1 extends inputPattern,
-    p2 extends inputPattern,
+    p1 extends Pattern<i>,
+    p2 extends Pattern<i>,
     c,
     p extends p1 | p2,
     value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
@@ -65,15 +58,14 @@ export type Match<
     i,
     o,
     [...patternValueTuples, [p1, value], [p2, value]],
-    Union<inferredOutput, c>,
-    inputPattern
+    Union<inferredOutput, c>
   >;
 
   with<
-    p1 extends inputPattern,
-    p2 extends inputPattern,
-    p3 extends inputPattern,
-    ps extends inputPattern[],
+    p1 extends Pattern<i>,
+    p2 extends Pattern<i>,
+    p3 extends Pattern<i>,
+    ps extends Pattern<i>[],
     c,
     p extends p1 | p2 | p3 | ps[number],
     value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
@@ -95,12 +87,11 @@ export type Match<
       [p3, value],
       ...MakeTuples<ps, value>
     ],
-    Union<inferredOutput, c>,
-    inputPattern
+    Union<inferredOutput, c>
   >;
 
   with<
-    pat extends inputPattern,
+    pat extends Pattern<i>,
     pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
     c,
     value extends GuardValue<pred>
@@ -117,8 +108,7 @@ export type Match<
     pred extends (value: any) => value is infer narrowed
       ? [...patternValueTuples, [Matchable<unknown, narrowed>, value]]
       : patternValueTuples,
-    Union<inferredOutput, c>,
-    inputPattern
+    Union<inferredOutput, c>
   >;
 
   /**
@@ -136,8 +126,7 @@ export type Match<
     pred extends (value: any) => value is infer narrowed
       ? [...patternValueTuples, [Matchable<unknown, narrowed>, value]]
       : patternValueTuples,
-    Union<inferredOutput, c>,
-    inputPattern
+    Union<inferredOutput, c>
   >;
 
   /**
