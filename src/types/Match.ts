@@ -158,7 +158,7 @@ export type Match<
    * Runs the pattern matching expression and return the result value.
    *
    * If this is of type `NonExhaustiveError`, it means you aren't matching
-   * every cases, and you should probably add another `.with(...)` clause
+   * every case, and you should add another `.with(...)` clause
    * to prevent potential runtime errors.
    *
    * */
