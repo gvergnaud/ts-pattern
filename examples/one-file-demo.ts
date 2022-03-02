@@ -17,7 +17,7 @@
 import { isMatching, match, P, __ } from '../src';
 
 /**
- * Use case 1: handling a polymorphic backend response
+ * Use case 1: handling discriminated union types
  */
 
 type Response =
