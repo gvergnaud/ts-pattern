@@ -6,5 +6,6 @@
     "strict": true,
     "outDir": "lib/"
   },
-  "exclude": ["tests/", "lib/"]
+  "include": ["src/"],
+  "exclude": ["tests/", "lib/", "examples/"]
 }

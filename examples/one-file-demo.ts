@@ -39,7 +39,8 @@ const exampleFunction1 = (input: Response) =>
       { type: 'image', extension: P.union('jpg', 'png'), src: P.select() },
       (value) => value + '!!'
     )
-    // @ts-expect-error 4. basic exhaustiveness checking
+    // 4. basic exhaustiveness checking
+    // @ts-expect-error
     .exhaustive();
 
 /**
