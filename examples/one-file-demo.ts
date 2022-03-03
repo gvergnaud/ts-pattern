@@ -96,7 +96,7 @@ const validate = (response: unknown): Post | null => {
   if (isMatching(postPattern, response)) {
     //  response: Post
     const cardTitle = `${response.title} by @${response.author.name}`;
-    const tags = response.comments.map((c) => c.author).join(', ');
+    const commenters = response.comments.map((c) => c.author.name).join(', ');
     return response;
   }
 
