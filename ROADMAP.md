@@ -1,7 +1,5 @@
 ### Roadmap
 
-- [ ] update `select()` and `select('name')` to accept a pattern the selected value should match.
-- [ ] add a `oneOf(...patterns)` pattern.
 - [ ] add a `rest` (maybe `rest(Pattern<a>)`) pattern for list. Example of using `rest`:
 
 ```ts
@@ -15,6 +13,8 @@ const reverse = <T>(xs: T[]): T[] => {
 };
 ```
 
+- [x] update `select()` and `select('name')` to accept a pattern the selected value should match.
+- [x] add a `union(...patterns)` pattern.
 - [x] When not provided, maybe compute the output type from all branches
 - [x] maybe add a lightweight `select` API for single values
 - [x] add support matching against several patterns in a single `.with()` clause.
