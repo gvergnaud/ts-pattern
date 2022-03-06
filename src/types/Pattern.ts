@@ -67,6 +67,14 @@ export type NotP<input, p> = Matchable<input, p, 'not'>;
 
 export type GuardP<input, narrowed> = Matchable<input, narrowed>;
 
+export type GuardExcludeP<input, narrowed, excluded> = Matchable<
+  input,
+  narrowed,
+  'default',
+  None,
+  excluded
+>;
+
 export type SelectP<
   key extends string,
   input = unknown,

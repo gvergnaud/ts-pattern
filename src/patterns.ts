@@ -1,5 +1,6 @@
 import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers';
 import * as symbols from './internals/symbols';
+import { None } from './types/FindSelected';
 import { GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
@@ -13,6 +14,8 @@ import {
   GuardP,
   SelectP,
   AnonymousSelectP,
+  Matchable,
+  GuardExcludeP,
 } from './types/Pattern';
 
 /**
@@ -205,6 +208,15 @@ export function not<
  *   .with({ age: P.when(age => age > 21) }, (x) => 'will match if value.age > 21'
  *   )
  */
+export function when<input, p extends (value: input) => unknown>(
+  predicate: p
+): GuardP<
+  input,
+  p extends (value: any) => value is infer narrowed ? narrowed : never
+>;
+export function when<input, narrowed extends input, excluded>(
+  predicate: (input: input) => input is narrowed
+): GuardExcludeP<input, narrowed, excluded>;
 export function when<input, p extends (value: input) => unknown>(
   predicate: p
 ): GuardP<

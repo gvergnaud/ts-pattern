@@ -322,4 +322,20 @@ describe('when', () => {
         .with({ kind: 'none' }, () => 'nope')
         .exhaustive();
   });
+
+  it('should be possible to hard code type parameters to P.when', () => {
+    const reg = (expr: RegExp) =>
+      P.when<
+        unknown, // input
+        string, // narrowed value
+        never // types excluded
+      >((x): x is string => typeof x === 'string' && expr.test(x));
+
+    expect(
+      match('Hello')
+        .with(reg(/^H/), () => true)
+        // @ts-expect-error
+        .exhaustive()
+    ).toBe(true);
+  });
 });
