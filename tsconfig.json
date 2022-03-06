@@ -4,8 +4,8 @@
     "declaration": true,
     "target": "es6",
     "strict": true,
-    "outDir": "lib/"
+    "outDir": "lib/cjs/"
   },
   "include": ["src/"],
-  "exclude": ["tests/", "lib/", "examples/"]
+  "exclude": ["tests/", "lib/", "examples/", "node_modules/"]
 }
