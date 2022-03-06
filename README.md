@@ -48,7 +48,7 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 - **Exhaustiveness checking** support, enforcing that you are matching every possible case with `.exhaustive()`.
 - **Expressive API**, with catch-all and type specific **wildcards**: `__`.
 - Supports **predicates**, **unions**, **intersections** and **exclusions** patterns for non-trivial cases.
-- Supports properties selection, via the `P.select(<name?>)` function.
+- Supports properties selection, via the `P.select(name?)` function.
 - Tiny bundle footprint ([**only 1.9kB**](https://bundlephobia.com/package/ts-pattern@3.2.4)).
 
 ## What is Pattern Matching?
@@ -636,7 +636,7 @@ export function isMatching<p extends Pattern<any>>(
   - if a value is given as second argument, `isMatching` will return a boolean telling us whether or not the value matches the pattern.
   - if the only argument given to the function is the pattern, then `isMatching` will return a **type guard function** taking a value and returning a boolean telling us whether or not the value matches the pattern.
 
-### Patterns
+## Patterns
 
 Patterns are values matching one of the possible shapes of your input. They can
 be literal values, data structures, wildcards, or special functions like `not`,
@@ -646,7 +646,7 @@ If your input isn't typed, (if it's a `any` or a `unknown`), you have no constra
 on the shape of your pattern, you can put whatever you want. In your handler, your
 value will take the type described by your pattern.
 
-#### Literals
+### Literals
 
 Literals are primitive JavaScript values, like number, string, boolean, bigint, null, undefined, and symbol.
 
@@ -668,11 +668,9 @@ console.log(output);
 // => 'two'
 ```
 
-- [Wildcards](#wildcards)
+### Wildcards
 
-#### Wildcards
-
-##### `__` wildcard
+#### `__` wildcard
 
 The `__` pattern will match any value.
 
@@ -689,7 +687,7 @@ console.log(output);
 // => 'It will always match'
 ```
 
-##### `P.string` wildcard
+#### `P.string` wildcard
 
 The `P.string` pattern will match any value of type `string`.
 
@@ -707,7 +705,7 @@ console.log(output);
 // => 'it is a string!'
 ```
 
-##### `P.number` wildcard
+#### `P.number` wildcard
 
 The `P.number` pattern will match any value of type `number`.
 
@@ -725,7 +723,7 @@ console.log(output);
 // => 'it is a number!'
 ```
 
-##### `P.boolean` wildcard
+#### `P.boolean` wildcard
 
 The `P.boolean` pattern will match any value of type `boolean`.
 
@@ -744,7 +742,7 @@ console.log(output);
 // => 'it is a boolean!'
 ```
 
-##### `P.nullish` wildcard
+#### `P.nullish` wildcard
 
 The `P.nullish` pattern will match any value of type `null` or `undefined`.
 
@@ -772,7 +770,7 @@ console.log(output);
 // => 'it is either null or undefined!'
 ```
 
-##### `P.bigint` wildcard
+#### `P.bigint` wildcard
 
 The `P.bigint` pattern will match any value of type `bigint`.
 
@@ -789,7 +787,7 @@ console.log(output);
 // => 'it is a bigint!'
 ```
 
-##### `P.symbol` wildcard
+#### `P.symbol` wildcard
 
 The `P.symbol` pattern will match any value of type `symbol`.
 
@@ -806,7 +804,7 @@ console.log(output);
 // => 'it is a symbol!'
 ```
 
-#### Objects
+### Objects
 
 A pattern can be an object with sub-pattern properties. In order to match,
 the input must be an object with all properties defined on the pattern object
@@ -832,7 +830,7 @@ console.log(output);
 // => 'user of name: Gabriel'
 ```
 
-#### Tuples (arrays)
+### Tuples (arrays)
 
 In TypeScript, [Tuples](https://en.wikipedia.org/wiki/Tuple) are arrays with a fixed
 number of elements which can be of different types. You can pattern match on tuples
@@ -860,7 +858,34 @@ console.log(output);
 // => 12
 ```
 
-#### Sets
+### `P.array` patterns
+
+To match on an array of unknown size, you can use `P.array(subpattern)`.
+It takes a sub-pattern, and returns a pattern which will match if all
+elements in the input array, match the sub-pattern.
+
+```ts
+import { match, P } from 'ts-pattern';
+
+type Input = { title: string; content: string }[];
+
+let input: Input = [
+  { title: 'Hello world!', content: 'This is a very interesting content' },
+  { title: 'Bonjour!', content: 'This is a very interesting content too' },
+];
+
+const output = match(input)
+  .with(
+    P.array({ title: P.string, content: P.string }),
+    (posts) => 'a list of posts!'
+  )
+  .otherwise(() => 'something else');
+
+console.log(output);
+// => 'a list of posts!'
+```
+
+### Sets
 
 Similarly to array patterns, set patterns have a different meaning
 if they contain a single sub-pattern or several of them:
@@ -889,7 +914,7 @@ each value in the input set match the wildcard.
 If a Set pattern contains several values, it will match if the
 input Set contains each of these values.
 
-#### Maps
+### Maps
 
 Map patterns are similar to object patterns. They match if each
 keyed sub-pattern match the input value for the same key.
@@ -921,34 +946,7 @@ console.log(output);
 // => 'map.get('b') is 2'
 ```
 
-#### `P.array` patterns
-
-To match on an array of unknown size, you can use `P.array(subpattern)`.
-It takes a sub-pattern, and returns a pattern which will match if all
-elements in the input array, match the sub-pattern.
-
-```ts
-import { match, P } from 'ts-pattern';
-
-type Input = { title: string; content: string }[];
-
-let input: Input = [
-  { title: 'Hello world!', content: 'This is a very interesting content' },
-  { title: 'Bonjour!', content: 'This is a very interesting content too' },
-];
-
-const output = match(input)
-  .with(
-    P.array({ title: P.string, content: P.string }),
-    (posts) => 'a list of posts!'
-  )
-  .otherwise(() => 'something else');
-
-console.log(output);
-// => 'a list of posts!'
-```
-
-#### `P.when` patterns
+### `P.when` patterns
 
 the `P.when` function enables you to test the input with a custom guard function.
 The pattern will match only if all `P.when` functions return a truthy value.
@@ -976,7 +974,7 @@ console.log(output);
 // => '🙂'
 ```
 
-#### `P.not` patterns
+### `P.not` patterns
 
 The `P.not` function enables you to match on everything **but** a specific value.
 it's a function taking a pattern and returning its opposite:
@@ -999,7 +997,7 @@ console.log(toNumber(true));
 // => 1
 ```
 
-#### `P.select` patterns
+### `P.select` patterns
 
 The `P.select` function enables us to pick a piece of our input data structure
 and inject it in our handler function.
@@ -1080,7 +1078,7 @@ const output = match(input)
   .otherwise(() => 'anonymous');
 ```
 
-#### `P.optional` patterns
+### `P.optional` patterns
 
 `P.optional(subpattern)` let you annotate a key in an object pattern as being optional,
 but if it is defined it should match a given sub-pattern.
@@ -1100,7 +1098,7 @@ const output = match(input)
   .exhaustive();
 ```
 
-#### `P.union` patterns
+### `P.union` patterns
 
 `P.union(...subpatterns)` let you test several patterns and will match if
 one of these patterns do. It's particularly handy when you want to handle
@@ -1125,7 +1123,7 @@ const output = match(input)
   .otherwise(() => '');
 ```
 
-#### `P.intersection` patterns
+### `P.intersection` patterns
 
 `P.intersection(...subpatterns)` let you ensure that the input matches
 **all** sub-patterns passed as parameters.
@@ -1155,7 +1153,7 @@ const output = match(input)
   .otherwise(() => '');
 ```
 
-#### `P.instanceOf` patterns
+### `P.instanceOf` patterns
 
 The `P.instanceOf` function lets you build a pattern to check if
 a value is an instance of a class:
