@@ -4,7 +4,7 @@
   "description": " The exhaustive Pattern Matching library for TypeScript.",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
-  "types": "lib/index.d.ts",
+  "types": "lib/cjs/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
