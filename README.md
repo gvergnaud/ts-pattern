@@ -849,7 +849,7 @@ type Input =
 
 const input: Input = [3, '*', 4];
 
-const output = match<Input>(input)
+const output = match(input)
   .with([__, '+', __], ([x, , y]) => x + y)
   .with([__, '-', __], ([x, , y]) => x - y)
   .with([__, '*', __], ([x, , y]) => x * y)
@@ -872,7 +872,7 @@ type Input = Set<string | number>;
 
 const input: Input = new Set([1, 2, 3]);
 
-const output = match<Input>(input)
+const output = match(input)
   .with(new Set([1, 'hello']), (set) => `Set contains 1 and 'hello'`)
   .with(new Set([1, 2]), (set) => `Set contains 1 and 2`)
   .with(new Set([P.string]), (set) => `Set contains only strings`)
@@ -905,7 +905,7 @@ const input: Input = new Map([
   ['c', 3],
 ]);
 
-const output = match<Input>(input)
+const output = match(input)
   .with(new Map([['b', 2]]), (map) => `map.get('b') is 2`)
   .with(new Map([['a', P.string]]), (map) => `map.get('a') is a string`)
   .with(
@@ -961,7 +961,7 @@ import { match, P } from 'ts-pattern';
 
 type Input = { score: number };
 
-const output = match<Input>({ score: 10 })
+const output = match({ score: 10 })
   .with(
     {
       score: P.when((score): score is 5 => score === 5),
@@ -1018,9 +1018,9 @@ type Input =
   | { type: 'post'; user: { name: string } }
   | { ... };
 
-const input = { type: 'post', user: { name: 'Gabriel' } }
+const input: Input = { type: 'post', user: { name: 'Gabriel' } }
 
-const output = match<Input>(input)
+const output = match(input)
     .with(
       { type: 'post', user: { name: P.select() } },
       username => username // username: string
@@ -1040,9 +1040,9 @@ type Input =
   | { type: 'post'; user: { name: string }, content: string }
   | { ... };
 
-const input = { type: 'post', user: { name: 'Gabriel' }, content: 'Hello!' }
+const input: Input = { type: 'post', user: { name: 'Gabriel' }, content: 'Hello!' }
 
-const output = match<Input>(input)
+const output = match(input)
     .with(
       { type: 'post', user: { name: P.select('name') }, content: P.select('body') },
       ({ name, body }) => `${name} wrote "${body}"`
@@ -1061,7 +1061,9 @@ type User = { age: number; name: string };
 type Post = { body: string };
 type Input = { author: User; content: Post };
 
-const output = match<Input>(input)
+declare const input: Input;
+
+const output = match(input)
   .with(
     {
       author: P.select({ age: P.when((age) => age > 18) }),
@@ -1113,7 +1115,9 @@ type Input =
   | { type: 'text'; content: string }
   | { type: 'img'; src: string };
 
-const output = match<Input>(input)
+declare const input: Input;
+
+const output = match(input)
   .with({ type: P.union('user', 'org') }, (userOrOrg) => {
     // userOrOrg: User | Org
     return userOrOrg.name;
@@ -1137,7 +1141,9 @@ class B {
 
 type Input = { prop: A | B };
 
-const output = match<Input>(input)
+declare const input: Input;
+
+const output = match(input)
   .with(
     { prop: P.intersection(P.instanceOf(A), { foo: 'bar' }) },
     ({ prop }) => prop.foo // prop: A & { foo: 'bar' }
@@ -1166,9 +1172,9 @@ class B {
 
 type Input = { value: A | B };
 
-const input = { value: new A() };
+const input: Input = { value: new A() };
 
-const output = match<Input>(input)
+const output = match(input)
   .with({ value: P.instanceOf(A) }, (a) => {
     return 'instance of A!';
   })
