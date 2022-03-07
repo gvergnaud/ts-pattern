@@ -6,7 +6,7 @@ export type Values<a extends object> = UnionToTuple<ValueOf<a>>;
  * ### LeastUpperBound
  * An interesting one. A type taking two imbricated sets and returning the
  * smallest one.
- * We need that because sometimes the pattern's infered type holds more
+ * We need that because sometimes the pattern's inferred type holds more
  * information than the value on which we are matching (if the value is any
  * or unknown for instance).
  */

@@ -1,13 +1,13 @@
 ### Roadmap
 
-- [ ] add a `rest` (maybe `rest(Pattern<a>)`) pattern for list. Example of using `rest`:
+- [ ] add a `P.rest` (maybe `P.rest(Pattern<a>)`) pattern for list. Example of using `P.rest`:
 
 ```ts
 const reverse = <T>(xs: T[]): T[] => {
   return (
     match<T[], T[]>(xs)
       // matches a list with at least one element
-      .with([__, ...rest(__)], ([x, ...xs]) => [...reverse(xs), x])
+      .with([__, ...P.rest(__)], ([x, ...xs]) => [...reverse(xs), x])
       .otherwise(() => [])
   );
 };

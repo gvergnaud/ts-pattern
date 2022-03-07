@@ -30,7 +30,7 @@ describe('type errors', () => {
       .exhaustive();
   });
 
-  it("If the pattern's wrong, the infered selection must be the input type", () => {
+  it("If the pattern's wrong, the inferred selection must be the input type", () => {
     match<Country>('Germany')
       .with('Germany', 'Spain', () => 'Europe')
       // @ts-expect-error: 'US' instead of 'USA'

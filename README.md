@@ -239,8 +239,8 @@ Then we add a first `with` clause:
 
 ```ts
   .with([{ status: 'loading' }, { type: 'success' }], ([state, event]) => ({
-    // `state` is infered as { status: 'loading' }
-    // `event` is infered as { type: 'success', data: string }
+    // `state` is inferred as { status: 'loading' }
+    // `event` is inferred as { type: 'success', data: string }
     status: 'success',
     data: event.data,
   }))
@@ -964,7 +964,7 @@ const output = match({ score: 10 })
     {
       score: P.when((score): score is 5 => score === 5),
     },
-    (input) => '😐' // input is infered as { score: 5 }
+    (input) => '😐' // input is inferred as { score: 5 }
   )
   .with({ score: P.when((score) => score < 5) }, () => '😞')
   .with({ score: P.when((score) => score > 5) }, () => '🙂')

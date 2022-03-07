@@ -292,7 +292,7 @@ describe('when', () => {
         // handler to be executed.
         .with(
           { kind: 'some' },
-          // `someNumber` is infered to be a { kind: "some"; value: number }
+          // `someNumber` is inferred to be a { kind: "some"; value: number }
           // based on the pattern provided as first argument.
           (someNumber) =>
             someNumber.value % 5 === 0 && someNumber.value % 3 === 0,
