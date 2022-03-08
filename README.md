@@ -49,7 +49,7 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 - **Expressive API**, with catch-all and type specific **wildcards**: `__`.
 - Supports **predicates**, **unions**, **intersections** and **exclusions** patterns for non-trivial cases.
 - Supports properties selection, via the `P.select(name?)` function.
-- Tiny bundle footprint ([**only 1.9kB**](https://bundlephobia.com/package/ts-pattern@3.2.4)).
+- Tiny bundle footprint ([**only 1.7kB**](https://bundlephobia.com/package/ts-pattern@4.0.1-rc.12)).
 
 ## What is Pattern Matching?
 
