@@ -6,5 +6,5 @@
     "target": "ES2020",
     "moduleResolution": "node"
   },
-  "exclude": ["src/"]
+  "exclude": ["src/", "dist/", "example/"]
 }
