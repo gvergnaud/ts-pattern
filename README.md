@@ -89,7 +89,7 @@ yarn add ts-pattern
 
 # Documentation
 
-Note: This is the documentation for **TS-Pattern v4**. Find the documentation for [**TS-Pattern v3 here**](https://github.com/gvergnaud/ts-pattern/tree/v3).
+#### ⚠️ This is the docs for **TS-Pattern v4**. Find the docs for [**TS-Pattern v3 here**](https://github.com/gvergnaud/ts-pattern/tree/v3).
 
 - [Code Sandbox Examples](#code-sandbox-examples)
 - [Getting Started](#getting-started)
@@ -127,15 +127,13 @@ Note: This is the documentation for **TS-Pattern v4**. Find the documentation fo
 
 ## Code Sandbox Examples
 
-- TS-Pattern v4
-  - [Basic Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/basic.tsx)
-  - [React gif fetcher app Demo](https://codesandbox.io/s/ts-pattern-gif-search-demo-v4-bkumdw?file=/src/App.tsx)
-  - [React.useReducer Demo](https://codesandbox.io/s/ts-pattern-reducer-example-v4-fx2yqu?file=/src/App.tsx)
-  - [Handling untyped API response Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/api.tsx)
-  - [`P.when` Guard Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/when.tsx)
-  - [`P.not` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/not.tsx)
-  - [`P.select` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/select.tsx)
-- [TS-Pattern v3](https://github.com/gvergnaud/ts-pattern/tree/v3#code-sandbox-examples)
+- [Basic Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/basic.tsx)
+- [React gif fetcher app Demo](https://codesandbox.io/s/ts-pattern-gif-search-demo-v4-bkumdw?file=/src/App.tsx)
+- [React.useReducer Demo](https://codesandbox.io/s/ts-pattern-reducer-example-v4-fx2yqu?file=/src/App.tsx)
+- [Handling untyped API response Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/api.tsx)
+- [`P.when` Guard Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/when.tsx)
+- [`P.not` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/not.tsx)
+- [`P.select` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/select.tsx)
 
 ## Getting Started
 
