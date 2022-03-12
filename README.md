@@ -73,7 +73,7 @@ Via yarn
 yarn add ts-pattern
 ```
 
-### compatibility with different TypeScript versions
+### Compatibility with different TypeScript versions
 
 Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#strict) is enabled in your `tsconfig.json` file.
 
@@ -105,13 +105,6 @@ Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#s
   - [Patterns](#patterns)
     - [Literals](#literals)
     - [Wildcards](#wildcards)
-      - [`__` wildcard](#__-wildcard)
-      - [`P.string` wildcard](#Pstring-wildcard)
-      - [`P.number` wildcard](#Pnumber-wildcard)
-      - [`P.boolean` wildcard](#Pboolean-wildcard)
-      - [`P.nullish` wildcard](#Pnullish-wildcard)
-      - [`P.bigint` wildcard](#Pbigint-wildcard)
-      - [`P.symbol` wildcard](#Psymbol-wildcard)
     - [Objects](#objects)
     - [Tuples (arrays)](#tuples-arrays)
     - [Sets](#sets)
