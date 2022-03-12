@@ -1,6 +1,5 @@
 import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers';
 import * as symbols from './internals/symbols';
-import { None } from './types/FindSelected';
 import { GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
@@ -14,7 +13,6 @@ import {
   GuardP,
   SelectP,
   AnonymousSelectP,
-  Matchable,
   GuardExcludeP,
 } from './types/Pattern';
 

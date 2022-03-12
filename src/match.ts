@@ -12,8 +12,9 @@ import { matchPattern } from './internals/helpers';
  * It returns a `Match` builder, on which you can chain
  * several `.with(pattern, handler)` clauses.
  */
-export const match = <i, o = symbols.unset>(value: i): Match<i, o> =>
-  builder(value, []) as any;
+export const match = <input, output = symbols.unset>(
+  value: input
+): Match<input, output> => builder(value, []) as any;
 
 const builder = <i, o>(
   value: i,
