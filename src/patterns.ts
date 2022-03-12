@@ -344,7 +344,7 @@ export const __ = when(isUnknown);
  * `P.string` is a wildcard pattern matching any **string**.
  * @example
  *  match(value)
- *   .with(P.string, () => 'will match on strings only')
+ *   .with(P.string, () => 'will match on strings')
  */
 
 export const string = when(isString);
@@ -354,7 +354,7 @@ export const string = when(isString);
  * `P.number` is a wildcard pattern matching any **number**.
  * @example
  *  match(value)
- *   .with(P.number, () => 'will match on numbers only')
+ *   .with(P.number, () => 'will match on numbers')
  */
 export const number = when(isNumber);
 
@@ -362,7 +362,7 @@ export const number = when(isNumber);
  * ### Boolean wildcard
  * `P.boolean` is a wildcard pattern matching any **boolean**.
  * @example
- *   .with(P.boolean, () => 'will match on booleans only')
+ *   .with(P.boolean, () => 'will match on booleans')
  */
 export const boolean = when(isBoolean);
 
@@ -370,7 +370,7 @@ export const boolean = when(isBoolean);
  * ### BigInt wildcard
  * `P.bigint` is a wildcard pattern matching any **bigint**.
  * @example
- *   .with(P.bigint, () => 'will match on bigints only')
+ *   .with(P.bigint, () => 'will match on bigints')
  */
 export const bigint = when(isBigInt);
 
@@ -378,7 +378,7 @@ export const bigint = when(isBigInt);
  * ### Symbol wildcard
  * `P.symbol` is a wildcard pattern matching any **symbol**.
  * @example
- *   .with(P.symbol, () => 'will match on symbols only')
+ *   .with(P.symbol, () => 'will match on symbols')
  */
 export const symbol = when(isSymbol);
 
@@ -386,7 +386,7 @@ export const symbol = when(isSymbol);
  * ### Nullish wildcard
  * `P.nullish` is a wildcard pattern matching **null** or **undefined**.
  * @example
- *   .with(P.nullish, () => 'will match on null or undefined only')
+ *   .with(P.nullish, () => 'will match on null or undefined')
  */
 export const nullish = when(isNullish);
 
