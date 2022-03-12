@@ -77,11 +77,11 @@ yarn add ts-pattern
 
 Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#strict) is enabled in your `tsconfig.json` file.
 
-| ts-pattern                                                                   | TypeScript v4.5+ | TypeScript v4.2+ | TypeScript v4.1+ |
-| ---------------------------------------------------------------------------- | ---------------- | ---------------- | ---------------- |
-| v4.x [(Docs)](#documentation)                                                | ✅               | ❌               | ❌               |
-| v3.x [(Docs)](https://github.com/gvergnaud/ts-pattern/tree/v3#documentation) | ✅               | ✅               | ⚠️               |
-| v2.x [(Docs)](https://github.com/gvergnaud/ts-pattern/tree/v2#documentation) | ✅               | ✅               | ✅               |
+| ts-pattern                                                                                                                              | TypeScript v4.5+ | TypeScript v4.2+ | TypeScript v4.1+ |
+| --------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------------- | ---------------- |
+| v4.x [(Docs)](#documentation) [(Migration Guide)](https://github.com/gvergnaud/ts-pattern/tree/master/docs/v3-to-v4-migration-guide.md) | ✅               | ❌               | ❌               |
+| v3.x [(Docs)](https://github.com/gvergnaud/ts-pattern/tree/v3#documentation)                                                            | ✅               | ✅               | ⚠️               |
+| v2.x [(Docs)](https://github.com/gvergnaud/ts-pattern/tree/v2#documentation)                                                            | ✅               | ✅               | ✅               |
 
 ✅ Full support
 
