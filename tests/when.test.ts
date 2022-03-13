@@ -324,16 +324,43 @@ describe('when', () => {
   });
 
   it('should be possible to hard code type parameters to P.when', () => {
-    const reg = (expr: RegExp) =>
+    const regex = <input>(expr: RegExp) =>
       P.when<
-        unknown, // input
+        input | string, // input
         string, // narrowed value
         never // types excluded
       >((x): x is string => typeof x === 'string' && expr.test(x));
 
+    type Input = string | { prop: string | number };
+
     expect(
-      match('Hello')
-        .with(reg(/^H/), () => true)
+      match<Input>('Hello')
+        .with(regex(/^H/), () => true)
+        .with({ prop: regex(/^H/) }, (x) => {
+          type t = Expect<Equal<typeof x, { prop: string }>>;
+          return true;
+        })
+        // @ts-expect-error
+        .exhaustive()
+    ).toBe(true);
+  });
+
+  it('should be possible to do some manipulations on the input type', () => {
+    const notString = <input>() =>
+      P.when<
+        input | string, // input
+        Exclude<input, string>, // narrowed value
+        never // types excluded
+      >((x): x is Exclude<input, string> => typeof x !== 'string');
+
+    type Input = { prop: string | number };
+
+    expect(
+      match<Input>({ prop: 20 })
+        .with({ prop: notString() }, (x) => {
+          type t = Expect<Equal<typeof x, { prop: number }>>;
+          return true;
+        })
         // @ts-expect-error
         .exhaustive()
     ).toBe(true);
