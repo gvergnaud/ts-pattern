@@ -73,7 +73,7 @@ Via yarn
 yarn add ts-pattern
 ```
 
-### compatibility with different TypeScript versions
+### Compatibility with different TypeScript versions
 
 Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#strict) is enabled in your `tsconfig.json` file.
 
@@ -83,11 +83,18 @@ Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#s
 | v2.x       | ✅               | ✅               | ❌               |
 | v1.x       | ✅               | ✅               | ✅               |
 
-✅ Full support
+- ✅ Full support
+- ⚠️ Partial support, All features except passing multiple patterns to `.with()`.
+- ❌ No support
 
-⚠️ Partial support, everything works except passing more than 2 patterns to `.with()`
+### Trying TS-Pattern v4 RC ✨
 
-❌ No support
+TS-Pattern v4 will soon be released. If you are using **TypeScript v4.5+** and you want to try the latest release candidate, you can install `ts-pattern@next` and give feedback either by [opening an issue](https://github.com/gvergnaud/ts-pattern/issues/new/choose) on the repo or by [commenting on the PR](https://github.com/gvergnaud/ts-pattern/pull/70).
+
+Useful links:
+
+- [TS-Pattern v4 Documentation](https://github.com/gvergnaud/ts-pattern/tree/v4-wip#documentation)
+- [TS-Pattern v3 to v4 Migration Guide](https://github.com/gvergnaud/ts-pattern/tree/v4-wip/docs/v3-to-v4-migration-guide.md) detailing all breaking changes.
 
 # Documentation
 
@@ -233,8 +240,8 @@ Then we add a first `with` clause:
 
 ```ts
   .with([{ status: 'loading' }, { type: 'success' }], ([state, event]) => ({
-    // `state` is infered as { status: 'loading' }
-    // `event` is infered as { type: 'success', data: string }
+    // `state` is inferred as { status: 'loading' }
+    // `event` is inferred as { type: 'success', data: string }
     status: 'success',
     data: event.data,
   }))
@@ -940,7 +947,7 @@ const output = match<Input>({ score: 10 })
     {
       score: when((score): score is 5 => score === 5),
     },
-    (input) => '😐' // input is infered as { score: 5 }
+    (input) => '😐' // input is inferred as { score: 5 }
   )
   .with({ score: when((score) => score < 5) }, () => '😞')
   .with({ score: when((score) => score > 5) }, () => '🙂')
