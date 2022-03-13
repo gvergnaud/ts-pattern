@@ -45,10 +45,10 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 
 - Works on **any data structure**: nested objects, arrays, tuples, Sets, Maps and all primitive types.
 - **Typesafe**, with helpful type inference.
-- **Exhaustiveness checking** support, enforcing that you are matching every possible case with `.exhaustive()`.
-- **Expressive API**, with catch-all and type specific **wildcards**: `__`.
+- **Exhaustiveness checking** support, enforcing that you are matching every possible case with [`.exhaustive()`](#exhaustive).
+- **Expressive API**, with catch-all and type specific **wildcards**: [`__`](#__-wildcard), [`P.string`](#pstring-wildcard), [`P.number`](#pnumber-wildcard), etc.
 - Supports **predicates**, **unions**, **intersections** and **exclusion** patterns for non-trivial cases.
-- Supports properties selection, via the `P.select(name?)` function.
+- Supports properties selection, via the [`P.select(name?)`](#pselect-patterns) function.
 - Tiny bundle footprint ([**only 1.7kB**](https://bundlephobia.com/package/ts-pattern@4.0.1-rc.12)).
 
 ## What is Pattern Matching?
@@ -99,6 +99,7 @@ Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#s
   - [`match`](#match)
   - [`.with`](#with)
   - [`.when`](#when)
+  - [`.exhaustive`](#exhaustive)
   - [`.otherwise`](#otherwise)
   - [`.run`](#run)
   - [`isMatching`](#ismatching)
