@@ -31,7 +31,7 @@ export function optional<
   return {
     [symbols.matcher]() {
       return {
-        match: <I extends input>(value: I) => {
+        match: <I>(value: I | input) => {
           let selections: Record<string, unknown[]> = {};
           const selector = (key: string, value: any) => {
             selections[key] = value;
@@ -69,7 +69,7 @@ export function array<
   return {
     [symbols.matcher]() {
       return {
-        match: <I extends input>(value: I) => {
+        match: <I>(value: I | input) => {
           if (!Array.isArray(value)) return { matched: false };
 
           let selections: Record<string, unknown[]> = {};
@@ -153,7 +153,7 @@ export function union<
 >(...patterns: ps): OrP<input, ps> {
   return {
     [symbols.matcher]: () => ({
-      match: <I extends input>(value: I) => {
+      match: <I>(value: I | input) => {
         let selections: Record<string, unknown[]> = {};
         const selector = (key: string, value: any) => {
           selections[key] = value;
@@ -188,7 +188,7 @@ export function not<
 >(pattern: p): NotP<input, p> {
   return {
     [symbols.matcher]: () => ({
-      match: <I extends input>(value: I) => ({
+      match: <I>(value: I | input) => ({
         matched: !matchPattern(pattern, value, () => {}),
       }),
       getSelectionKeys: () => [],
@@ -223,8 +223,8 @@ export function when<input, p extends (value: input) => unknown>(
 > {
   return {
     [symbols.matcher]: () => ({
-      match: <I extends input>(value: I) => ({
-        matched: Boolean(predicate(value)),
+      match: <I>(value: I | input) => ({
+        matched: Boolean(predicate(value as input)),
       }),
     }),
   };

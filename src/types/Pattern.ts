@@ -24,7 +24,7 @@ export type MatcherProtocol<
   // it has been fully matched by this pattern
   excluded
 > = {
-  match: <I extends input>(value: I) => MatchResult;
+  match: <I>(value: I | input) => MatchResult;
   getSelectionKeys?: () => string[];
   matcherType?: matcherType;
 };
