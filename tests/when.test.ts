@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, when, select, P } from '../src';
+import { match, __, P, Pattern } from '../src';
 import { Option, State } from './types-catalog/utils';
 
 describe('when', () => {
@@ -29,7 +29,7 @@ describe('when', () => {
     let n = 20;
     const res = match(n)
       .with(
-        when((x): x is 13 => x === 13),
+        P.when((x): x is 13 => x === 13),
         (x) => {
           type t = Expect<Equal<typeof x, 13>>;
           return true;
@@ -123,7 +123,7 @@ describe('when', () => {
               }
             )
             .with(
-              { status: 'success', data: select('data') },
+              { status: 'success', data: P.select('data') },
               (x) => x.data.length > 3 && x.data.length < 10,
               (x) => {
                 type t = Expect<Equal<typeof x, { data: string }>>;
@@ -131,7 +131,7 @@ describe('when', () => {
               }
             )
             .with(
-              { status: 'success', data: select('data') },
+              { status: 'success', data: P.select('data') },
               (x) =>
                 x.data.length > 3 && x.data.length < 10 && x.data.length % 2,
               (x) => {
@@ -272,7 +272,7 @@ describe('when', () => {
           {
             type: 'some',
             value: {
-              list: P.array({ test: 'a', prop: select() }),
+              list: P.array({ test: 'a', prop: P.select() }),
             },
           },
           (x) => {
@@ -312,7 +312,7 @@ describe('when', () => {
         .with(
           {
             kind: 'some',
-            value: when((value) => value % 3 === 0),
+            value: Pattern.when((value) => value % 3 === 0),
           },
           () => 'fizz'
         )

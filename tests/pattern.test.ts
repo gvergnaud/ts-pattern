@@ -1,8 +1,8 @@
-import { Pattern } from '../src';
+import { P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import { Matchable } from '../src/types/Pattern';
 
-type ExtendsPattern<a, p extends Pattern<a>> = true;
+type ExtendsPattern<a, p extends P.Pattern<a>> = true;
 
 describe('Pattern', () => {
   it("shouldn't allow invalid patterns", () => {
@@ -18,7 +18,7 @@ describe('Pattern', () => {
     type cases = [
       Expect<
         Equal<
-          Pattern<{ kind: 'some'; value: number } | { kind: 'none' }>,
+          P.Pattern<{ kind: 'some'; value: number } | { kind: 'none' }>,
           | Matchable<
               { kind: 'some'; value: number } | { kind: 'none' },
               unknown,
@@ -27,11 +27,11 @@ describe('Pattern', () => {
               unknown
             >
           | {
-              readonly kind?: Pattern<'some'>;
-              readonly value?: Pattern<number>;
+              readonly kind?: P.Pattern<'some'>;
+              readonly value?: P.Pattern<number>;
             }
           | {
-              readonly kind?: Pattern<'none'>;
+              readonly kind?: P.Pattern<'none'>;
             }
         >
       >
@@ -39,13 +39,13 @@ describe('Pattern', () => {
   });
 
   it('Should return a single object pattern when the input is a union of objects and other types', () => {
-    type t = Pattern<
+    type t = P.Pattern<
       { kind: 'some'; value: number } | { kind: 'none' } | string
     >;
 
     type t1 = Expect<
       Equal<
-        Pattern<{ kind: 'some'; value: number } | { kind: 'none' } | string>,
+        P.Pattern<{ kind: 'some'; value: number } | { kind: 'none' } | string>,
         | Matchable<
             string | { kind: 'some'; value: number } | { kind: 'none' },
             unknown,
@@ -54,11 +54,11 @@ describe('Pattern', () => {
             unknown
           >
         | {
-            readonly kind?: Pattern<'some'>;
-            readonly value?: Pattern<number>;
+            readonly kind?: P.Pattern<'some'>;
+            readonly value?: P.Pattern<number>;
           }
         | {
-            readonly kind?: Pattern<'none'>;
+            readonly kind?: P.Pattern<'none'>;
           }
         | string
       >
@@ -66,7 +66,7 @@ describe('Pattern', () => {
 
     type t2 = Expect<
       Equal<
-        Pattern<{ a?: { name: string; age: number } } | { b: '' }>,
+        P.Pattern<{ a?: { name: string; age: number } } | { b: '' }>,
         | Matchable<
             { a?: { name: string; age: number } } | { b: '' },
             unknown,
@@ -75,16 +75,16 @@ describe('Pattern', () => {
             unknown
           >
         | {
-            readonly a?: Pattern<{ name: string; age: number }>;
+            readonly a?: P.Pattern<{ name: string; age: number }>;
           }
         | {
-            readonly b?: Pattern<''>;
+            readonly b?: P.Pattern<''>;
           }
       >
     >;
     type t3 = Expect<
       Equal<
-        Pattern<{ name: string; age: number } | undefined>,
+        P.Pattern<{ name: string; age: number } | undefined>,
         | Matchable<
             { name: string; age: number } | undefined,
             unknown,
@@ -93,15 +93,15 @@ describe('Pattern', () => {
             unknown
           >
         | {
-            readonly name?: Pattern<string>;
-            readonly age?: Pattern<number>;
+            readonly name?: P.Pattern<string>;
+            readonly age?: P.Pattern<number>;
           }
         | undefined
       >
     >;
     type t4 = Expect<
       Equal<
-        Pattern<{ name: string; age: number } | [type: 'Hello']>,
+        P.Pattern<{ name: string; age: number } | [type: 'Hello']>,
         | Matchable<
             { name: string; age: number } | [type: 'Hello'],
             unknown,
@@ -110,10 +110,10 @@ describe('Pattern', () => {
             unknown
           >
         | {
-            readonly name?: Pattern<string>;
-            readonly age?: Pattern<number>;
+            readonly name?: P.Pattern<string>;
+            readonly age?: P.Pattern<number>;
           }
-        | readonly [type: Pattern<'Hello'>]
+        | readonly [type: P.Pattern<'Hello'>]
       >
     >;
   });

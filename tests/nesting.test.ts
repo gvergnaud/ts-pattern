@@ -26,7 +26,7 @@ describe('Nesting', () => {
             return 1;
           }
         )
-        .with(P.__, () => 1)
+        .with(P.any, () => 1)
         .exhaustive();
 
       type t = Expect<Equal<typeof res, number>>;
@@ -38,7 +38,7 @@ describe('Nesting', () => {
     it('it should work on 2 level', () => {
       expect(
         match({ one: { two: '2', foo: 2, bar: true } })
-          .with({ one: { foo: P.__, bar: P.__ } }, (x) => x.one.bar)
+          .with({ one: { foo: P.any, bar: P.any } }, (x) => x.one.bar)
           .exhaustive()
       ).toEqual(true);
     });
@@ -47,7 +47,7 @@ describe('Nesting', () => {
       expect(
         match({ one: { two: { three: '2', foo: 2, bar: true } } })
           .with(
-            { one: { two: { foo: P.__, bar: P.__ } } },
+            { one: { two: { foo: P.any, bar: P.any } } },
             (x) => x.one.two.bar
           )
           .exhaustive()
@@ -58,7 +58,7 @@ describe('Nesting', () => {
       expect(
         match({ one: { two: { three: { four: '2', foo: 2, bar: true } } } })
           .with(
-            { one: { two: { three: { foo: P.__, bar: P.__ } } } },
+            { one: { two: { three: { foo: P.any, bar: P.any } } } },
             (x) => x.one.two.three.bar
           )
           .exhaustive()
@@ -71,7 +71,7 @@ describe('Nesting', () => {
           one: { two: { three: { four: { five: '2', foo: 2, bar: true } } } },
         })
           .with(
-            { one: { two: { three: { four: { foo: P.__, bar: P.__ } } } } },
+            { one: { two: { three: { four: { foo: P.any, bar: P.any } } } } },
             (x) => x.one.two.three.four.bar
           )
           .exhaustive()
@@ -91,7 +91,7 @@ describe('Nesting', () => {
             {
               // prettier-ignore
               a: { a: { a: { a: { a: { a: { a: { a: { a: {a: { a: { a: { a: { a: { a: { a: { a: { a: { a: {
-                foo: P.__,
+                foo: P.any,
                 bar: P.select('bar'),
               }, }, }, }, }, }, }, }, }, }, }, }, }, }, }, }, }, }, },
             },
@@ -106,7 +106,7 @@ describe('Nesting', () => {
     it('it should work on 2 levels', () => {
       expect(
         match([{ two: '2', foo: 2, bar: true }] as const)
-          .with([{ foo: P.__, bar: P.select('bar') }], ({ bar }) => bar)
+          .with([{ foo: P.any, bar: P.select('bar') }], ({ bar }) => bar)
           .exhaustive()
       ).toEqual(true);
     });
@@ -114,7 +114,7 @@ describe('Nesting', () => {
     it('it should work on 3 levels', () => {
       expect(
         match([[{ two: '2', foo: 2, bar: true }]] as const)
-          .with([[{ foo: P.__, bar: P.select('bar') }]], ({ bar }) => bar)
+          .with([[{ foo: P.any, bar: P.select('bar') }]], ({ bar }) => bar)
           .exhaustive()
       ).toEqual(true);
     });
@@ -122,7 +122,7 @@ describe('Nesting', () => {
     it('it should work on 4 levels', () => {
       expect(
         match([[[{ two: '2', foo: 2, bar: true }]]] as const)
-          .with([[[{ foo: P.__, bar: P.select('bar') }]]], ({ bar }) => bar)
+          .with([[[{ foo: P.any, bar: P.select('bar') }]]], ({ bar }) => bar)
           .exhaustive()
       ).toEqual(true);
     });
@@ -130,7 +130,7 @@ describe('Nesting', () => {
     it('it should work on 5 levels', () => {
       expect(
         match([[[[{ two: '2', foo: 2, bar: true }]]]] as const)
-          .with([[[[{ foo: P.__, bar: P.__ }]]]], ([[[[{ bar }]]]]) => bar)
+          .with([[[[{ foo: P.any, bar: P.any }]]]], ([[[[{ bar }]]]]) => bar)
           .exhaustive()
       ).toEqual(true);
     });
@@ -142,7 +142,7 @@ describe('Nesting', () => {
         ] as const)
           .with(
             // prettier-ignore
-            [[[[[[[[[[[[[[[[[[{ foo: P.__, bar: P.select('bar') }]]]]]]]]]]]]]]]]]],
+            [[[[[[[[[[[[[[[[[[{ foo: P.any, bar: P.select('bar') }]]]]]]]]]]]]]]]]]],
             ({ bar }) => bar
           )
           .exhaustive()

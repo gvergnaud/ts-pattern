@@ -4,7 +4,8 @@
 
 ### Imports
 
-type-specific wildcard patterns have moved from `__.<pattern>` to a new qualified module named `P` exported by ts-pattern.
+type-specific wildcard patterns have moved from `__.<pattern>` to a new `Pattern` qualified module, also exported as `P` by ts-pattern.
+
 The catch-all wildcard `__` is still exported at the top level, but no longer has any properties.
 
 ```diff
@@ -20,6 +21,8 @@ const toNumber = (value: string | number) =>
 +   .with(P.number, (v) => `${v}`)
     .exhaustive();
 ```
+
+the `Pattern` type which used to be exported at the toplevel is now accessible at `P.Pattern`.
 
 ### list patterns
 

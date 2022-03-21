@@ -359,7 +359,7 @@ You can use it at the top level, or inside your pattern.
 
 ```
 
-You can also use `P.__`, which is an alias to `__`.
+You can also use `P.any`, which is an alias to `__`.
 
 ### .exhaustive(), .otherwise() and .run()
 
@@ -681,6 +681,8 @@ const output = match(input)
 console.log(output);
 // => 'It will always match'
 ```
+
+You can also use `P.any` which is an alias to `__`.
 
 #### `P.string` wildcard
 

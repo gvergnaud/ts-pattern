@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, not, P } from '../src';
+import { match, __, P } from '../src';
 import { Blog } from './types-catalog/utils';
 
 describe('wildcards', () => {
@@ -79,7 +79,7 @@ describe('wildcards', () => {
 
   it('should infer correctly negated String wildcards', () => {
     const res = match<string | number | boolean>('')
-      .with(not(P.string), (x) => {
+      .with(P.not(P.string), (x) => {
         type t = Expect<Equal<typeof x, number | boolean>>;
         return true;
       })
@@ -90,7 +90,7 @@ describe('wildcards', () => {
 
   it('should infer correctly negated Number wildcards', () => {
     const res = match<string | number | boolean>(2)
-      .with(not(P.number), (x) => {
+      .with(P.not(P.number), (x) => {
         type t = Expect<Equal<typeof x, string | boolean>>;
         return true;
       })
@@ -101,7 +101,7 @@ describe('wildcards', () => {
 
   it('should infer correctly negated Boolean wildcards', () => {
     const res = match<string | number | boolean>(true)
-      .with(not(P.boolean), (x) => {
+      .with(P.not(P.boolean), (x) => {
         type t = Expect<Equal<typeof x, string | number>>;
         return true;
       })

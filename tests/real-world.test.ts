@@ -10,7 +10,7 @@ describe('real world example of a complex input type', () => {
           viz: 'timeseries',
           requests: P.array({
             queries: P.array(
-              P.union({ data_source: 'metrics', query: P.select() }, P.__)
+              P.union({ data_source: 'metrics', query: P.select() }, P.any)
             ),
           }),
         },

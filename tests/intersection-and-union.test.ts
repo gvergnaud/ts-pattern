@@ -288,10 +288,10 @@ describe('and, and or patterns', () => {
         return match(n)
           .with(
             P.intersection(
-              P.__,
-              P.__,
+              P.any,
+              P.any,
               P.when((n): n is number => typeof n === 'number'),
-              P.__,
+              P.any,
               P.select()
             ),
             (x) => {
@@ -308,10 +308,10 @@ describe('and, and or patterns', () => {
           match(n)
             .with(
               P.intersection(
-                P.__,
-                P.__,
+                P.any,
+                P.any,
                 P.when((n): n is number => typeof n === 'number'),
-                P.__,
+                P.any,
                 P.select()
               ),
               (x) => {
@@ -331,9 +331,9 @@ describe('and, and or patterns', () => {
           .with(
             {
               n: P.intersection(
-                P.__,
+                P.any,
                 P.when((n): n is number => typeof n === 'number'),
-                P.__,
+                P.any,
                 P.select()
               ),
             },
@@ -510,7 +510,7 @@ describe('and, and or patterns', () => {
               return x.value.map((x) => x.type).join(',');
             }
           )
-          .with({ value: P.array(P.__) }, () => 'other')
+          .with({ value: P.array(P.any) }, () => 'other')
           .exhaustive();
       };
 
@@ -571,7 +571,7 @@ describe('and, and or patterns', () => {
               return x.value[0].type;
             }
           )
-          .with({ value: P.array(P.__) }, () => 'other')
+          .with({ value: P.array(P.any) }, () => 'other')
           .exhaustive();
       };
 
@@ -646,7 +646,7 @@ describe('and, and or patterns', () => {
                 return x.value[0].type;
               }
             )
-            .with({ value: P.array(P.__) }, () => 'other')
+            .with({ value: P.array(P.any) }, () => 'other')
             .exhaustive()
         );
       };

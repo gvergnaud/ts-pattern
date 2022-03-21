@@ -16,6 +16,18 @@ import {
   GuardExcludeP,
 } from './types/Pattern';
 
+export { Pattern };
+
+/**
+ * ### infer
+ * `P.infer<typeof somePattern>` will return the type of the value
+ * matched by this pattern
+ * @example
+ * const userPattern = { name: P.string }
+ * type User = P.infer<typeof userPattern>
+ */
+export type infer<p extends Pattern<any>> = InvertPattern<p>;
+
 /**
  * ### Optional pattern
  * `P.optional(subpattern)` takes a sub pattern and returns a pattern which matches if the
@@ -330,12 +342,12 @@ function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
 
 /**
  * ### Catch All wildcard
- * `__` is a wildcard pattern, matching **any value**.
+ * `P.any` is a wildcard pattern, matching **any value**.
  * @example
  *  match(value)
- *   .with(__, () => 'will always match')
+ *   .with(P.any, () => 'will always match')
  */
-export const __ = when(isUnknown);
+export const any = when(isUnknown);
 
 /**
  * ### String wildcard
@@ -399,15 +411,6 @@ export function instanceOf<T extends AnyConstructor>(
 ): GuardP<unknown, InstanceType<T>> {
   return when(isInstanceOf(classConstructor));
 }
-/**
- * ### infer
- * `P.infer<typeof somePattern>` will return the type of the value
- * matched by this pattern
- * @example
- * const userPattern = { name: P.string }
- * type User = P.infer<typeof userPattern>
- */
-export type infer<p extends Pattern<any>> = InvertPattern<p>;
 
 /**
  * ### typed

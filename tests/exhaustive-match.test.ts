@@ -1,4 +1,4 @@
-import { match, not, P, Pattern, select, when, __ } from '../src';
+import { match, P, __ } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import {
   Option,
@@ -195,16 +195,16 @@ describe('exhaustive()', () => {
         .exhaustive();
 
       match(input)
-        .with({ type: 1, data: select() }, (data) => {
+        .with({ type: 1, data: P.select() }, (data) => {
           type t = Expect<Equal<typeof data, number>>;
           return 1;
         })
-        .with({ type: 'two', data: select() }, (data) => data.length)
+        .with({ type: 'two', data: P.select() }, (data) => data.length)
         .with({ type: 3, data: true }, ({ data }) => {
           type t = Expect<Equal<typeof data, true>>;
           return 3;
         })
-        .with({ type: 3, data: P.__ }, ({ data }) => {
+        .with({ type: 3, data: P.any }, ({ data }) => {
           type t = Expect<Equal<typeof data, boolean>>;
           return 3;
         })
@@ -414,7 +414,7 @@ describe('exhaustive()', () => {
       const f = (n: number, state: State) => {
         const x = match([n, state] as const)
           .with(
-            [1, { status: 'success', data: select() }],
+            [1, { status: 'success', data: P.select() }],
             ([_, { data }]) => data.startsWith('coucou'),
             (data) => data.replace('coucou', 'bonjour')
           )
@@ -519,7 +519,7 @@ describe('exhaustive()', () => {
         b: X;
         c: X;
       }>({ a: 1, b: 1, c: 1 })
-        .with({ a: not(1) }, () => 'a != 1')
+        .with({ a: P.not(1) }, () => 'a != 1')
         .with({ a: 1 }, () => 'a != 1')
         .exhaustive();
 
@@ -617,15 +617,15 @@ describe('exhaustive()', () => {
 
     it('should correctly exclude cases if when pattern contains a type guard', () => {
       match<{ x: 1 | 2 | 3 }>({ x: 2 })
-        .with({ x: when((x): x is 1 => x === 1) }, (x) => {
+        .with({ x: P.when((x): x is 1 => x === 1) }, (x) => {
           type t = Expect<Equal<typeof x, { x: 1 }>>;
           return '';
         })
-        .with({ x: when((x): x is 2 => x === 2) }, (x) => {
+        .with({ x: P.when((x): x is 2 => x === 2) }, (x) => {
           type t = Expect<Equal<typeof x, { x: 2 }>>;
           return '';
         })
-        .with({ x: when((x): x is 3 => x === 3) }, (x) => {
+        .with({ x: P.when((x): x is 3 => x === 3) }, (x) => {
           type t = Expect<Equal<typeof x, { x: 3 }>>;
           return '';
         })
@@ -717,16 +717,16 @@ describe('exhaustive()', () => {
       .with(
         {
           type: 'text',
-          text: select('text'),
-          author: { name: select('authorName') },
+          text: P.select('text'),
+          author: { name: P.select('authorName') },
         },
         ({ text, authorName }) => `${text} from ${authorName}`
       )
-      .with({ type: 'video', duration: when((x) => x > 10) }, () => '')
+      .with({ type: 'video', duration: P.when((x) => x > 10) }, () => '')
       .with(
         {
           type: 'video',
-          duration: when(isNumber),
+          duration: P.when(isNumber),
         },
         () => ''
       )
@@ -735,13 +735,13 @@ describe('exhaustive()', () => {
         {
           type: 'movie',
           duration: 10,
-          author: select('author'),
-          title: select('title'),
+          author: P.select('author'),
+          title: P.select('title'),
         },
         ({ author, title }) => ''
       )
       .with({ type: 'picture' }, () => '')
-      .with({ type: 'movie', duration: when(isNumber) }, () => '')
+      .with({ type: 'movie', duration: P.when(isNumber) }, () => '')
       .exhaustive();
   });
 
@@ -753,16 +753,16 @@ describe('exhaustive()', () => {
     const reducer = (state: State, event: Event): State =>
       match<[State, Event], State>([state, event])
         .with(
-          [{ status: 'loading' }, { type: 'success', data: select() }],
+          [{ status: 'loading' }, { type: 'success', data: P.select() }],
           (data) => ({ status: 'success', data })
         )
         .with(
-          [{ status: 'loading' }, { type: 'error', error: select() }],
+          [{ status: 'loading' }, { type: 'error', error: P.select() }],
           (error) => ({ status: 'error', error })
         )
         .with([{ status: 'loading' }, { type: 'cancel' }], () => initState)
 
-        .with([{ status: not('loading') }, { type: 'fetch' }], (value) => ({
+        .with([{ status: P.not('loading') }, { type: 'fetch' }], (value) => ({
           status: 'loading',
         }))
         .with(__, () => state)
@@ -775,7 +775,7 @@ describe('exhaustive()', () => {
     const input = { type: 3, data: 2 } as Input;
 
     match<Input>(input)
-      .with({ type: 3, data: select() }, (data) => {
+      .with({ type: 3, data: P.select() }, (data) => {
         type t = Expect<Equal<typeof data, number>>;
         return 3;
       })
@@ -783,7 +783,7 @@ describe('exhaustive()', () => {
 
     type Input2 = { type: 3; data: true } | 2;
     match<Input2>(2)
-      .with({ type: 3, data: select() }, (data) => {
+      .with({ type: 3, data: P.select() }, (data) => {
         type t = Expect<Equal<typeof data, true>>;
         return 3;
       })
@@ -795,14 +795,14 @@ describe('exhaustive()', () => {
     it('should work with a single not pattern', () => {
       const reducer1 = (state: State, event: Event): State =>
         match<[State, Event], State>([state, event])
-          .with([{ status: not('loading') }, __], (x) => state)
+          .with([{ status: P.not('loading') }, __], (x) => state)
           .with([{ status: 'loading' }, { type: 'fetch' }], () => state)
           // @ts-expect-error
           .exhaustive();
 
       const reducer3 = (state: State, event: Event): State =>
         match<[State, Event], State>([state, event])
-          .with([{ status: not('loading') }, __], (x) => state)
+          .with([{ status: P.not('loading') }, __], (x) => state)
           .with([{ status: 'loading' }, __], () => state)
           .exhaustive();
     });
@@ -811,7 +811,7 @@ describe('exhaustive()', () => {
       const reducer = (state: State, event: Event): State =>
         match<[State, Event], State>([state, event])
           .with(
-            [{ status: not('loading') }, { type: not('fetch') }],
+            [{ status: P.not('loading') }, { type: P.not('fetch') }],
             (x) => state
           )
           .with([{ status: 'loading' }, { type: __ }], () => state)
@@ -820,7 +820,7 @@ describe('exhaustive()', () => {
 
       const f = (input: readonly [1 | 2 | 3, 1 | 2 | 3, 1 | 2 | 3]) =>
         match(input)
-          .with([not(1), not(1), not(1)], (x) => 'ok')
+          .with([P.not(1), P.not(1), P.not(1)], (x) => 'ok')
           .with([1, __, __], () => 'ok')
           .with([__, 1, __], () => 'ok')
           .with([__, __, 1], () => 'ok')
@@ -840,7 +840,7 @@ describe('exhaustive()', () => {
 
       const f2 = (input: [1 | 2 | 3, 1 | 2 | 3, 1 | 2 | 3]) =>
         match(input)
-          .with([not(1), not(1), not(1)], (x) => 'ok')
+          .with([P.not(1), P.not(1), P.not(1)], (x) => 'ok')
           .with([1, __, __], () => 'ok')
           .with([__, 1, __], () => 'ok')
           // @ts-expect-error : NonExhaustiveError<[3, 3, 1] | [3, 2, 1] | [2, 3, 1] | [2, 2, 1]>
@@ -850,7 +850,7 @@ describe('exhaustive()', () => {
     it('should work with not patterns and lists', () => {
       const f = (input: (1 | 2 | 3)[]) =>
         match(input)
-          .with([not(1)], (x) => 'ok')
+          .with([P.not(1)], (x) => 'ok')
           .with([1], (x) => 'ok')
           // @ts-expect-error: NonExhaustiveError<(1 | 2 | 3)[]>, because lists can be heterogenous
           .exhaustive();

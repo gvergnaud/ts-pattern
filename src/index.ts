@@ -1,7 +1,14 @@
-import * as P from './patterns';
+import * as Pattern from './patterns';
 
-export type { Pattern } from './types/Pattern';
-export { select, when, not, instanceOf, __ } from './patterns';
 export { match } from './match';
 export { isMatching } from './is-matching';
-export { P };
+export { Pattern, Pattern as P };
+
+/**
+ * ### Catch All wildcard
+ * `__` is a wildcard pattern, matching **any value**.
+ * @example
+ *  match(value)
+ *   .with(__, () => 'will always match')
+ */
+export const __ = Pattern.any;

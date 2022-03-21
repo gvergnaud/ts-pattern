@@ -1,4 +1,4 @@
-import { match, when, __ } from '../src';
+import { match, P, __ } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import { none, Option, some } from './types-catalog/utils';
 
@@ -77,7 +77,7 @@ describe('generics', () => {
 
     const f = <T>(input: State<[number, number] | number>) => {
       return match({ input })
-        .with({ input: when(isSuccess) }, (x) => {
+        .with({ input: P.when(isSuccess) }, (x) => {
           type t = Expect<
             Equal<
               typeof x,
@@ -86,7 +86,7 @@ describe('generics', () => {
           >;
           return 'ok';
         })
-        .with({ input: when(isDoubleSuccess) }, (x) => {
+        .with({ input: P.when(isDoubleSuccess) }, (x) => {
           type t = Expect<
             Equal<
               typeof x,

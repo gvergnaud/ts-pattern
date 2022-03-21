@@ -49,7 +49,7 @@ describe('type errors', () => {
         .with({ value: { x: '' } }, () => '2')
         .with({ kind: 'some' }, () => '2')
         .with({ kind: 'none' }, () => '')
-        .with({ kind: 'some', value: P.__ }, () => '')
+        .with({ kind: 'some', value: P.any }, () => '')
         .exhaustive();
 
     const f2 = (input: Option<number>) =>

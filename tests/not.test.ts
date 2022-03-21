@@ -28,7 +28,7 @@ describe('not', () => {
           type t = Expect<Equal<typeof x, { x: number; y: number }>>;
           return 'yes';
         })
-        .with(P.__, () => 'no')
+        .with(P.any, () => 'no')
         .run();
 
     expect(get({ x: 2, y: 2 })).toEqual('yes');

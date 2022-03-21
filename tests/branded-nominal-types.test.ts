@@ -1,4 +1,4 @@
-import { match, when } from '../src';
+import { match, P } from '../src';
 
 describe('Branded strings', () => {
   type BrandedId = string & { __brand: 'brandId' };
@@ -17,7 +17,7 @@ describe('Branded strings', () => {
     expect(
       match(state)
         .with(
-          { fooBar: { type: 'foo' }, fooBarId: when((id) => id === '') },
+          { fooBar: { type: 'foo' }, fooBarId: P.when((id) => id === '') },
           (x) => `Match: ${x.fooBar.value}`
         )
         .otherwise(() => 'nope')
