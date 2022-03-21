@@ -6,7 +6,23 @@
 
 type-specific wildcard patterns have moved from `__.<pattern>` to a new `Pattern` qualified module, also exported as `P` by ts-pattern.
 
-The catch-all wildcard `__` is still exported at the top level, but no longer has any properties.
+The catch-all wildcard `__` is still exported at the top level, but it no longer has any properties.
+
+```diff
+- import { match, __ } from 'ts-pattern';
++ import { match, Pattern } from 'ts-pattern';
+
+
+const toNumber = (value: string | number) =>
+  match(value)
+-   .with(__.string, (v) => v)
+-   .with(__.number, (v) => `${v}`)
++   .with(Pattern.string, (v) => v)
++   .with(Pattern.number, (v) => `${v}`)
+    .exhaustive();
+```
+
+or
 
 ```diff
 - import { match, __ } from 'ts-pattern';
