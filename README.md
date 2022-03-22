@@ -83,11 +83,9 @@ Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#s
 | v3.x [(Docs)](https://github.com/gvergnaud/ts-pattern/tree/v3#documentation)                                                            | ✅               | ✅               | ⚠️               |
 | v2.x [(Docs)](https://github.com/gvergnaud/ts-pattern/tree/v2#documentation)                                                            | ✅               | ✅               | ✅               |
 
-✅ Full support
-
-⚠️ Partial support, everything works except passing more than 2 patterns to `.with()`
-
-❌ Not supported
+- ✅ Full support
+- ⚠️ Partial support, All features except passing multiple patterns to `.with()`.
+- ❌ Not supported
 
 # Documentation
 
