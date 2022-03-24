@@ -1,4 +1,4 @@
-import { match, P, __ } from '../src';
+import { match, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import { none, Option, some } from './types-catalog/utils';
 
@@ -31,7 +31,7 @@ describe('generics', () => {
     const last = <a>(xs: a[]) =>
       match<a[], Option<a>>(xs)
         .with([], () => none)
-        .with(__, (x, y) => {
+        .with(P._, (x, y) => {
           type t = Expect<Equal<typeof x, a[]>>;
           type t2 = Expect<Equal<typeof y, a[]>>;
           return some(xs[xs.length - 1]);
@@ -54,7 +54,7 @@ describe('generics', () => {
           type t2 = Expect<Equal<typeof y, { t: 'error'; error: Error }>>;
           return 'success!';
         })
-        .with([{ t: 'error' }, __], ([x, y]) => {
+        .with([{ t: 'error' }, P._], ([x, y]) => {
           type t = Expect<Equal<typeof x, { t: 'error'; error: Error }>>;
           type t2 = Expect<Equal<typeof y, State<b>>>;
           return 'error :(';

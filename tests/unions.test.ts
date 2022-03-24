@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, P } from '../src';
+import { match, P } from '../src';
 import { Option } from './types-catalog/utils';
 
 describe('Unions (a | b)', () => {
@@ -38,7 +38,7 @@ describe('Unions (a | b)', () => {
       id: 2,
       content: { body: 'yo' },
     })
-      .with({ type: 'post', content: __ }, (x) => {
+      .with({ type: 'post', content: P._ }, (x) => {
         type t = Expect<Equal<typeof x, Post>>;
         return 1;
       })

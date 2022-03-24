@@ -1,4 +1,4 @@
-import { match, P, __ } from '../src';
+import { match, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import {
   Option,
@@ -260,27 +260,27 @@ describe('exhaustive()', () => {
       const input = [1, 3] as Input;
 
       match(input)
-        .with([1, __], (x) => 1)
+        .with([1, P.any], (x) => 1)
         // @ts-expect-error
         .exhaustive();
 
       match(input)
-        .with([1, __], (x) => 1)
-        .with(['two', __], (x) => 2)
+        .with([1, P.any], (x) => 1)
+        .with(['two', P.any], (x) => 2)
         // @ts-expect-error
         .exhaustive();
 
       match(input)
-        .with([1, __], (x) => 1)
-        .with(['two', __], ([_, data]) => data.length)
-        .with([3, __], () => 3)
+        .with([1, P.any], (x) => 1)
+        .with(['two', P.any], ([_, data]) => data.length)
+        .with([3, P.any], () => 3)
         .exhaustive();
 
       match(input)
-        .with([1, __], (x) => 1)
+        .with([1, P.any], (x) => 1)
         .with(['two', 'Hey'], ([_, data]) => data.length)
-        .with(['two', __], ([_, data]) => data.length)
-        .with([3, __], () => 3)
+        .with(['two', P.any], ([_, data]) => data.length)
+        .with([3, P.any], () => 3)
         .exhaustive();
     });
 
@@ -297,23 +297,23 @@ describe('exhaustive()', () => {
         .exhaustive();
 
       match(input)
-        .with([1, __], (x) => 1)
-        .with(['two', __], (x) => 2)
+        .with([1, P.any], (x) => 1)
+        .with(['two', P.any], (x) => 2)
         // @ts-expect-error
         .exhaustive();
 
       match(input)
-        .with([1, __], (x) => 1)
+        .with([1, P._], (x) => 1)
         .with(['two', { kind: 'some' }], ([_, { value }]) => value.length)
-        .with([3, __], () => 3)
+        .with([3, P._], () => 3)
         // @ts-expect-error
         .exhaustive();
 
       match(input)
         .with(['two', { kind: 'some' }], ([_, { value }]) => value.length)
         .with(['two', { kind: 'none' }], () => 4)
-        .with([1, __], () => 3)
-        .with([3, __], () => 3)
+        .with([1, P._], () => 3)
+        .with([3, P._], () => 3)
         .exhaustive();
     });
 
@@ -349,7 +349,7 @@ describe('exhaustive()', () => {
       match<string>('Hello')
         .with('Hello', () => 'english')
         .with('Bonjour', () => 'french')
-        .with(__, (c) => 'something else')
+        .with(P.any, (c) => 'something else')
         .exhaustive();
     });
 
@@ -363,7 +363,7 @@ describe('exhaustive()', () => {
         .exhaustive();
 
       match(input)
-        .with({ value: __ }, (x) => 1)
+        .with({ value: P.any }, (x) => 1)
         .exhaustive();
 
       match(input)
@@ -399,18 +399,18 @@ describe('exhaustive()', () => {
         .exhaustive();
 
       match(input)
-        .with({ type: 'a', items: P.array(__) }, (x) => x.items)
+        .with({ type: 'a', items: P.array(P.any) }, (x) => x.items)
         .with({ type: 'b', items: P.array({ data: P.string }) }, (x) => [])
         .exhaustive();
 
       match<Input>(input)
-        .with({ type: 'a', items: P.array({ some: __ }) }, (x) => x.items)
+        .with({ type: 'a', items: P.array({ some: P.any }) }, (x) => x.items)
         .with({ type: 'b', items: P.array({ data: P.string }) }, (x) => [])
         // @ts-expect-error
         .exhaustive();
     });
 
-    it('should support __ in a readonly tuple', () => {
+    it('should support P.any in a readonly tuple', () => {
       const f = (n: number, state: State) => {
         const x = match([n, state] as const)
           .with(
@@ -418,11 +418,11 @@ describe('exhaustive()', () => {
             ([_, { data }]) => data.startsWith('coucou'),
             (data) => data.replace('coucou', 'bonjour')
           )
-          .with([2, __], () => "It's a twoooo")
-          .with([__, { status: 'error' }], () => 'Oups')
-          .with([__, { status: 'idle' }], () => '')
-          .with([__, { status: 'loading' }], () => '')
-          .with([__, { status: 'success' }], () => '')
+          .with([2, P.any], () => "It's a twoooo")
+          .with([P.any, { status: 'error' }], () => 'Oups')
+          .with([P.any, { status: 'idle' }], () => '')
+          .with([P.any, { status: 'loading' }], () => '')
+          .with([P.any, { status: 'success' }], () => '')
           .exhaustive();
       };
     });
@@ -487,7 +487,7 @@ describe('exhaustive()', () => {
       ).toEqual(input);
 
       match(input)
-        .with(__, (x) => x)
+        .with(P.any, (x) => x)
         .exhaustive();
     });
 
@@ -532,8 +532,8 @@ describe('exhaustive()', () => {
         .with({ a: 'c' }, (x) => 0)
         .with({ a: 'd' }, () => 0)
         .with({ a: 'e' }, (x) => 0)
-        .with({ a: 'f', b: __ }, (x) => 0)
-        .with({ a: __ }, (x) => 0)
+        .with({ a: 'f', b: P.any }, (x) => 0)
+        .with({ a: P.any }, (x) => 0)
         .exhaustive();
     });
 
@@ -541,7 +541,7 @@ describe('exhaustive()', () => {
       const last = <a>(xs: a[]) =>
         match<a[], Option<a>>(xs)
           .with([], () => none)
-          .with(__, (x, y) => some(xs[xs.length - 1]))
+          .with(P.any, (x, y) => some(xs[xs.length - 1]))
           .exhaustive();
 
       expect(last([1, 2, 3])).toEqual(some(3));
@@ -589,8 +589,8 @@ describe('exhaustive()', () => {
           .with(['hello'], ([str]) => {
             return str;
           })
-          .with({ type: __ }, (x) => x.type)
-          .with(P.array(__), (x) => {
+          .with({ type: P.any }, (x) => x.type)
+          .with(P.array(P.any), (x) => {
             type t = Expect<
               Equal<typeof x, 'hello'[] | ('hello' | Option<string>)[]>
             >;
@@ -765,7 +765,7 @@ describe('exhaustive()', () => {
         .with([{ status: P.not('loading') }, { type: 'fetch' }], (value) => ({
           status: 'loading',
         }))
-        .with(__, () => state)
+        .with(P._, () => state)
         .exhaustive();
   });
 
@@ -795,15 +795,15 @@ describe('exhaustive()', () => {
     it('should work with a single not pattern', () => {
       const reducer1 = (state: State, event: Event): State =>
         match<[State, Event], State>([state, event])
-          .with([{ status: P.not('loading') }, __], (x) => state)
+          .with([{ status: P.not('loading') }, P.any], (x) => state)
           .with([{ status: 'loading' }, { type: 'fetch' }], () => state)
           // @ts-expect-error
           .exhaustive();
 
       const reducer3 = (state: State, event: Event): State =>
         match<[State, Event], State>([state, event])
-          .with([{ status: P.not('loading') }, __], (x) => state)
-          .with([{ status: 'loading' }, __], () => state)
+          .with([{ status: P.not('loading') }, P.any], (x) => state)
+          .with([{ status: 'loading' }, P.any], () => state)
           .exhaustive();
     });
 
@@ -814,16 +814,16 @@ describe('exhaustive()', () => {
             [{ status: P.not('loading') }, { type: P.not('fetch') }],
             (x) => state
           )
-          .with([{ status: 'loading' }, { type: __ }], () => state)
-          .with([{ status: __ }, { type: 'fetch' }], () => state)
+          .with([{ status: 'loading' }, { type: P.any }], () => state)
+          .with([{ status: P.any }, { type: 'fetch' }], () => state)
           .exhaustive();
 
       const f = (input: readonly [1 | 2 | 3, 1 | 2 | 3, 1 | 2 | 3]) =>
         match(input)
           .with([P.not(1), P.not(1), P.not(1)], (x) => 'ok')
-          .with([1, __, __], () => 'ok')
-          .with([__, 1, __], () => 'ok')
-          .with([__, __, 1], () => 'ok')
+          .with([1, P._, P._], () => 'ok')
+          .with([P._, 1, P._], () => 'ok')
+          .with([P._, P._, 1], () => 'ok')
           .exhaustive();
 
       const range = [1, 2, 3] as const;
@@ -841,8 +841,8 @@ describe('exhaustive()', () => {
       const f2 = (input: [1 | 2 | 3, 1 | 2 | 3, 1 | 2 | 3]) =>
         match(input)
           .with([P.not(1), P.not(1), P.not(1)], (x) => 'ok')
-          .with([1, __, __], () => 'ok')
-          .with([__, 1, __], () => 'ok')
+          .with([1, P.any, P.any], () => 'ok')
+          .with([P.any, 1, P.any], () => 'ok')
           // @ts-expect-error : NonExhaustiveError<[3, 3, 1] | [3, 2, 1] | [2, 3, 1] | [2, 2, 1]>
           .exhaustive();
     });
@@ -876,7 +876,7 @@ describe('exhaustive()', () => {
 
     const f3 = (input: { t: 'a'; x: any } | { t: 'b' }) =>
       match(input)
-        .with({ t: 'a', x: __ }, (x) => 'ok')
+        .with({ t: 'a', x: P.any }, (x) => 'ok')
         .with({ t: 'b' }, (x) => 'ok')
         .exhaustive();
   });

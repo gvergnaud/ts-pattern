@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, P } from '../src';
+import { match, P } from '../src';
 
 describe('optional properties', () => {
   it('matching on optional properties should work', () => {

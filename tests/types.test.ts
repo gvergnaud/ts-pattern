@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, P } from '../src';
+import { match, P } from '../src';
 import { State, Event } from './types-catalog/utils';
 
 describe('types', () => {
@@ -7,17 +7,17 @@ describe('types', () => {
 
   it('wildcard patterns should typecheck', () => {
     let pattern: P.Pattern<Input>;
-    pattern = __;
-    pattern = [__, __];
-    pattern = [{ status: 'success', data: '' }, __];
-    pattern = [{ status: 'success', data: P.string }, __];
-    pattern = [{ status: 'success', data: __ }, __];
-    pattern = [{ status: 'error', error: new Error() }, __];
-    pattern = [{ status: 'idle' }, __];
-    pattern = [__, { type: 'fetch' }];
-    pattern = [__, { type: __ }];
+    pattern = P._;
+    pattern = [P._, P._];
+    pattern = [{ status: 'success', data: '' }, P._];
+    pattern = [{ status: 'success', data: P.string }, P._];
+    pattern = [{ status: 'success', data: P._ }, P._];
+    pattern = [{ status: 'error', error: new Error() }, P._];
+    pattern = [{ status: 'idle' }, P._];
+    pattern = [P._, { type: 'fetch' }];
+    pattern = [P._, { type: P._ }];
     pattern = [{ status: 'idle' }, { type: 'fetch' }];
-    pattern = [{ status: __ }, { type: __ }];
+    pattern = [{ status: P._ }, { type: P._ }];
   });
 
   it('guard patterns should typecheck', () => {
@@ -39,7 +39,7 @@ describe('types', () => {
     ];
 
     const pattern3_1: P.Pattern<Input> = [
-      __,
+      P._,
       { type: P.when((t: Event['type']) => true) },
     ];
 
@@ -51,19 +51,19 @@ describe('types', () => {
           return true;
         }),
       },
-      __,
+      P._,
     ];
 
-    const pattern4_1: P.Pattern<Input> = [{ status: 'error', data: '' }, __];
+    const pattern4_1: P.Pattern<Input> = [{ status: 'error', data: '' }, P._];
 
     const pattern5: P.Pattern<Input> = [
-      __,
+      P._,
       { type: P.when((t: Event['type']) => true) },
     ];
 
     const isFetch = (type: string): type is 'fetch' => type === 'fetch';
 
-    const pattern6: P.Pattern<Input> = [__, { type: P.when(isFetch) }];
+    const pattern6: P.Pattern<Input> = [P._, { type: P.when(isFetch) }];
 
     const pattern7: P.Pattern<{ x: string }> = {
       x: P.when((x) => {
@@ -106,7 +106,7 @@ describe('types', () => {
     type Input = { type: string; hello?: { yo: number } } | string;
 
     const res = match<Input>({ type: 'hello' })
-      .with(__, (x) => {
+      .with(P._, (x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
@@ -153,7 +153,7 @@ describe('types', () => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
       })
-      .with({ type: __ }, (x) => {
+      .with({ type: P._ }, (x) => {
         type t = Expect<
           Equal<
             typeof x,
@@ -226,7 +226,7 @@ describe('types', () => {
       | [number, number];
 
     match<Input>({ type: 'hello' })
-      .with({ type: __ }, (x) => {
+      .with({ type: P._ }, (x) => {
         type t = Expect<Equal<typeof x, { type: string }>>;
         return 'ok';
       })

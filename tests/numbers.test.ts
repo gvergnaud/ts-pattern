@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, P } from '../src';
+import { match, P } from '../src';
 
 describe('Numbers', () => {
   it('Should match exact numbers', () => {

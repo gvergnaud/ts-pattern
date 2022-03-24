@@ -1,4 +1,4 @@
-import { match, __, P } from '../src';
+import { match, P } from '../src';
 import { Option } from './types-catalog/utils';
 import { Expect, Equal } from '../src/types/helpers';
 
@@ -162,7 +162,7 @@ describe('Multiple patterns', () => {
         .with(
           { a: P.string },
           [true, 2],
-          new Map([['key', __]]),
+          new Map([['key', P._]]),
           new Set([P.number]),
           (x) => {
             type t = Expect<
@@ -199,7 +199,7 @@ describe('Multiple patterns', () => {
         .with(
           { a: P.string },
           [true, 2],
-          new Map([['key', __]]),
+          new Map([['key', P._]]),
           new Set([P.number]),
           (x) => 'Object'
         )

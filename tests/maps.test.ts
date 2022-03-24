@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, P } from '../src';
+import { match, P } from '../src';
 
 describe('Map', () => {
   it('should match Map patterns', () => {
@@ -25,7 +25,7 @@ describe('Map', () => {
         (map) => map.get('angégé')!
       )
       .with(new Map([['gab' as const, userPattern]]), (map) => map.get('gab')!)
-      .with(__, () => ({ name: 'unknown' }))
+      .with(P._, () => ({ name: 'unknown' }))
       .run();
 
     type t = Expect<Equal<typeof res, { name: string }>>;

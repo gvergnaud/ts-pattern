@@ -1,4 +1,4 @@
-import { match, __, P } from '../src';
+import { match, P } from '../src';
 import { Expect, Equal } from '../src/types/helpers';
 import { Option, Blog } from './types-catalog/utils';
 
@@ -33,7 +33,7 @@ describe('List ([a])', () => {
     const reverse = <T>(xs: T[]): T[] => {
       return match<T[], T[]>(xs)
         .with([], () => [])
-        .with(__, ([x, ...xs]) => [...reverse(xs), x])
+        .with(P._, ([x, ...xs]) => [...reverse(xs), x])
         .run();
     };
 

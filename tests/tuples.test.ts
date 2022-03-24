@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, P } from '../src';
+import { match, P } from '../src';
 import { State, Event } from './types-catalog/utils';
 
 describe('tuple ([a, b])', () => {
@@ -44,17 +44,17 @@ describe('tuple ([a, b])', () => {
       .run();
 
     const res2 = match<Input, number>(['-', 2])
-      .with(['+', __, __], (value) => {
+      .with(['+', P._, P._], (value) => {
         type t = Expect<Equal<typeof value, ['+', number, number]>>;
         const [, x, y] = value;
         return x + y;
       })
-      .with(['*', __, __], (value) => {
+      .with(['*', P._, P._], (value) => {
         type t = Expect<Equal<typeof value, ['*', number, number]>>;
         const [, x, y] = value;
         return x * y;
       })
-      .with(['-', __], (value) => {
+      .with(['-', P._], (value) => {
         type t = Expect<Equal<typeof value, ['-', number]>>;
         const [, x] = value;
         return -x;
@@ -81,11 +81,11 @@ describe('tuple ([a, b])', () => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `perfect match`;
             })
-            .with(['hello', __], (x) => {
+            .with(['hello', P._], (x) => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `string match`;
             })
-            .with([__, 20], (x) => {
+            .with([P._, 20], (x) => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `number match`;
             })
@@ -93,11 +93,11 @@ describe('tuple ([a, b])', () => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `not matching`;
             })
-            .with([__, __], (x) => {
+            .with([P._, P._], (x) => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `can't happen`;
             })
-            .with(__, (x) => {
+            .with(P._, (x) => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `can't happen`;
             })
@@ -114,7 +114,7 @@ describe('tuple ([a, b])', () => {
 
     const reducer = (state: State, event: Event): State =>
       match<[State, Event], State>([state, event])
-        .with([__, { type: 'fetch' }], (x) => {
+        .with([P.any, { type: 'fetch' }], (x) => {
           type t = Expect<Equal<typeof x, [State, { type: 'fetch' }]>>;
 
           return {

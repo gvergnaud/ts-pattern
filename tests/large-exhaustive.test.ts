@@ -1,4 +1,4 @@
-import { match, P, __ } from '../src';
+import { match, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('large exhaustive', () => {

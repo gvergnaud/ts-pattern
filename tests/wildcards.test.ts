@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, P } from '../src';
+import { match, P } from '../src';
 import { Blog } from './types-catalog/utils';
 
 describe('wildcards', () => {
@@ -116,8 +116,8 @@ describe('wildcards', () => {
     const selectedId: Id = { teamId: 1 };
 
     const res = match<Id>(selectedId)
-      .with({ storeId: __ }, () => 'storeId')
-      .with({ teamId: __ }, () => 'teamId')
+      .with({ storeId: P._ }, () => 'storeId')
+      .with({ teamId: P._ }, () => 'teamId')
       .exhaustive();
 
     expect(res).toEqual('teamId');
@@ -142,7 +142,7 @@ describe('wildcards', () => {
       it(`should match ${typeof value} values`, () => {
         expect(
           match(value)
-            .with(__, () => 'yes')
+            .with(P._, () => 'yes')
             .run()
         ).toEqual('yes');
       });

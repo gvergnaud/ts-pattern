@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, P, Pattern } from '../src';
+import { match, P, Pattern } from '../src';
 import { Option, State } from './types-catalog/utils';
 
 describe('when', () => {
@@ -157,7 +157,7 @@ describe('when', () => {
       values.forEach(({ value, expected }) => {
         const res = match(value)
           .with(
-            __,
+            P.any,
             (x): x is 2 => x === 2,
             (x) => {
               type t = Expect<Equal<typeof x, 2>>;
@@ -175,7 +175,7 @@ describe('when', () => {
             () => '2 < x < 10'
           )
           .with(
-            __,
+            P.any,
             (x): x is number => typeof x === 'number',
             (x) => {
               type t = Expect<Equal<typeof x, number>>;

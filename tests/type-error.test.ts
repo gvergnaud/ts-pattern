@@ -1,4 +1,4 @@
-import { match, __, P } from '../src';
+import { match, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import { Option } from './types-catalog/utils';
 

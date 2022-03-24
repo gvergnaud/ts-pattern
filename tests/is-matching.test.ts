@@ -1,4 +1,4 @@
-import { isMatching, __, P } from '../src';
+import { isMatching, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('isMatching', () => {

@@ -350,6 +350,16 @@ function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
 export const any = when(isUnknown);
 
 /**
+ * ### Catch All wildcard
+ * `P._` is a wildcard pattern, matching **any value**.
+ * It's an alias to `P.any`.
+ * @example
+ *  match(value)
+ *   .with(P._, () => 'will always match')
+ */
+export const _ = any;
+
+/**
  * ### String wildcard
  * `P.string` is a wildcard pattern matching any **string**.
  * @example
