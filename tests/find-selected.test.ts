@@ -6,7 +6,7 @@ import {
 } from '../src/types/FindSelected';
 import { Equal, Expect } from '../src/types/helpers';
 import {
-  Matchable,
+  Matcher,
   SelectP,
   NotP,
   OptionalP,
@@ -154,7 +154,7 @@ describe('FindSelected', () => {
               { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
               {
                 a: [{ c: SelectP<'c'> }, { e: 7 }];
-                b: Matchable<unknown, { d: SelectP<'d'> }, 'array'>;
+                b: Matcher<unknown, { d: SelectP<'d'> }, 'array'>;
               }
             >,
             { c: 3; d: string[] }

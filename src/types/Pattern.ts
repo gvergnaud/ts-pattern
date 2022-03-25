@@ -11,7 +11,7 @@ export type MatcherType =
   | 'select'
   | 'default';
 
-// We use a separate MatcherProtocol type that preserves
+// We use a separate MatcherProtocol type to preserves
 // the type level information (selections and excluded) used
 // only for inference.
 export type MatcherProtocol<
@@ -34,7 +34,14 @@ export type MatchResult = {
   selections?: Record<string, any>;
 };
 
-export interface Matchable<
+/**
+ * A `Matcher` is an object implementing the matcher
+ * protocol. It must define a `symbols.matcher` property
+ * which returns a match() function taking the input value
+ * and returning whether or not the pattern matches or not,
+ * along with selections.
+ */
+export interface Matcher<
   input,
   narrowed,
   // Type of what this pattern selected from the input
@@ -53,21 +60,21 @@ export interface Matchable<
   >;
 }
 
-type AnyMatchable = Matchable<unknown, unknown, any, any>;
+type UnknownMatcher = Matcher<unknown, unknown, any, any>;
 
-export type OptionalP<input, p> = Matchable<input, p, 'optional'>;
+export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
-export type ArrayP<input, p> = Matchable<input, p, 'array'>;
+export type ArrayP<input, p> = Matcher<input, p, 'array'>;
 
-export type AndP<input, ps> = Matchable<input, ps, 'and'>;
+export type AndP<input, ps> = Matcher<input, ps, 'and'>;
 
-export type OrP<input, ps> = Matchable<input, ps, 'or'>;
+export type OrP<input, ps> = Matcher<input, ps, 'or'>;
 
-export type NotP<input, p> = Matchable<input, p, 'not'>;
+export type NotP<input, p> = Matcher<input, p, 'not'>;
 
-export type GuardP<input, narrowed> = Matchable<input, narrowed>;
+export type GuardP<input, narrowed> = Matcher<input, narrowed>;
 
-export type GuardExcludeP<input, narrowed, excluded> = Matchable<
+export type GuardExcludeP<input, narrowed, excluded> = Matcher<
   input,
   narrowed,
   'default',
@@ -78,8 +85,8 @@ export type GuardExcludeP<input, narrowed, excluded> = Matchable<
 export type SelectP<
   key extends string,
   input = unknown,
-  p = Matchable<unknown, unknown>
-> = Matchable<input, p, 'select', Some<key>>;
+  p = Matcher<unknown, unknown>
+> = Matcher<input, p, 'select', Some<key>>;
 
 export type AnonymousSelectP = SelectP<symbols.anonymousSelectKey>;
 
@@ -93,7 +100,7 @@ export type UnknownPattern =
   | Set<UnknownPattern>
   | Map<unknown, UnknownPattern>
   | Primitives
-  | AnyMatchable;
+  | UnknownMatcher;
 
 /**
  * ### Pattern
@@ -101,7 +108,7 @@ export type UnknownPattern =
  * They can also be a "wildcards", like `_`.
  */
 export type Pattern<a> =
-  | Matchable<a, unknown, any, any>
+  | Matcher<a, unknown, any, any>
   | (a extends Primitives
       ? a
       : unknown extends a

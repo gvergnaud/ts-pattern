@@ -1,6 +1,6 @@
 import type * as symbols from '../internals/symbols';
 import type { Cast, Equal, IsAny, TupleKeys, UnionToTuple } from './helpers';
-import type { Matchable, Pattern } from './Pattern';
+import type { Matcher, Pattern } from './Pattern';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 
@@ -41,7 +41,7 @@ export type FindSelectionUnion<
   path extends any[] = []
 > = IsAny<i> extends true
   ? never
-  : p extends Matchable<any, infer pattern, infer matcherType, infer sel>
+  : p extends Matcher<any, infer pattern, infer matcherType, infer sel>
   ? {
       select: sel extends Some<infer k>
         ? { [kk in k]: [i, path] } | FindSelectionUnion<i, pattern, path>

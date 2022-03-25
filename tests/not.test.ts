@@ -98,7 +98,7 @@ describe('not', () => {
     expect(get({ type: 'success' })).toEqual('success');
   });
 
-  it('should correctly invert the type of a Matchable', () => {
+  it('should correctly invert the type of a Matcher', () => {
     const nullable = P.when(
       (x: unknown): x is null | undefined => x === null || x === undefined
     );

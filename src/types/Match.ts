@@ -1,5 +1,5 @@
 import type * as symbols from '../internals/symbols';
-import type { Pattern, Matchable } from './Pattern';
+import type { Pattern, Matcher } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
@@ -106,7 +106,7 @@ export type Match<
     i,
     o,
     pred extends (value: any) => value is infer narrowed
-      ? [...patternValueTuples, [Matchable<unknown, narrowed>, value]]
+      ? [...patternValueTuples, [Matcher<unknown, narrowed>, value]]
       : patternValueTuples,
     Union<inferredOutput, c>
   >;
@@ -124,7 +124,7 @@ export type Match<
     i,
     o,
     pred extends (value: any) => value is infer narrowed
-      ? [...patternValueTuples, [Matchable<unknown, narrowed>, value]]
+      ? [...patternValueTuples, [Matcher<unknown, narrowed>, value]]
       : patternValueTuples,
     Union<inferredOutput, c>
   >;

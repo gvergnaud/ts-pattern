@@ -1,6 +1,6 @@
 import { P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
-import { Matchable } from '../src/types/Pattern';
+import { Matcher } from '../src/types/Pattern';
 
 type ExtendsPattern<a, p extends P.Pattern<a>> = true;
 
@@ -9,7 +9,7 @@ describe('Pattern', () => {
     type cases = [
       ExtendsPattern<
         { type: 'a'; x: { y: string } } | { type: 'b' },
-        { type: 'a'; x: { y: Matchable<unknown, string> } }
+        { type: 'a'; x: { y: Matcher<unknown, string> } }
       >
     ];
   });
@@ -19,7 +19,7 @@ describe('Pattern', () => {
       Expect<
         Equal<
           P.Pattern<{ kind: 'some'; value: number } | { kind: 'none' }>,
-          | Matchable<
+          | Matcher<
               { kind: 'some'; value: number } | { kind: 'none' },
               unknown,
               any,
@@ -46,7 +46,7 @@ describe('Pattern', () => {
     type t1 = Expect<
       Equal<
         P.Pattern<{ kind: 'some'; value: number } | { kind: 'none' } | string>,
-        | Matchable<
+        | Matcher<
             string | { kind: 'some'; value: number } | { kind: 'none' },
             unknown,
             any,
@@ -67,7 +67,7 @@ describe('Pattern', () => {
     type t2 = Expect<
       Equal<
         P.Pattern<{ a?: { name: string; age: number } } | { b: '' }>,
-        | Matchable<
+        | Matcher<
             { a?: { name: string; age: number } } | { b: '' },
             unknown,
             any,
@@ -85,7 +85,7 @@ describe('Pattern', () => {
     type t3 = Expect<
       Equal<
         P.Pattern<{ name: string; age: number } | undefined>,
-        | Matchable<
+        | Matcher<
             { name: string; age: number } | undefined,
             unknown,
             any,
@@ -102,7 +102,7 @@ describe('Pattern', () => {
     type t4 = Expect<
       Equal<
         P.Pattern<{ name: string; age: number } | [type: 'Hello']>,
-        | Matchable<
+        | Matcher<
             { name: string; age: number } | [type: 'Hello'],
             unknown,
             any,

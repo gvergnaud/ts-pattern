@@ -6,25 +6,25 @@
 
 import * as symbols from './symbols';
 import { SelectionType } from '../types/FindSelected';
-import { Pattern, Matchable, MatcherType } from '../types/Pattern';
+import { Pattern, Matcher, MatcherType } from '../types/Pattern';
 
 // @internal
 export const isObject = (value: unknown): value is Object =>
   Boolean(value && typeof value === 'object');
 
 //   @internal
-export const isMatchable = (
+export const isMatcher = (
   x: unknown
-): x is Matchable<unknown, unknown, MatcherType, SelectionType> => {
-  const pattern = x as Matchable<unknown, unknown, MatcherType, SelectionType>;
+): x is Matcher<unknown, unknown, MatcherType, SelectionType> => {
+  const pattern = x as Matcher<unknown, unknown, MatcherType, SelectionType>;
   return pattern && !!pattern[symbols.matcher];
 };
 
 // @internal
 const isOptionalPattern = (
   x: unknown
-): x is Matchable<unknown, unknown, 'optional', SelectionType> => {
-  return isMatchable(x) && x[symbols.matcher]().matcherType === 'optional';
+): x is Matcher<unknown, unknown, 'optional', SelectionType> => {
+  return isMatcher(x) && x[symbols.matcher]().matcherType === 'optional';
 };
 
 // tells us if the value matches a given pattern.
@@ -35,7 +35,7 @@ export const matchPattern = (
   select: (key: string, value: unknown) => void
 ): boolean => {
   if (isObject(pattern)) {
-    if (isMatchable(pattern)) {
+    if (isMatcher(pattern)) {
       const matcher = pattern[symbols.matcher]();
       const { matched, selections = {} } = matcher.match(value);
       if (matched) {
@@ -70,7 +70,7 @@ export const matchPattern = (
 
       if (pattern.size === 1) {
         const [subPattern] = Array.from(pattern.values());
-        return isMatchable(subPattern)
+        return isMatcher(subPattern)
           ? Array.from(value.values()).every((v) =>
               matchPattern(subPattern, v, select)
             )
@@ -104,7 +104,7 @@ export const matchPattern = (
 // @internal
 export const getSelectionKeys = (pattern: Pattern<any>): string[] => {
   if (isObject(pattern)) {
-    if (isMatchable(pattern)) {
+    if (isMatcher(pattern)) {
       return pattern[symbols.matcher]().getSelectionKeys?.() ?? [];
     }
     if (Array.isArray(pattern)) return flatMap(pattern, getSelectionKeys);

@@ -8,10 +8,10 @@ import {
   Cast,
   Equal,
 } from './helpers';
-import type { Matchable, ToExclude } from './Pattern';
+import type { Matcher, ToExclude } from './Pattern';
 
 type OptionalKeys<p> = ValueOf<{
-  [k in keyof p]: p[k] extends Matchable<any, any, infer matcherType>
+  [k in keyof p]: p[k] extends Matcher<any, any, infer matcherType>
     ? matcherType extends 'optional'
       ? k
       : never
@@ -37,7 +37,7 @@ type ReduceIntersection<
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
-export type InvertPattern<p> = p extends Matchable<
+export type InvertPattern<p> = p extends Matcher<
   infer input,
   infer narrowed,
   infer matcherType,
@@ -137,7 +137,7 @@ type ExcludeIfExists<a, b> = [b] extends [never]
 /**
  * ### InvertPatternForExclude
  */
-export type InvertPatternForExclude<p, i, empty = never> = p extends Matchable<
+export type InvertPatternForExclude<p, i, empty = never> = p extends Matcher<
   infer matchableInput,
   infer subpattern,
   infer matcherType,
