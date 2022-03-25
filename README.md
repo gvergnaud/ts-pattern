@@ -43,7 +43,7 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 
 ## Features
 
-- Works on **any data structure**: nested objects, arrays, tuples, Sets, Maps and all primitive types.
+- Works on **any data structure**: nested [Objects](#objects), [Arrays](#tuples-arrays), [Tuples](#tuples-arrays), [Sets](#sets), [Maps](#maps) and all primitive types.
 - **Typesafe**, with helpful type inference.
 - **Exhaustiveness checking** support, enforcing that you are matching every possible case with [`.exhaustive()`](#exhaustive).
 - **Expressive API**, with catch-all and type specific **wildcards**: [`P._`](#P_-wildcard), [`P.string`](#pstring-wildcard), [`P.number`](#pnumber-wildcard), etc.
