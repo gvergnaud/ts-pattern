@@ -135,7 +135,7 @@ export type Match<
    * takes a function returning the **default value**.
    * and return the result of the pattern matching expression.
    *
-   * Equivalent to `.with(__, () => x).run()`
+   * Equivalent to `.with(P._, () => x).exhaustive()`
    **/
   otherwise<c>(
     handler: (value: i) => PickReturnValue<o, c>

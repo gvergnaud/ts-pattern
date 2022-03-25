@@ -10,7 +10,7 @@
  * - How to validate an unknown API responses using `P.array`, `P.optional` and `isMatching`
  */
 
-import { isMatching, match, P, __ } from '../src';
+import { isMatching, match, P } from '../src';
 
 /**************************************************
  * Use case 1: handling discriminated union types *
@@ -58,7 +58,7 @@ type OrgPlan = 'basic' | 'pro' /* | 'premium' */ | 'enterprise';
 const exampleFunction2 = (org: OrgPlan, user: UserType): string =>
   // 1. Checking several enums with tuples
   match([org, user] as const)
-    .with(['basic', __], () => `Please upgrade to unlock this feature!`)
+    .with(['basic', P._], () => `Please upgrade to unlock this feature!`)
     // 2. `.with()` can take several patterns. It will match if one of them do.
     .with(
       ['pro', 'viewer'],

@@ -46,7 +46,7 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 - Works on **any data structure**: nested objects, arrays, tuples, Sets, Maps and all primitive types.
 - **Typesafe**, with helpful type inference.
 - **Exhaustiveness checking** support, enforcing that you are matching every possible case with [`.exhaustive()`](#exhaustive).
-- **Expressive API**, with catch-all and type specific **wildcards**: [`__`](#__-wildcard), [`P.string`](#pstring-wildcard), [`P.number`](#pnumber-wildcard), etc.
+- **Expressive API**, with catch-all and type specific **wildcards**: [`P._`](#P_-wildcard), [`P.string`](#pstring-wildcard), [`P.number`](#pnumber-wildcard), etc.
 - Supports [**predicates**](#Pwhen-patterns), [**unions**](#punion-patterns), [**intersections**](#pintersection-patterns) and [**exclusion**](#pnot-patterns) patterns for non-trivial cases.
 - Supports properties selection, via the [`P.select(name?)`](#pselect-patterns) function.
 - Tiny bundle footprint ([**only 1.7kB**](https://bundlephobia.com/package/ts-pattern@4.0.1-rc.12)).
@@ -170,7 +170,7 @@ This is a case where `match` really shines. Instead of writing nested
 switch statements, we can do that in a very expressive way:
 
 ```ts
-import { match, P, __ } from 'ts-pattern';
+import { match, P } from 'ts-pattern';
 
 const reducer = (state: State, event: Event): State =>
   match<[State, Event], State>([state, event])
@@ -202,7 +202,7 @@ const reducer = (state: State, event: Event): State =>
       })
     )
 
-    .with(__, () => state)
+    .with(P._, () => state)
 
     .exhaustive();
 ```
@@ -341,23 +341,23 @@ the `pattern` and the `handler` callback:
 
 This pattern will only match if the guard function returns `true`.
 
-### the `__` wildcard
+### the `P._` wildcard
 
-`__` will match any value.
+`P._` will match any value.
 You can use it at the top level, or inside your pattern.
 
 ```ts
-  .with(__, () => state)
+  .with(P._, () => state)
 
   // You could also use it inside your pattern:
-  .with([__, __], () => state)
+  .with([P._, P._], () => state)
 
   // at any level:
-  .with([__, { type: __ }], () => state)
+  .with([P._, { type: P._ }], () => state)
 
 ```
 
-You can also use `P.any`, which is an alias to `__`.
+You can also use `P.any`, which is an alias to `P._`.
 
 ### .exhaustive(), .otherwise() and .run()
 
@@ -369,7 +369,7 @@ You can also use `P.any`, which is an alias to `__`.
 
 Note that exhaustive pattern matching is **optional**. It comes with the trade-off of having **longer compilation times** because the type checker has more work to do.
 
-Alternatively you can use `.otherwise()`, which takes an handler function returning a default value. `.otherwise(handler)` is equivalent to `.with(__, handler).exhaustive()`.
+Alternatively you can use `.otherwise()`, which takes an handler function returning a default value. `.otherwise(handler)` is equivalent to `.with(P._, handler).exhaustive()`.
 
 ```ts
   .otherwise(() => state);
@@ -663,24 +663,24 @@ console.log(output);
 
 ### Wildcards
 
-#### `__` wildcard
+#### `P._` wildcard
 
-The `__` pattern will match any value.
+The `P._` pattern will match any value.
 
 ```ts
-import { match, __ } from 'ts-pattern';
+import { match, P } from 'ts-pattern';
 
 const input = 'hello';
 
 const output = match(input)
-  .with(__, () => 'It will always match')
+  .with(P._, () => 'It will always match')
   .otherwise(() => 'This string will never be used');
 
 console.log(output);
 // => 'It will always match'
 ```
 
-You can also use `P.any` which is an alias to `__`.
+You can also use `P.any` which is an alias to `P._`.
 
 #### `P.string` wildcard
 
@@ -832,7 +832,7 @@ number of elements which can be of different types. You can pattern match on tup
 with a tuple pattern, matching your value in length and shape.
 
 ```ts
-import { match, __ } from 'ts-pattern';
+import { match, P } from 'ts-pattern';
 
 type Input =
   | [number, '+', number]
@@ -843,10 +843,10 @@ type Input =
 const input: Input = [3, '*', 4];
 
 const output = match(input)
-  .with([__, '+', __], ([x, , y]) => x + y)
-  .with([__, '-', __], ([x, , y]) => x - y)
-  .with([__, '*', __], ([x, , y]) => x * y)
-  .with(['-', __], ([, x]) => -x)
+  .with([P._, '+', P._], ([x, , y]) => x + y)
+  .with([P._, '-', P._], ([x, , y]) => x - y)
+  .with([P._, '*', P._], ([x, , y]) => x * y)
+  .with(['-', P._], ([, x]) => -x)
   .otherwise(() => NaN);
 
 console.log(output);
@@ -1188,7 +1188,7 @@ console.log(output);
 type Input = { type: string } | string;
 
 match<Input, 'ok'>({ type: 'hello' })
-  .with(__, (value) => 'ok') // value: Input
+  .with(P._, (value) => 'ok') // value: Input
   .with(P.string, (value) => 'ok') // value: string
   .with(
     P.when((value) => true),
@@ -1202,7 +1202,7 @@ match<Input, 'ok'>({ type: 'hello' })
   .with(P.not(P.string), (value) => 'ok') // value: { type: string }
   .with(P.not({ type: P.string }), (value) => 'ok') // value: string
   .with(P.not(P.when(() => true)), (value) => 'ok') // value: Input
-  .with({ type: __ }, (value) => 'ok') // value: { type: string }
+  .with({ type: P._ }, (value) => 'ok') // value: { type: string }
   .with({ type: P.string }, (value) => 'ok') // value: { type: string }
   .with({ type: P.when(() => true) }, (value) => 'ok') // value: { type: string }
   .with({ type: P.not('hello' as const) }, (value) => 'ok') // value: { type: string }

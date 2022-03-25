@@ -6,14 +6,12 @@
 
 type-specific wildcard patterns have moved from `__.<pattern>` to a new `Pattern` qualified module, also exported as `P` by ts-pattern.
 
-The catch-all wildcard `__` is still exported at the top level, but it no longer has any properties.
-
 ```diff
 - import { match, __ } from 'ts-pattern';
 + import { match, Pattern } from 'ts-pattern';
 
 
-const toNumber = (value: string | number) =>
+const toString = (value: string | number) =>
   match(value)
 -   .with(__.string, (v) => v)
 -   .with(__.number, (v) => `${v}`)
@@ -26,10 +24,10 @@ or
 
 ```diff
 - import { match, __ } from 'ts-pattern';
-+ import { match, P, __ } from 'ts-pattern';
++ import { match, P } from 'ts-pattern';
 
 
-const toNumber = (value: string | number) =>
+const toString = (value: string | number) =>
   match(value)
 -   .with(__.string, (v) => v)
 -   .with(__.number, (v) => `${v}`)
@@ -38,7 +36,57 @@ const toNumber = (value: string | number) =>
     .exhaustive();
 ```
 
+#### `__`
+
+The top level `__` export was moved to `P._` and `P.any`:
+
+```diff
+- import { match, __ } from 'ts-pattern';
++ import { match, P } from 'ts-pattern';
+
+
+const toString = (value: string | number) =>
+  match(value)
+-   .with(__, (v) => `${v}`)
++   .with(P._, (v) => `${v}`)
+    // OR
++   .with(P.any, (v) => `${v}`)
+    .exhaustive();
+```
+
+#### `select()`, `not()`, `when()`
+
+Function to create patterns have been moved to the `P` module.
+
+```diff
+- import { match, select, not, when } from 'ts-pattern';
++ import { match, P } from 'ts-pattern';
+
+
+const toString = (value: number) =>
+  match(value)
+-   .with({ prop: select() }, (v) => `${v}`)
++   .with({ prop: P.select() }, (v) => `${v}`)
+
+-   .with({ prop: not(10) }, (v) => `${v}`)
++   .with({ prop: P.not(10) }, (v) => `${v}`)
+
+-   .with({ prop: when((x) => x < 5) }, (v) => `${v}`)
++   .with({ prop: P.when((x) => x < 5) }, (v) => `${v}`)
+    .exhaustive();
+```
+
+#### `Pattern` type
+
 the `Pattern` type which used to be exported at the toplevel is now accessible at `P.Pattern`.
+
+```diff
+- import { match, Pattern } from 'ts-pattern';
++ import { match, P } from 'ts-pattern';
+
+- const pattern: Pattern<number> = P.when(x => x > 2);
++ const pattern: P.Pattern<number> = P.when(x => x > 2);
+```
 
 ### list patterns
 

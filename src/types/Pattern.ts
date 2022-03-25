@@ -98,7 +98,7 @@ export type UnknownPattern =
 /**
  * ### Pattern
  * Patterns can be any (nested) javascript value.
- * They can also be a "wildcards", like `__`.
+ * They can also be a "wildcards", like `_`.
  */
 export type Pattern<a> =
   | Matchable<a, unknown, any, any>

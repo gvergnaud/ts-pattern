@@ -7,7 +7,7 @@ export type IsMatching<a, p> = true extends IsUnion<a> | IsUnion<p>
     ? true
     : false
   : // Special case for unknown, because this is the type
-  // of the inverted `__` wildcard pattern, which should
+  // of the inverted `_` wildcard pattern, which should
   // match everything.
   unknown extends p
   ? true

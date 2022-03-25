@@ -7,7 +7,7 @@ const reverse = <T>(xs: T[]): T[] => {
   return (
     match<T[], T[]>(xs)
       // matches a list with at least one element
-      .with([__, ...P.rest(__)], ([x, ...xs]) => [...reverse(xs), x])
+      .with([P._, ...P.rest(P._)], ([x, ...xs]) => [...reverse(xs), x])
       .otherwise(() => [])
   );
 };

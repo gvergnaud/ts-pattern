@@ -892,7 +892,7 @@ describe('DistributeMatchingUnions', () => {
     ];
   });
 
-  it('should return the input if the inverted pattern is `unknown` (if the pattern is `__`', () => {
+  it('should return the input if the inverted pattern is `unknown` (if the pattern is `P._`', () => {
     type cases = [
       Expect<
         Equal<
