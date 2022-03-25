@@ -1,13 +1,14 @@
 /**
  * ### One file TS-Pattern demo.
  *
- * This demo will demonstrate:
+ * This will demonstrate:
  * - How to use pattern matching and wildcards
  * - How to extract a value from the input Data Structure using `P.select`
  * - How to match several cases using `P.union`
  * - How to leverage exhaustiveness checking to make sure every case is handled
  * - How to pattern match on several values at once using tuples
- * - How to validate an unknown API responses using `P.array`, `P.optional` and `isMatching`
+ * - How to validate an unknown API response using `isMatching` and patterns like
+ *   `P.array`, `P.optional`, etc.
  */
 
 import { isMatching, match, P } from '../src';

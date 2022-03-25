@@ -35,11 +35,11 @@ export type MatchResult = {
 };
 
 /**
- * A `Matcher` is an object implementing the matcher
+ * A `Matcher` is an object implementing the match
  * protocol. It must define a `symbols.matcher` property
- * which returns a match() function taking the input value
- * and returning whether or not the pattern matches or not,
- * along with selections.
+ * which returns an object with a `match()` method, taking
+ * the input value and returning whether the pattern matches
+ * or not, along with optional selections.
  */
 export interface Matcher<
   input,
