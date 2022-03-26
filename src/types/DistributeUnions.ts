@@ -141,18 +141,9 @@ export type FindUnions<
   ? []
   : [IsPlainObject<a>, IsPlainObject<p>] extends [true, true]
   ? Flatten<
-      Values<
-        {
-          // we use Required to remove the optional property modifier (?:).
-          // Optional properties aren't considered as union types to avoid
-          // generating a huge union.
-          [k in keyof Required<a> & keyof p]: FindUnions<
-            NonNullable<a[k]>,
-            p[k],
-            [...path, k]
-          >;
-        }
-      >
+      Values<{
+        [k in keyof a & keyof p]: FindUnions<a[k], p[k], [...path, k]>;
+      }>
     >
   : [];
 

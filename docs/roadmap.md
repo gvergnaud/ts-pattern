@@ -1,20 +1,20 @@
 ### Roadmap
 
-- [ ] update `select()` and `select('name')` to accept a pattern the selected value should match.
-- [ ] add a `oneOf(...patterns)` pattern.
-- [ ] add a `rest` (maybe `rest(Pattern<a>)`) pattern for list. Example of using `rest`:
+- [ ] add a `P.rest` (maybe `P.rest(Pattern<a>)`) pattern for list. Example of using `P.rest`:
 
 ```ts
 const reverse = <T>(xs: T[]): T[] => {
   return (
     match<T[], T[]>(xs)
       // matches a list with at least one element
-      .with([__, ...rest(__)], ([x, ...xs]) => [...reverse(xs), x])
+      .with([P._, ...P.rest(P._)], ([x, ...xs]) => [...reverse(xs), x])
       .otherwise(() => [])
   );
 };
 ```
 
+- [x] update `select()` and `select('name')` to accept a pattern the selected value should match.
+- [x] add a `union(...patterns)` pattern.
 - [x] When not provided, maybe compute the output type from all branches
 - [x] maybe add a lightweight `select` API for single values
 - [x] add support matching against several patterns in a single `.with()` clause.

@@ -1,6 +1,6 @@
-import { Equal, Expect } from '../src/types/helpers';
+import { Equal, Expect, IsPlainObject, Primitives } from '../src/types/helpers';
 import { IsMatching } from '../src/types/IsMatching';
-import { Option } from './utils';
+import { Option } from './types-catalog/utils';
 
 describe('IsMatching', () => {
   describe('should return true if the pattern matches the input,  false otherwise', () => {
@@ -167,6 +167,9 @@ describe('IsMatching', () => {
     });
 
     it('Tuples', () => {
+      type State = {};
+      type Msg = [type: 'Login'] | [type: 'UrlChange', url: string];
+
       type cases = [
         Expect<Equal<IsMatching<['a', 'c' | 'd'], ['a', 'd']>, true>>,
         Expect<Equal<IsMatching<['a', 'c' | 'd'], ['a', unknown]>, true>>,
@@ -177,7 +180,6 @@ describe('IsMatching', () => {
         Expect<Equal<IsMatching<['a'], []>, false>>,
         Expect<Equal<IsMatching<['a'], ['a', 'b', 'c']>, false>>,
         Expect<Equal<IsMatching<[], ['a', 'b', 'c']>, false>>,
-
         Expect<
           Equal<
             IsMatching<
@@ -186,7 +188,17 @@ describe('IsMatching', () => {
             >,
             true
           >
-        >
+        >,
+        Expect<
+          Equal<
+            IsMatching<[State, Msg], [unknown, ['UrlChange', unknown]]>,
+            true
+          >
+        >,
+        Expect<
+          Equal<IsMatching<[State, Msg], [unknown, ['Login', unknown]]>, false>
+        >,
+        Expect<Equal<IsMatching<[State, Msg], [unknown, ['Login']]>, true>>
       ];
     });
 
@@ -244,6 +256,26 @@ describe('IsMatching', () => {
               Map<string, { x: ['c'] }>
             >,
             false
+          >
+        >
+      ];
+    });
+
+    it('pattern is a union types', () => {
+      type cases = [
+        Expect<Equal<IsMatching<'d', 'd' | 'e'>, true>>,
+        Expect<Equal<IsMatching<'f', 'd' | 'e'>, false>>,
+        Expect<
+          Equal<
+            IsMatching<
+              | { type: 'd'; value: boolean }
+              | { type: 'e'; value: string[] }
+              | { type: 'f'; value: number[] },
+              {
+                type: 'd' | 'e';
+              }
+            >,
+            true
           >
         >
       ];

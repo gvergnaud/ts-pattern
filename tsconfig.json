@@ -4,7 +4,8 @@
     "declaration": true,
     "target": "es6",
     "strict": true,
-    "outDir": "lib/"
+    "outDir": "dist/"
   },
-  "exclude": ["tests/", "lib/"]
+  "include": ["src/"],
+  "exclude": ["tests/", "dist/", "examples/"]
 }

@@ -1,6 +1,6 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __ } from '../src';
-import { Option } from './utils';
+import { match, P } from '../src';
+import { Option } from './types-catalog/utils';
 
 describe('Unions (a | b)', () => {
   it('should match discriminated unions', () => {
@@ -38,7 +38,7 @@ describe('Unions (a | b)', () => {
       id: 2,
       content: { body: 'yo' },
     })
-      .with({ type: 'post', content: __ }, (x) => {
+      .with({ type: 'post', content: P._ }, (x) => {
         type t = Expect<Equal<typeof x, Post>>;
         return 1;
       })
@@ -46,7 +46,7 @@ describe('Unions (a | b)', () => {
         type t = Expect<Equal<typeof x, Post>>;
         return 1;
       })
-      .with({ type: 'video', content: { src: __.string } }, (x) => {
+      .with({ type: 'video', content: { src: P.string } }, (x) => {
         type t = Expect<Equal<typeof x, Video>>;
         return 2;
       })
@@ -123,7 +123,7 @@ describe('Unions (a | b)', () => {
 
     const message = match(networkError)
       .with(
-        { statusCode: 401, name: __.string, message: __.string },
+        { statusCode: 401, name: P.string, message: P.string },
         (x) => 'Not Authenticated'
       )
       .with(

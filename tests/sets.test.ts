@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __ } from '../src';
+import { match, P } from '../src';
 
 describe('Set', () => {
   it('should match Set patterns', () => {
@@ -17,7 +17,7 @@ describe('Set', () => {
           type t = Expect<Equal<typeof x, Set<string>>>;
           return [false, true];
         })
-        .with(__, (x) => {
+        .with(P._, (x) => {
           type t = Expect<Equal<typeof x, Set<string | number>>>;
           return [false, false];
         })

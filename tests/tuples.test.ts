@@ -1,16 +1,16 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __ } from '../src';
-import { State, Event } from './utils';
+import { match, P } from '../src';
+import { State, Event } from './types-catalog/utils';
 
 describe('tuple ([a, b])', () => {
   it('should match tuple patterns', () => {
     const sum = (xs: number[]): number =>
       match(xs)
         .with([], () => 0)
-        .with([__.number, __.number], ([x, y]) => x + y)
-        .with([__.number, __.number, __.number], ([x, y, z]) => x + y + z)
+        .with([P.number, P.number], ([x, y]) => x + y)
+        .with([P.number, P.number, P.number], ([x, y, z]) => x + y + z)
         .with(
-          [__.number, __.number, __.number, __.number],
+          [P.number, P.number, P.number, P.number],
           ([x, y, z, w]) => x + y + z + w
         )
         .run();
@@ -26,17 +26,17 @@ describe('tuple ([a, b])', () => {
       | ['++', number];
 
     const res = match<Input, number>(['-', 2])
-      .with(['+', __.number, __.number], (value) => {
+      .with(['+', P.number, P.number], (value) => {
         type t = Expect<Equal<typeof value, ['+', number, number]>>;
         const [, x, y] = value;
         return x + y;
       })
-      .with(['*', __.number, __.number], (value) => {
+      .with(['*', P.number, P.number], (value) => {
         type t = Expect<Equal<typeof value, ['*', number, number]>>;
         const [, x, y] = value;
         return x * y;
       })
-      .with(['-', __.number], (value) => {
+      .with(['-', P.number], (value) => {
         type t = Expect<Equal<typeof value, ['-', number]>>;
         const [, x] = value;
         return -x;
@@ -44,17 +44,17 @@ describe('tuple ([a, b])', () => {
       .run();
 
     const res2 = match<Input, number>(['-', 2])
-      .with(['+', __, __], (value) => {
+      .with(['+', P._, P._], (value) => {
         type t = Expect<Equal<typeof value, ['+', number, number]>>;
         const [, x, y] = value;
         return x + y;
       })
-      .with(['*', __, __], (value) => {
+      .with(['*', P._, P._], (value) => {
         type t = Expect<Equal<typeof value, ['*', number, number]>>;
         const [, x, y] = value;
         return x * y;
       })
-      .with(['-', __], (value) => {
+      .with(['-', P._], (value) => {
         type t = Expect<Equal<typeof value, ['-', number]>>;
         const [, x] = value;
         return -x;
@@ -81,23 +81,23 @@ describe('tuple ([a, b])', () => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `perfect match`;
             })
-            .with(['hello', __], (x) => {
+            .with(['hello', P._], (x) => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `string match`;
             })
-            .with([__, 20], (x) => {
+            .with([P._, 20], (x) => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `number match`;
             })
-            .with([__.string, __.number], (x) => {
+            .with([P.string, P.number], (x) => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `not matching`;
             })
-            .with([__, __], (x) => {
+            .with([P._, P._], (x) => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `can't happen`;
             })
-            .with(__, (x) => {
+            .with(P._, (x) => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `can't happen`;
             })
@@ -114,7 +114,7 @@ describe('tuple ([a, b])', () => {
 
     const reducer = (state: State, event: Event): State =>
       match<[State, Event], State>([state, event])
-        .with([__, { type: 'fetch' }], (x) => {
+        .with([P.any, { type: 'fetch' }], (x) => {
           type t = Expect<Equal<typeof x, [State, { type: 'fetch' }]>>;
 
           return {
@@ -190,5 +190,17 @@ describe('tuple ([a, b])', () => {
       .otherwise(() => 'no');
 
     expect(output).toEqual('a + c');
+  });
+
+  it('should work with nested tuples', () => {
+    type State = {};
+    type Msg = [type: 'Login'] | [type: 'UrlChange', url: string];
+
+    function update(state: State, msg: Msg) {
+      return match<[State, Msg], string>([state, msg])
+        .with([P.any, ['Login']], () => 'ok')
+        .with([P.any, ['UrlChange', P.select()]], () => 'not ok')
+        .exhaustive();
+    }
   });
 });

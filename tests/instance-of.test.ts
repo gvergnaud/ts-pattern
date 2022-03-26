@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, __, instanceOf } from '../src';
+import { match, P } from '../src';
 
 class A {
   a = 'a';
@@ -12,11 +12,11 @@ describe('instanceOf', () => {
   it('should work at the top level', () => {
     const get = (x: A | B): string =>
       match(x)
-        .with(instanceOf(A), (x) => {
+        .with(P.instanceOf(A), (x) => {
           type t = Expect<Equal<typeof x, A>>;
           return 'instance of A';
         })
-        .with(instanceOf(B), (x) => {
+        .with(P.instanceOf(B), (x) => {
           type t = Expect<Equal<typeof x, B>>;
           return 'instance of B';
         })
@@ -32,11 +32,11 @@ describe('instanceOf', () => {
     const input = { value: new A() };
 
     const output = match<Input>(input)
-      .with({ value: instanceOf(A) }, (a) => {
+      .with({ value: P.instanceOf(A) }, (a) => {
         type t = Expect<Equal<typeof a, { value: A }>>;
         return 'instance of A!';
       })
-      .with({ value: instanceOf(B) }, (b) => {
+      .with({ value: P.instanceOf(B) }, (b) => {
         type t = Expect<Equal<typeof b, { value: B }>>;
         return 'instance of B!';
       })
@@ -64,8 +64,8 @@ describe('instanceOf', () => {
 
     expect(
       match<Input, string | undefined>(err)
-        .with(instanceOf(FooError), (err) => err.foo)
-        .with(instanceOf(BazError), (err) => err.baz)
+        .with(P.instanceOf(FooError), (err) => err.foo)
+        .with(P.instanceOf(BazError), (err) => err.baz)
         .otherwise(() => 'nothing')
     ).toBe('foo');
   });

@@ -1,4 +1,4 @@
-import { match, __ } from '../src';
+import { match } from '../src';
 
 describe('otherwise', () => {
   it('should pass matched value to otherwise', () => {

@@ -6,7 +6,7 @@ export type Values<a extends object> = UnionToTuple<ValueOf<a>>;
  * ### LeastUpperBound
  * An interesting one. A type taking two imbricated sets and returning the
  * smallest one.
- * We need that because sometimes the pattern's infered type holds more
+ * We need that because sometimes the pattern's inferred type holds more
  * information than the value on which we are matching (if the value is any
  * or unknown for instance).
  */
@@ -48,18 +48,21 @@ export type ExcludeObjectIfContainsNever<
   : never;
 
 // from https://stackoverflow.com/questions/50374908/transform-union-type-to-intersection-type/50375286#50375286
-export type UnionToIntersection<U> = (
-  U extends any ? (k: U) => void : never
-) extends (k: infer I) => void
-  ? I
+export type UnionToIntersection<union> = (
+  union extends any ? (k: union) => void : never
+) extends (k: infer intersection) => void
+  ? intersection
   : never;
 
 export type IsUnion<a> = [a] extends [UnionToIntersection<a>] ? false : true;
 
-export type UnionToTuple<T, output extends any[] = []> = UnionToIntersection<
-  T extends any ? (t: T) => T : never
-> extends (_: any) => infer W
-  ? UnionToTuple<Exclude<T, W>, [W, ...output]>
+export type UnionToTuple<
+  union,
+  output extends any[] = []
+> = UnionToIntersection<
+  union extends any ? (t: union) => union : never
+> extends (_: any) => infer elem
+  ? UnionToTuple<Exclude<union, elem>, [elem, ...output]>
   : output;
 
 export type Cast<a, b> = a extends b ? a : never;
@@ -71,15 +74,15 @@ export type Flatten<
   ? Flatten<tail, [...output, ...Cast<head, any[]>]>
   : output;
 
-export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <
+export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
   T
->() => T extends Y ? 1 : 2
+>() => T extends b ? 1 : 2
   ? true
   : false;
 
-export type Expect<T extends true> = T;
+export type Expect<a extends true> = a;
 
-export type IsAny<T> = 0 extends 1 & T ? true : false;
+export type IsAny<a> = 0 extends 1 & a ? true : false;
 
 export type Length<it extends any[]> = it['length'];
 
@@ -117,7 +120,8 @@ export type BuiltInObjects =
   | Date
   | RegExp
   | Generator
-  | { readonly [Symbol.toStringTag]: string };
+  | { readonly [Symbol.toStringTag]: string }
+  | any[];
 
 export type IsPlainObject<o, excludeUnion = BuiltInObjects> = o extends object
   ? // to excluded branded string types,
@@ -132,41 +136,40 @@ export type Compute<a extends any> = a extends BuiltInObjects
   ? a
   : { [k in keyof a]: a[k] } & unknown;
 
-// All :: Bool[] -> Bool
-export type All<xs> = xs extends readonly [infer head, ...infer tail]
-  ? boolean extends head
-    ? false
-    : head extends true
-    ? All<tail>
-    : false
-  : true;
-
-export type Or<a extends boolean, b extends boolean> = true extends a | b
-  ? true
-  : false;
+export type IntersectObjects<a> = (
+  a extends any ? keyof a : never
+) extends infer allKeys
+  ? {
+      [k in Cast<allKeys, PropertyKey>]: a extends any
+        ? k extends keyof a
+          ? a[k]
+          : never
+        : never;
+    }
+  : never;
 
 export type WithDefault<a, def> = [a] extends [never] ? def : a;
 
-export type IsLiteral<T> = T extends null | undefined
+export type IsLiteral<a> = a extends null | undefined
   ? true
-  : T extends string
-  ? string extends T
+  : a extends string
+  ? string extends a
     ? false
     : true
-  : T extends number
-  ? number extends T
+  : a extends number
+  ? number extends a
     ? false
     : true
-  : T extends boolean
-  ? boolean extends T
+  : a extends boolean
+  ? boolean extends a
     ? false
     : true
-  : T extends symbol
-  ? symbol extends T
+  : a extends symbol
+  ? symbol extends a
     ? false
     : true
-  : T extends bigint
-  ? bigint extends T
+  : a extends bigint
+  ? bigint extends a
     ? false
     : true
   : false;
@@ -180,4 +183,19 @@ export type Primitives =
   | symbol
   | bigint;
 
+export type TupleKeys = 0 | 1 | 2 | 3 | 4;
+
 export type Union<a, b> = [b] extends [a] ? a : [a] extends [b] ? b : a | b;
+
+/**
+ * GuardValue returns the value guarded by a type guard function.
+ */
+export type GuardValue<fn> = fn extends (value: any) => value is infer b
+  ? b
+  : fn extends (value: infer a) => unknown
+  ? a
+  : never;
+
+export type GuardFunction<input, narrowed> =
+  | ((value: input) => value is Cast<narrowed, input>)
+  | ((value: input) => boolean);

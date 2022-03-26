@@ -1,6 +1,6 @@
-import { match, __ } from '../src';
+import { match, P } from '../src';
 import { Expect, Equal } from '../src/types/helpers';
-import { Option, Blog } from './utils';
+import { Option, Blog } from './types-catalog/utils';
 
 describe('List ([a])', () => {
   it('should match list patterns', () => {
@@ -10,10 +10,10 @@ describe('List ([a])', () => {
     };
     const res = match<any, Option<Blog[]>>([httpResult])
       .with([] as const, (x) => {
-        type t = Expect<Equal<typeof x, never[]>>;
+        type t = Expect<Equal<typeof x, []>>;
         return { kind: 'some', value: [{ id: 0, title: 'LOlol' }] };
       })
-      .with([{ id: __.number, title: __.string }], (blogs) => {
+      .with(P.array({ id: P.number, title: P.string }), (blogs) => {
         type t = Expect<Equal<typeof blogs, { id: number; title: string }[]>>;
         return {
           kind: 'some',
@@ -33,7 +33,7 @@ describe('List ([a])', () => {
     const reverse = <T>(xs: T[]): T[] => {
       return match<T[], T[]>(xs)
         .with([], () => [])
-        .with(__, ([x, ...xs]) => [...reverse(xs), x])
+        .with(P._, ([x, ...xs]) => [...reverse(xs), x])
         .run();
     };
 

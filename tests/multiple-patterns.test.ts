@@ -1,5 +1,5 @@
-import { match, __ } from '../src';
-import { Option } from './utils';
+import { match, P } from '../src';
+import { Option } from './types-catalog/utils';
 import { Expect, Equal } from '../src/types/helpers';
 
 describe('Multiple patterns', () => {
@@ -128,12 +128,12 @@ describe('Multiple patterns', () => {
 
   it('should work with objects', () => {
     match<{ a: string; b: number } | [1, 2]>({ a: '', b: 2 })
-      .with({ a: __.string }, (x) => 'obj')
+      .with({ a: P.string }, (x) => 'obj')
       .with([1, 2], (x) => 'tuple')
       .exhaustive();
 
     match<{ a: string; b: number } | [1, 2]>({ a: '', b: 2 })
-      .with({ a: __.string }, [1, 2], (x) => 'obj')
+      .with({ a: P.string }, [1, 2], (x) => 'obj')
       .exhaustive();
   });
 
@@ -155,15 +155,15 @@ describe('Multiple patterns', () => {
           type t = Expect<Equal<typeof x, null | undefined>>;
           return 'Nullable';
         })
-        .with(__.boolean, __.number, __.string, (x) => {
+        .with(P.boolean, P.number, P.string, (x) => {
           type t = Expect<Equal<typeof x, boolean | number | string>>;
           return 'primitive';
         })
         .with(
-          { a: __.string },
+          { a: P.string },
           [true, 2],
-          new Map([['key', __]]),
-          new Set([__.number]),
+          new Map([['key', P._]]),
+          new Set([P.number]),
           (x) => {
             type t = Expect<
               Equal<
@@ -182,11 +182,11 @@ describe('Multiple patterns', () => {
           type t = Expect<Equal<typeof x, [false, 2]>>;
           return '[false, 2]';
         })
-        .with([false, __.number] as const, (x) => {
+        .with([false, P.number] as const, (x) => {
           type t = Expect<Equal<typeof x, [false, number]>>;
           return '[false, number]';
         })
-        .with([true, __.number] as const, (x) => {
+        .with([true, P.number] as const, (x) => {
           type t = Expect<Equal<typeof x, [true, number]>>;
           return '[true, number]';
         })
@@ -195,17 +195,17 @@ describe('Multiple patterns', () => {
     const exhaustive = (input: Input) =>
       match<Input>(input)
         .with(null, undefined, (x) => 'Nullable')
-        .with(__.boolean, __.number, __.string, (x) => 'primitive')
+        .with(P.boolean, P.number, P.string, (x) => 'primitive')
         .with(
-          { a: __.string },
+          { a: P.string },
           [true, 2],
-          new Map([['key', __]]),
-          new Set([__.number]),
+          new Map([['key', P._]]),
+          new Set([P.number]),
           (x) => 'Object'
         )
         .with([false, 2], (x) => '[false, 2]')
-        .with([false, __.number], (x) => '[false, number]')
-        .with([true, __.number], (x) => '[true, number]')
+        .with([false, P.number], (x) => '[false, number]')
+        .with([true, P.number], (x) => '[true, number]')
         .exhaustive();
 
     const cases: { input: Input; expected: string }[] = [
@@ -235,5 +235,32 @@ describe('Multiple patterns', () => {
         // @ts-expect-error
         .with({ t: 'b' }, (x) => 2)
         .run();
+  });
+
+  it('issue #74: inference must work on every pattern in the list', () => {
+    match({ a: [1, 2, 3, 4] })
+      .with(
+        {
+          a: P.when((arr) => {
+            type t = Expect<Equal<typeof arr, number[]>>;
+            return arr.length === 4;
+          }),
+        },
+        {
+          a: P.when((arr) => {
+            type t = Expect<Equal<typeof arr, number[]>>;
+            return arr.length === 4;
+          }),
+        },
+        {
+          a: P.when((arr) => {
+            type t = Expect<Equal<typeof arr, number[]>>;
+            return arr.length === 4;
+          }),
+        },
+        ({ a }) => {}
+      )
+      .with({ a: P.array(P.number) }, () => {})
+      .exhaustive();
   });
 });

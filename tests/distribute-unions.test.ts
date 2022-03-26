@@ -6,7 +6,7 @@ import {
 } from '../src/types/DistributeUnions';
 
 import { Equal, Expect } from '../src/types/helpers';
-import { Option } from './utils';
+import { Option } from './types-catalog/utils';
 
 describe('FindAllUnions', () => {
   it('should correctly find all unions on an object', () => {
@@ -836,23 +836,6 @@ describe('DistributeMatchingUnions', () => {
     ];
   });
 
-  it('should not distribute optional properties on objects', () => {
-    type cases = [
-      Expect<
-        Equal<
-          DistributeMatchingUnions<
-            {
-              x: 'a' | 'b';
-              y?: string;
-            },
-            { x: 'a'; y: 'hello' }
-          >,
-          { x: 'a'; y?: string } | { x: 'b'; y?: string }
-        >
-      >
-    ];
-  });
-
   it('should not distribute unions for lists, set and maps', () => {
     // The reason is that list can be heterogeneous, so
     // matching on a A[] for a in input of (A|B)[] doesn't
@@ -909,7 +892,7 @@ describe('DistributeMatchingUnions', () => {
     ];
   });
 
-  it('should return the input if the inverted pattern is `unknown` (if the pattern is `__`', () => {
+  it('should return the input if the inverted pattern is `unknown` (if the pattern is `P._`', () => {
     type cases = [
       Expect<
         Equal<

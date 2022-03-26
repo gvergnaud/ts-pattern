@@ -1,6 +1,12 @@
 import { DeepExclude } from '../src/types/DeepExclude';
+import {
+  DistributeMatchingUnions,
+  FindUnions,
+  FindUnionsMany,
+} from '../src/types/DistributeUnions';
 import { Primitives, Equal, Expect } from '../src/types/helpers';
-import { BigUnion, Option, State } from './utils';
+import { IsMatching } from '../src/types/IsMatching';
+import { BigUnion, Option, State } from './types-catalog/utils';
 
 type Colors = 'pink' | 'purple' | 'red' | 'yellow' | 'blue';
 
@@ -55,7 +61,32 @@ describe('DeepExclude', () => {
     });
 
     it('should work with nested object and only distribute what is necessary', () => {
+      type x = DeepExclude<{ str: string | null | undefined }, { str: string }>;
+      type xx = DistributeMatchingUnions<
+        { str: string | null | undefined },
+        { str: string }
+      >;
+      type xxx = FindUnionsMany<
+        { str: string | null | undefined },
+        { str: string }
+      >;
+      type xxxx = IsMatching<
+        { str: string | null | undefined },
+        { str: string }
+      >;
+      type xxxxx = FindUnions<
+        { str: string | null | undefined },
+        { str: string },
+        []
+      >;
+      type y = DeepExclude<
+        { str: string | null | undefined },
+        { str: null | undefined }
+      >;
+
       type cases = [
+        Expect<Equal<x, { str: null } | { str: undefined }>>,
+        Expect<Equal<y, { str: string }>>,
         Expect<
           Equal<
             DeepExclude<{ a: { b: 'x' | 'y' } }, { a: { b: 'x' } }>,
@@ -160,6 +191,39 @@ describe('DeepExclude', () => {
         >
       ];
     });
+
+    it('should work with nested unary tuples', () => {
+      type State = {};
+      type Msg = [type: 'Login'] | [type: 'UrlChange', url: string];
+      type Input = [State, Msg];
+
+      type cases = [
+        Expect<Equal<DeepExclude<[[number]], [[unknown]]>, never>>,
+        Expect<Equal<DeepExclude<[[[number]]], [[[unknown]]]>, never>>,
+        Expect<Equal<DeepExclude<[[[[number]]]], [[[[unknown]]]]>, never>>,
+        Expect<
+          Equal<
+            DeepExclude<[[[number]]], readonly [readonly [readonly [unknown]]]>,
+            never
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<
+              readonly [[[[{ t: number }]]]],
+              readonly [[[[{ t: unknown }]]]]
+            >,
+            never
+          >
+        >,
+        Expect<
+          Equal<
+            DeepExclude<[{}, Msg], [unknown, ['UrlChange', unknown]]>,
+            [{}, [type: 'Login']]
+          >
+        >
+      ];
+    });
   });
 
   describe('List', () => {
@@ -240,7 +304,7 @@ describe('DeepExclude', () => {
     ];
   });
 
-  it('should work with bug unions', () => {
+  it('should work with big unions', () => {
     type cases = [
       Expect<
         Equal<
@@ -464,5 +528,28 @@ describe('DeepExclude', () => {
         >
       >
     ];
+  });
+
+  it('should work when `b` contains a union', () => {
+    type t = Expect<
+      Equal<
+        DeepExclude<
+          {
+            type: 'c';
+            value:
+              | { type: 'd'; value: boolean }
+              | { type: 'e'; value: string[] }
+              | { type: 'f'; value: number[] };
+          },
+          {
+            type: 'c';
+            value: {
+              type: 'd' | 'e';
+            };
+          }
+        >,
+        { type: 'c'; value: { type: 'f'; value: number[] } }
+      >
+    >;
   });
 });

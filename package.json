@@ -1,17 +1,29 @@
 {
   "name": "ts-pattern",
-  "version": "3.3.5",
+  "version": "4.0.1",
   "description": " The exhaustive Pattern Matching library for TypeScript.",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "type": "module",
+  "source": "src/index.ts",
+  "exports": {
+    "require": "./dist/index.cjs",
+    "default": "./dist/index.modern.js"
+  },
+  "main": "./dist/index.cjs",
+  "types": "dist/index.d.ts",
+  "module": "./dist/index.module.js",
+  "unpkg": "./dist/index.umd.js",
   "scripts": {
-    "build": "rimraf lib && tsc",
+    "build": "microbundle",
+    "dev": "microbundle watch",
     "prepublishOnly": "npm run test && npm run build",
     "test": "jest",
-    "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics"
+    "clear-test": "jest --clearCache",
+    "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics",
+    "fmt": "prettier ./src/** ./tests/** -w",
+    "check": "tsc --strict --noEmit --extendedDiagnostics"
   },
   "files": [
-    "lib/**/*"
+    "dist/**/*"
   ],
   "repository": {
     "type": "git",
@@ -36,8 +48,8 @@
   "devDependencies": {
     "@types/jest": "^27.0.2",
     "jest": "^27.4.5",
+    "microbundle": "^0.14.2",
     "prettier": "^2.5.1",
-    "rimraf": "^3.0.2",
     "ts-jest": "^27.1.2",
     "typescript": "^4.5.4"
   }

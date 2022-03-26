@@ -1,7 +1,7 @@
 import { ExtractPreciseValue } from '../src/types/ExtractPreciseValue';
 import { Expect, Equal, LeastUpperBound } from '../src/types/helpers';
-import { NotPattern } from '../src/types/Pattern';
-import { Event, Option, State } from './utils';
+import { ToExclude } from '../src/types/Pattern';
+import { Event, Option, State } from './types-catalog/utils';
 
 describe('ExtractPreciseValue', () => {
   it('should correctly extract the matching value from the input and an inverted pattern', () => {
@@ -93,11 +93,48 @@ describe('ExtractPreciseValue', () => {
   });
 
   it('should return the correct branch a union based on the pattern', () => {
-    type x = ExtractPreciseValue<
-      { a: string; b: number } | [boolean, number],
-      readonly [true, 2]
-    >;
-    type cases = [Expect<Equal<x, [true, 2]>>];
+    type cases = [
+      Expect<
+        Equal<
+          ExtractPreciseValue<
+            { a: string; b: number } | [boolean, number],
+            readonly [true, 2]
+          >,
+          [true, 2]
+        >
+      >,
+      Expect<
+        Equal<
+          ExtractPreciseValue<
+            | {
+                type: 'img';
+                src: string;
+              }
+            | {
+                type: 'text';
+                p: string;
+              }
+            | {
+                type: 'video';
+                src: number;
+              }
+            | {
+                type: 'gif';
+                p: string;
+              }
+            | undefined,
+            {
+              type: 'video';
+              src: unknown;
+            }
+          >,
+          {
+            type: 'video';
+            src: number;
+          }
+        >
+      >
+    ];
   });
 
   it('should support readonly input types', () => {
@@ -202,7 +239,7 @@ describe('ExtractPreciseValue', () => {
           Equal<
             ExtractPreciseValue<
               Input,
-              { type: 'test'; id: NotPattern<undefined> }
+              { type: 'test'; id: ToExclude<undefined> }
             >,
             { type: 'test'; id: string }
           >
@@ -217,6 +254,45 @@ describe('ExtractPreciseValue', () => {
           Equal<
             ExtractPreciseValue<Input, { type: 'test3' }>,
             { type: 'test3'; id?: string; otherProp?: string }
+          >
+        >
+      ];
+    });
+
+    it('should keep optional properties if they are optional on both `a` and `b`', () => {
+      type Input =
+        | {
+            type: 'a';
+            data?: { type: 'img'; src: string } | { type: 'text'; p: string };
+          }
+        | {
+            type: 'b';
+            data?: { type: 'video'; src: number } | { type: 'gif'; p: string };
+          };
+
+      type cases = [
+        Expect<
+          Equal<
+            ExtractPreciseValue<
+              Input,
+              {
+                type: 'a';
+                data?: { type: 'img' } | undefined;
+              }
+            >,
+            {
+              type: 'a';
+              data?: { type: 'img'; src: string } | undefined;
+            }
+          >
+        >,
+        Expect<
+          Equal<
+            ExtractPreciseValue<
+              { data: { type?: 'a'; value: number } },
+              { data: { type?: 'a' } }
+            >,
+            { data: { type?: 'a'; value: number } }
           >
         >
       ];

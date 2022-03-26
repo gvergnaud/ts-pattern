@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, not, __ } from '../src';
+import { match, P } from '../src';
 
 describe('optional properties', () => {
   it('matching on optional properties should work', () => {
@@ -18,7 +18,7 @@ describe('optional properties', () => {
         type t = Expect<Equal<typeof x, { type: 'post'; id: 2; body: string }>>;
         return 100;
       })
-      .with({ type: 'post', id: __.number }, (x) => {
+      .with({ type: 'post', id: P.number }, (x) => {
         type t = Expect<
           Equal<typeof x, { type: 'post'; id: number; body: string }>
         >;
@@ -43,7 +43,7 @@ describe('optional properties', () => {
 
     const f = (foo: Foo) =>
       match(foo)
-        .with({ type: 'test', id: not(undefined) }, ({ id }) => {
+        .with({ type: 'test', id: P.not(undefined) }, ({ id }) => {
           type t = Expect<Equal<typeof id, string>>;
           return 0;
         })
