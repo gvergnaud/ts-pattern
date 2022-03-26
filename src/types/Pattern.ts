@@ -103,9 +103,15 @@ export type UnknownPattern =
   | UnknownMatcher;
 
 /**
- * ### Pattern
- * Patterns can be any (nested) javascript value.
- * They can also be a "wildcards", like `_`.
+ * `Pattern<a>` is the generic type for patterns matching a value of type `a`. A pattern can be any (nested) javascript value.
+ *
+ * They can also be wildcards, like `P._`, `P.string`, `P.number`,
+ * or other matchers, like `P.when(predicate)`, `P.not(pattern)`, etc.
+ *
+ * [Read `Patterns` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#patterns)
+ *
+ * @example
+ * const pattern: P.Pattern<User> = { name: P.string }
  */
 export type Pattern<a> =
   | Matcher<a, unknown, any, any>

@@ -4,22 +4,35 @@ import * as P from './patterns';
 import { matchPattern } from './internals/helpers';
 
 /**
- * Helper function taking a pattern and returning a **type guard** function telling
- * us whether or not a value matches the pattern.
+ * `isMatching` takes pattern and returns a **type guard** function, cheching if a value matches this pattern.
  *
- * @param pattern the Pattern the value should match
- * @returns a function taking the value and returning whether or not it matches the pattern.
+ * [Read `isMatching` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#ismatching)
+ *
+ * @example
+ *  const hasName = isMatching({ name: P.string })
+ *
+ *  declare let input: unknown
+ *
+ *  if (hasName(input)) {
+ *    // `input` inferred as { name: string }
+ *    return input.name
+ *  }
  */
 export function isMatching<p extends Pattern<any>>(
   pattern: p
 ): (value: any) => value is MatchedValue<any, P.infer<p>>;
 /**
- * **type guard** function taking a pattern and a value and returning a boolean telling
- * us whether or not the value matches the pattern.
+ * `isMatching` takes pattern and a value and checks if the value matches this pattern.
  *
- * @param pattern the Pattern the value should match
- * @param value
- * @returns a boolean telling whether or not the value matches the pattern.
+ * [Read `isMatching` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#ismatching)
+ *
+ * @example
+ *  declare let input: unknown
+ *
+ *  if (isMatching({ name: P.string }, input)) {
+ *    // `input` inferred as { name: string }
+ *    return input.name
+ *  }
  */
 export function isMatching<p extends Pattern<any>>(
   pattern: p,

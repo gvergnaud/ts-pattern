@@ -5,12 +5,22 @@ import * as symbols from './internals/symbols';
 import { matchPattern } from './internals/helpers';
 
 /**
- * #### match
+ * `match` creates a **pattern matching expression**.
  *
- * Entry point to create a pattern matching expression.
+ * [Read `match` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#match)
  *
- * It returns a `Match` builder, on which you can chain
- * several `.with(pattern, handler)` clauses.
+ * Use `.with(pattern, handler)` to pattern match on the input.
+ *
+ * Use `.exhaustive()` or `.otherwise(() => defaultValue)` to end the expression and get the result.
+ *
+ * @example
+ *  declare let input: "A" | "B";
+ *
+ *  return match(input)
+ *    .with("A", () => "It's a A!")
+ *    .with("B", () => "It's a B!")
+ *    .exhaustive();
+ *
  */
 export const match = <input, output = symbols.unset>(
   value: input

@@ -27,10 +27,10 @@ export type Match<
   inferredOutput = never
 > = {
   /**
-   * #### Match.with
+   * `.with(pattern, handler)` Registers a pattern and an handler function which
+   * will be called if this pattern matches the input value.
    *
-   * If the input matches the pattern provided as first argument,
-   * execute the handler function and return its result.
+   * [Read `.with()` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#with)
    **/
   with<
     p extends Pattern<i>,
@@ -112,10 +112,10 @@ export type Match<
   >;
 
   /**
-   * #### Match.when
+   * `.when(predicate, handler)` Registers a predicate function and an handler function.
+   * If the predicate returns true, the handler function will be chosen to handle the input.
    *
-   * When the first function returns a truthy value,
-   * execute the handler function and return its result.
+   * [Read `.when()` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#when)
    **/
   when<pred extends (value: i) => unknown, c, value extends GuardValue<pred>>(
     predicate: pred,
@@ -130,25 +130,26 @@ export type Match<
   >;
 
   /**
-   * #### Match.otherwise
-   *
-   * takes a function returning the **default value**.
-   * and return the result of the pattern matching expression.
+   * `.otherwise()` takes a function returning the **default value**, and
+   * will be used to handle the input value if no previous pattern matched.
    *
    * Equivalent to `.with(P._, () => x).exhaustive()`
+   *
+   * [Read `.otherwise()` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#otherwise)
+   *
    **/
   otherwise<c>(
     handler: (value: i) => PickReturnValue<o, c>
   ): PickReturnValue<o, Union<inferredOutput, c>>;
 
   /**
-   * #### Match.exhaustive
-   *
-   * Runs the pattern matching expression and return the result value.
+   * `.exhaustive()` runs the pattern matching expression and return the result value.
    *
    * If this is of type `NonExhaustiveError`, it means you aren't matching
    * every case, and you should add another `.with(...)` clause
    * to prevent potential runtime errors.
+   *
+   * [Read `.exhaustive()` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
    *
    * */
   exhaustive: DeepExcludeAll<i, patternValueTuples> extends infer remainingCases
@@ -158,8 +159,7 @@ export type Match<
     : never;
 
   /**
-   * #### Match.run
-   * Runs the pattern matching expression and return the result.
+   * `.run()` runs the pattern matching expression and return the result value.
    * */
   run(): PickReturnValue<o, inferredOutput>;
 };
