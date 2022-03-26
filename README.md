@@ -1,4 +1,4 @@
-<h1 align="center">ts-pattern</h1>
+<h1 align="center">TS-Pattern</h1>
 
 <p align="center">
 The exhaustive Pattern Matching library for <a href="https://github.com/microsoft/TypeScript">TypeScript</a>
