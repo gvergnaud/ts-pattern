@@ -334,7 +334,7 @@ the `pattern` and the `handler` callback:
 
 ```ts
   .with(
-    [{ status: 'loading' },{ type: 'cancel' }],
+    [{ status: 'loading' }, { type: 'cancel' }],
     ([state, event]) => state.startTime + 2000 < Date.now(),
     () => ({
       status: 'idle'
@@ -346,21 +346,18 @@ This pattern will only match if the guard function returns `true`.
 
 ### the `P._` wildcard
 
-`P._` will match any value.
-You can use it at the top level, or inside your pattern.
+`P._` will match any value. You can use it either at the top level, or within another pattern.
 
 ```ts
   .with(P._, () => state)
 
-  // You could also use it inside your pattern:
+  // You could also use it inside another pattern:
   .with([P._, P._], () => state)
 
   // at any level:
   .with([P._, { type: P._ }], () => state)
 
 ```
-
-You can also use `P.any`, which is an alias to `P._`.
 
 ### .exhaustive(), .otherwise() and .run()
 
@@ -719,7 +716,7 @@ console.log(output);
 
 #### `P._` wildcard
 
-The `P._` pattern will match any value.
+The `P._` pattern will match any value. You can also use `P.any`, which is an alias to `P._`.
 
 ```ts
 import { match, P } from 'ts-pattern';
@@ -728,13 +725,13 @@ const input = 'hello';
 
 const output = match(input)
   .with(P._, () => 'It will always match')
+  // OR
+  .with(P.any, () => 'It will always match')
   .otherwise(() => 'This string will never be used');
 
 console.log(output);
 // => 'It will always match'
 ```
-
-You can also use `P.any` which is an alias to `P._`.
 
 #### `P.string` wildcard
 
