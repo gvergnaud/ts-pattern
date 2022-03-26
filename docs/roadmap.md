@@ -1,6 +1,9 @@
 ### Roadmap
 
-- [ ] add a `P.rest` (maybe `P.rest(Pattern<a>)`) pattern for list. Example of using `P.rest`:
+- [ ] Add a custom matcher protocol data structures could implement to make them matchable.
+- [ ] Add a native regex support.
+
+- [ ] (Maybe) add a `P.rest` (maybe `P.rest(Pattern<a>)`) pattern for list. Example of using `P.rest`:
 
 ```ts
 const reverse = <T>(xs: T[]): T[] => {
