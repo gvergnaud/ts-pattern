@@ -49,7 +49,7 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 - **Expressive API**, with catch-all and type specific **wildcards**: [`P._`](#P_-wildcard), [`P.string`](#pstring-wildcard), [`P.number`](#pnumber-wildcard), etc.
 - Supports [**predicates**](#Pwhen-patterns), [**unions**](#punion-patterns), [**intersections**](#pintersection-patterns) and [**exclusion**](#pnot-patterns) patterns for non-trivial cases.
 - Supports properties selection, via the [`P.select(name?)`](#pselect-patterns) function.
-- Tiny bundle footprint ([**only 1.7kB**](https://bundlephobia.com/package/ts-pattern)).
+- Tiny bundle footprint ([**only 1.6kB**](https://bundlephobia.com/package/ts-pattern)).
 
 ## What is Pattern Matching?
 
