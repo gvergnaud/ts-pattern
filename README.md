@@ -113,10 +113,13 @@ Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#s
     - [`P.not` patterns](#Pnot-patterns)
     - [`P.select` patterns](#Pselect-patterns)
     - [`P.optional` patterns](#Poptional-patterns)
+    - [`P.instanceOf` patterns](#Pinstanceof-patterns)
     - [`P.union` patterns](#Punion-patterns)
     - [`P.intersection` patterns](#Pintersection-patterns)
-    - [`P.instanceOf` patterns](#Pinstanceof-patterns)
-- [Type inference](#type-inference)
+  - [Types](#types)
+    - [`P.infer`](#Pinfer)
+    - [`P.Pattern`](#PPattern)
+    - [Type inference](#type-inference)
 - [Inspirations](#inspirations)
 
 ## Code Sandbox Examples
@@ -533,6 +536,30 @@ Executes the match case, return its result, and enable exhaustive pattern matchi
 
 ```ts
 function exhaustive(): IOutput;
+```
+
+#### Example
+
+```ts
+type Permission = 'editor' | 'viewer';
+type Plan = 'basic' | 'pro';
+
+const fn = (org: Plan, user: Permission) =>
+  match([org, user] as const)
+    .with(['basic', 'viewer'], () => {})
+    .with(['basic', 'editor'], () => {})
+    .with(['pro', 'viewer'], () => {})
+    // Fails with `NonExhaustiveError<['pro', 'editor']>`
+    // because the `['pro', 'editor']` case isn't handled.
+    .exhaustive();
+
+const fn2 = (org: Plan, user: Permission) =>
+  match([org, user] as const)
+    .with(['basic', 'viewer'], () => {})
+    .with(['basic', 'editor'], () => {})
+    .with(['pro', 'viewer'], () => {})
+    .with(['pro', 'editor'], () => {})
+    .exhaustive(); // Works!
 ```
 
 ### `.otherwise`
@@ -1120,6 +1147,38 @@ const output = match(input)
   .exhaustive();
 ```
 
+### `P.instanceOf` patterns
+
+The `P.instanceOf` function lets you build a pattern to check if
+a value is an instance of a class:
+
+```ts
+import { match, P } from 'ts-pattern';
+
+class A {
+  a = 'a';
+}
+class B {
+  b = 'b';
+}
+
+type Input = { value: A | B };
+
+const input: Input = { value: new A() };
+
+const output = match(input)
+  .with({ value: P.instanceOf(A) }, (a) => {
+    return 'instance of A!';
+  })
+  .with({ value: P.instanceOf(B) }, (b) => {
+    return 'instance of B!';
+  })
+  .exhaustive();
+
+console.log(output);
+// => 'instance of A!'
+```
+
 ### `P.union` patterns
 
 `P.union(...subpatterns)` let you test several patterns and will match if
@@ -1175,67 +1234,130 @@ const output = match(input)
   .otherwise(() => '');
 ```
 
-### `P.instanceOf` patterns
+## Types
 
-The `P.instanceOf` function lets you build a pattern to check if
-a value is an instance of a class:
+### `P.infer`
+
+`P.infer<typeof somePattern>` let you infer a type of value from a type of pattern.
+
+It's particularly useful when validating an API response.
 
 ```ts
-import { match, P } from 'ts-pattern';
+const postPattern = {
+  title: P.string,
+  content: P.string,
+  likeCount: P.number,
+  author: {
+    name: P.string,
+  },
+};
 
-class A {
-  a = 'a';
-}
-class B {
-  b = 'b';
-}
+type Post = P.infer<typeof postPattern>;
 
-type Input = { value: A | B };
-
-const input: Input = { value: new A() };
-
-const output = match(input)
-  .with({ value: P.instanceOf(A) }, (a) => {
-    return 'instance of A!';
-  })
-  .with({ value: P.instanceOf(B) }, (b) => {
-    return 'instance of B!';
-  })
-  .exhaustive();
-
-console.log(output);
-// => 'instance of A!'
+// posts: Post[]
+const posts = await fetch(someUrl)
+  .then((res) => res.json())
+  .then((res: unknown): Post[] =>
+    isMatching({ data: P.array(postPattern) }, res) ? res.data : []
+  );
 ```
 
-### type inference
+### `P.Pattern`
 
-`ts-pattern` heavily relies on TypeScript's type system to automatically infer the precise type of your input value based on your pattern. Here are a few examples showing how the input type would be narrowed using various patterns:
+`P.Pattern<T>` is the type of all possible pattern for a generic type `T`.
 
 ```ts
-type Input = { type: string } | string;
+type User = { name: string; age: number };
 
-match<Input, 'ok'>({ type: 'hello' })
-  .with(P._, (value) => 'ok') // value: Input
-  .with(P.string, (value) => 'ok') // value: string
-  .with(
-    P.when((value) => true),
-    (value) => 'ok' // value: Input
-  )
-  .with(
-    P.when((value): value is string => true),
-    (value) => 'ok' // value: string
-  )
-  .with(P.not('hello'), (value) => 'ok') // value: Input
-  .with(P.not(P.string), (value) => 'ok') // value: { type: string }
-  .with(P.not({ type: P.string }), (value) => 'ok') // value: string
-  .with(P.not(P.when(() => true)), (value) => 'ok') // value: Input
-  .with({ type: P._ }, (value) => 'ok') // value: { type: string }
-  .with({ type: P.string }, (value) => 'ok') // value: { type: string }
-  .with({ type: P.when(() => true) }, (value) => 'ok') // value: { type: string }
-  .with({ type: P.not('hello' as const) }, (value) => 'ok') // value: { type: string }
-  .with({ type: P.not(P.string) }, (value) => 'ok') // value: never
-  .with({ type: P.not(P.when(() => true)) }, (value) => 'ok') // value: { type: string }
-  .exhaustive();
+const userPattern: Pattern<User> = {
+  name: 'Alice',
+};
+```
+
+### Type inference
+
+TS-Pattern takes advantage of some of the most advanced features of the type system to narrow the input type using the current pattern. It is also able to accurately know if you have handled all cases, even when matching on complex data-structures.
+
+Here are some examples of TS-Pattern's inference features.
+
+#### Type narrowing
+
+If you pattern-match on a union type with a discriminant property, TS-Pattern will use this discriminant to narrow the type of input.
+
+```ts
+type Text = { type: 'text'; data: string };
+type Img = { type: 'img'; data: { src: string; alt: string } };
+type Video = { type: 'video'; data: { src: string; format: 'mp4' | 'webm' } };
+type Content = Text | Img | Video;
+
+const formatContent = (content: Content): string =>
+  match(content)
+    .with({ type: 'text' }, (text /* : Text */) => '<p>...</p>')
+    .with({ type: 'img' }, (img /* : Img */) => '<img ... />')
+    .with({ type: 'video' }, (video /* : Video */) => '<video ... />')
+    .with(
+      { type: 'img' },
+      { type: 'video' },
+      (video /* : Img | Video */) => 'img or video'
+    )
+    .with(
+      { type: P.union('img', 'video') },
+      (video /* : Img | Video */) => 'img or video'
+    )
+    .exhaustive();
+```
+
+If you use `P.select`, TS-Pattern will pick up the type of the property you selected, and will inferyour handler's type accordingly.
+
+```ts
+const formatContent = (content: Content): string =>
+  match(content)
+    .with(
+      { type: 'text', data: P.select() },
+      (content /* : string */) => '<p>...</p>'
+    )
+    .with(
+      { type: 'video', data: { format: P.select() } },
+      (format /* : 'mp4' | 'webm' */) => '<video ... />'
+    )
+    .with(
+      { type: P.union('img', 'video'), data: P.select() },
+      (data /* : Img['data'] | Video['data'] */) => 'img or video'
+    )
+    .exhaustive();
+```
+
+If the function given to `P.when` is a [Type Guard](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates), TS-Pattern will use the type guard's return type to narrow the input.
+
+```ts
+const isString = (x: unknown): x is string => typeof x === 'string';
+
+const isNumber = (x: unknown): x is number => typeof x === 'number';
+
+const fn = (input: { id: number | string }) =>
+  match(input)
+    .with({ id: P.when(isString) }, (narrowed) => 'yes') // narrowed: { id: string }
+    .with({ id: P.when(isNumber) }, (narrowed) => 'yes') // narrowed: { id: number }
+    .exhaustive();
+```
+
+#### Exhaustiveness checking
+
+If your data structure contains several union types, you can pattern-match on several of them with a **single pattern**. TS-Pattern will keep track of the cases which have been handled and those which
+haven't, so you never forget a to handle a case.
+
+```ts
+type Permission = 'editor' | 'viewer';
+type Plan = 'basic' | 'pro';
+
+const fn = (org: Plan, user: Permission): string =>
+  match([org, user] as const)
+    .with(['basic', 'viewer'], () => {})
+    .with(['basic', 'editor'], () => {})
+    .with(['pro', 'viewer'], () => {})
+    // Fails with `NonExhaustiveError<['pro', 'editor']>`
+    // because the `['pro', 'editor']` case isn't handled.
+    .exhaustive();
 ```
 
 ## Inspirations
