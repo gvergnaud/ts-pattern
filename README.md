@@ -631,13 +631,40 @@ export function isMatching<p extends Pattern<any>>(
 
 ## Patterns
 
-Patterns are values matching one of the possible shapes of your input. They can
-be literal values, data structures, wildcards, or special functions like `not`,
-`when` and `select`.
+A pattern is a description of the expected shape of your input value.
 
-If your input isn't typed, (if it's a `any` or a `unknown`), you have no constraints
-on the shape of your pattern, you can put whatever you want. In your handler, your
-value will take the type described by your pattern.
+Pattern can be regular JavaScript values (`"some string"`, `10`, `true`, ...), data structures ([objects](#objects), [arrays](#tuples-arrays), ...), wildcards ([`P._`](#P_-wildcard), [`P.string`](#pstring-wildcard), [`P.number`](#pnumber-wildcard), ...), or special matcher functions ([`P.not`](#pnot-patterns),
+[`P.when`](#pwhen-patterns), [`P.select`](#pselect-patterns), ...).
+
+All wildcards and matcher functions can be imported either as `Pattern` or as `P` from the `ts-pattern` module.
+
+```ts
+import { match, Pattern } from 'ts-pattern';
+
+// later
+const toString = (value: unknown): string =>
+  match(value)
+    .with(Pattern.string, (str) => str)
+    .with(Pattern.number, (num) => num.toFixed())
+    .with(Pattern.boolean, (bool) => `${bool}`)
+    .otherwise(() => 'Unknown');
+```
+
+Or
+
+```ts
+import { match, P } from 'ts-pattern';
+
+// later
+const toString = (value: unknown): string =>
+  match(value)
+    .with(P.string, (str) => str)
+    .with(P.number, (num) => num.toFixed())
+    .with(P.boolean, (bool) => `${bool}`)
+    .otherwise(() => 'Unknown');
+```
+
+If your input isn't typed, (if it's a `any` or a `unknown`), you are free to use any possible pattern. Your handler will infer the input type from the shape of your pattern.
 
 ### Literals
 
