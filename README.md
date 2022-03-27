@@ -671,7 +671,6 @@ All wildcards and matcher functions can be imported either as `Pattern` or as `P
 ```ts
 import { match, Pattern } from 'ts-pattern';
 
-// later
 const toString = (value: unknown): string =>
   match(value)
     .with(Pattern.string, (str) => str)
@@ -685,7 +684,6 @@ Or
 ```ts
 import { match, P } from 'ts-pattern';
 
-// later
 const toString = (value: unknown): string =>
   match(value)
     .with(P.string, (str) => str)
