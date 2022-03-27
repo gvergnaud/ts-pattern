@@ -53,7 +53,7 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 
 ## What is Pattern Matching?
 
-Pattern Matching is a code-branching technique coming from functional programming languages, which let you scrutinize the structure of values in a declarative way. It has proven itself to be less verbose and more powerful than imperative alternatives (if/else/switch statements), especially when branching on complex data structures or on several values.
+Pattern Matching is a code-branching technique coming from functional programming languages, which lets you scrutinize the structure of values in a declarative way. It has proven itself to be less verbose and more powerful than imperative alternatives (if/else/switch statements), especially when branching on complex data structures or on several values.
 
 Pattern Matching is implemented in Haskell, Rust, Swift, Elixir and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years. Luckily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
 
@@ -264,7 +264,7 @@ In the second `with` clause, we use the `P.select` function:
   )
 ```
 
-`P.select()` let you **extract** a piece of your input value and **inject** it into your handler. It is pretty useful when pattern matching on deep data structures because it avoids the hassle of destructuring your input in your handler.
+`P.select()` lets you **extract** a piece of your input value and **inject** it into your handler. It is pretty useful when pattern matching on deep data structures because it avoids the hassle of destructuring your input in your handler.
 
 Since we didn't pass any name to `P.select()`, It will inject the `event.error` property as first argument to the handler function. Note that you can still access **the full input value** with its type narrowed by your pattern as **second argument** of the handler function:
 
@@ -452,7 +452,7 @@ match(...)
 ```ts
 function with(
   pattern: Pattern<TInput>,
-  handler: (value: TInput, selections: Selections<TInput>) => TOutput
+  handler: (selections: Selections<TInput>, value: TInput) => TOutput
 ): Match<TInput, TOutput>;
 
 // Overload for multiple patterns
@@ -465,10 +465,10 @@ function with(
 
 // Overload for guard functions
 function with(
-  pattern: Pattern<TInput>[],
+  pattern: Pattern<TInput>,
   when: (value: TInput) => unknown,
   handler: (
-    [selection: Selection<TInput>, ]
+    selection: Selection<TInput>,
     value: TInput
   ) => TOutput
 ): Match<TInput, TOutput>;
@@ -527,7 +527,7 @@ match(...)
   .exhaustive()
 ```
 
-Executes the match case, return its result, and enable exhaustive pattern matching, making sure at compile time that all possible cases are handled.
+Runs the pattern-matching expression and returns its result. It also enables exhaustiveness checking, making sure at compile time that we have handled all possible cases.
 
 #### Signature
 
@@ -567,7 +567,7 @@ match(...)
   .otherwise(defaultHandler)
 ```
 
-Executes the match case and return its result.
+Runs the pattern-matching expression with a default handler which will be called if no previous `.with()` clause match the input value, and returns the result.
 
 #### Signature
 
@@ -591,7 +591,7 @@ match(...)
   .run()
 ```
 
-Executes the match case and return its result.
+Runs the pattern-matching expression and returns its result.
 
 #### Signature
 
@@ -600,6 +600,14 @@ function run(): TOutput;
 ```
 
 ### `isMatching`
+
+```ts
+if (isMatching(pattern, value))  {
+  ...
+}
+```
+
+`isMatching` is a type guard function which checks if a pattern matches a given value. It is _curried_, which means it can be used in two ways.
 
 With a single argument:
 
@@ -629,8 +637,6 @@ if (isMatching(blogPostPattern, value)) {
 }
 ```
 
-Type guard function to check if a value is matching a pattern or not.
-
 #### Signature
 
 ```ts
@@ -650,14 +656,14 @@ export function isMatching<p extends Pattern<any>>(
   - The pattern a value should match.
 - `value?: any`
   - **Optional**
-  - if a value is given as second argument, `isMatching` will return a boolean telling us whether or not the value matches the pattern.
-  - if the only argument given to the function is the pattern, then `isMatching` will return a **type guard function** taking a value and returning a boolean telling us whether or not the value matches the pattern.
+  - if a value is given as second argument, `isMatching` will return a boolean telling us whether the pattern matches the value or not.
+  - if we only give the pattern to the function, `isMatching` will return another **type guard function** taking a value and returning a boolean which tells us whether the pattern matches the value or not.
 
 ## Patterns
 
 A pattern is a description of the expected shape of your input value.
 
-Pattern can be regular JavaScript values (`"some string"`, `10`, `true`, ...), data structures ([objects](#objects), [arrays](#tuples-arrays), ...), wildcards ([`P._`](#P_-wildcard), [`P.string`](#pstring-wildcard), [`P.number`](#pnumber-wildcard), ...), or special matcher functions ([`P.not`](#pnot-patterns),
+Patterns can be regular JavaScript values (`"some string"`, `10`, `true`, ...), data structures ([objects](#objects), [arrays](#tuples-arrays), ...), wildcards ([`P._`](#P_-wildcard), [`P.string`](#pstring-wildcard), [`P.number`](#pnumber-wildcard), ...), or special matcher functions ([`P.not`](#pnot-patterns),
 [`P.when`](#pwhen-patterns), [`P.select`](#pselect-patterns), ...).
 
 All wildcards and matcher functions can be imported either as `Pattern` or as `P` from the `ts-pattern` module.
@@ -692,7 +698,7 @@ If your input isn't typed, (if it's a `any` or a `unknown`), you are free to use
 
 ### Literals
 
-Literals are primitive JavaScript values, like number, string, boolean, bigint, null, undefined, and symbol.
+Literals are primitive JavaScript values, like `numbers`, `strings`, `booleans`, `bigints`, `symbols`, `null`, `undefined`, or `NaN`.
 
 ```ts
 import { match } from 'ts-pattern';
@@ -705,6 +711,7 @@ const output = match(input)
   .with('hello', () => 'string: hello')
   .with(undefined, () => 'undefined')
   .with(null, () => 'null')
+  .with(NaN, () => 'number: NaN')
   .with(20n, () => 'bigint: 20n')
   .otherwise(() => 'something else');
 
@@ -1126,7 +1133,7 @@ const output = match(input)
 
 ### `P.optional` patterns
 
-`P.optional(subpattern)` let you annotate a key in an object pattern as being optional,
+`P.optional(subpattern)` lets you annotate a key in an object pattern as being optional,
 but if it is defined it should match a given sub-pattern.
 
 ```ts
@@ -1178,7 +1185,7 @@ console.log(output);
 
 ### `P.union` patterns
 
-`P.union(...subpatterns)` let you test several patterns and will match if
+`P.union(...subpatterns)` lets you test several patterns and will match if
 one of these patterns do. It's particularly handy when you want to handle
 some cases of a union type in the same code branch:
 
@@ -1203,7 +1210,7 @@ const output = match(input)
 
 ### `P.intersection` patterns
 
-`P.intersection(...subpatterns)` let you ensure that the input matches
+`P.intersection(...subpatterns)` lets you ensure that the input matches
 **all** sub-patterns passed as parameters.
 
 ```ts
@@ -1235,7 +1242,7 @@ const output = match(input)
 
 ### `P.infer`
 
-`P.infer<typeof somePattern>` let you infer a type of value from a type of pattern.
+`P.infer<typeof somePattern>` lets you infer a type of value from a type of pattern.
 
 It's particularly useful when validating an API response.
 
