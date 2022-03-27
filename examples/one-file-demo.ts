@@ -29,7 +29,7 @@ const exampleFunction1 = (input: Response): string =>
     // 2. using select
     .with(
       { type: 'image', data: { extension: 'gif', src: P.select() } },
-      (value) => value + '!!'
+      (src) => `<img src=${src} alt="This is a gif!" />`
     )
     // 3. using P.union
     .with(
@@ -37,20 +37,21 @@ const exampleFunction1 = (input: Response): string =>
         type: 'image',
         data: { extension: P.union('jpg', 'png'), src: P.select() },
       },
-      (value) => value + '!!'
+      (src) => `<img src=${src} alt="This is a jpg or a png!" />`
     )
     // 4. selecting all tag names with P.array and P.select
     .with(
       { type: 'text', tags: P.array({ name: P.select() }) },
-      (tagNames) => tagNames.join(', ') + '!!'
+      (tagNames) => `text with tags: ${tagNames.join(', ')}`
     )
     // 5. basic exhaustiveness checking
+    // ⚠️ doesn't type-check!
     // @ts-expect-error: { type: 'video', data: { format: 'webm' } } isn't covered
     .exhaustive();
 
-/**********************************************
- * Use case 2: multi params conditional logic *
- **********************************************/
+/**************************************
+ * Use case 2: multi params branching *
+ **************************************/
 
 type UserType = 'editor' | 'viewer';
 // Uncomment 'premium' to see exhaustive checking in action
@@ -99,7 +100,7 @@ const postPattern = {
 
 type Post = P.infer<typeof postPattern>;
 
-// elsewhere ine the code:
+// Elsewhere in the code:
 // `fetch(...).then(validateResponse)`
 
 const validateResponse = (response: unknown): Post | null => {
