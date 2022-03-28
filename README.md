@@ -18,7 +18,7 @@ with smart type inference.
 </p>
 
 ```ts
-import { match, P } from 'ts-pattern';
+import { match } from 'ts-pattern';
 
 type Data =
   | { type: 'text'; content: string }
@@ -33,7 +33,7 @@ const result: Result = ...;
 return match(result)
   .with({ type: 'error' }, (res) => `<p>Oups! An error occured</p>`)
   .with({ type: 'ok', data: { type: 'text' } }, (res) => `<p>${res.data.content}</p>`)
-  .with({ type: 'ok', data: { type: 'img', src: P.select() } }, (src) => `<img src=${src} />`)
+  .with({ type: 'ok', data: { type: 'img' } }, (res) => `<img src=${res.data.src} />`)
   .exhaustive();
 ```
 
@@ -46,9 +46,9 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 - Works on **any data structure**: nested [Objects](#objects), [Arrays](#tuples-arrays), [Tuples](#tuples-arrays), [Sets](#sets), [Maps](#maps) and all primitive types.
 - **Typesafe**, with helpful [type inference](#type-inference).
 - **Exhaustiveness checking** support, enforcing that you are matching every possible case with [`.exhaustive()`](#exhaustive).
-- **Expressive API**, with catch-all and type specific **wildcards**: [`P._`](#P_-wildcard), [`P.string`](#pstring-wildcard), [`P.number`](#pnumber-wildcard), etc.
-- Supports [**predicates**](#Pwhen-patterns), [**unions**](#punion-patterns), [**intersections**](#pintersection-patterns) and [**exclusion**](#pnot-patterns) patterns for non-trivial cases.
-- Supports properties selection, via the [`P.select(name?)`](#pselect-patterns) function.
+- **Expressive API**, with catch-all and type specific **wildcards**: [`P._`](#P_-wildcard), [`P.string`](#Pstring-wildcard), [`P.number`](#Pnumber-wildcard), etc.
+- Supports [**predicates**](#Pwhen-patterns), [**unions**](#Punion-patterns), [**intersections**](#Pintersection-patterns) and [**exclusion**](#Pnot-patterns) patterns for non-trivial cases.
+- Supports properties selection, via the [`P.select(name?)`](#Pselect-patterns) function.
 - Tiny bundle footprint ([**only 1.6kB**](https://bundlephobia.com/package/ts-pattern)).
 
 ## What is Pattern Matching?
