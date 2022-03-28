@@ -797,21 +797,16 @@ console.log(output);
 
 The `P.nullish` pattern will match any value of type `null` or `undefined`.
 
-You will **not often need this wildcard** as ordinarily `null` and `undefined`
-are their own wildcards.
-
-However, sometimes `null` and `undefined` appear in a union together
-(e.g. `null | undefined | string`) and you may want to treat them as equivalent.
+Even though `null` and `undefined` can be used as literal patterns, sometimes they appear in a union together
+(e.g. `null | undefined | string`) and you may want to treat them as equivalent using `P.nullish`.
 
 ```ts
 import { match, P } from 'ts-pattern';
 
 const input = null;
 
-const output = match<number | string | boolean | null | undefined>(input)
-  .with(P.string, () => 'it is a string!')
+const output = match<number | null | undefined>(input)
   .with(P.number, () => 'it is a number!')
-  .with(P.boolean, () => 'it is a boolean!')
   .with(P.nullish, () => 'it is either null or undefined!')
   .with(null, () => 'it is null!')
   .with(undefined, () => 'it is undefined!')
@@ -857,9 +852,9 @@ console.log(output);
 
 ### Objects
 
-A pattern can be an object with sub-pattern properties. In order to match,
-the input must be an object with all properties defined on the pattern object
-and each property must match its sub-pattern.
+Patterns can be objects containing sub-patterns. An object pattern will match
+If and only if the input value **is an object**, contains **all properties** the pattern defines
+and each property **matches** the corresponding sub-pattern.
 
 ```ts
 import { match } from 'ts-pattern';
@@ -884,8 +879,9 @@ console.log(output);
 ### Tuples (arrays)
 
 In TypeScript, [Tuples](https://en.wikipedia.org/wiki/Tuple) are arrays with a fixed
-number of elements which can be of different types. You can pattern match on tuples
-with a tuple pattern, matching your value in length and shape.
+number of elements which can be of different types. You can pattern-match on tuples
+using a tuple pattern. A tuple pattern will match if the input value **is an array of the same length**,
+and each item match the corresponding sub-pattern.
 
 ```ts
 import { match, P } from 'ts-pattern';
@@ -911,9 +907,9 @@ console.log(output);
 
 ### `P.array` patterns
 
-To match on an array of unknown size, you can use `P.array(subpattern)`.
-It takes a sub-pattern, and returns a pattern which will match if all
-elements in the input array, match the sub-pattern.
+To match on arrays of unknown size, you can use `P.array(subpattern)`.
+It takes a sub-pattern, and will match if **all elements** in the input
+array match this sub-pattern.
 
 ```ts
 import { match, P } from 'ts-pattern';
@@ -938,8 +934,7 @@ console.log(output);
 
 ### Sets
 
-Similarly to array patterns, set patterns have a different meaning
-if they contain a single sub-pattern or several of them:
+Patterns can be Sets.
 
 ```ts
 import { match, P } from 'ts-pattern';
@@ -967,8 +962,8 @@ input Set contains each of these values.
 
 ### Maps
 
-Map patterns are similar to object patterns. They match if each
-keyed sub-pattern match the input value for the same key.
+Patterns can be Maps. They match if the input is a Map, and if each
+value match the corresponding sub-pattern.
 
 ```ts
 import { match, P } from 'ts-pattern';
@@ -999,8 +994,9 @@ console.log(output);
 
 ### `P.when` patterns
 
-the `P.when` function enables you to test the input with a custom guard function.
-The pattern will match only if all `P.when` functions return a truthy value.
+`P.when` lets you define your own logic to check if the pattern should match or not.
+If the `predicate` function given to when returns a truthy value, then the pattern
+will match for this input.
 
 Note that you can narrow down the type of your input by providing a
 [Type Guard function](https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards) to `P.when`.
@@ -1027,8 +1023,8 @@ console.log(output);
 
 ### `P.not` patterns
 
-The `P.not` function enables you to match on everything **but** a specific value.
-it's a function taking a pattern and returning its opposite:
+`P.not` lets you match on everything **but** a specific value.
+it's a function taking a pattern and returning the opposite pattern.
 
 ```ts
 import { match, P } from 'ts-pattern';
@@ -1050,8 +1046,8 @@ console.log(toNumber(true));
 
 ### `P.select` patterns
 
-The `P.select` function enables us to pick a piece of our input data structure
-and inject it in our handler function.
+`P.select` lets you pick a piece of your input data-structure
+and injects it in your handler function.
 
 It's especially useful when pattern matching on deep data structure to
 avoid the hassle of destructuring it in the handler function.
