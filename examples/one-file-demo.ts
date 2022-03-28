@@ -11,7 +11,7 @@
  *   `P.array`, `P.optional`, etc.
  */
 
-import { isMatching, match, P } from '../src';
+import { isMatching, match, P } from 'ts-pattern';
 
 /**************************************************
  * Use case 1: handling discriminated union types *

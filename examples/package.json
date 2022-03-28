@@ -1,0 +1,9 @@
+{
+  "name": "ts-pattern-examples",
+  "version": "1.0.0",
+  "main": "one-file-demo.ts",
+  "author": "gvergnaud",
+  "dependencies": {
+    "ts-pattern": "^4.0.1"
+  }
+}
