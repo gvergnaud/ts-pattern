@@ -1334,8 +1334,8 @@ const isNumber = (x: unknown): x is number => typeof x === 'number';
 
 const fn = (input: { id: number | string }) =>
   match(input)
-    .with({ id: P.when(isString) }, (narrowed) => 'yes') // narrowed: { id: string }
-    .with({ id: P.when(isNumber) }, (narrowed) => 'yes') // narrowed: { id: number }
+    .with({ id: P.when(isString) }, (narrowed /* : { id: string } */) => 'yes')
+    .with({ id: P.when(isNumber) }, (narrowed /* : { id: number } */) => 'yes')
     .exhaustive();
 ```
 
