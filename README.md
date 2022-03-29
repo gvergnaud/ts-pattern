@@ -416,7 +416,7 @@ sanitize('p'); // 'text'
 sanitize('button'); // 'button'
 ```
 
-Obviously, it also works with more complex patterns than strings. Exhaustive matching also works as you would expect.
+As you might expect, this also works with more complex patterns than strings and exhaustiveness checking works as well.
 
 ## API Reference
 
