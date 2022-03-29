@@ -161,9 +161,7 @@ export function intersection<
  * @example
  *  match(value)
  *   .with(
- *     {
- *       type: P.union('a', 'b', 'c')
- *     },
+ *     { type: P.union('a', 'b', 'c') },
  *     ({ user }) => 'will match { type: "a" | "b" | "c" }'
  *   )
  */

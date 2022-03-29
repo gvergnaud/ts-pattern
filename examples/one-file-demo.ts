@@ -54,21 +54,21 @@ const exampleFunction1 = (input: Response): string =>
  **************************************/
 
 type UserType = 'editor' | 'viewer';
-// Uncomment 'premium' to see exhaustive checking in action
-type OrgPlan = 'basic' | 'pro' /* | 'premium' */ | 'enterprise';
+// Uncomment 'enterprise' to see exhaustive checking in action
+type OrgPlan = 'basic' | 'pro' | 'premium'; // | 'enterprise';
 
-const exampleFunction2 = (org: OrgPlan, user: UserType): string =>
+const exampleFunction2 = (org: OrgPlan, user: UserType) =>
   // 1. Checking several enums with tuples
   match([org, user] as const)
     .with(['basic', P._], () => `Please upgrade to unlock this feature!`)
     // 2. `.with()` can take several patterns. It will match if one of them do.
     .with(
       ['pro', 'viewer'],
-      ['enterprise', 'viewer'],
+      ['premium', 'viewer'],
       () => `Your account doesn't have permissions to use this feature`
     )
     .with(['pro', 'editor'], () => `Hello!`)
-    .with(['enterprise', 'editor'], () => `You are our favorite customer!`)
+    .with(['premium', 'editor'], () => `You are our favorite customer!`)
     // 3. complex exhaustive checking
     .exhaustive();
 
