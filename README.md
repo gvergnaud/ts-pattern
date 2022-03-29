@@ -7,18 +7,18 @@ with smart type inference.
 
 <p align="center">
   <a href="https://www.npmjs.com/package/ts-pattern">
-    <img src="https://img.shields.io/npm/dm/ts-pattern.svg" alt="downloads per month" height="18">
+    <img src="https://img.shields.io/npm/dm/ts-pattern.svg" alt="downloads" height="18">
   </a>
   <a href="https://www.npmjs.com/package/ts-pattern">
     <img src="https://img.shields.io/npm/v/ts-pattern.svg" alt="npm version" height="18">
   </a>
   <a href="https://github.com/gvergnaud/ts-pattern">
-    <img src="https://img.shields.io/npm/l/ts-pattern.svg" alt="license" height="18">
+    <img src="https://img.shields.io/npm/l/ts-pattern.svg" alt="MIT license" height="18">
   </a>
 </p>
 
 ```ts
-import { match } from 'ts-pattern';
+import { match, P } from 'ts-pattern';
 
 type Data =
   | { type: 'text'; content: string }
@@ -31,9 +31,9 @@ type Result =
 const result: Result = ...;
 
 return match(result)
-  .with({ type: 'error' }, (res) => `<p>Oups! An error occured</p>`)
+  .with({ type: 'error' }, () => `<p>Oups! An error occured</p>`)
   .with({ type: 'ok', data: { type: 'text' } }, (res) => `<p>${res.data.content}</p>`)
-  .with({ type: 'ok', data: { type: 'img' } }, (res) => `<img src=${res.data.src} />`)
+  .with({ type: 'ok', data: { type: 'img', src: P.select() } }, (src) => `<img src=${src} />`)
   .exhaustive();
 ```
 
