@@ -591,7 +591,7 @@ match(...)
   .run()
 ```
 
-Runs the pattern-matching expression and returns its result.
+Runs the pattern-matching expression and returns its result. It throws an error at run time if no match was found, same as `exhaustive()`. However, unlike `.exhaustive()`, exhaustiveness is not checked at compile time, meaning the type checker will not verify that all possible cases are covered.
 
 #### Signature
 
