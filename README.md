@@ -1342,7 +1342,7 @@ const fn = (input: { id: number | string }) =>
 #### Exhaustiveness checking
 
 If your data structure contains several union types, you can pattern-match on several of them with a **single pattern**. TS-Pattern will keep track of the cases which have been handled and those which
-haven't, so you never forget a to handle a case.
+haven't, so you never forget to handle a case.
 
 ```ts
 type Permission = 'editor' | 'viewer';
