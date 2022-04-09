@@ -177,11 +177,13 @@ import { match, P } from 'ts-pattern';
 
 const reducer = (state: State, event: Event): State =>
   match<[State, Event], State>([state, event])
-    .with([{ status: 'loading' }, { type: 'success' }], ([, event]) => ({
-      status: 'success',
-      data: event.data,
-    }))
-
+    .with(
+      [{ status: 'loading' }, { type: 'success' }],
+      ([, event]) => ({
+        status: 'success',
+        data: event.data,
+      })
+    )
     .with(
       [{ status: 'loading' }, { type: 'error', error: P.select() }],
       (error) => ({
@@ -189,24 +191,26 @@ const reducer = (state: State, event: Event): State =>
         error,
       })
     )
-
-    .with([{ status: P.not('loading') }, { type: 'fetch' }], () => ({
-      status: 'loading',
-      startTime: Date.now(),
-    }))
-
+    .with(
+      [{ status: P.not('loading') }, { type: 'fetch' }],
+      () => ({
+        status: 'loading',
+        startTime: Date.now(),
+      })
+    )
     .with(
       [
-        { status: 'loading', startTime: P.when((t) => t + 2000 < Date.now()) },
+        {
+          status: 'loading',
+          startTime: P.when((t) => t + 2000 < Date.now()),
+        },
         { type: 'cancel' },
       ],
       () => ({
         status: 'idle',
       })
     )
-
     .with(P._, () => state)
-
     .exhaustive();
 ```
 
@@ -234,12 +238,15 @@ infer both of these types.
 Then we add a first `with` clause:
 
 ```ts
-  .with([{ status: 'loading' }, { type: 'success' }], ([state, event]) => ({
-    // `state` is inferred as { status: 'loading' }
-    // `event` is inferred as { type: 'success', data: string }
-    status: 'success',
-    data: event.data,
-  }))
+  .with(
+    [{ status: 'loading' }, { type: 'success' }],
+    ([state, event]) => ({
+      // `state` is inferred as { status: 'loading' }
+      // `event` is inferred as { type: 'success', data: string }
+      status: 'success',
+      data: event.data,
+    })
+  )
 ```
 
 The first argument is the **pattern**: the **shape of value**
@@ -256,7 +263,10 @@ In the second `with` clause, we use the `P.select` function:
 
 ```ts
   .with(
-    [{ status: 'loading' }, { type: 'error', error: P.select() }],
+    [
+      { status: 'loading' },
+      { type: 'error', error: P.select() }
+    ],
     (error) => ({
       status: 'error',
       error,
@@ -270,7 +280,10 @@ Since we didn't pass any name to `P.select()`, It will inject the `event.error` 
 
 ```ts
   .with(
-    [{ status: 'loading' }, { type: 'error', error: P.select() }],
+    [
+      { status: 'loading' },
+      { type: 'error', error: P.select() }
+    ],
     (error, stateAndEvent) => {
       // error: Error
       // stateAndEvent: [{ status: 'loading' }, { type: 'error', error: Error }]
@@ -282,7 +295,10 @@ In a pattern, we can only have a **single** anonymous selection. If you need to 
 
 ```ts
 .with(
-    [{ status: 'success', data: P.select('prevData') }, { type: 'error', error: P.select('err') }],
+    [
+      { status: 'success', data: P.select('prevData') },
+      { type: 'error', error: P.select('err') }
+    ],
     ({ prevData, err }) => {
       // Do something with (prevData: string) and (err: Error).
     }
@@ -296,9 +312,12 @@ Each named selection will be injected inside a `selections` object, passed as fi
 If you need to match on everything **but** a specific value, you can use a `P.not(<pattern>)` pattern. it's a function taking a pattern and returning its opposite:
 
 ```ts
-  .with([{ status: P.not('loading') }, { type: 'fetch' }], () => ({
-    status: 'loading',
-  }))
+  .with(
+    [{ status: P.not('loading') }, { type: 'fetch' }],
+      () => ({
+      status: 'loading',
+    })
+  )
 ```
 
 ### `P.when()` and guard functions
