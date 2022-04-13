@@ -314,7 +314,7 @@ If you need to match on everything **but** a specific value, you can use a `P.no
 ```ts
   .with(
     [{ status: P.not('loading') }, { type: 'fetch' }],
-      () => ({
+    () => ({
       status: 'loading',
     })
   )
