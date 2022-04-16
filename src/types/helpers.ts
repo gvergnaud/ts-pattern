@@ -134,7 +134,7 @@ export type IsPlainObject<o, excludeUnion = BuiltInObjects> = o extends object
 
 export type Compute<a extends any> = a extends BuiltInObjects
   ? a
-  : { [k in keyof a]: a[k] } & unknown;
+  : { [k in keyof a]: a[k] };
 
 export type IntersectObjects<a> = (
   a extends any ? keyof a : never
