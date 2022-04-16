@@ -37,8 +37,8 @@ export const matchPattern = (
   if (isObject(pattern)) {
     if (isMatcher(pattern)) {
       const matcher = pattern[symbols.matcher]();
-      const { matched, selections = {} } = matcher.match(value);
-      if (matched) {
+      const { matched, selections } = matcher.match(value);
+      if (matched && selections) {
         Object.keys(selections).forEach((key) => select(key, selections[key]));
       }
       return matched;
@@ -114,5 +114,5 @@ export const getSelectionKeys = (pattern: Pattern<any>): string[] => {
 };
 
 // @internal
-export const flatMap = <T, U>(xs: T[], f: (v: T) => U[]): U[] =>
-  xs.reduce<U[]>((acc, p) => acc.concat(f(p)), []);
+export const flatMap = <a, b>(xs: a[], f: (v: a) => b[]): b[] =>
+  xs.reduce<b[]>((acc, p) => acc.concat(f(p)), []);
