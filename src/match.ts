@@ -30,8 +30,7 @@ class Builder<i, o> {
   constructor(
     private value: i,
     private cases: {
-      test: (value: i) => unknown;
-      select: (value: i) => any;
+      match: (value: i) => { matched: boolean; value: any };
       handler: (...args: any) => any;
     }[]
   ) {}
@@ -39,40 +38,42 @@ class Builder<i, o> {
   with(...args: any[]) {
     const handler = args[args.length - 1];
 
-    const patterns: Pattern<i>[] = [];
+    const patterns: Pattern<i>[] = [args[0]];
     const predicates: ((value: i) => unknown)[] = [];
 
     // case with guard as second argument
     if (args.length === 3 && typeof args[1] === 'function') {
       patterns.push(args[0]);
       predicates.push(args[1]);
-    } else {
-      patterns.push(...args.slice(0, args.length - 1));
+    } else if (args.length > 2) {
+      // case with several patterns
+      patterns.push(...args.slice(1, args.length - 1));
     }
-
-    let selected: Record<string, unknown> = {};
-
-    const doesMatch = (value: i) =>
-      Boolean(
-        patterns.some((pattern) =>
-          matchPattern(pattern, value, (key, value) => {
-            selected[key] = value;
-          })
-        ) && predicates.every((predicate) => predicate(value as any))
-      );
 
     return new Builder(
       this.value,
       this.cases.concat([
         {
-          test: doesMatch,
+          match: (value: i) => {
+            let selected: Record<string, unknown> = {};
+            const matched = Boolean(
+              patterns.some((pattern) =>
+                matchPattern(pattern, value, (key, value) => {
+                  selected[key] = value;
+                })
+              ) && predicates.every((predicate) => predicate(value as any))
+            );
+            return {
+              matched,
+              value:
+                matched && Object.keys(selected).length
+                  ? symbols.anonymousSelectKey in selected
+                    ? selected[symbols.anonymousSelectKey]
+                    : selected
+                  : value,
+            };
+          },
           handler,
-          select: (value) =>
-            Object.keys(selected).length
-              ? symbols.anonymousSelectKey in selected
-                ? selected[symbols.anonymousSelectKey]
-                : selected
-              : value,
         },
       ])
     );
@@ -86,9 +87,11 @@ class Builder<i, o> {
       this.value,
       this.cases.concat([
         {
-          test: predicate,
+          match: (value) => ({
+            matched: Boolean(predicate(value)),
+            value,
+          }),
           handler,
-          select: (value) => value,
         },
       ])
     );
@@ -101,9 +104,11 @@ class Builder<i, o> {
       this.value,
       this.cases.concat([
         {
-          test: () => true,
+          match: (value) => ({
+            matched: true,
+            value,
+          }),
           handler,
-          select: (value) => value,
         },
       ])
     ).run();
@@ -114,8 +119,18 @@ class Builder<i, o> {
   }
 
   run() {
-    const entry = this.cases.find(({ test }) => test(this.value));
-    if (!entry) {
+    let selected = this.value;
+    let handler: undefined | ((...args: any) => any) = undefined;
+
+    for (const entry of this.cases) {
+      const matchResult = entry.match(this.value);
+      if (matchResult.matched) {
+        selected = matchResult.value;
+        handler = entry.handler;
+        break;
+      }
+    }
+    if (!handler) {
       let displayedValue;
       try {
         displayedValue = JSON.stringify(this.value);
@@ -126,6 +141,6 @@ class Builder<i, o> {
         `Pattern matching error: no pattern matches value ${displayedValue}`
       );
     }
-    return entry.handler(entry.select(this.value), this.value);
+    return handler(selected, this.value);
   }
 }
