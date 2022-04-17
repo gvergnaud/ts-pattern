@@ -122,7 +122,8 @@ class Builder<i, o> {
     let selected = this.value;
     let handler: undefined | ((...args: any) => any) = undefined;
 
-    for (const entry of this.cases) {
+    for (let i = 0; i < this.cases.length; i++) {
+      const entry = this.cases[i];
       const matchResult = entry.match(this.value);
       if (matchResult.matched) {
         selected = matchResult.value;
