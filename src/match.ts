@@ -24,9 +24,12 @@ import { matchPattern } from './internals/helpers';
  */
 export const match = <input, output = symbols.unset>(
   value: input
-): Match<input, output> => new Builder(value, []) as any;
+): Match<input, output> => new MatchExpression(value, []) as any;
 
-class Builder<i, o> {
+/**
+ * @internal Private class representing a match expression.
+ */
+class MatchExpression<i, o> {
   constructor(
     private value: i,
     private cases: {
@@ -50,7 +53,7 @@ class Builder<i, o> {
       patterns.push(...args.slice(1, args.length - 1));
     }
 
-    return new Builder(
+    return new MatchExpression(
       this.value,
       this.cases.concat([
         {
@@ -83,7 +86,7 @@ class Builder<i, o> {
     predicate: p,
     handler: (value: GuardValue<p>) => PickReturnValue<o, c>
   ) {
-    return new Builder<i, PickReturnValue<o, c>>(
+    return new MatchExpression<i, PickReturnValue<o, c>>(
       this.value,
       this.cases.concat([
         {
@@ -100,7 +103,7 @@ class Builder<i, o> {
   otherwise<c>(
     handler: (value: i) => PickReturnValue<o, c>
   ): PickReturnValue<o, c> {
-    return new Builder<i, PickReturnValue<o, c>>(
+    return new MatchExpression<i, PickReturnValue<o, c>>(
       this.value,
       this.cases.concat([
         {
