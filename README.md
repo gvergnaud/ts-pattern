@@ -43,9 +43,10 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 
 ## Features
 
-- Works on **any data structure**: nested [Objects](#objects), [Arrays](#tuples-arrays), [Tuples](#tuples-arrays), [Sets](#sets), [Maps](#maps) and all primitive types.
+- Pattern-match on **any data structure**: nested [Objects](#objects), [Arrays](#tuples-arrays), [Tuples](#tuples-arrays), [Sets](#sets), [Maps](#maps) and all primitive types.
 - **Typesafe**, with helpful [type inference](#type-inference).
 - **Exhaustiveness checking** support, enforcing that you are matching every possible case with [`.exhaustive()`](#exhaustive).
+- Use [patterns](#patterns) to **validate** the shape of your data with [`isMatching`](#ismatching).
 - **Expressive API**, with catch-all and type specific **wildcards**: [`P._`](#P_-wildcard), [`P.string`](#Pstring-wildcard), [`P.number`](#Pnumber-wildcard), etc.
 - Supports [**predicates**](#Pwhen-patterns), [**unions**](#Punion-patterns), [**intersections**](#Pintersection-patterns) and [**exclusion**](#Pnot-patterns) patterns for non-trivial cases.
 - Supports properties selection, via the [`P.select(name?)`](#Pselect-patterns) function.
@@ -172,6 +173,7 @@ and return a new state.
 This is a case where `match` really shines. Instead of writing nested
 switch statements, we can do that in a very expressive way:
 
+<!-- prettier-ignore -->
 ```ts
 import { match, P } from 'ts-pattern';
 
