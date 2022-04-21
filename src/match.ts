@@ -27,7 +27,13 @@ export const match = <input, output = symbols.unset>(
 ): Match<input, output> => new MatchExpression(value, []) as any;
 
 /**
- * @internal Private class representing a match expression.
+ * This class represents a match expression. It follows the
+ * builder pattern, we chain methods to add features to the expression
+ * until we call `.exhaustive`, `.otherwise` or the unsafe `.run`
+ * method to execute it.
+ *
+ * The types of this class aren't public, the public type definition
+ * can be found in src/types/Match.ts.
  */
 class MatchExpression<i, o> {
   constructor(
