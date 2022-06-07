@@ -7,11 +7,11 @@ import { matchPattern } from './internals/helpers';
 /**
  * `match` creates a **pattern matching expression**.
  *
- * [Read `match` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#match)
- *
  * Use `.with(pattern, handler)` to pattern match on the input.
  *
  * Use `.exhaustive()` or `.otherwise(() => defaultValue)` to end the expression and get the result.
+ *
+ * [Read `match` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#match)
  *
  * @example
  *  declare let input: "A" | "B";
