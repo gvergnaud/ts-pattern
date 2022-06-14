@@ -95,6 +95,7 @@ export interface ToExclude<a> {
 }
 
 export type UnknownPattern =
+  | readonly []
   | readonly [UnknownPattern, ...UnknownPattern[]]
   | { readonly [k: string]: UnknownPattern }
   | Set<UnknownPattern>
