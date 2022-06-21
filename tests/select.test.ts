@@ -434,4 +434,39 @@ describe('select', () => {
           .exhaustive();
     });
   });
+
+  it('Issue #95: P.select() on empty arrays should return an empty array', () => {
+    const res = match({ a: [], b: ['text'] })
+      .with(
+        { a: P.array(P.select('a')), b: P.array(P.select('b')) },
+        ({ a, b }) => {
+          type t = Expect<Equal<typeof a, string[]>>;
+          type t2 = Expect<Equal<typeof b, string[]>>;
+          return { a, b };
+        }
+      )
+      .otherwise(() => null);
+
+    expect(res).toEqual({ a: [], b: ['text'] });
+
+    // Should work with deeply nested selections as well
+    const res2 = match<{ a: { prop: number }[] }>({ a: [] })
+      .with({ a: P.array({ prop: P.select('a') }) }, ({ a }) => {
+        type t = Expect<Equal<typeof a, number[]>>;
+        return { a };
+      })
+      .otherwise(() => null);
+
+    expect(res2).toEqual({ a: [] });
+
+    // P.select of arrays shouldn't be affected
+    const res3 = match<{ a: { prop: number }[] }>({ a: [] })
+      .with({ a: P.select(P.array({ prop: P._ })) }, (a) => {
+        type t = Expect<Equal<typeof a, { prop: number }[]>>;
+        return { a };
+      })
+      .otherwise(() => null);
+
+    expect(res3).toEqual({ a: [] });
+  });
 });

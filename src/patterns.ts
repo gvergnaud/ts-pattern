@@ -92,6 +92,13 @@ export function array<
 
           let selections: Record<string, unknown[]> = {};
 
+          if (value.length === 0) {
+            getSelectionKeys(pattern).forEach((key) => {
+              selections[key] = [];
+            });
+            return { matched: true, selections };
+          }
+
           const selector = (key: string, value: unknown) => {
             selections[key] = (selections[key] || []).concat([value]);
           };
