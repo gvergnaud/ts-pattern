@@ -5,6 +5,7 @@
   "type": "module",
   "source": "src/index.ts",
   "exports": {
+    "./package.json": "./package.json",
     ".": {
       "import": {
         "types": "./dist/index.d.ts",
