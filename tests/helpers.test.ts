@@ -5,29 +5,30 @@ import {
   Expect,
   Iterator,
   LeastUpperBound,
-  Slice,
+  Take,
   IntersectObjects,
+  UpdateAt,
 } from '../src/types/helpers';
 
 describe('helpers', () => {
-  describe('Slice', () => {
+  describe('Take', () => {
     it('should correctly return the start of a tuple', () => {
       type cases = [
-        Expect<Equal<Slice<[1, 2, 3], Iterator<0>>, []>>,
-        Expect<Equal<Slice<[1, 2, 3], Iterator<1>>, [1]>>,
-        Expect<Equal<Slice<[1, 2, 3], Iterator<2>>, [1, 2]>>,
-        Expect<Equal<Slice<[1, 2, 3], Iterator<3>>, [1, 2, 3]>>,
-        Expect<Equal<Slice<[1, 2, 3], Iterator<4>>, [1, 2, 3]>>
+        Expect<Equal<Take<[1, 2, 3], Iterator<0>>, []>>,
+        Expect<Equal<Take<[1, 2, 3], Iterator<1>>, [1]>>,
+        Expect<Equal<Take<[1, 2, 3], Iterator<2>>, [1, 2]>>,
+        Expect<Equal<Take<[1, 2, 3], Iterator<3>>, [1, 2, 3]>>,
+        Expect<Equal<Take<[1, 2, 3], Iterator<4>>, [1, 2, 3]>>
       ];
     });
 
     it('should correctly return the start of a readonly tuple', () => {
       type cases = [
-        Expect<Equal<Slice<readonly [1, 2, 3], Iterator<0>>, []>>,
-        Expect<Equal<Slice<readonly [1, 2, 3], Iterator<1>>, [1]>>,
-        Expect<Equal<Slice<readonly [1, 2, 3], Iterator<2>>, [1, 2]>>,
-        Expect<Equal<Slice<readonly [1, 2, 3], Iterator<3>>, [1, 2, 3]>>,
-        Expect<Equal<Slice<readonly [1, 2, 3], Iterator<4>>, [1, 2, 3]>>
+        Expect<Equal<Take<readonly [1, 2, 3], Iterator<0>>, []>>,
+        Expect<Equal<Take<readonly [1, 2, 3], Iterator<1>>, [1]>>,
+        Expect<Equal<Take<readonly [1, 2, 3], Iterator<2>>, [1, 2]>>,
+        Expect<Equal<Take<readonly [1, 2, 3], Iterator<3>>, [1, 2, 3]>>,
+        Expect<Equal<Take<readonly [1, 2, 3], Iterator<4>>, [1, 2, 3]>>
       ];
     });
   });
@@ -54,6 +55,22 @@ describe('helpers', () => {
         Expect<Equal<Drop<readonly [1, 2, 3], Iterator<4>>, []>>
       ];
     });
+  });
+
+  describe('UpdateAt', () => {
+    type cases = [
+      Expect<
+        Equal<UpdateAt<readonly [1, 2, 3], Iterator<0>, true>, [true, 2, 3]>
+      >,
+      Expect<
+        Equal<UpdateAt<readonly [1, 2, 3], Iterator<1>, true>, [1, true, 3]>
+      >,
+      Expect<
+        Equal<UpdateAt<readonly [1, 2, 3], Iterator<2>, true>, [1, 2, true]>
+      >,
+      Expect<Equal<UpdateAt<readonly [1, 2, 3], Iterator<3>, true>, [1, 2, 3]>>,
+      Expect<Equal<UpdateAt<readonly [1, 2, 3], Iterator<4>, true>, [1, 2, 3]>>
+    ];
   });
 
   describe('ExcludeIfContainsNever', () => {

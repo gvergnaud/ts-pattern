@@ -1,6 +1,4 @@
 import { match, P } from '../src';
-import { DeepExclude } from '../src/types/DeepExclude';
-import { FindUnionsMany } from '../src/types/DistributeUnions';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('and, and or patterns', () => {

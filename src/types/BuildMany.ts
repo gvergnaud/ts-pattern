@@ -1,4 +1,4 @@
-import { Cast, Compute, Drop, Iterator, Next, Slice } from './helpers';
+import { Cast, Compute, Iterator, UpdateAt } from './helpers';
 
 // BuildMany :: DataStructure -> Union<[value, path][]> -> Union<DataStructure>
 export type BuildMany<data, xs extends any[]> = xs extends any
@@ -26,11 +26,11 @@ type Update<data, value, path extends PropertyKey[]> = path extends [
 ]
   ? data extends readonly [any, ...any]
     ? head extends number
-      ? [
-          ...Slice<data, Iterator<head>>,
-          Update<data[head], value, Cast<tail, PropertyKey[]>>,
-          ...Drop<data, Next<Iterator<head>>>
-        ]
+      ? UpdateAt<
+          data,
+          Iterator<head>,
+          Update<data[head], value, Cast<tail, PropertyKey[]>>
+        >
       : never
     : data extends readonly (infer a)[]
     ? Update<a, value, Cast<tail, PropertyKey[]>>[]

@@ -84,7 +84,7 @@ export type Expect<a extends true> = a;
 
 export type IsAny<a> = 0 extends 1 & a ? true : false;
 
-export type Length<it extends any[]> = it['length'];
+export type Length<it extends readonly any[]> = it['length'];
 
 export type Iterator<
   n extends number,
@@ -96,14 +96,14 @@ export type Prev<it extends any[]> = it extends readonly [any, ...infer tail]
   ? tail
   : [];
 
-export type Slice<
+export type Take<
   xs extends readonly any[],
   it extends any[],
   output extends any[] = []
 > = Length<it> extends 0
   ? output
   : xs extends readonly [infer head, ...infer tail]
-  ? Slice<tail, Prev<it>, [...output, head]>
+  ? Take<tail, Prev<it>, [...output, head]>
   : output;
 
 export type Drop<
@@ -114,6 +114,19 @@ export type Drop<
   : xs extends readonly [any, ...infer tail]
   ? Drop<tail, Prev<n>>
   : [];
+
+export type UpdateAt<
+  tail extends readonly any[],
+  n extends any[],
+  value,
+  inits extends readonly any[] = []
+> = Length<n> extends 0
+  ? tail extends readonly [any, ...infer tail]
+    ? [...inits, value, ...tail]
+    : inits
+  : tail extends readonly [infer head, ...infer tail]
+  ? UpdateAt<tail, Prev<n>, value, [...inits, head]>
+  : inits;
 
 export type BuiltInObjects =
   | Function
