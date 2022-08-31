@@ -106,7 +106,7 @@ const parseUsers = (response: unknown) =>
     .otherwise(() => []);
 ```
 
-Now `[subpattern]` matches arrays with 1 element in them. This is more consistent with native language features, like destructuring assignement and is overall more intuitive. This will resolve [#69](https://github.com/gvergnaud/ts-pattern/issues/69), [#62](https://github.com/gvergnaud/ts-pattern/issues/62) and [#46](https://github.com/gvergnaud/ts-pattern/issues/46).
+Now `[subpattern]` matches arrays with 1 element in them. This is more consistent with native language features, like destructuring assignment and is overall more intuitive. This will resolve [#69](https://github.com/gvergnaud/ts-pattern/issues/69), [#62](https://github.com/gvergnaud/ts-pattern/issues/62) and [#46](https://github.com/gvergnaud/ts-pattern/issues/46).
 
 ### NaN
 
