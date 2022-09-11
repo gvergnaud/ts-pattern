@@ -121,22 +121,8 @@ export type Pattern<a> =
       : unknown extends a
       ? UnknownPattern
       : a extends readonly (infer i)[]
-      ? a extends readonly [infer a1, infer a2, infer a3, infer a4, infer a5]
-        ? readonly [
-            Pattern<a1>,
-            Pattern<a2>,
-            Pattern<a3>,
-            Pattern<a4>,
-            Pattern<a5>
-          ]
-        : a extends readonly [infer a1, infer a2, infer a3, infer a4]
-        ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>, Pattern<a4>]
-        : a extends readonly [infer a1, infer a2, infer a3]
-        ? readonly [Pattern<a1>, Pattern<a2>, Pattern<a3>]
-        : a extends readonly [infer a1, infer a2]
-        ? readonly [Pattern<a1>, Pattern<a2>]
-        : a extends readonly [infer a1]
-        ? readonly [Pattern<a1>]
+      ? a extends readonly [any, ...any]
+        ? { readonly [index in keyof a]: Pattern<a[index]> }
         : readonly [] | readonly [Pattern<i>, ...Pattern<i>[]]
       : a extends Map<infer k, infer v>
       ? Map<k, Pattern<v>>

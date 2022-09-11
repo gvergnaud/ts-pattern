@@ -30,21 +30,13 @@ export type ExcludeObjectIfContainsNever<
   a,
   keyConstraint = unknown
 > = a extends any
-  ? {
+  ? 'exclude' extends {
       [k in keyConstraint & keyof a]-?: [a[k]] extends [never]
         ? 'exclude'
         : 'include';
-    }[keyConstraint & keyof a] extends infer includeOrExclude
-    ? (
-        includeOrExclude extends 'include'
-          ? 'include' extends includeOrExclude
-            ? true
-            : false
-          : false
-      ) extends true
-      ? a
-      : never
-    : never
+    }[keyConstraint & keyof a]
+    ? never
+    : a
   : never;
 
 // from https://stackoverflow.com/questions/50374908/transform-union-type-to-intersection-type/50375286#50375286

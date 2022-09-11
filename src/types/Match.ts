@@ -188,10 +188,6 @@ type DeepExcludeAll<a, tupleList extends any[]> = tupleList extends [
   ? DeepExcludeAll<DeepExclude<a, InvertPatternForExclude<p, v>>, tail>
   : a;
 
-type MakeTuples<
-  ps extends any[],
-  value,
-  output extends any[] = []
-> = ps extends [infer p, ...infer tail]
-  ? MakeTuples<tail, value, [...output, [p, value]]>
-  : output;
+type MakeTuples<ps extends any[], value> = {
+  -readonly [index in keyof ps]: [ps[index], value];
+};
