@@ -41,7 +41,8 @@ describe('tuple ([a, b])', () => {
         const [, x] = value;
         return -x;
       })
-      .run();
+      .with(['++', P.number], ([, x]) => x + 1)
+      .exhaustive();
 
     const res2 = match<Input, number>(['-', 2])
       .with(['+', P._, P._], (value) => {

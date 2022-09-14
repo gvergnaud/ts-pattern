@@ -3,17 +3,23 @@
 - [ ] Add a custom matcher protocol data structures could implement to make them matchable.
 - [ ] Add a native regex support.
 
-- [ ] (Maybe) add a `P.rest` (maybe `P.rest(Pattern<a>)`) pattern for list. Example of using `P.rest`:
+- [ ] (Maybe) add an iterator protocol to `P.array` to be usable as a variadic tuple pattern. Example of using `P.array`:
 
 ```ts
 const reverse = <T>(xs: T[]): T[] => {
-  return (
-    match<T[], T[]>(xs)
-      // matches a list with at least one element
-      .with([P._, ...P.rest(P._)], ([x, ...xs]) => [...reverse(xs), x])
-      .otherwise(() => [])
-  );
+  return match<T[], T[]>(xs)
+    .with([P.any, ...P.array()], ([x, ...xs]) => [...reverse(xs), x])
+    .otherwise(() => []);
 };
+
+match(xs)
+  .with([P.any, ...P.array()], (xs: [unknown, ...unknown[]]) => [])
+  .with([42, ...P.array(P.number), '!'], (xs: [42, ...number[], '!']) => [])
+  .with(
+    [...P.array(P.number), ...P.array(P.string)],
+    (xs: [...number[], ...string[]]) => []
+  )
+  .otherwise(() => []);
 ```
 
 - [x] update `select()` and `select('name')` to accept a pattern the selected value should match.
