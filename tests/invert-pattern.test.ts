@@ -22,19 +22,111 @@ describe('InvertPattern', () => {
       ];
       type inverted2 = InvertPattern<pattern2>;
       type test2 = Expect<Equal<inverted2, [unknown, ...unknown[]]>>;
+
+      type pattern3 = [
+        GuardP<unknown, string>,
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[]
+      ];
+      type inverted3 = InvertPattern<pattern3>;
+      type test3 = Expect<Equal<inverted3, [string, ...number[]]>>;
     });
 
     it('[a, b, ...c[]]', () => {
-      // TODO
+      type pattern1 = [
+        'Hello',
+        7,
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[]
+      ];
+      type inverted1 = InvertPattern<pattern1>;
+      type test1 = Expect<Equal<inverted1, ['Hello', 7, ...number[]]>>;
+
+      type pattern2 = [
+        GuardP<unknown, unknown>,
+        GuardP<unknown, unknown>,
+        ...Matcher<unknown, unknown, 'array'>[]
+      ];
+      type inverted2 = InvertPattern<pattern2>;
+      type test2 = Expect<Equal<inverted2, [unknown, unknown, ...unknown[]]>>;
+
+      type pattern3 = [
+        GuardP<unknown, string>,
+        GuardP<unknown, boolean>,
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[]
+      ];
+      type inverted3 = InvertPattern<pattern3>;
+      type test3 = Expect<Equal<inverted3, [string, boolean, ...number[]]>>;
     });
     it('[...a[], b]', () => {
-      // TODO
+      type pattern1 = [
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        'Hello'
+      ];
+      type inverted1 = InvertPattern<pattern1>;
+      type test1 = Expect<Equal<inverted1, [...number[], 'Hello']>>;
+
+      type pattern2 = [
+        ...Matcher<unknown, unknown, 'array'>[],
+        GuardP<unknown, unknown>
+      ];
+      type inverted2 = InvertPattern<pattern2>;
+      type test2 = Expect<Equal<inverted2, [...unknown[], unknown]>>;
+
+      type pattern3 = [
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        GuardP<unknown, string>
+      ];
+      type inverted3 = InvertPattern<pattern3>;
+      type test3 = Expect<Equal<inverted3, [...number[], string]>>;
     });
     it('[...a[], b, c]', () => {
-      // TODO
+      type pattern1 = [
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        'Hello',
+        7
+      ];
+      type inverted1 = InvertPattern<pattern1>;
+      type test1 = Expect<Equal<inverted1, [...number[], 'Hello', 7]>>;
+
+      type pattern2 = [
+        ...Matcher<unknown, unknown, 'array'>[],
+        GuardP<unknown, unknown>,
+        GuardP<unknown, unknown>
+      ];
+      type inverted2 = InvertPattern<pattern2>;
+      type test2 = Expect<Equal<inverted2, [...unknown[], unknown, unknown]>>;
+
+      type pattern3 = [
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        GuardP<unknown, string>,
+        GuardP<unknown, boolean>
+      ];
+      type inverted3 = InvertPattern<pattern3>;
+      type test3 = Expect<Equal<inverted3, [...number[], string, boolean]>>;
     });
     it('[a, ...b[], c]', () => {
-      // TODO
+      type pattern1 = [
+        7,
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        'Hello'
+      ];
+      type inverted1 = InvertPattern<pattern1>;
+      type test1 = Expect<Equal<inverted1, [7, ...number[], 'Hello']>>;
+
+      type pattern2 = [
+        GuardP<unknown, unknown>,
+        ...Matcher<unknown, unknown, 'array'>[],
+        GuardP<unknown, unknown>
+      ];
+      type inverted2 = InvertPattern<pattern2>;
+      type test2 = Expect<Equal<inverted2, [unknown, ...unknown[], unknown]>>;
+
+      type pattern3 = [
+        GuardP<unknown, string>,
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        GuardP<unknown, boolean>
+      ];
+      type inverted3 = InvertPattern<pattern3>;
+      type test3 = Expect<Equal<inverted3, [string, ...number[], boolean]>>;
     });
   });
 });

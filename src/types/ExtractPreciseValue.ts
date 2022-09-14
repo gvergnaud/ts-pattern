@@ -68,18 +68,37 @@ export type ExtractPreciseValue<a, b> = unknown extends b
         ? ExcludeObjectIfContainsNever<[ExtractPreciseValue<a1, b1>], '0'>
         : LeastUpperBound<a, b>
       : // variadic patterns
-      b extends readonly [infer b1, infer b2, ...(readonly (infer bRest)[])]
+      b extends readonly [infer b1, ...(readonly (infer bRest)[]), infer b2]
+      ? a extends readonly [infer a1, ...(readonly (infer aRest)[]), infer a2]
+        ? [
+            ExtractPreciseValue<a1, b1>,
+            ...ExtractPreciseValue<aRest, bRest>[],
+            ExtractPreciseValue<a2, b2>
+          ]
+        : [
+            ExtractPreciseValue<aItem, b1>,
+            ...ExtractPreciseValue<aItem, bRest>[],
+            ExtractPreciseValue<aItem, b2>
+          ]
+      : b extends readonly [infer b1, infer b2, ...(readonly (infer bRest)[])]
       ? a extends readonly [infer a1, infer a2, ...(readonly (infer aRest)[])]
         ? [
             ExtractPreciseValue<a1, b1>,
             ExtractPreciseValue<a2, b2>,
             ...ExtractPreciseValue<aRest, bRest>[]
           ]
-        : LeastUpperBound<a, b>
+        : [
+            ExtractPreciseValue<aItem, b1>,
+            ExtractPreciseValue<aItem, b2>,
+            ...ExtractPreciseValue<aItem, bRest>[]
+          ]
       : b extends readonly [infer b1, ...(readonly (infer bRest)[])]
       ? a extends readonly [infer a1, ...(readonly (infer aRest)[])]
         ? [ExtractPreciseValue<a1, b1>, ...ExtractPreciseValue<aRest, bRest>[]]
-        : LeastUpperBound<a, b>
+        : [
+            ExtractPreciseValue<aItem, b1>,
+            ...ExtractPreciseValue<aItem, bRest>[]
+          ]
       : b extends readonly [...(readonly (infer bRest)[]), infer b1, infer b2]
       ? a extends readonly [...(readonly (infer aRest)[]), infer a1, infer a2]
         ? [
@@ -87,11 +106,18 @@ export type ExtractPreciseValue<a, b> = unknown extends b
             ExtractPreciseValue<a1, b1>,
             ExtractPreciseValue<a2, b2>
           ]
-        : LeastUpperBound<a, b>
+        : [
+            ...ExtractPreciseValue<aItem, bRest>[],
+            ExtractPreciseValue<aItem, b1>,
+            ExtractPreciseValue<aItem, b2>
+          ]
       : b extends readonly [...(readonly (infer bRest)[]), infer b1]
       ? a extends readonly [...(readonly (infer aRest)[]), infer a1]
         ? [...ExtractPreciseValue<aRest, bRest>[], ExtractPreciseValue<a1, b1>]
-        : LeastUpperBound<a, b>
+        : [
+            ...ExtractPreciseValue<aItem, bRest>[],
+            ExtractPreciseValue<aItem, b1>
+          ]
       : // Arrays
       ExtractPreciseValue<aItem, bItem> extends infer preciseValue
       ? [preciseValue] extends [never]

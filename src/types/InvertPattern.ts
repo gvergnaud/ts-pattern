@@ -82,26 +82,32 @@ export type InvertPattern<p> = p extends Matcher<
     p extends readonly [...any, ...Matcher<any, any, 'array'>[], ...any]
     ? p extends readonly [
         infer p1,
-        infer p2,
-        ...(readonly Matcher<any, infer subp, 'array'>[])
+        ...(readonly Matcher<any, infer restPattern, 'array'>[]),
+        infer p2
       ]
-      ? [InvertPattern<p1>, InvertPattern<p2>, ...InvertPattern<subp>[]]
+      ? [InvertPattern<p1>, ...InvertPattern<restPattern>[], InvertPattern<p2>]
       : p extends readonly [
           infer p1,
-          ...(readonly Matcher<any, infer subp, 'array'>[])
+          infer p2,
+          ...(readonly Matcher<any, infer restPattern, 'array'>[])
         ]
-      ? [InvertPattern<p1>, ...InvertPattern<subp>[]]
+      ? [InvertPattern<p1>, InvertPattern<p2>, ...InvertPattern<restPattern>[]]
       : p extends readonly [
-          ...(readonly Matcher<any, infer subp, 'array'>[]),
+          infer p1,
+          ...(readonly Matcher<any, infer restPattern, 'array'>[])
+        ]
+      ? [InvertPattern<p1>, ...InvertPattern<restPattern>[]]
+      : p extends readonly [
+          ...(readonly Matcher<any, infer restPattern, 'array'>[]),
           infer p1,
           infer p2
         ]
-      ? [...InvertPattern<subp>[], InvertPattern<p1>, InvertPattern<p2>]
+      ? [...InvertPattern<restPattern>[], InvertPattern<p1>, InvertPattern<p2>]
       : p extends readonly [
-          ...(readonly Matcher<any, infer subp, 'array'>[]),
+          ...(readonly Matcher<any, infer restPattern, 'array'>[]),
           infer p1
         ]
-      ? [...InvertPattern<subp>[], InvertPattern<p1>]
+      ? [...InvertPattern<restPattern>[], InvertPattern<p1>]
       : InvertPattern<pp>[]
     : InvertPattern<pp>[]
   : p extends Map<infer pk, infer pv>
