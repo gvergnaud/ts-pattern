@@ -64,8 +64,7 @@ type UnknownMatcher = Matcher<unknown, unknown, any, any>;
 
 export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
-export type ArrayP<input, p> = Matcher<input, p, 'array'> &
-  Iterable<Matcher<input, p, 'array'>>;
+export type ArrayP<input, p> = Matcher<input, p, 'array'>;
 
 export type AndP<input, ps> = Matcher<input, ps, 'and'>;
 

@@ -1,6 +1,6 @@
 import type * as symbols from '../internals/symbols';
 import type { Cast, Equal, IsAny, TupleKeys, UnionToTuple } from './helpers';
-import type { Matcher, Pattern } from './Pattern';
+import type { ArrayP, Matcher, Pattern } from './Pattern';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 
@@ -34,6 +34,7 @@ type ReduceFindSelectionUnion<
   ? ReduceFindSelectionUnion<i, tail, output | FindSelectionUnion<i, head>>
   : output;
 
+// FindSelectionUnion :: i -> p -> Union { [string]: [i, string[]] }
 export type FindSelectionUnion<
   i,
   p,
@@ -57,15 +58,93 @@ export type FindSelectionUnion<
     }[matcherType]
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]
-    ? p extends readonly [any, ...any[]]
+    ? ArrayP<any, any> extends p[number]
+      ? p extends readonly [infer p1, ...ArrayP<any, infer pRest>[]]
+        ? i extends readonly [infer i1, ...(infer iRest)[]]
+          ?
+              | FindSelectionUnion<i1, p1, [...path, 0]>
+              | FindSelectionUnion<
+                  iRest[],
+                  ArrayP<any, pRest>,
+                  [...path, 'rest']
+                >
+          :
+              | FindSelectionUnion<ii, p1, [...path, 0]>
+              | FindSelectionUnion<ii[], ArrayP<any, pRest>, [...path, 'rest']>
+        : p extends readonly [infer p1, infer p2, ...ArrayP<any, infer pRest>[]]
+        ? i extends readonly [infer i1, infer i2, ...(infer iRest)[]]
+          ?
+              | FindSelectionUnion<i1, p1, [...path, 0]>
+              | FindSelectionUnion<i2, p2, [...path, 1]>
+              | FindSelectionUnion<
+                  iRest[],
+                  ArrayP<any, pRest>,
+                  [...path, 'rest']
+                >
+          :
+              | FindSelectionUnion<ii, p1, [...path, 0]>
+              | FindSelectionUnion<ii, p2, [...path, 1]>
+              | FindSelectionUnion<ii[], ArrayP<any, pRest>, [...path, 'rest']>
+        : p extends readonly [...ArrayP<any, infer pRest>[], infer p1]
+        ? i extends readonly [...(infer iRest)[], infer i1]
+          ?
+              | FindSelectionUnion<i1, p1, [...path, 0]>
+              | FindSelectionUnion<
+                  iRest[],
+                  ArrayP<any, pRest>,
+                  [...path, 'rest']
+                >
+          :
+              | FindSelectionUnion<ii, p1, [...path, 0]>
+              | FindSelectionUnion<ii[], ArrayP<any, pRest>, [...path, 'rest']>
+        : p extends readonly [...ArrayP<any, infer pRest>[], infer p1, infer p2]
+        ? i extends readonly [...(infer iRest)[], infer i1, infer i2]
+          ?
+              | FindSelectionUnion<i1, p1, [...path, 0]>
+              | FindSelectionUnion<i2, p2, [...path, 1]>
+              | FindSelectionUnion<
+                  iRest[],
+                  ArrayP<any, pRest>,
+                  [...path, 'rest']
+                >
+          :
+              | FindSelectionUnion<ii, p1, [...path, 0]>
+              | FindSelectionUnion<ii, p2, [...path, 1]>
+              | FindSelectionUnion<ii[], ArrayP<any, pRest>, [...path, 'rest']>
+        : p extends readonly [infer p1, ...ArrayP<any, infer pRest>[], infer p2]
+        ? i extends readonly [infer i1, ...(infer iRest)[], infer i2]
+          ?
+              | FindSelectionUnion<i1, p1, [...path, 0]>
+              | FindSelectionUnion<i2, p2, [...path, 1]>
+              | FindSelectionUnion<
+                  iRest[],
+                  ArrayP<any, pRest>,
+                  [...path, 'rest']
+                >
+          :
+              | FindSelectionUnion<ii, p1, [...path, 0]>
+              | FindSelectionUnion<ii, p2, [...path, 1]>
+              | FindSelectionUnion<ii[], ArrayP<any, pRest>, [...path, 'rest']>
+        : p extends readonly [any, ...any[]]
+        ? i extends readonly [any, ...any[]]
+          ? {
+              [k in TupleKeys & keyof p & keyof i]: FindSelectionUnion<
+                i[k],
+                p[k],
+                [...path, k]
+              >;
+            }[TupleKeys]
+          : FindSelectionUnion<ii, p[number], [...path, 0]>
+        : FindSelectionUnion<ii, pp, [...path, 0]>
+      : p extends readonly [any, ...any[]]
       ? i extends readonly [any, ...any[]]
         ? {
-            [k in TupleKeys & keyof i & keyof p]: FindSelectionUnion<
+            [k in TupleKeys & keyof p & keyof i]: FindSelectionUnion<
               i[k],
               p[k],
               [...path, k]
             >;
-          }[TupleKeys & keyof i & keyof p]
+          }[TupleKeys]
         : FindSelectionUnion<ii, p[number], [...path, 0]>
       : FindSelectionUnion<ii, pp, [...path, 0]>
     : never
