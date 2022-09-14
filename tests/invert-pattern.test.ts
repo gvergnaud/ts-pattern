@@ -1,6 +1,43 @@
+import { P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
-import { InvertPatternForExclude } from '../src/types/InvertPattern';
-import { Matcher } from '../src/types/Pattern';
+import {
+  InvertPattern,
+  InvertPatternForExclude,
+} from '../src/types/InvertPattern';
+import { ArrayP, GuardP, Matcher, UnknownPattern } from '../src/types/Pattern';
+
+describe('InvertPattern', () => {
+  describe('variadic tuples', () => {
+    it('[a, ...b[]]', () => {
+      type pattern1 = [
+        'Hello',
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[]
+      ];
+      type inverted1 = InvertPattern<pattern1>;
+      type test1 = Expect<Equal<inverted1, ['Hello', ...number[]]>>;
+
+      type pattern2 = [
+        GuardP<unknown, unknown>,
+        ...Matcher<unknown, unknown, 'array'>[]
+      ];
+      type inverted2 = InvertPattern<pattern2>;
+      type test2 = Expect<Equal<inverted2, [unknown, ...unknown[]]>>;
+    });
+
+    it('[a, b, ...c[]]', () => {
+      // TODO
+    });
+    it('[...a[], b]', () => {
+      // TODO
+    });
+    it('[...a[], b, c]', () => {
+      // TODO
+    });
+    it('[a, ...b[], c]', () => {
+      // TODO
+    });
+  });
+});
 
 describe('InvertPatternForExclude', () => {
   it('should correctly invert type guards', () => {
@@ -117,6 +154,25 @@ describe('InvertPatternForExclude', () => {
           >
         >
       ];
+    });
+  });
+
+  describe('variadic tuples', () => {
+    it('[a, ...b[]]', () => {
+      // TODO
+    });
+
+    it('[a, b, ...c[]]', () => {
+      // TODO
+    });
+    it('[...a[], b]', () => {
+      // TODO
+    });
+    it('[...a[], b, c]', () => {
+      // TODO
+    });
+    it('[a, ...b[], c]', () => {
+      // TODO
     });
   });
 

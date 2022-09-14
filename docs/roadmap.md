@@ -15,10 +15,6 @@ const reverse = <T>(xs: T[]): T[] => {
 match(xs)
   .with([P.any, ...P.array()], (xs: [unknown, ...unknown[]]) => [])
   .with([42, ...P.array(P.number), '!'], (xs: [42, ...number[], '!']) => [])
-  .with(
-    [...P.array(P.number), ...P.array(P.string)],
-    (xs: [...number[], ...string[]]) => []
-  )
   .otherwise(() => []);
 ```
 

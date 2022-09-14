@@ -19,7 +19,8 @@ export type ExtractPreciseValue<a, b> = unknown extends b
   ? DeepExclude<a, b1>
   : b extends readonly (infer bItem)[]
   ? a extends readonly (infer aItem)[]
-    ? b extends readonly [infer b1, infer b2, infer b3, infer b4, infer b5]
+    ? // Tuples
+      b extends readonly [infer b1, infer b2, infer b3, infer b4, infer b5]
       ? a extends readonly [infer a1, infer a2, infer a3, infer a4, infer a5]
         ? ExcludeObjectIfContainsNever<
             [
@@ -66,7 +67,33 @@ export type ExtractPreciseValue<a, b> = unknown extends b
       ? a extends readonly [infer a1]
         ? ExcludeObjectIfContainsNever<[ExtractPreciseValue<a1, b1>], '0'>
         : LeastUpperBound<a, b>
-      : ExtractPreciseValue<aItem, bItem> extends infer preciseValue
+      : // variadic patterns
+      b extends readonly [infer b1, infer b2, ...(readonly (infer bRest)[])]
+      ? a extends readonly [infer a1, infer a2, ...(readonly (infer aRest)[])]
+        ? [
+            ExtractPreciseValue<a1, b1>,
+            ExtractPreciseValue<a2, b2>,
+            ...ExtractPreciseValue<aRest, bRest>[]
+          ]
+        : LeastUpperBound<a, b>
+      : b extends readonly [infer b1, ...(readonly (infer bRest)[])]
+      ? a extends readonly [infer a1, ...(readonly (infer aRest)[])]
+        ? [ExtractPreciseValue<a1, b1>, ...ExtractPreciseValue<aRest, bRest>[]]
+        : LeastUpperBound<a, b>
+      : b extends readonly [...(readonly (infer bRest)[]), infer b1, infer b2]
+      ? a extends readonly [...(readonly (infer aRest)[]), infer a1, infer a2]
+        ? [
+            ...ExtractPreciseValue<aRest, bRest>[],
+            ExtractPreciseValue<a1, b1>,
+            ExtractPreciseValue<a2, b2>
+          ]
+        : LeastUpperBound<a, b>
+      : b extends readonly [...(readonly (infer bRest)[]), infer b1]
+      ? a extends readonly [...(readonly (infer aRest)[]), infer a1]
+        ? [...ExtractPreciseValue<aRest, bRest>[], ExtractPreciseValue<a1, b1>]
+        : LeastUpperBound<a, b>
+      : // Arrays
+      ExtractPreciseValue<aItem, bItem> extends infer preciseValue
       ? [preciseValue] extends [never]
         ? never
         : preciseValue[]

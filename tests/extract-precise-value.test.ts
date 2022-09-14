@@ -210,14 +210,12 @@ describe('ExtractPreciseValue', () => {
   });
 
   it('should work with arrays', () => {
-    type cases = [
-      Expect<
-        Equal<
-          ExtractPreciseValue<boolean | { type: string } | string[], string[]>,
-          string[]
-        >
-      >
-    ];
+    type res1 = ExtractPreciseValue<
+      boolean | { type: string } | string[],
+      string[]
+    >;
+
+    type t1 = Expect<Equal<res1, string[]>>;
   });
 
   describe('Optional properties', () => {
@@ -384,6 +382,52 @@ describe('ExtractPreciseValue', () => {
           >
         >
       ];
+    });
+  });
+
+  describe('variadic patterns', () => {
+    it('[a, ...b[]]', () => {
+      type res1 = ExtractPreciseValue<unknown[], [unknown, ...unknown[]]>;
+      type t1 = Expect<Equal<res1, [unknown, ...unknown[]]>>;
+
+      type res2 = ExtractPreciseValue<unknown[], [number, ...string[]]>;
+      type t2 = Expect<Equal<res2, [number, ...string[]]>>;
+
+      type res3 = ExtractPreciseValue<
+        [string, ...boolean[]],
+        ['a', ...unknown[]]
+      >;
+      type t3 = Expect<Equal<res3, ['a', ...boolean[]]>>;
+    });
+
+    it('[a, b, ...c[]]', () => {
+      type res1 = ExtractPreciseValue<
+        unknown[],
+        [unknown, unknown, ...unknown[]]
+      >;
+      type t1 = Expect<Equal<res1, [unknown, unknown, ...unknown[]]>>;
+
+      type res2 = ExtractPreciseValue<
+        unknown[],
+        [number, boolean, ...string[]]
+      >;
+      type t2 = Expect<Equal<res2, [number, boolean, ...string[]]>>;
+
+      type res3 = ExtractPreciseValue<
+        [string, number, ...boolean[]],
+        ['a', 2, ...unknown[]]
+      >;
+      type t3 = Expect<Equal<res3, ['a', 2, ...boolean[]]>>;
+    });
+
+    it('[...a[], b]', () => {
+      // TODO
+    });
+    it('[...a[], b, c]', () => {
+      // TODO
+    });
+    it('[a, ...b[], c]', () => {
+      // TODO
     });
   });
 });

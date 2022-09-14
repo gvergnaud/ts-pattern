@@ -77,6 +77,25 @@ describe('FindSelected', () => {
       ];
     });
 
+    describe('variadic tuples', () => {
+      it('[a, ...b[]]', () => {
+        // TODO
+      });
+
+      it('[a, b, ...c[]]', () => {
+        // TODO
+      });
+      it('[...a[], b]', () => {
+        // TODO
+      });
+      it('[...a[], b, c]', () => {
+        // TODO
+      });
+      it('[a, ...b[], c]', () => {
+        // TODO
+      });
+    });
+
     it('list selections should be wrapped in arrays', () => {
       type cases = [
         Expect<

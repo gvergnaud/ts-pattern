@@ -80,10 +80,15 @@ type Elem<xs> = xs extends Array<infer x> ? x : never;
  *  match(value)
  *   .with({ users: P.array({ name: P.string }) }, () => 'will match { name: string }[]')
  */
+export function array<input>(): ArrayP<input, unknown>;
 export function array<
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
->(pattern: p): ArrayP<input, p> {
+>(pattern: p): ArrayP<input, p>;
+export function array<
+  input,
+  p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
+>(pattern?: p): ArrayP<input, p> {
   return {
     [symbols.matcher]() {
       return {
@@ -111,6 +116,9 @@ export function array<
         },
         getSelectionKeys: () => getSelectionKeys(pattern),
       };
+    },
+    *[Symbol.iterator]() {
+      yield pattern ? array(pattern) : array();
     },
   };
 }

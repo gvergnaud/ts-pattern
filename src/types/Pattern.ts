@@ -64,7 +64,8 @@ type UnknownMatcher = Matcher<unknown, unknown, any, any>;
 
 export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
-export type ArrayP<input, p> = Matcher<input, p, 'array'>;
+export type ArrayP<input, p> = Matcher<input, p, 'array'> &
+  Iterable<Matcher<input, p, 'array'>>;
 
 export type AndP<input, ps> = Matcher<input, ps, 'and'>;
 
@@ -123,7 +124,10 @@ export type Pattern<a> =
       : a extends readonly (infer i)[]
       ? a extends readonly [any, ...any]
         ? { readonly [index in keyof a]: Pattern<a[index]> }
-        : readonly [] | readonly [Pattern<i>, ...Pattern<i>[]]
+        :
+            | readonly []
+            | readonly [Pattern<i>, ...Pattern<i>[]]
+            | readonly [...Pattern<i>[], Pattern<i>]
       : a extends Map<infer k, infer v>
       ? Map<k, Pattern<v>>
       : a extends Set<infer v>
