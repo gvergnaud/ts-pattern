@@ -184,14 +184,14 @@ type ConcatSelections<
   a extends SelectionsRecord,
   b extends SelectionsRecord
 > = {
-  // keys both on output and sel
-  [k in keyof a & keyof b]: [a[k][0] | b[k][0], a[k][1] & b[k][1]]; // the path has to be the same
-} & {
-  // keys of a
-  [k in Exclude<keyof a, keyof b>]: a[k];
-} & {
-  // keyso of b
-  [k in Exclude<keyof b, keyof a>]: b[k];
+  [k in keyof a | keyof b]: // keys both on output and sel
+  k extends keyof a & keyof b
+    ? [a[k][0] | b[k][0], a[k][1] & b[k][1]] // the path has to be the same
+    : k extends keyof a
+    ? a[k]
+    : k extends keyof b
+    ? b[k]
+    : never;
 };
 
 type ReduceToRecord<
