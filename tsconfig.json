@@ -2,9 +2,10 @@
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,
-    "target": "es6",
+    "target": "ESNext",
     "strict": true,
-    "outDir": "dist/"
+    "outDir": "dist/",
+    "moduleResolution": "NodeNext"
   },
   "include": ["src/"],
   "exclude": ["tests/", "dist/", "examples/"]

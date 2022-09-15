@@ -3,13 +3,13 @@
   "version": "4.0.5",
   "description": " The exhaustive Pattern Matching library for TypeScript.",
   "type": "module",
-  "source": "src/index.ts",
+  "source": "./src/index.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/index.modern.js"
+        "default": "./dist/index.modern.mjs"
       },
       "require": {
         "types": "./dist/index.d.ts",
@@ -18,7 +18,7 @@
     }
   },
   "main": "./dist/index.cjs",
-  "types": "dist/index.d.ts",
+  "types": "./dist/index.d.ts",
   "module": "./dist/index.module.js",
   "unpkg": "./dist/index.umd.js",
   "scripts": {
@@ -57,9 +57,9 @@
   "devDependencies": {
     "@types/jest": "^27.0.2",
     "jest": "^27.4.5",
-    "microbundle": "^0.15.0",
+    "microbundle": "^0.15.1",
     "prettier": "^2.5.1",
     "ts-jest": "^27.1.2",
-    "typescript": "^4.7.2"
+    "typescript": "^4.8.3"
   }
 }
