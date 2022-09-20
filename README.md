@@ -1379,6 +1379,10 @@ const fn = (org: Plan, user: Permission): string =>
     .exhaustive();
 ```
 
+## Want to learn how TS-Pattern is built?
+
+Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), a free online course to learn how to take full advantage of the most advanced features of TypeScript!
+
 ## Inspirations
 
 This library has been heavily inspired by this great article by Wim Jongeneel:
