@@ -735,7 +735,7 @@ const output = match(input)
   .otherwise(() => 'something else');
 
 console.log(output);
-// => 'two'
+// => 'number: two'
 ```
 
 ### Wildcards
