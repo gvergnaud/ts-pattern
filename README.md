@@ -1381,7 +1381,7 @@ const fn = (org: Plan, user: Permission): string =>
 
 ## Want to learn how TS-Pattern is built?
 
-Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), a free online course to learn how to take full advantage of the most advanced features of TypeScript!
+Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), an online course to learn how to take full advantage of the most advanced features of TypeScript!
 
 ## Inspirations
 
