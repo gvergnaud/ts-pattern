@@ -6,6 +6,9 @@ with smart type inference.
 </p>
 
 <p align="center">
+  <a href="https://github.com/gvergnaud/ts-pattern/actions">
+    <img src="https://github.com/gvergnaud/ts-pattern/workflows/ci/badge.svg?branch=main" alt="CI Workflow" height="18">
+  </a>
   <a href="https://www.npmjs.com/package/ts-pattern">
     <img src="https://img.shields.io/npm/dm/ts-pattern.svg" alt="downloads" height="18">
   </a>
