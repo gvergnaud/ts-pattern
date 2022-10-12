@@ -16,7 +16,7 @@ import {
   GuardExcludeP,
 } from './types/Pattern';
 
-export { Pattern };
+export type { Pattern };
 
 /**
  * `P.infer<typeof somePattern>` will return the type of the value
