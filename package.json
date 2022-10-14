@@ -24,7 +24,6 @@
   "scripts": {
     "build": "microbundle && denoify",
     "dev": "microbundle watch",
-    "prepublishOnly": "npm run test && npm run build",
     "test": "jest",
     "clear-test": "jest --clearCache",
     "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics",
