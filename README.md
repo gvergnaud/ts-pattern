@@ -80,6 +80,13 @@ Via yarn
 yarn add ts-pattern
 ```
 
+The Deno distribution of the module is published as [ts_pattern](https://deno.land/x/ts_pattern) on `deno.land/x`  
+
+```typescript
+import { match, P } from 'https://deno.land/x/ts_pattern@v<X.Y.Z>/mod.ts';
+```
+Replace `<X.Y.Z>` by [the latest version](https://github.com/gvergnaud/ts-pattern/tags).  
+
 ### Compatibility with different TypeScript versions
 
 Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#strict) is enabled in your `tsconfig.json` file.
