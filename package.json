@@ -59,7 +59,7 @@
     "microbundle": "^0.15.0",
     "prettier": "^2.5.1",
     "ts-jest": "^27.1.2",
-    "denoify": "^1.2.1",
+    "denoify": "^1.4.2",
     "typescript": "^4.8.3"
   }
 }
