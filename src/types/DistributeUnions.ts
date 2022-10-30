@@ -35,20 +35,20 @@ import { IsMatching } from './IsMatching';
  * type t2 = DistributeMatchingUnions<['a' | 'b', 1 | 2], ['a', unknown]>;
  * // => ['a', 1 | 2] | ['b', 1 | 2]
  */
-export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
+export type DistributeMatchingUnions<a, b> = IsAny<a> extends true
   ? any
-  : BuildMany<a, Distribute<FindUnionsMany<a, p>>>;
+  : BuildMany<a, Distribute<FindUnionsMany<a, b>>>;
 
 // FindUnionsMany :: a -> Union<a> -> PropertyKey[] -> UnionConfig[]
 export type FindUnionsMany<
   a,
-  p,
+  b,
   path extends PropertyKey[] = []
 > = UnionToTuple<
   (
-    p extends any
-      ? IsMatching<a, p> extends true
-        ? FindUnions<a, p, path>
+    b extends any
+      ? IsMatching<a, b> extends true
+        ? FindUnions<a, b, path>
         : []
       : never
   ) extends (infer T)[]
@@ -76,11 +76,11 @@ export type FindUnionsMany<
  */
 export type FindUnions<
   a,
-  p,
+  b,
   path extends PropertyKey[] = []
-> = unknown extends p
+> = unknown extends b
   ? []
-  : IsAny<p> extends true
+  : IsAny<b> extends true
   ? [] // Don't try to find unions after 5 levels
   : Length<path> extends 5
   ? []
@@ -90,59 +90,59 @@ export type FindUnions<
         cases: a extends any
           ? {
               value: a;
-              subUnions: FindUnionsMany<a, p, path>;
+              subUnions: FindUnionsMany<a, b, path>;
             }
           : never;
         path: path;
       }
     ]
-  : [a, p] extends [readonly any[], readonly any[]]
-  ? [a, p] extends [
+  : [a, b] extends [readonly any[], readonly any[]]
+  ? [a, b] extends [
       readonly [infer a1, infer a2, infer a3, infer a4, infer a5],
-      readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
+      readonly [infer b1, infer b2, infer b3, infer b4, infer b5]
     ]
     ? [
-        ...FindUnions<a1, p1, [...path, 0]>,
-        ...FindUnions<a2, p2, [...path, 1]>,
-        ...FindUnions<a3, p3, [...path, 2]>,
-        ...FindUnions<a4, p4, [...path, 3]>,
-        ...FindUnions<a5, p5, [...path, 4]>
+        ...FindUnions<a1, b1, [...path, 0]>,
+        ...FindUnions<a2, b2, [...path, 1]>,
+        ...FindUnions<a3, b3, [...path, 2]>,
+        ...FindUnions<a4, b4, [...path, 3]>,
+        ...FindUnions<a5, b5, [...path, 4]>
       ]
-    : [a, p] extends [
+    : [a, b] extends [
         readonly [infer a1, infer a2, infer a3, infer a4],
-        readonly [infer p1, infer p2, infer p3, infer p4]
+        readonly [infer b1, infer b2, infer b3, infer b4]
       ]
     ? [
-        ...FindUnions<a1, p1, [...path, 0]>,
-        ...FindUnions<a2, p2, [...path, 1]>,
-        ...FindUnions<a3, p3, [...path, 2]>,
-        ...FindUnions<a4, p4, [...path, 3]>
+        ...FindUnions<a1, b1, [...path, 0]>,
+        ...FindUnions<a2, b2, [...path, 1]>,
+        ...FindUnions<a3, b3, [...path, 2]>,
+        ...FindUnions<a4, b4, [...path, 3]>
       ]
-    : [a, p] extends [
+    : [a, b] extends [
         readonly [infer a1, infer a2, infer a3],
-        readonly [infer p1, infer p2, infer p3]
+        readonly [infer b1, infer b2, infer b3]
       ]
     ? [
-        ...FindUnions<a1, p1, [...path, 0]>,
-        ...FindUnions<a2, p2, [...path, 1]>,
-        ...FindUnions<a3, p3, [...path, 2]>
+        ...FindUnions<a1, b1, [...path, 0]>,
+        ...FindUnions<a2, b2, [...path, 1]>,
+        ...FindUnions<a3, b3, [...path, 2]>
       ]
-    : [a, p] extends [
+    : [a, b] extends [
         readonly [infer a1, infer a2],
-        readonly [infer p1, infer p2]
+        readonly [infer b1, infer b2]
       ]
-    ? [...FindUnions<a1, p1, [...path, 0]>, ...FindUnions<a2, p2, [...path, 1]>]
-    : [a, p] extends [readonly [infer a1], readonly [infer p1]]
-    ? FindUnions<a1, p1, [...path, 0]>
+    ? [...FindUnions<a1, b1, [...path, 0]>, ...FindUnions<a2, b2, [...path, 1]>]
+    : [a, b] extends [readonly [infer a1], readonly [infer b1]]
+    ? FindUnions<a1, b1, [...path, 0]>
     : []
   : a extends Set<any>
   ? []
   : a extends Map<any, any>
   ? []
-  : [IsPlainObject<a>, IsPlainObject<p>] extends [true, true]
+  : [IsPlainObject<a>, IsPlainObject<b>] extends [true, true]
   ? Flatten<
       Values<{
-        [k in keyof a & keyof p]: FindUnions<a[k], p[k], [...path, k]>;
+        [k in keyof a & keyof b]: FindUnions<a[k], b[k], [...path, k]>;
       }>
     >
   : [];

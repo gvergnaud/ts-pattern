@@ -125,8 +125,7 @@ export type BuiltInObjects =
   | Date
   | RegExp
   | Generator
-  | { readonly [Symbol.toStringTag]: string }
-  | any[];
+  | { readonly [Symbol.toStringTag]: string };
 
 export type IsPlainObject<o, excludeUnion = BuiltInObjects> = o extends object
   ? // to excluded branded string types,
@@ -204,3 +203,34 @@ export type GuardValue<fn> = fn extends (value: any) => value is infer b
 export type GuardFunction<input, narrowed> =
   | ((value: input) => value is Cast<narrowed, input>)
   | ((value: input) => boolean);
+
+export type Narrow<T> = T extends
+  | Function
+  | string
+  | number
+  | boolean
+  | bigint
+  | []
+  ? T
+  : { [K in keyof T]: Narrow<T[K]> };
+
+type IsTuple<array> = array extends
+  | readonly [any, ...any]
+  | readonly [...any, any]
+  | readonly []
+  ? true
+  : false;
+
+type ContainVariadic<tuple> = tuple extends readonly [any, ...infer tail]
+  ? IsTuple<tail> extends false
+    ? true
+    : ContainVariadic<tail>
+  : tuple extends readonly [...infer inits, any]
+  ? IsTuple<inits> extends false
+    ? true
+    : ContainVariadic<inits>
+  : false;
+
+export type IsVariadic<array> = IsTuple<array> extends true
+  ? ContainVariadic<array>
+  : false;

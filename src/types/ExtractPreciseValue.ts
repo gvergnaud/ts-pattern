@@ -135,7 +135,7 @@ export type ExtractPreciseValue<a, b> = unknown extends b
     : LeastUpperBound<a, b>
   : // We add `Error` to the excludeUnion because
   // We want to consider them like primitive values in this context.
-  IsPlainObject<b, BuiltInObjects | Error> extends true
+  IsPlainObject<b, BuiltInObjects | Error | any[]> extends true
   ? a extends object
     ? a extends b
       ? a

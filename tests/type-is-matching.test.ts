@@ -212,6 +212,17 @@ describe('IsMatching', () => {
       ];
     });
 
+    it('Variadics', () => {
+      type res1 = IsMatching<('a' | 'b')[], [unknown, ...unknown[]]>;
+      type t1 = Expect<Equal<res1, true>>;
+      type res2 = IsMatching<[number], [unknown, ...unknown[]]>;
+      type t2 = Expect<Equal<res2, true>>;
+      type res3 = IsMatching<[number, number], [unknown, ...unknown[]]>;
+      type t3 = Expect<Equal<res3, true>>;
+      type res4 = IsMatching<[], [unknown, ...unknown[]]>;
+      type t4 = Expect<Equal<res4, false>>;
+    });
+
     it('Sets', () => {
       type cases = [
         Expect<Equal<IsMatching<Set<'a' | 'b'>, Set<'a'>>, true>>,

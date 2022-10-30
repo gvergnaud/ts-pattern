@@ -224,6 +224,8 @@ describe('DeepExclude', () => {
         >
       ];
     });
+
+    describe('Variadic tuples', () => {});
   });
 
   describe('List', () => {
