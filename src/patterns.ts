@@ -354,7 +354,7 @@ function isNullish<T>(x: T | null | undefined): x is null | undefined {
   return x === null || x === undefined;
 }
 
-type AnyConstructor = new (...args: any[]) => any;
+type AnyConstructor = abstract new (...args: any[]) => any;
 
 function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
   return (val: unknown): val is InstanceType<T> =>
