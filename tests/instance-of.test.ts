@@ -69,4 +69,22 @@ describe('instanceOf', () => {
         .otherwise(() => 'nothing')
     ).toBe('foo');
   });
+
+  it('should work with abstract classes', () => {
+    abstract class Abstract {}
+
+    class A extends Abstract {}
+    class B extends Abstract {}
+
+    const get = (x: A | B): string =>
+      match(x)
+        .with(P.instanceOf(Abstract), (x) => {
+          type t = Expect<Equal<typeof x, A | B>>;
+          return 'instance of Abstract';
+        })
+        .exhaustive();
+
+    expect(get(new A())).toEqual('instance of Abstract');
+    expect(get(new B())).toEqual('instance of Abstract');
+  });
 });
