@@ -90,8 +90,6 @@ Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#s
 
 # Documentation
 
-#### ⚠️ This is the docs for **TS-Pattern v4**. Find the docs for [**TS-Pattern v3 here**](https://github.com/gvergnaud/ts-pattern/tree/v3).
-
 - [Code Sandbox Examples](#code-sandbox-examples)
 - [Getting Started](#getting-started)
 - [API Reference](#api-reference)
