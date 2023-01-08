@@ -354,5 +354,18 @@ describe('type narrowing inheritence', () => {
           .with({ type: 'a' }, () => 'duplicated')
           .exhaustive();
     });
+
+    it("shouldn't exclude in case of primitive type", () => {
+      const width = 100;
+      const height = 200;
+      const size = 10;
+      let canShowInlineLegend = true as boolean;
+
+      match(true)
+        .with(size >= 100 && width > height * 2.25, () => 'table')
+        .with(size >= 100 && height > width * 1.5, () => 'table')
+        .with(canShowInlineLegend, () => 'inline')
+        .otherwise(() => 'none');
+    });
   });
 });

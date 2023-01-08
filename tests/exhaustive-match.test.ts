@@ -871,7 +871,7 @@ describe('exhaustive()', () => {
       match(input)
         .with({ t: 'a', x: 'hello' }, (x) => 'ok')
         .with({ t: 'b' }, (x) => 'ok')
-        // @ts-expect-error
+        // FIXME this should error ideally: @ts-expect-error
         .exhaustive();
 
     const f3 = (input: { t: 'a'; x: any } | { t: 'b' }) =>

@@ -155,25 +155,25 @@ export type IntersectObjects<a> = (
 
 export type WithDefault<a, def> = [a] extends [never] ? def : a;
 
-export type IsLiteral<a> = a extends null | undefined
+export type IsLiteral<a> = [a] extends [null | undefined]
   ? true
-  : a extends string
+  : [a] extends [string]
   ? string extends a
     ? false
     : true
-  : a extends number
+  : [a] extends [number]
   ? number extends a
     ? false
     : true
-  : a extends boolean
+  : [a] extends [boolean]
   ? boolean extends a
     ? false
     : true
-  : a extends symbol
+  : [a] extends [symbol]
   ? symbol extends a
     ? false
     : true
-  : a extends bigint
+  : [a] extends [bigint]
   ? bigint extends a
     ? false
     : true

@@ -142,13 +142,21 @@ export type InvertPatternForExclude<p, i> = Equal<p, Pattern<i>> extends true
   ? never
   : InvertPatternForExcludeInternal<p, i>;
 
-type InvertPatternForExcludeInternal<p, i, empty = never> = p extends Matcher<
-  infer matchableInput,
-  infer subpattern,
-  infer matcherType,
-  any,
-  infer excluded
->
+type InvertPatternForExcludeInternal<p, i, empty = never> = [p] extends [
+  Primitives
+]
+  ? IsLiteral<p> extends true
+    ? p
+    : IsLiteral<i> extends true
+    ? p
+    : empty
+  : p extends Matcher<
+      infer matchableInput,
+      infer subpattern,
+      infer matcherType,
+      any,
+      infer excluded
+    >
   ? {
       select: InvertPatternForExcludeInternal<subpattern, i, empty>;
       array: i extends readonly (infer ii)[]
@@ -167,12 +175,6 @@ type InvertPatternForExcludeInternal<p, i, empty = never> = p extends Matcher<
       >;
       default: excluded;
     }[matcherType]
-  : p extends Primitives
-  ? IsLiteral<p> extends true
-    ? p
-    : IsLiteral<i> extends true
-    ? p
-    : empty
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]
     ? p extends readonly [infer p1, infer p2, infer p3, infer p4, infer p5]

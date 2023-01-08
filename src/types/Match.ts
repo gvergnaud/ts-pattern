@@ -35,8 +35,7 @@ export type Match<
   with<
     p extends Pattern<i>,
     c,
-    value extends MatchedValue<i, InvertPattern<p>>,
-    x = InvertPatternForExclude<p, value>
+    value extends MatchedValue<i, InvertPattern<p>>
   >(
     pattern: p,
     handler: (
