@@ -309,3 +309,50 @@ describe('types', () => {
     ).toThrow();
   });
 });
+
+describe('type narrowing inheritence', () => {
+  describe('on a discriminated union type, once a case is handled it should be excluded from the input type', () => {
+    it('union of literals', () => {
+      const f = (input: 'a' | 'b') =>
+        match(input)
+          .with('a', () => 'a handled')
+          // @ts-expect-error duplicates shouldn't be permitted
+          .with('a', () => 'duplicated')
+          .with('b', () => 'b handled')
+          .exhaustive();
+
+      const f2 = (input: 'a' | 'b' | 2 | 1) =>
+        match(input)
+          .with('a', () => 'a handled')
+          .with('b', () => 'b handled')
+          .with(1, () => '1 handled')
+          // @ts-expect-error duplicates shouldn't be permitted
+          .with(1, () => 'duplicated')
+          .with(2, () => '2 handled')
+          .exhaustive();
+    });
+
+    it('union of objects', () => {
+      type Input = { type: 'a'; data: string } | { type: 'b'; data: number };
+
+      const f = (input: Input) =>
+        match(input)
+          .with({ type: 'a' }, () => 'a handled')
+          // @ts-expect-error duplicates shouldn't be permitted
+          .with({ type: 'a' }, () => 'duplicated')
+          .with({ type: 'b' }, () => 'b handled')
+          .exhaustive();
+    });
+
+    it('should error after P.any', () => {
+      type Input = { type: 'a'; data: string } | { type: 'b'; data: number };
+
+      const f = (input: Input) =>
+        match(input)
+          .with(P.any, () => 'a handled')
+          // @ts-expect-error
+          .with({ type: 'a' }, () => 'duplicated')
+          .exhaustive();
+    });
+  });
+});
