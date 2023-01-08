@@ -88,21 +88,6 @@ describe('Multiple patterns', () => {
     match(input)
       // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
       .with(() => false);
-
-    match(input)
-      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'Pattern<Option<number>>'
-      .with(() => false);
-
-    match(input)
-      // @ts-expect-error: Argument of type '() => false' is not assignable to parameter of type 'ExhaustivePattern<Option<number>>'
-      .with(() => false)
-      .with(
-        { kind: 'some', value: 2 as const },
-        { kind: 'some', value: 3 as const },
-        { kind: 'some', value: 4 as const },
-        (x) => true
-      )
-      .with({ kind: 'none' }, { kind: 'some' }, () => false);
   });
 
   it('should work with literal types', () => {

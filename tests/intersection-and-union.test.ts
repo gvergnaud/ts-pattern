@@ -39,6 +39,27 @@ describe('and, and or patterns', () => {
       const f = (input: Input) =>
         match(input)
           .with(
+            P.union(
+              { type: 'a', value: [{ type: 'd' }, true] } as const,
+              {
+                type: 'b',
+              } as const
+            ),
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  | B
+                  | {
+                      type: 'a';
+                      value: [{ type: 'd'; value: number }, true];
+                    }
+                >
+              >;
+              return 'branch 3';
+            }
+          )
+          .with(
             {
               type: 'a',
               value: [P.union({ type: 'd' }, { type: 'e' }), true],
@@ -66,27 +87,7 @@ describe('and, and or patterns', () => {
             type t = Expect<Equal<typeof x, A>>;
             return 'branch 2';
           })
-          .with(
-            P.union(
-              { type: 'a', value: [{ type: 'd' }, true] } as const,
-              {
-                type: 'b',
-              } as const
-            ),
-            (x) => {
-              type t = Expect<
-                Equal<
-                  typeof x,
-                  | B
-                  | {
-                      type: 'a';
-                      value: [{ type: 'd'; value: number }, true];
-                    }
-                >
-              >;
-              return 'branch 3';
-            }
-          )
+
           .exhaustive();
     });
 
@@ -603,50 +604,48 @@ describe('and, and or patterns', () => {
             value: { type: 'c'; b: boolean }[];
           };
 
+      const errorF = (input: Input) =>
+        match(input)
+          // @ts-expect-error FIXME this should work
+          .with({ value: P.array({ type: P.union('a', 'b') }) }, (x) => {})
+          .exhaustive();
+
       const f = (input: Input) => {
-        return (
-          match(input)
-            .with(
-              { value: P.array(P.union({ type: 'a' }, { type: 'b' })) },
-              (x) => {
-                type t = Expect<
-                  Equal<
-                    typeof x,
-                    | {
-                        value: { type: 'a'; n: number }[];
-                      }
-                    | {
-                        value: { type: 'b'; s: string }[];
-                      }
-                  >
-                >;
-                return x.value[0].type;
-              }
-            )
-            // @ts-expect-error FIXME this should work
-            .with({ value: P.array({ type: P.union('a', 'b') }) }, (x) => {})
-            .with(
-              {
-                value: P.array({ type: P.typed<'a' | 'b'>().union('a', 'b') }),
-              },
-              (x) => {
-                type t = Expect<
-                  Equal<
-                    typeof x,
-                    | {
-                        value: { type: 'a'; n: number }[];
-                      }
-                    | {
-                        value: { type: 'b'; s: string }[];
-                      }
-                  >
-                >;
-                return x.value[0].type;
-              }
-            )
-            .with({ value: P.array(P.any) }, () => 'other')
-            .exhaustive()
-        );
+        return match(input)
+          .with(
+            { value: P.array(P.union({ type: 'a' }, { type: 'b' })) },
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  | {
+                      value: { type: 'a'; n: number }[];
+                    }
+                  | {
+                      value: { type: 'b'; s: string }[];
+                    }
+                >
+              >;
+              return x.value[0].type;
+            }
+          )
+          .with(
+            {
+              value: P.array({ type: 'c' }),
+            },
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  {
+                    value: { type: 'c'; b: boolean }[];
+                  }
+                >
+              >;
+              return x.value[0].type;
+            }
+          )
+          .exhaustive();
       };
 
       expect(

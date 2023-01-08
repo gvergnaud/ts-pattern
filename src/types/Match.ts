@@ -14,6 +14,8 @@ export type MatchedValue<a, invpattern> = WithDefault<
 
 export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;
 
+type ExcludeMatched<a, b> = unknown extends b ? a : Exclude<a, b>;
+
 type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 
 /**
@@ -23,7 +25,7 @@ type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 export type Match<
   i,
   o,
-  patternValueTuples extends [any, any][] = [],
+  patternValueTuples extends any[] = [],
   inferredOutput = never
 > = {
   /**
@@ -42,7 +44,14 @@ export type Match<
       selections: FindSelected<value, p>,
       value: value
     ) => PickReturnValue<o, c>
-  ): Match<i, o, [...patternValueTuples, [p, value]], Union<inferredOutput, c>>;
+  ): [InvertPatternForExclude<p, value>] extends [infer excluded]
+    ? Match<
+        ExcludeMatched<i, excluded>,
+        o,
+        [...patternValueTuples, excluded],
+        Union<inferredOutput, c>
+      >
+    : never;
 
   with<
     p1 extends Pattern<i>,
@@ -54,12 +63,17 @@ export type Match<
     p1: p1,
     p2: p2,
     handler: (value: value) => PickReturnValue<o, c>
-  ): Match<
-    i,
-    o,
-    [...patternValueTuples, [p1, value], [p2, value]],
-    Union<inferredOutput, c>
-  >;
+  ): [
+    InvertPatternForExclude<p1, value>,
+    InvertPatternForExclude<p2, value>
+  ] extends [infer excluded1, infer excluded2]
+    ? Match<
+        ExcludeMatched<i, excluded1 | excluded2>,
+        o,
+        [...patternValueTuples, excluded1, excluded2],
+        Union<inferredOutput, c>
+      >
+    : never;
 
   with<
     p1 extends Pattern<i>,
@@ -77,18 +91,33 @@ export type Match<
       ...patterns: ps,
       handler: (value: value) => PickReturnValue<o, c>
     ]
-  ): Match<
-    i,
-    o,
-    [
-      ...patternValueTuples,
-      [p1, value],
-      [p2, value],
-      [p3, value],
-      ...MakeTuples<ps, value>
-    ],
-    Union<inferredOutput, c>
-  >;
+  ): [
+    InvertPatternForExclude<p1, value>,
+    InvertPatternForExclude<p2, value>,
+    InvertPatternForExclude<p3, value>,
+    MakeTuples<ps, value>
+  ] extends [
+    infer excluded1,
+    infer excluded2,
+    infer excluded3,
+    infer excludedRest extends any[]
+  ]
+    ? Match<
+        ExcludeMatched<
+          i,
+          excluded1 | excluded2 | excluded3 | excludedRest[number]
+        >,
+        o,
+        [
+          ...patternValueTuples,
+          excluded1,
+          excluded2,
+          excluded3,
+          ...excludedRest
+        ],
+        Union<inferredOutput, c>
+      >
+    : never;
 
   with<
     pat extends Pattern<i>,
@@ -102,14 +131,14 @@ export type Match<
       selections: FindSelected<value, pat>,
       value: value
     ) => PickReturnValue<o, c>
-  ): Match<
-    i,
-    o,
-    pred extends (value: any) => value is infer narrowed
-      ? [...patternValueTuples, [Matcher<unknown, narrowed>, value]]
-      : patternValueTuples,
-    Union<inferredOutput, c>
-  >;
+  ): pred extends (value: any) => value is infer narrowed
+    ? Match<
+        ExcludeMatched<i, narrowed>,
+        o,
+        [...patternValueTuples, narrowed],
+        Union<inferredOutput, c>
+      >
+    : Match<i, o, patternValueTuples, Union<inferredOutput, c>>;
 
   /**
    * `.when(predicate, handler)` Registers a predicate function and an handler function.
@@ -120,14 +149,14 @@ export type Match<
   when<pred extends (value: i) => unknown, c, value extends GuardValue<pred>>(
     predicate: pred,
     handler: (value: value) => PickReturnValue<o, c>
-  ): Match<
-    i,
-    o,
-    pred extends (value: any) => value is infer narrowed
-      ? [...patternValueTuples, [Matcher<unknown, narrowed>, value]]
-      : patternValueTuples,
-    Union<inferredOutput, c>
-  >;
+  ): pred extends (value: any) => value is infer narrowed
+    ? Match<
+        ExcludeMatched<i, narrowed>,
+        o,
+        [...patternValueTuples, narrowed],
+        Union<inferredOutput, c>
+      >
+    : Match<i, o, patternValueTuples, Union<inferredOutput, c>>;
 
   /**
    * `.otherwise()` takes a function returning the **default value**, and
@@ -181,13 +210,12 @@ export type Match<
  *   of the returned tuple.
  * - For the second part though I'm not aware a cheap way of sorting a tuple.
  */
-type DeepExcludeAll<a, tupleList extends any[]> = tupleList extends [
-  [infer p, infer v],
-  ...infer tail
-]
-  ? DeepExcludeAll<DeepExclude<a, InvertPatternForExclude<p, v>>, tail>
+type DeepExcludeAll<a, tupleList extends any[]> = [a] extends [never]
+  ? never
+  : tupleList extends [infer matched, ...infer tail]
+  ? DeepExcludeAll<DeepExclude<a, matched>, tail>
   : a;
 
 type MakeTuples<ps extends any[], value> = {
-  -readonly [index in keyof ps]: [ps[index], value];
+  -readonly [index in keyof ps]: InvertPatternForExclude<ps[index], value>;
 };

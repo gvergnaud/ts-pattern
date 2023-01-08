@@ -20,7 +20,6 @@ describe('type errors', () => {
     match<Country>('France')
       // @ts-expect-error: 'Spai' instead of 'Spain'
       .with('France', 'Germany', 'Spai', (x) => 'Europe')
-      .with('USA', () => 'America')
       .exhaustive();
 
     match<Country>('Germany')
@@ -35,7 +34,7 @@ describe('type errors', () => {
       .with('Germany', 'Spain', () => 'Europe')
       // @ts-expect-error: 'US' instead of 'USA'
       .with('US', (x) => {
-        type t = Expect<Equal<typeof x, Country>>;
+        type t = Expect<Equal<typeof x, 'France' | 'USA'>>;
         return 'America';
       })
       .exhaustive();
@@ -47,16 +46,12 @@ describe('type errors', () => {
         .with({ kind: 'some', value: { x: 2 } }, () => '2')
         // @ts-expect-error, value.x should be a number
         .with({ value: { x: '' } }, () => '2')
-        .with({ kind: 'some' }, () => '2')
-        .with({ kind: 'none' }, () => '')
-        .with({ kind: 'some', value: P.any }, () => '')
         .exhaustive();
 
     const f2 = (input: Option<number>) =>
       match(input)
         // @ts-expect-error: value is a number
         .with({ kind: 'some', value: 'string' }, () => '')
-        .with({ kind: 'none' }, () => 0)
         .exhaustive();
   });
 
