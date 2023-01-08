@@ -47,13 +47,13 @@ describe('instanceOf', () => {
 
   it('issue #63: should work on union of errors', () => {
     class FooError extends Error {
-      constructor(public foo?: string) {
+      constructor(public foo: string) {
         super();
       }
     }
 
     class BazError extends Error {
-      constructor(public baz?: string) {
+      constructor(public baz: string) {
         super();
       }
     }

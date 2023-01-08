@@ -49,39 +49,56 @@ describe('optional', () => {
       | { type: 'a'; a?: { name: string; age: number } }
       | { type: 'b'; b?: 'test' };
 
+    const input = { type: 'b' } as Input;
+
+    match(input).with(
+      { type: 'a', a: P.optional({ name: P.select() }) },
+      (x) => {
+        type t = Expect<Equal<typeof x, string | undefined>>;
+        return x;
+      }
+    );
+
+    match(input).with({ type: 'a', a: P.optional(P.select()) }, (x) => {
+      type t = Expect<
+        Equal<typeof x, { name: string; age: number } | undefined>
+      >;
+      return x;
+    });
+
+    match(input).with(
+      { type: 'b', b: P.select(P.optional(P.union('test'))) },
+      (x) => {
+        type t = Expect<Equal<typeof x, 'test' | undefined>>;
+        return x;
+      }
+    );
+
+    match(input).with({ a: P.not(undefined) }, (x) => {
+      type t = Expect<
+        Equal<
+          typeof x,
+          {
+            type: 'a';
+            a: {
+              name: string;
+              age: number;
+            };
+          }
+        >
+      >;
+      return '1';
+    });
+
     const f = (input: Input) =>
       match(input)
         .with({ type: 'a', a: P.optional({ name: P.select() }) }, (x) => {
           type t = Expect<Equal<typeof x, string | undefined>>;
           return x;
         })
-        .with({ type: 'a', a: P.optional(P.select()) }, (x) => {
-          type t = Expect<
-            Equal<typeof x, { name: string; age: number } | undefined>
-          >;
-          return x;
-        })
         .with({ type: 'b', b: P.optional(P.select(P.union('test'))) }, (x) => {
           type t = Expect<Equal<typeof x, 'test' | undefined>>;
           return x;
-        })
-        .with({ a: undefined }, (x) => {
-          return '1';
-        })
-        .with({ a: P.not(undefined) }, (x) => {
-          type t = Expect<
-            Equal<
-              typeof x,
-              {
-                type: 'a';
-                a: {
-                  name: string;
-                  age: number;
-                };
-              }
-            >
-          >;
-          return '1';
         })
         .exhaustive();
 
@@ -105,12 +122,6 @@ describe('optional', () => {
           }
         )
         .with({ b: 'b' }, (x) => {
-          return '1';
-        })
-        .with({ a: undefined }, (x) => {
-          return '1';
-        })
-        .with({ a: P.not(undefined) }, (x) => {
           return '1';
         })
         .exhaustive()

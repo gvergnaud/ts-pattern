@@ -38,11 +38,11 @@ describe('Unions (a | b)', () => {
       id: 2,
       content: { body: 'yo' },
     })
-      .with({ type: 'post', content: P._ }, (x) => {
+      .with({ type: 'post', id: 7 }, (x) => {
         type t = Expect<Equal<typeof x, Post>>;
         return 1;
       })
-      .with({ type: 'post', id: 7 }, (x) => {
+      .with({ type: 'post', content: P._ }, (x) => {
         type t = Expect<Equal<typeof x, Post>>;
         return 1;
       })
