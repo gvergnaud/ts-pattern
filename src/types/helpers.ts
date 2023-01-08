@@ -204,3 +204,11 @@ export type GuardValue<fn> = fn extends (value: any) => value is infer b
 export type GuardFunction<input, narrowed> =
   | ((value: input) => value is Cast<narrowed, input>)
   | ((value: input) => boolean);
+
+export type Some<bools extends boolean[]> = true extends bools[number]
+  ? true
+  : false;
+
+export type All<bools extends boolean[]> = bools[number] extends true
+  ? true
+  : false;

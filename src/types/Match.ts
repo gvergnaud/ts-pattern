@@ -14,8 +14,6 @@ export type MatchedValue<a, invpattern> = WithDefault<
 
 export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;
 
-type ExcludeMatched<a, b> = unknown extends b ? a : Exclude<a, b>;
-
 type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 
 /**
@@ -37,7 +35,8 @@ export type Match<
   with<
     p extends Pattern<i>,
     c,
-    value extends MatchedValue<i, InvertPattern<p>>
+    value extends MatchedValue<i, InvertPattern<p>>,
+    x = InvertPatternForExclude<p, value>
   >(
     pattern: p,
     handler: (
@@ -46,7 +45,7 @@ export type Match<
     ) => PickReturnValue<o, c>
   ): [InvertPatternForExclude<p, value>] extends [infer excluded]
     ? Match<
-        ExcludeMatched<i, excluded>,
+        Exclude<i, excluded>,
         o,
         [...patternValueTuples, excluded],
         Union<inferredOutput, c>
@@ -68,7 +67,7 @@ export type Match<
     InvertPatternForExclude<p2, value>
   ] extends [infer excluded1, infer excluded2]
     ? Match<
-        ExcludeMatched<i, excluded1 | excluded2>,
+        Exclude<i, excluded1 | excluded2>,
         o,
         [...patternValueTuples, excluded1, excluded2],
         Union<inferredOutput, c>
@@ -103,10 +102,7 @@ export type Match<
     infer excludedRest extends any[]
   ]
     ? Match<
-        ExcludeMatched<
-          i,
-          excluded1 | excluded2 | excluded3 | excludedRest[number]
-        >,
+        Exclude<i, excluded1 | excluded2 | excluded3 | excludedRest[number]>,
         o,
         [
           ...patternValueTuples,
@@ -133,7 +129,7 @@ export type Match<
     ) => PickReturnValue<o, c>
   ): pred extends (value: any) => value is infer narrowed
     ? Match<
-        ExcludeMatched<i, narrowed>,
+        Exclude<i, narrowed>,
         o,
         [...patternValueTuples, narrowed],
         Union<inferredOutput, c>
@@ -151,7 +147,7 @@ export type Match<
     handler: (value: value) => PickReturnValue<o, c>
   ): pred extends (value: any) => value is infer narrowed
     ? Match<
-        ExcludeMatched<i, narrowed>,
+        Exclude<i, narrowed>,
         o,
         [...patternValueTuples, narrowed],
         Union<inferredOutput, c>

@@ -49,7 +49,7 @@ describe('not', () => {
           type t = Expect<Equal<typeof x, 'one'>>;
           return 'not 2';
         })
-        .run();
+        .exhaustive();
 
     expect(get('two')).toEqual('not 1');
     expect(get('one')).toEqual('not 2');
