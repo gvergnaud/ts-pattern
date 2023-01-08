@@ -8,7 +8,7 @@ import {
   Cast,
   Equal,
 } from './helpers';
-import type { Matcher, ToExclude } from './Pattern';
+import type { Matcher, Pattern, ToExclude } from './Pattern';
 
 type OptionalKeys<p> = ValueOf<{
   [k in keyof p]: p[k] extends Matcher<any, any, infer matcherType>
@@ -107,7 +107,7 @@ export type ReduceIntersectionForExclude<
   ? ReduceIntersectionForExclude<
       tail,
       i,
-      output & InvertPatternForExclude<p, i, unknown>
+      output & InvertPatternForExcludeInternal<p, i, unknown>
     >
   : output;
 
@@ -119,25 +119,30 @@ export type ReduceUnionForExclude<
   ? ReduceUnionForExclude<
       tail,
       i,
-      output | InvertPatternForExclude<p, i, never>
+      output | InvertPatternForExcludeInternal<p, i, never>
     >
   : output;
 
-type ExcludeIfExists<a, b> = [b] extends [never]
-  ? never
-  : DeepExclude<a, b> extends infer excluded
-  ? Equal<a, excluded> extends true
-    ? // unknown is much faster because
-      // this won't lead to fully distrubiting the input type
-      // and is equivalent to `a`
-      unknown
-    : excluded
-  : never;
+type ExcludeIfExists<a, b> =
+  // If b is of type never, it probably means that P.not
+  // was called with a `P.when` that wasn't a type guard function.
+  // in this case we do not exclude
+  [b] extends [never]
+    ? never
+    : // If a is unknown, we can't exclude
+    // (Unless negative types are added in the future)
+    unknown extends a
+    ? never
+    : DeepExclude<a, b>;
 
 /**
  * ### InvertPatternForExclude
  */
-export type InvertPatternForExclude<p, i, empty = never> = p extends Matcher<
+export type InvertPatternForExclude<p, i> = Equal<p, Pattern<i>> extends true
+  ? never
+  : InvertPatternForExcludeInternal<p, i>;
+
+type InvertPatternForExcludeInternal<p, i, empty = never> = p extends Matcher<
   infer matchableInput,
   infer subpattern,
   infer matcherType,
@@ -145,18 +150,20 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matcher<
   infer excluded
 >
   ? {
-      select: InvertPatternForExclude<subpattern, i, empty>;
+      select: InvertPatternForExcludeInternal<subpattern, i, empty>;
       array: i extends readonly (infer ii)[]
-        ? InvertPatternForExclude<subpattern, ii, empty>[]
+        ? InvertPatternForExcludeInternal<subpattern, ii, empty>[]
         : empty;
-      optional: InvertPatternForExclude<subpattern, i, empty> | undefined;
+      optional:
+        | InvertPatternForExcludeInternal<subpattern, i, empty>
+        | undefined;
       and: ReduceIntersectionForExclude<Cast<subpattern, any[]>, i>;
       or: ReduceUnionForExclude<Cast<subpattern, any[]>, i>;
       not: ExcludeIfExists<
         // we use matchableInput if possible because it represent the
         // union of all possible value, but i is only one of these values.
         unknown extends matchableInput ? i : matchableInput,
-        InvertPatternForExclude<subpattern, i>
+        InvertPatternForExcludeInternal<subpattern, i>
       >;
       default: excluded;
     }[matcherType]
@@ -171,52 +178,52 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matcher<
     ? p extends readonly [infer p1, infer p2, infer p3, infer p4, infer p5]
       ? i extends readonly [infer i1, infer i2, infer i3, infer i4, infer i5]
         ? readonly [
-            InvertPatternForExclude<p1, i1, empty>,
-            InvertPatternForExclude<p2, i2, empty>,
-            InvertPatternForExclude<p3, i3, empty>,
-            InvertPatternForExclude<p4, i4, empty>,
-            InvertPatternForExclude<p5, i5, empty>
+            InvertPatternForExcludeInternal<p1, i1, empty>,
+            InvertPatternForExcludeInternal<p2, i2, empty>,
+            InvertPatternForExcludeInternal<p3, i3, empty>,
+            InvertPatternForExcludeInternal<p4, i4, empty>,
+            InvertPatternForExcludeInternal<p5, i5, empty>
           ]
         : empty
       : p extends readonly [infer p1, infer p2, infer p3, infer p4]
       ? i extends readonly [infer i1, infer i2, infer i3, infer i4]
         ? readonly [
-            InvertPatternForExclude<p1, i1, empty>,
-            InvertPatternForExclude<p2, i2, empty>,
-            InvertPatternForExclude<p3, i3, empty>,
-            InvertPatternForExclude<p4, i4, empty>
+            InvertPatternForExcludeInternal<p1, i1, empty>,
+            InvertPatternForExcludeInternal<p2, i2, empty>,
+            InvertPatternForExcludeInternal<p3, i3, empty>,
+            InvertPatternForExcludeInternal<p4, i4, empty>
           ]
         : empty
       : p extends readonly [infer p1, infer p2, infer p3]
       ? i extends readonly [infer i1, infer i2, infer i3]
         ? readonly [
-            InvertPatternForExclude<p1, i1, empty>,
-            InvertPatternForExclude<p2, i2, empty>,
-            InvertPatternForExclude<p3, i3, empty>
+            InvertPatternForExcludeInternal<p1, i1, empty>,
+            InvertPatternForExcludeInternal<p2, i2, empty>,
+            InvertPatternForExcludeInternal<p3, i3, empty>
           ]
         : empty
       : p extends readonly [infer p1, infer p2]
       ? i extends readonly [infer i1, infer i2]
         ? readonly [
-            InvertPatternForExclude<p1, i1, empty>,
-            InvertPatternForExclude<p2, i2, empty>
+            InvertPatternForExcludeInternal<p1, i1, empty>,
+            InvertPatternForExcludeInternal<p2, i2, empty>
           ]
         : empty
       : p extends readonly [infer p1]
       ? i extends readonly [infer i1]
-        ? readonly [InvertPatternForExclude<p1, i1, empty>]
+        ? readonly [InvertPatternForExcludeInternal<p1, i1, empty>]
         : empty
       : p extends readonly []
       ? []
-      : InvertPatternForExclude<pp, ii, empty>[]
+      : InvertPatternForExcludeInternal<pp, ii, empty>[]
     : empty
   : p extends Map<infer pk, infer pv>
   ? i extends Map<any, infer iv>
-    ? Map<pk, InvertPatternForExclude<pv, iv, empty>>
+    ? Map<pk, InvertPatternForExcludeInternal<pv, iv, empty>>
     : empty
   : p extends Set<infer pv>
   ? i extends Set<infer iv>
-    ? Set<InvertPatternForExclude<pv, iv, empty>>
+    ? Set<InvertPatternForExcludeInternal<pv, iv, empty>>
     : empty
   : IsPlainObject<p> extends true
   ? i extends object
@@ -226,17 +233,17 @@ export type InvertPatternForExclude<p, i, empty = never> = p extends Matcher<
       ? [optKeys] extends [never]
         ? {
             readonly [k in keyof p]: k extends keyof i
-              ? InvertPatternForExclude<p[k], i[k], empty>
+              ? InvertPatternForExcludeInternal<p[k], i[k], empty>
               : InvertPattern<p[k]>;
           }
         : Compute<
             {
               readonly [k in Exclude<keyof p, optKeys>]: k extends keyof i
-                ? InvertPatternForExclude<p[k], i[k], empty>
+                ? InvertPatternForExcludeInternal<p[k], i[k], empty>
                 : InvertPattern<p[k]>;
             } & {
               readonly [k in Cast<optKeys, keyof p>]?: k extends keyof i
-                ? InvertPatternForExclude<p[k], i[k], empty>
+                ? InvertPatternForExcludeInternal<p[k], i[k], empty>
                 : InvertPattern<p[k]>;
             }
           >
