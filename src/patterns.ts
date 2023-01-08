@@ -14,6 +14,7 @@ import {
   SelectP,
   AnonymousSelectP,
   GuardExcludeP,
+  Matcher,
 } from './types/Pattern';
 
 export { Pattern };
@@ -43,8 +44,8 @@ export type infer<p extends Pattern<any>> = InvertPattern<p>;
 export function optional<
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<input>
->(pattern: p): OptionalP<input, p> {
-  return {
+>(pattern: p): Chainable<OptionalP<input, p>> {
+  return assignModifiers({
     [symbols.matcher]() {
       return {
         match: <I>(value: I | input) => {
@@ -65,7 +66,7 @@ export function optional<
         matcherType: 'optional',
       };
     },
-  };
+  });
 }
 
 type Elem<xs> = xs extends Array<infer x> ? x : never;
@@ -83,8 +84,8 @@ type Elem<xs> = xs extends Array<infer x> ? x : never;
 export function array<
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
->(pattern: p): ArrayP<input, p> {
-  return {
+>(pattern: p): Chainable<ArrayP<input, p>> {
+  return assignModifiers({
     [symbols.matcher]() {
       return {
         match: <I>(value: I | input) => {
@@ -112,7 +113,7 @@ export function array<
         getSelectionKeys: () => getSelectionKeys(pattern),
       };
     },
-  };
+  });
 }
 
 /**
@@ -139,8 +140,8 @@ export function intersection<
   ps extends unknown extends input
     ? [UnknownPattern, ...UnknownPattern[]]
     : [Pattern<input>, ...Pattern<input>[]]
->(...patterns: ps): AndP<input, ps> {
-  return {
+>(...patterns: ps): Chainable<AndP<input, ps>> {
+  return assignModifiers({
     [symbols.matcher]: () => ({
       match: (value) => {
         let selections: Record<string, unknown[]> = {};
@@ -156,7 +157,7 @@ export function intersection<
         flatMap(patterns as UnknownPattern[], getSelectionKeys),
       matcherType: 'and',
     }),
-  };
+  });
 }
 
 /**
@@ -177,8 +178,8 @@ export function union<
   ps extends unknown extends input
     ? [UnknownPattern, ...UnknownPattern[]]
     : [Pattern<input>, ...Pattern<input>[]]
->(...patterns: ps): OrP<input, ps> {
-  return {
+>(...patterns: ps): Chainable<OrP<input, ps>> {
+  return assignModifiers({
     [symbols.matcher]: () => ({
       match: <I>(value: I | input) => {
         let selections: Record<string, unknown[]> = {};
@@ -197,7 +198,7 @@ export function union<
         flatMap(patterns as UnknownPattern[], getSelectionKeys),
       matcherType: 'or',
     }),
-  };
+  });
 }
 
 /**
@@ -214,8 +215,8 @@ export function union<
 export function not<
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<input> | undefined
->(pattern: p): NotP<input, p> {
-  return {
+>(pattern: p): Chainable<NotP<input, p>> {
+  return assignModifiers({
     [symbols.matcher]: () => ({
       match: <I>(value: I | input) => ({
         matched: !matchPattern(pattern, value, () => {}),
@@ -223,7 +224,7 @@ export function not<
       getSelectionKeys: () => [],
       matcherType: 'not',
     }),
-  };
+  });
 }
 
 /**
@@ -239,26 +240,30 @@ export function not<
  */
 export function when<input, p extends (value: input) => unknown>(
   predicate: p
-): GuardP<
-  input,
-  p extends (value: any) => value is infer narrowed ? narrowed : never
+): Chainable<
+  GuardP<
+    input,
+    p extends (value: any) => value is infer narrowed ? narrowed : never
+  >
 >;
 export function when<input, narrowed extends input, excluded>(
   predicate: (input: input) => input is narrowed
-): GuardExcludeP<input, narrowed, excluded>;
+): Chainable<GuardExcludeP<input, narrowed, excluded>>;
 export function when<input, p extends (value: input) => unknown>(
   predicate: p
-): GuardP<
-  input,
-  p extends (value: any) => value is infer narrowed ? narrowed : never
+): Chainable<
+  GuardP<
+    input,
+    p extends (value: any) => value is infer narrowed ? narrowed : never
+  >
 > {
-  return {
+  return assignModifiers({
     [symbols.matcher]: () => ({
       match: <I>(value: I | input) => ({
         matched: Boolean(predicate(value as input)),
       }),
     }),
-  };
+  });
 }
 
 /**
@@ -272,7 +277,7 @@ export function when<input, p extends (value: input) => unknown>(
  *   .with({ age: P.select() }, (age) => 'age: number'
  *   )
  */
-export function select(): AnonymousSelectP;
+export function select(): Chainable<AnonymousSelectP>;
 export function select<
   input,
   patternOrKey extends
@@ -281,16 +286,16 @@ export function select<
 >(
   patternOrKey: patternOrKey
 ): patternOrKey extends string
-  ? SelectP<patternOrKey>
-  : SelectP<symbols.anonymousSelectKey, input, patternOrKey>;
+  ? Chainable<SelectP<patternOrKey>>
+  : Chainable<SelectP<symbols.anonymousSelectKey, input, patternOrKey>>;
 export function select<
   input,
   p extends unknown extends input ? UnknownPattern : Pattern<input>,
   k extends string
->(key: k, pattern: p): SelectP<k, input, p>;
+>(key: k, pattern: p): Chainable<SelectP<k, input, p>>;
 export function select(
   ...args: [keyOrPattern?: unknown | string, pattern?: unknown]
-): SelectP<string> {
+): Chainable<SelectP<string>> {
   const key: string | undefined =
     typeof args[0] === 'string' ? args[0] : undefined;
   const pattern: unknown =
@@ -299,7 +304,7 @@ export function select(
       : typeof args[0] === 'string'
       ? undefined
       : args[0];
-  return {
+  return assignModifiers({
     [symbols.matcher]() {
       return {
         match: (value) => {
@@ -323,7 +328,7 @@ export function select(
           ),
       };
     },
-  };
+  });
 }
 
 function isUnknown(x: unknown): x is unknown {
@@ -360,6 +365,33 @@ function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
   return (val: unknown): val is InstanceType<T> =>
     val instanceof classConstructor;
 }
+
+type Chainable<p> = p & {
+  optional<input>(): Chainable<OptionalP<input, p>>;
+  and<input, p2 extends Pattern<input>>(
+    pattern: p2
+  ): Chainable<AndP<input, [p, p2]>>;
+  or<input, p2 extends Pattern<input>>(
+    pattern: p2
+  ): Chainable<OrP<input, [p, p2]>>;
+  select<input>(): Chainable<SelectP<symbols.anonymousSelectKey, input, p>>;
+  select<input, k extends string>(
+    key: k,
+    pattern: p
+  ): Chainable<SelectP<k, input, p>>;
+};
+
+const assignModifiers = <p extends Matcher<any, any, any, any, any>>(
+  pattern: p
+): Chainable<p> => {
+  return Object.assign(pattern, {
+    optional: () => optional(pattern) as any,
+    and: (p2: any) => intersection(pattern, p2) as any,
+    or: (p2: any) => union(pattern, p2) as any,
+    select: (key: any) =>
+      key === undefined ? select(pattern) : select(key, pattern),
+  }) as any;
+};
 
 /**
  * `P.any` is a wildcard pattern, matching **any value**.
@@ -457,7 +489,7 @@ export const nullish = when(isNullish);
  */
 export function instanceOf<T extends AnyConstructor>(
   classConstructor: T
-): GuardP<unknown, InstanceType<T>> {
+): Chainable<GuardP<unknown, InstanceType<T>>> {
   return when(isInstanceOf(classConstructor));
 }
 
