@@ -94,15 +94,7 @@ describe('tuple ([a, b])', () => {
               type t = Expect<Equal<typeof x, [string, number]>>;
               return `not matching`;
             })
-            .with([P._, P._], (x) => {
-              type t = Expect<Equal<typeof x, [string, number]>>;
-              return `can't happen`;
-            })
-            .with(P._, (x) => {
-              type t = Expect<Equal<typeof x, [string, number]>>;
-              return `can't happen`;
-            })
-            .run()
+            .exhaustive()
         ).toEqual(expected);
       });
     });

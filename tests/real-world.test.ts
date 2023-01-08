@@ -108,7 +108,7 @@ describe('real world example of a complex input type', () => {
         (queries) => queries
       )
       .with(
-        { viz: 'sunburst', requests: P.array({ response_format: P.select() }) },
+        { viz: 'geomap', requests: P.array({ response_format: P.select() }) },
         (scalars) => scalars
       )
       .with(
@@ -118,8 +118,6 @@ describe('real world example of a complex input type', () => {
             'timeseries',
             'heatmap',
             'scatterplot',
-            'sunburst',
-            'wildcard',
             'query_table'
           ),
         },

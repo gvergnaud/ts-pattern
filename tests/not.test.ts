@@ -49,7 +49,7 @@ describe('not', () => {
           type t = Expect<Equal<typeof x, 'one'>>;
           return 'not 2';
         })
-        .run();
+        .exhaustive();
 
     expect(get('two')).toEqual('not 1');
     expect(get('one')).toEqual('not 2');
@@ -88,7 +88,7 @@ describe('not', () => {
           type t = Expect<Equal<typeof x, { type: 'error' }>>;
           return 'error';
         })
-        .with({ type: P.not('error') }, (x) => {
+        .with({ type: 'success' }, (x) => {
           type t = Expect<Equal<typeof x, { type: 'success' }>>;
           return 'success';
         })
