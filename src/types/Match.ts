@@ -207,8 +207,8 @@ export type Match<
  */
 type DeepExcludeAll<a, tupleList extends any[]> = [a] extends [never]
   ? never
-  : tupleList extends [infer matched, ...infer tail]
-  ? DeepExcludeAll<DeepExclude<a, matched>, tail>
+  : tupleList extends [infer excluded, ...infer tail]
+  ? DeepExcludeAll<DeepExclude<a, excluded>, tail>
   : a;
 
 type MakeTuples<ps extends any[], value> = {
