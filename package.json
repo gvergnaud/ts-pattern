@@ -5,17 +5,13 @@
   "type": "module",
   "source": "src/index.ts",
   "exports": {
-    "./package.json": "./package.json",
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.modern.js"
-      },
-      "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.cjs"
-      }
-    }
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.module.js",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.modern.js"
+    },
+    "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
   "types": "dist/index.d.ts",
