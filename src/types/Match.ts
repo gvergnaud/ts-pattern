@@ -98,17 +98,23 @@ export type Match<
     infer excluded1,
     infer excluded2,
     infer excluded3,
-    infer excludedRest extends any[]
+    infer excludedRest
   ]
     ? Match<
-        Exclude<i, excluded1 | excluded2 | excluded3 | excludedRest[number]>,
+        Exclude<
+          i,
+          | excluded1
+          | excluded2
+          | excluded3
+          | Extract<excludedRest, any[]>[number]
+        >,
         o,
         [
           ...patternValueTuples,
           excluded1,
           excluded2,
           excluded3,
-          ...excludedRest
+          ...Extract<excludedRest, any[]>
         ],
         Union<inferredOutput, c>
       >
