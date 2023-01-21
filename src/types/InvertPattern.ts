@@ -5,7 +5,6 @@ import {
   IsLiteral,
   ValueOf,
   Compute,
-  Cast,
   Equal,
   Extends,
   Not,
@@ -22,15 +21,15 @@ type OptionalKeys<p> = ValueOf<{
     : never;
 }>;
 
-type ReduceUnion<tuple extends any[], output = never> = tuple extends readonly [
-  infer p,
-  ...infer tail
-]
+type ReduceUnion<
+  tuple extends readonly any[],
+  output = never
+> = tuple extends readonly [infer p, ...infer tail]
   ? ReduceUnion<tail, output | InvertPattern<p>>
   : output;
 
 type ReduceIntersection<
-  tuple extends any[],
+  tuple extends readonly any[],
   output = unknown
 > = tuple extends readonly [infer p, ...infer tail]
   ? ReduceIntersection<tail, output & InvertPattern<p>>
@@ -52,8 +51,8 @@ export type InvertPattern<p> = p extends Matcher<
       select: InvertPattern<narrowed>;
       array: InvertPattern<narrowed>[];
       optional: InvertPattern<narrowed> | undefined;
-      and: ReduceIntersection<Cast<narrowed, any[]>>;
-      or: ReduceUnion<Cast<narrowed, any[]>>;
+      and: ReduceIntersection<Extract<narrowed, readonly any[]>>;
+      or: ReduceUnion<Extract<narrowed, readonly any[]>>;
       default: [narrowed] extends [never] ? input : narrowed;
     }[matcherType]
   : p extends Primitives
@@ -97,14 +96,14 @@ export type InvertPattern<p> = p extends Matcher<
           {
             [k in Exclude<keyof p, optKeys>]: InvertPattern<p[k]>;
           } & {
-            [k in Cast<optKeys, keyof p>]?: InvertPattern<p[k]>;
+            [k in Extract<optKeys, keyof p>]?: InvertPattern<p[k]>;
           }
         >
     : never
   : p;
 
 export type ReduceIntersectionForExclude<
-  tuple extends any[],
+  tuple extends readonly any[],
   i,
   output = unknown
 > = tuple extends readonly [infer p, ...infer tail]
@@ -116,7 +115,7 @@ export type ReduceIntersectionForExclude<
   : output;
 
 export type ReduceUnionForExclude<
-  tuple extends any[],
+  tuple extends readonly any[],
   i,
   output = never
 > = tuple extends readonly [infer p, ...infer tail]
@@ -186,8 +185,11 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
         optional:
           | InvertPatternForExcludeInternal<subpattern, i, empty>
           | undefined;
-        and: ReduceIntersectionForExclude<Cast<subpattern, any[]>, i>;
-        or: ReduceUnionForExclude<Cast<subpattern, any[]>, i>;
+        and: ReduceIntersectionForExclude<
+          Extract<subpattern, readonly any[]>,
+          i
+        >;
+        or: ReduceUnionForExclude<Extract<subpattern, readonly any[]>, i>;
         not: ExcludeIfExists<
           // we use matchableInput if possible because it represent the
           // union of all possible value, but i is only one of these values.
@@ -265,7 +267,7 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
                   ? InvertPatternForExcludeInternal<p[k], i[k], empty>
                   : InvertPattern<p[k]>;
               } & {
-                readonly [k in Cast<optKeys, keyof p>]?: k extends keyof i
+                readonly [k in Extract<optKeys, keyof p>]?: k extends keyof i
                   ? InvertPatternForExcludeInternal<p[k], i[k], empty>
                   : InvertPattern<p[k]>;
               }

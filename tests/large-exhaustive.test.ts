@@ -1,17 +1,17 @@
 import { match, P } from '../src';
-import { Equal, Expect } from '../src/types/helpers';
+import { Compute, Equal, Expect } from '../src/types/helpers';
 
 describe('large exhaustive', () => {
   // prettier-ignore
-  type LargeObject = {
-    a1: number; b1: number; c1: number; d1: number; e1: number; f1: number; g1: number; h1: number; i1: number; j1: number; k1: number; l1: number; m1: number; n1: number; o1: number; p1: number; q1: number; r1: number; s1: number; t1: number; u1: number; v1: number; w1: number; x1: number; y1: number; z1: number;
-    a2: number; b2: number; c2: number; d2: number; e2: number; f2: number; g2: number; h2: number; i2: number; j2: number; k2: number; l2: number; m2: number; n2: number; o2: number; p2: number; q2: number; r2: number; s2: number; t2: number; u2: number; v2: number; w2: number; x2: number; y2: number; z2: number;
-    a3: number; b3: number; c3: number; d3: number; e3: number; f3: number; g3: number; h3: number; i3: number; j3: number; k3: number; l3: number; m3: number; n3: number; o3: number; p3: number; q3: number; r3: number; s3: number; t3: number; u3: number; v3: number; w3: number; x3: number; y3: number; z3: number;
-};
+  type LargeObject<T> = Compute<{
+    a1: T; b1: T; c1: T; d1: T; e1: T; f1: T; g1: T; h1: T; i1: T; j1: T; k1: T; l1: T; m1: T; n1: T; o1: T; p1: T; q1: T; r1: T; s1: T; t1: T; u1: T; v1: T; w1: T; x1: T; y1: T; z1: T;
+    a2: T; b2: T; c2: T; d2: T; e2: T; f2: T; g2: T; h2: T; i2: T; j2: T; k2: T; l2: T; m2: T; n2: T; o2: T; p2: T; q2: T; r2: T; s2: T; t2: T; u2: T; v2: T; w2: T; x2: T; y2: T; z2: T;
+    a3: T; b3: T; c3: T; d3: T; e3: T; f3: T; g3: T; h3: T; i3: T; j3: T; k3: T; l3: T; m3: T; n3: T; o3: T; p3: T; q3: T; r3: T; s3: T; t3: T; u3: T; v3: T; w3: T; x3: T; y3: T; z3: T;
+}>;
 
   it('large objects', () => {
     expect(
-      match<LargeObject | null>(null)
+      match<LargeObject<number> | null>(null)
         .with(
           // prettier-ignore
           {
@@ -38,7 +38,14 @@ describe('large exhaustive', () => {
   it('large tuple', () => {
     expect(
       match<
-        [LargeObject, LargeObject, LargeObject, LargeObject, LargeObject] | null
+        | [
+            LargeObject<number>,
+            LargeObject<number>,
+            LargeObject<number>,
+            LargeObject<number>,
+            LargeObject<number>
+          ]
+        | null
       >(null)
         .with(
           // prettier-ignore
@@ -70,18 +77,13 @@ describe('large exhaustive', () => {
             }
           ],
           (x) => {
-            type t = Expect<
-              Equal<
-                typeof x,
-                [
-                  LargeObject,
-                  LargeObject,
-                  LargeObject,
-                  LargeObject,
-                  LargeObject
-                ]
-              >
-            >;
+            const t: [
+              LargeObject<0>,
+              LargeObject<0>,
+              LargeObject<0>,
+              LargeObject<0>,
+              LargeObject<0>
+            ] = x;
             return 'match';
           }
         )

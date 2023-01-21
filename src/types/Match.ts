@@ -33,7 +33,7 @@ export type Match<
    * [Read documentation for `.with()` on GitHub](https://github.com/gvergnaud/ts-pattern#with)
    **/
   with<
-    p extends Pattern<i>,
+    const p extends Pattern<i>,
     c,
     value extends MatchedValue<i, InvertPattern<p>>
   >(
@@ -52,8 +52,8 @@ export type Match<
     : never;
 
   with<
-    p1 extends Pattern<i>,
-    p2 extends Pattern<i>,
+    const p1 extends Pattern<i>,
+    const p2 extends Pattern<i>,
     c,
     p extends p1 | p2,
     value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
@@ -74,10 +74,10 @@ export type Match<
     : never;
 
   with<
-    p1 extends Pattern<i>,
-    p2 extends Pattern<i>,
-    p3 extends Pattern<i>,
-    ps extends Pattern<i>[],
+    const p1 extends Pattern<i>,
+    const p2 extends Pattern<i>,
+    const p3 extends Pattern<i>,
+    const ps extends readonly Pattern<i>[],
     c,
     p extends p1 | p2 | p3 | ps[number],
     value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
@@ -121,7 +121,7 @@ export type Match<
     : never;
 
   with<
-    pat extends Pattern<i>,
+    const pat extends Pattern<i>,
     pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
     c,
     value extends GuardValue<pred>
@@ -217,6 +217,6 @@ type DeepExcludeAll<a, tupleList extends any[]> = [a] extends [never]
   ? DeepExcludeAll<DeepExclude<a, excluded>, tail>
   : a;
 
-type MakeTuples<ps extends any[], value> = {
+type MakeTuples<ps extends readonly any[], value> = {
   -readonly [index in keyof ps]: InvertPatternForExclude<ps[index], value>;
 };

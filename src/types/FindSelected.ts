@@ -1,5 +1,11 @@
 import type * as symbols from '../internals/symbols';
-import type { Cast, Equal, IsAny, TupleKeys, UnionToTuple } from './helpers';
+import type {
+  Equal,
+  IsAny,
+  Primitives,
+  TupleKeys,
+  UnionToTuple,
+} from './helpers';
 import type { Matcher, Pattern } from './Pattern';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
@@ -28,9 +34,9 @@ type MapList<selections> = {
 
 type ReduceFindSelectionUnion<
   i,
-  ps extends any[],
+  ps extends readonly any[],
   output = never
-> = ps extends [infer head, ...infer tail]
+> = ps extends readonly [infer head, ...infer tail]
   ? ReduceFindSelectionUnion<i, tail, output | FindSelectionUnion<i, head>>
   : output;
 
@@ -41,24 +47,28 @@ export type FindSelectionUnion<
   path extends any[] = []
 > = IsAny<i> extends true
   ? never
+  : p extends Primitives
+  ? never
   : p extends Matcher<any, infer pattern, infer matcherType, infer sel>
   ? {
       select: sel extends Some<infer k>
         ? { [kk in k]: [i, path] } | FindSelectionUnion<i, pattern, path>
         : never;
-      array: i extends (infer ii)[]
+      array: i extends readonly (infer ii)[]
         ? MapList<FindSelectionUnion<ii, pattern>>
         : never;
       optional: MapOptional<FindSelectionUnion<i, pattern>>;
-      or: MapOptional<ReduceFindSelectionUnion<i, Cast<pattern, any[]>>>;
-      and: ReduceFindSelectionUnion<i, Cast<pattern, any[]>>;
+      or: MapOptional<
+        ReduceFindSelectionUnion<i, Extract<pattern, readonly any[]>>
+      >;
+      and: ReduceFindSelectionUnion<i, Extract<pattern, readonly any[]>>;
       not: never;
       default: sel extends Some<infer k> ? { [kk in k]: [i, path] } : never;
     }[matcherType]
   : p extends readonly (infer pp)[]
   ? i extends readonly (infer ii)[]
-    ? p extends readonly [any, ...any[]]
-      ? i extends readonly [any, ...any[]]
+    ? p extends readonly [any, ...any]
+      ? i extends readonly [any, ...any]
         ? {
             [k in TupleKeys & keyof i & keyof p]: FindSelectionUnion<
               i[k],
@@ -69,8 +79,8 @@ export type FindSelectionUnion<
         : FindSelectionUnion<ii, p[number], [...path, 0]>
       : FindSelectionUnion<ii, pp, [...path, 0]>
     : never
-  : p extends object
-  ? i extends object
+  : p extends {}
+  ? i extends {}
     ? {
         [k in keyof p]: k extends keyof i
           ? FindSelectionUnion<i[k], p[k], [...path, k]>
@@ -119,7 +129,10 @@ type ReduceToRecord<
   selections extends any[],
   output extends SelectionsRecord = {}
 > = selections extends [infer sel, ...infer rest]
-  ? ReduceToRecord<rest, ConcatSelections<Cast<sel, SelectionsRecord>, output>>
+  ? ReduceToRecord<
+      rest,
+      ConcatSelections<Extract<sel, SelectionsRecord>, output>
+    >
   : output;
 
 export type Selections<i, p> = FindSelectionUnion<i, p> extends infer u
