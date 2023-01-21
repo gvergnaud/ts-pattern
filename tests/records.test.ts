@@ -23,7 +23,7 @@ describe('Records ({})', () => {
           return 'vector3';
         })
         .with({ x: 2, y: 1 }, (x) => {
-          type t = Expect<Equal<typeof x, Vector3 | Vector2>>;
+          type t = Expect<Equal<typeof x, Vector2 | Vector3>>;
           return 'vector2';
         })
         .with({ x: 1 }, (x) => {

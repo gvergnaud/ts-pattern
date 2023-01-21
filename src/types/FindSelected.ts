@@ -1,13 +1,13 @@
 import type * as symbols from '../internals/symbols';
+import type { AnyMatcher, Matcher, Pattern } from './Pattern';
 import type {
   Equal,
   IsAny,
   Primitives,
   TupleKeys,
-  UnionToTuple,
   ValueOf,
+  UnionToTuple,
 } from './helpers';
-import type { AnyMatcher, Matcher, Pattern } from './Pattern';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 
