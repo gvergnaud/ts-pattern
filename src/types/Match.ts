@@ -1,16 +1,10 @@
 import type * as symbols from '../internals/symbols';
-import type { Pattern, Matcher } from './Pattern';
+import type { Pattern, MatchedValue } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
 import type { WithDefault, Union, GuardValue, IsNever } from './helpers';
 import type { FindSelected } from './FindSelected';
-
-// We fall back to `a` if we weren't able to extract anything more precise
-export type MatchedValue<a, invpattern> = WithDefault<
-  ExtractPreciseValue<a, invpattern>,
-  a
->;
 
 export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;
 
@@ -37,7 +31,8 @@ export type Match<
   with<
     const p extends Pattern<i>,
     c,
-    value extends MatchedValue<i, InvertPattern<p>>
+    value extends MatchedValue<i, InvertPattern<p, i>>,
+    excluded = InvertPatternForExclude<p, value>
   >(
     /**
      * HACK: Using `IsNever<p>` here is a hack to
@@ -52,21 +47,19 @@ export type Match<
       selections: FindSelected<value, p>,
       value: value
     ) => PickReturnValue<o, c>
-  ): [InvertPatternForExclude<p, value>] extends [infer excluded]
-    ? Match<
-        Exclude<i, excluded>,
-        o,
-        [...handledCases, excluded],
-        Union<inferredOutput, c>
-      >
-    : never;
+  ): Match<
+    Exclude<i, excluded>,
+    o,
+    [...handledCases, excluded],
+    Union<inferredOutput, c>
+  >;
 
   with<
     const p1 extends Pattern<i>,
     const p2 extends Pattern<i>,
     c,
     p extends p1 | p2,
-    value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
+    value extends p extends any ? MatchedValue<i, InvertPattern<p, i>> : never
   >(
     p1: p1,
     p2: p2,
@@ -90,7 +83,7 @@ export type Match<
     const ps extends readonly Pattern<i>[],
     c,
     p extends p1 | p2 | p3 | ps[number],
-    value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
+    value extends MatchedValue<i, InvertPattern<p, i>>
   >(
     ...args: [
       p1: p1,
@@ -132,7 +125,7 @@ export type Match<
 
   with<
     const pat extends Pattern<i>,
-    pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
+    pred extends (value: MatchedValue<i, InvertPattern<pat, i>>) => unknown,
     c,
     value extends GuardValue<pred>
   >(

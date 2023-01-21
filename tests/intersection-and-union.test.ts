@@ -159,7 +159,6 @@ describe('and, and or patterns', () => {
             >;
             return 'branch 2';
           })
-          // FIXME: This should work
           .exhaustive();
     });
 
@@ -618,10 +617,16 @@ describe('and, and or patterns', () => {
                 Equal<
                   typeof x,
                   | {
-                      value: { type: 'a'; n: number }[];
+                      value: {
+                        type: 'a';
+                        n: number;
+                      }[];
                     }
                   | {
-                      value: { type: 'b'; s: string }[];
+                      value: {
+                        type: 'b';
+                        s: string;
+                      }[];
                     }
                 >
               >;

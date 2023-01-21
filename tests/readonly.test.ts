@@ -1,5 +1,16 @@
 import { match } from '../src';
-import { Equal, Expect } from '../src/types/helpers';
+import { DeepExclude } from '../src/types/DeepExclude';
+import {
+  InvertPattern,
+  InvertPatternForExclude,
+} from '../src/types/InvertPattern';
+import { MatchedValue } from '../src/types/Pattern';
+import {
+  Equal,
+  Expect,
+  ExtractWithDefault,
+  IsReadonlyArray,
+} from '../src/types/helpers';
 
 describe('readonly', () => {
   describe('exhaustive', () => {
@@ -7,19 +18,19 @@ describe('readonly', () => {
       const f = (input: readonly ['a' | 'b', 'c' | 'd']) =>
         match(input)
           .with(['a', 'c'], (x) => {
-            type t = Expect<Equal<typeof x, ['a', 'c']>>;
+            type t = Expect<Equal<typeof x, readonly ['a', 'c']>>;
             return 'ok';
           })
           .with(['a', 'd'], (x) => {
-            type t = Expect<Equal<typeof x, ['a', 'd']>>;
+            type t = Expect<Equal<typeof x, readonly ['a', 'd']>>;
             return 'ok';
           })
           .with(['b', 'c'], (x) => {
-            type t = Expect<Equal<typeof x, ['b', 'c']>>;
+            type t = Expect<Equal<typeof x, readonly ['b', 'c']>>;
             return 'ok';
           })
           .with(['b', 'd'], (x) => {
-            type t = Expect<Equal<typeof x, ['b', 'd']>>;
+            type t = Expect<Equal<typeof x, readonly ['b', 'd']>>;
             return 'ok';
           })
           .exhaustive();

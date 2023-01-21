@@ -1,13 +1,15 @@
 import type * as symbols from '../internals/symbols';
+import type { AnyMatcher, Matcher, Pattern } from './Pattern';
 import type {
   Equal,
   IsAny,
   Primitives,
   TupleKeys,
-  UnionToTuple,
   ValueOf,
+  UnionToTuple,
+  Apply,
+  Fn,
 } from './helpers';
-import type { AnyMatcher, Matcher, Pattern } from './Pattern';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 
@@ -120,6 +122,7 @@ export type FindSelectionUnion<
       and: ReduceFindSelectionUnion<i, Extract<pattern, readonly any[]>>;
       not: never;
       default: sel extends Some<infer k> ? { [kk in k]: [i, path] } : never;
+      custom: never;
     }[matcherType]
   : p extends readonly any[]
   ? FindSelectionUnionInArray<i, p>

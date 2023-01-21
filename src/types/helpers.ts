@@ -155,6 +155,8 @@ export type IntersectObjects<a> = (
 
 export type WithDefault<a, def> = [a] extends [never] ? def : a;
 
+export type ExtractWithDefault<a, b, def> = a extends b ? a : def;
+
 export type IsLiteral<a> = [a] extends [null | undefined]
   ? true
   : [a] extends [string]
@@ -252,3 +254,42 @@ export type MaybeAddReadonly<
   a,
   shouldAdd extends boolean
 > = shouldAdd extends true ? Readonly<a> : a;
+
+export type MapKey<T> = T extends Map<infer K, any> ? K : never;
+
+export type MapValue<T> = T extends Map<any, infer V> ? V : never;
+
+export type SetValue<T> = T extends Set<infer V> ? V : never;
+
+export type ReadonlyArrayValue<T> = T extends ReadonlyArray<infer V>
+  ? V
+  : never;
+
+export type ExtractPlainObject<T> = T extends any
+  ? IsPlainObject<T> extends true
+    ? T
+    : never
+  : never;
+
+export type GetKey<O, K> = O extends any
+  ? K extends keyof O
+    ? O[K]
+    : never
+  : never;
+
+export interface Fn {
+  [rawArgs]: unknown;
+  args: this[rawArgs] extends infer args extends unknown[] ? args : never;
+  arg0: this[rawArgs] extends [infer arg, ...any] ? arg : never;
+  arg1: this[rawArgs] extends [any, infer arg, ...any] ? arg : never;
+  arg2: this[rawArgs] extends [any, any, infer arg, ...any] ? arg : never;
+  arg3: this[rawArgs] extends [any, any, any, infer arg, ...any] ? arg : never;
+  return: unknown;
+}
+
+export type Apply<fn extends Fn, args extends unknown[]> = (fn & {
+  [rawArgs]: args;
+})['return'];
+
+declare const rawArgs: unique symbol;
+type rawArgs = typeof rawArgs;
