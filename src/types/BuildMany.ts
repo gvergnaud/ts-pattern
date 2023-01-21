@@ -1,18 +1,18 @@
-import { Cast, Compute, Iterator, UpdateAt } from './helpers';
+import { Compute, Iterator, UpdateAt } from './helpers';
 
 // BuildMany :: DataStructure -> Union<[value, path][]> -> Union<DataStructure>
-export type BuildMany<data, xs extends any[]> = xs extends any
+export type BuildMany<data, xs extends readonly any[]> = xs extends any
   ? BuildOne<data, xs>
   : never;
 
 // BuildOne :: DataStructure
 // -> [value, path][]
 // -> DataStructure
-type BuildOne<data, xs extends any[]> = xs extends [
+type BuildOne<data, xs extends readonly any[]> = xs extends [
   [infer value, infer path],
   ...infer tail
 ]
-  ? BuildOne<Update<data, value, Cast<path, PropertyKey[]>>, tail>
+  ? BuildOne<Update<data, value, Extract<path, readonly PropertyKey[]>>, tail>
   : data;
 
 type SafeGet<data, k extends PropertyKey, def> = k extends keyof data
@@ -20,30 +20,31 @@ type SafeGet<data, k extends PropertyKey, def> = k extends keyof data
   : def;
 
 // Update :: a -> b -> PropertyKey[] -> a
-type Update<data, value, path extends PropertyKey[]> = path extends [
-  infer head,
-  ...infer tail
-]
+type Update<
+  data,
+  value,
+  path extends readonly PropertyKey[]
+> = path extends readonly [infer head, ...infer tail]
   ? data extends readonly [any, ...any]
     ? head extends number
       ? UpdateAt<
           data,
           Iterator<head>,
-          Update<data[head], value, Cast<tail, PropertyKey[]>>
+          Update<data[head], value, Extract<tail, readonly PropertyKey[]>>
         >
       : never
     : data extends readonly (infer a)[]
-    ? Update<a, value, Cast<tail, PropertyKey[]>>[]
+    ? Update<a, value, Extract<tail, readonly PropertyKey[]>>[]
     : data extends Set<infer a>
-    ? Set<Update<a, value, Cast<tail, PropertyKey[]>>>
+    ? Set<Update<a, value, Extract<tail, readonly PropertyKey[]>>>
     : data extends Map<infer k, infer v>
-    ? Map<k, Update<v, value, Cast<tail, PropertyKey[]>>>
+    ? Map<k, Update<v, value, Extract<tail, readonly PropertyKey[]>>>
     : Compute<
-        Omit<data, Cast<head, PropertyKey>> & {
-          [k in Cast<head, PropertyKey>]: Update<
+        Omit<data, Extract<head, PropertyKey>> & {
+          [k in Extract<head, PropertyKey>]: Update<
             SafeGet<data, k, {}>,
             value,
-            Cast<tail, PropertyKey[]>
+            Extract<tail, readonly PropertyKey[]>
           >;
         }
       >

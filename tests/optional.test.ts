@@ -28,7 +28,7 @@ describe('optional', () => {
       match<Input>(input)
         .with({ a: P.optional({ name: 'Hello' }) }, (x) => {
           type t = Expect<
-            Equal<typeof x, { a?: { name: string; age: number } }>
+            Equal<typeof x, { a?: { name: 'Hello'; age: number } }>
           >;
           return true;
         })

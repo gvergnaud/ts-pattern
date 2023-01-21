@@ -154,7 +154,7 @@ describe('Multiple patterns', () => {
               Equal<
                 typeof x,
                 | { a: string; b: number }
-                | [true, number]
+                | [true, 2]
                 | Map<string, { x: number }>
                 | Set<number>
               >

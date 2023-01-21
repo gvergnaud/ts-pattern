@@ -114,5 +114,7 @@ export const getSelectionKeys = (pattern: Pattern<any>): string[] => {
 };
 
 // @internal
-export const flatMap = <a, b>(xs: a[], f: (v: a) => b[]): b[] =>
-  xs.reduce<b[]>((acc, p) => acc.concat(f(p)), []);
+export const flatMap = <a, b>(
+  xs: readonly a[],
+  f: (v: a) => readonly b[]
+): b[] => xs.reduce<b[]>((acc, p) => acc.concat(f(p)), []);

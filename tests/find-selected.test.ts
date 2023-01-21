@@ -138,29 +138,26 @@ describe('FindSelected', () => {
     });
 
     it('Mixed', () => {
-      type cases = [
-        Expect<
-          Equal<
-            FindSelected<
-              { a: { b: { c: [3, 4] } } },
-              { a: { b: { c: [SelectP<'c'>, unknown] } } }
-            >,
-            { c: 3 }
-          >
-        >,
-        Expect<
-          Equal<
-            FindSelected<
-              { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
-              {
-                a: [{ c: SelectP<'c'> }, { e: 7 }];
-                b: Matcher<unknown, { d: SelectP<'d'> }, 'array'>;
-              }
-            >,
-            { c: 3; d: string[] }
-          >
-        >
-      ];
+      type res1 = FindSelected<
+        { a: { b: { c: [3, 4] } } },
+        { a: { b: { c: [SelectP<'c'>, unknown] } } }
+      >;
+
+      type res12 = FindSelected<
+        [{ c: 3 }, { e: 7 }],
+        [{ c: SelectP<'c'> }, { e: 7 }]
+      >;
+
+      type x = Extract<[1, 2], readonly any[]>;
+      type test1 = Expect<Equal<res1, { c: 3 }>>;
+      type res2 = FindSelected<
+        { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
+        {
+          a: [{ c: SelectP<'c'> }, { e: 7 }];
+          b: Matcher<unknown, { d: SelectP<'d'> }, 'array'>;
+        }
+      >;
+      type test2 = Expect<Equal<res2, { c: 3; d: string[] }>>;
     });
   });
 
