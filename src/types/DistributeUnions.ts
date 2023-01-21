@@ -1,7 +1,6 @@
 import { BuildMany } from './BuildMany';
 import type {
   IsAny,
-  Cast,
   Values,
   Flatten,
   IsUnion,
@@ -51,7 +50,7 @@ export type FindUnionsMany<
         ? FindUnions<a, p, path>
         : []
       : never
-  ) extends (infer T)[]
+  ) extends readonly (infer T)[]
     ? T
     : never
 >;
@@ -148,15 +147,16 @@ export type FindUnions<
   : [];
 
 // Distribute :: UnionConfig[] -> Union<[a, path][]>
-export type Distribute<unions extends any[]> = unions extends [
-  { cases: infer cases; path: infer path },
-  ...infer tail
-]
-  ? cases extends { value: infer value; subUnions: infer subUnions }
-    ? [
-        [value, path],
-        ...Distribute<Cast<subUnions, any[]>>,
-        ...Distribute<tail>
-      ]
-    : never
-  : [];
+export type Distribute<unions extends readonly any[]> =
+  unions extends readonly [
+    { cases: infer cases; path: infer path },
+    ...infer tail
+  ]
+    ? cases extends { value: infer value; subUnions: infer subUnions }
+      ? [
+          [value, path],
+          ...Distribute<Extract<subUnions, readonly any[]>>,
+          ...Distribute<tail>
+        ]
+      : never
+    : [];

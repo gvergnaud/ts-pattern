@@ -667,7 +667,7 @@ describe('exhaustive()', () => {
     it('should not exclude cases if the pattern is a literal type and the value is not', () => {
       match({ x: 2 })
         .with({ x: 2 }, ({ x }) => {
-          type t = Expect<Equal<typeof x, number>>;
+          type t = Expect<Equal<typeof x, 2>>;
           return '';
         })
         // @ts-expect-error
@@ -871,7 +871,7 @@ describe('exhaustive()', () => {
       match(input)
         .with({ t: 'a', x: 'hello' }, (x) => 'ok')
         .with({ t: 'b' }, (x) => 'ok')
-        // FIXME this should error ideally: @ts-expect-error
+        // FIXME should error @ts-expect-error
         .exhaustive();
 
     const f3 = (input: { t: 'a'; x: any } | { t: 'b' }) =>
@@ -900,7 +900,7 @@ describe('exhaustive()', () => {
                   {
                     age: 'c' | 'd';
                     sex: 'b';
-                    oopsThisIsATypo: string;
+                    oopsThisIsATypo: 'c';
                   }
                 >
               >;

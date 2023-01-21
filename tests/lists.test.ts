@@ -21,7 +21,7 @@ describe('List ([a])', () => {
         };
       })
       .with(20, (x) => {
-        type t = Expect<Equal<typeof x, number>>;
+        type t = Expect<Equal<typeof x, 20>>;
         return { kind: 'none' };
       })
       .otherwise(() => ({ kind: 'none' }));
