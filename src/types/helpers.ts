@@ -1,4 +1,4 @@
-export type ValueOf<a> = a extends any[] ? a[number] : a[keyof a];
+export type ValueOf<a> = a extends readonly any[] ? a[number] : a[keyof a];
 
 export type Values<a extends object> = UnionToTuple<ValueOf<a>>;
 
@@ -22,7 +22,7 @@ export type ExcludeIfContainsNever<a, b> = b extends Map<any, any> | Set<any>
   ? a
   : b extends readonly [any, ...any]
   ? ExcludeObjectIfContainsNever<a, keyof b & ('0' | '1' | '2' | '3' | '4')>
-  : b extends any[]
+  : b extends readonly any[]
   ? ExcludeObjectIfContainsNever<a, keyof b & number>
   : ExcludeObjectIfContainsNever<a, keyof b & string>;
 
@@ -57,13 +57,11 @@ export type UnionToTuple<
   ? UnionToTuple<Exclude<union, elem>, [elem, ...output]>
   : output;
 
-export type Cast<a, b> = a extends b ? a : never;
-
 export type Flatten<
-  xs extends any[],
+  xs extends readonly any[],
   output extends any[] = []
 > = xs extends readonly [infer head, ...infer tail]
-  ? Flatten<tail, [...output, ...Cast<head, any[]>]>
+  ? Flatten<tail, [...output, ...Extract<head, readonly any[]>]>
   : output;
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
@@ -147,7 +145,7 @@ export type IntersectObjects<a> = (
   a extends any ? keyof a : never
 ) extends infer allKeys
   ? {
-      [k in Cast<allKeys, PropertyKey>]: a extends any
+      [k in Extract<allKeys, PropertyKey>]: a extends any
         ? k extends keyof a
           ? a[k]
           : never
@@ -192,7 +190,7 @@ export type Primitives =
 
 export type NonLiteralPrimitive = Exclude<Primitives, undefined | null>;
 
-export type TupleKeys = 0 | 1 | 2 | 3 | 4;
+export type TupleKeys = '0' | '1' | '2' | '3' | '4';
 
 export type Union<a, b> = [b] extends [a] ? a : [a] extends [b] ? b : a | b;
 
@@ -206,7 +204,7 @@ export type GuardValue<fn> = fn extends (value: any) => value is infer b
   : never;
 
 export type GuardFunction<input, narrowed> =
-  | ((value: input) => value is Cast<narrowed, input>)
+  | ((value: input) => value is Extract<narrowed, input>)
   | ((value: input) => boolean);
 
 export type Some<bools extends boolean[]> = true extends bools[number]

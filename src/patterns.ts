@@ -42,7 +42,7 @@ export type infer<p extends Pattern<any>> = InvertPattern<p>;
  */
 export function optional<
   input,
-  p extends unknown extends input ? UnknownPattern : Pattern<input>
+  const p extends unknown extends input ? UnknownPattern : Pattern<input>
 >(pattern: p): OptionalP<input, p> {
   return {
     [symbols.matcher]() {
@@ -82,7 +82,7 @@ type Elem<xs> = xs extends readonly (infer x)[] ? x : never;
  */
 export function array<
   input,
-  p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
+  const p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
 >(pattern: p): ArrayP<input, p> {
   return {
     [symbols.matcher]() {
@@ -136,9 +136,7 @@ export function array<
  */
 export function intersection<
   input,
-  ps extends unknown extends input
-    ? [UnknownPattern, ...UnknownPattern[]]
-    : [Pattern<input>, ...Pattern<input>[]]
+  const ps extends readonly [Pattern<input>, ...Pattern<input>[]]
 >(...patterns: ps): AndP<input, ps> {
   return {
     [symbols.matcher]: () => ({
@@ -147,13 +145,13 @@ export function intersection<
         const selector = (key: string, value: any) => {
           selections[key] = value;
         };
-        const matched = (patterns as UnknownPattern[]).every((p) =>
+        const matched = (patterns as readonly UnknownPattern[]).every((p) =>
           matchPattern(p, value, selector)
         );
         return { matched, selections };
       },
       getSelectionKeys: () =>
-        flatMap(patterns as UnknownPattern[], getSelectionKeys),
+        flatMap(patterns as readonly UnknownPattern[], getSelectionKeys),
       matcherType: 'and',
     }),
   };
@@ -174,9 +172,7 @@ export function intersection<
  */
 export function union<
   input,
-  ps extends unknown extends input
-    ? [UnknownPattern, ...UnknownPattern[]]
-    : [Pattern<input>, ...Pattern<input>[]]
+  const ps extends readonly [Pattern<input>, ...Pattern<input>[]]
 >(...patterns: ps): OrP<input, ps> {
   return {
     [symbols.matcher]: () => ({
@@ -185,16 +181,16 @@ export function union<
         const selector = (key: string, value: any) => {
           selections[key] = value;
         };
-        flatMap(patterns as UnknownPattern[], getSelectionKeys).forEach((key) =>
+        flatMap(patterns as readonly UnknownPattern[], getSelectionKeys).forEach((key) =>
           selector(key, undefined)
         );
-        const matched = (patterns as UnknownPattern[]).some((p) =>
+        const matched = (patterns as readonly UnknownPattern[]).some((p) =>
           matchPattern(p, value, selector)
         );
         return { matched, selections };
       },
       getSelectionKeys: () =>
-        flatMap(patterns as UnknownPattern[], getSelectionKeys),
+        flatMap(patterns as readonly UnknownPattern[], getSelectionKeys),
       matcherType: 'or',
     }),
   };
@@ -211,9 +207,11 @@ export function union<
  *   .with({ a: P.not(P.string) }, (x) => 'will match { a: number }'
  *   )
  */
-export function not<input, p extends Pattern<input> | Primitives>(
-  pattern: p
-): NotP<input, p> {
+
+export function not<
+  input,
+  const p extends Pattern<input> | UnknownPattern
+>(pattern: p): NotP<input, p> {
   return {
     [symbols.matcher]: () => ({
       match: <I>(value: I | input) => ({
@@ -274,7 +272,7 @@ export function when<input, p extends (value: input) => unknown>(
 export function select(): AnonymousSelectP;
 export function select<
   input,
-  patternOrKey extends
+  const patternOrKey extends
     | string
     | (unknown extends input ? UnknownPattern : Pattern<input>)
 >(
@@ -284,8 +282,8 @@ export function select<
   : SelectP<symbols.anonymousSelectKey, input, patternOrKey>;
 export function select<
   input,
-  p extends unknown extends input ? UnknownPattern : Pattern<input>,
-  k extends string
+  const p extends unknown extends input ? UnknownPattern : Pattern<input>,
+  const k extends string
 >(key: k, pattern: p): SelectP<k, input, p>;
 export function select(
   ...args: [keyOrPattern?: unknown | string, pattern?: unknown]
@@ -476,28 +474,28 @@ export function instanceOf<T extends AnyConstructor>(
  *  )
  */
 export function typed<input>(): {
-  array<p extends Pattern<Elem<input>>>(pattern: p): ArrayP<input, p>;
+  array<const p extends Pattern<Elem<input>>>(pattern: p): ArrayP<input, p>;
 
-  optional<p extends Pattern<input>>(pattern: p): OptionalP<input, p>;
+  optional<const p extends Pattern<input>>(pattern: p): OptionalP<input, p>;
 
-  intersection<ps extends [Pattern<input>, ...Pattern<input>[]]>(
+  intersection<const ps extends readonly [Pattern<input>, ...Pattern<input>[]]>(
     ...patterns: ps
   ): AndP<input, ps>;
 
-  union<ps extends [Pattern<input>, ...Pattern<input>[]]>(
+  union<const ps extends readonly [Pattern<input>, ...Pattern<input>[]]>(
     ...patterns: ps
   ): OrP<input, ps>;
 
-  not<p extends Pattern<input>>(pattern: p): NotP<input, p>;
+  not<const p extends Pattern<input>>(pattern: p): NotP<input, p>;
 
-  when<narrowed extends input = never>(
+  when<const narrowed extends input = never>(
     predicate: GuardFunction<input, narrowed>
   ): GuardP<input, narrowed>;
 
-  select<pattern extends Pattern<input>>(
+  select<const pattern extends Pattern<input>>(
     pattern: pattern
   ): SelectP<symbols.anonymousSelectKey, input, pattern>;
-  select<p extends Pattern<input>, k extends string>(
+  select<const p extends Pattern<input>, const k extends string>(
     key: k,
     pattern: p
   ): SelectP<k, input, p>;
