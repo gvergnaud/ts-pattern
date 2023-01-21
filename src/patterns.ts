@@ -1,6 +1,8 @@
 import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers';
 import * as symbols from './internals/symbols';
-import { GuardFunction, IsNever, Primitives } from './types/helpers';
+import { matcher } from './internals/symbols';
+import { ExtractPreciseValue } from './types/ExtractPreciseValue';
+import { Fn, GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
   Pattern,
@@ -16,9 +18,12 @@ import {
   SelectP,
   AnonymousSelectP,
   GuardExcludeP,
+  CustomP,
 } from './types/Pattern';
 
 export { Pattern };
+
+export { matcher };
 
 /**
  * `P.infer<typeof somePattern>` will return the type of the value
@@ -30,7 +35,12 @@ export { Pattern };
  * const userPattern = { name: P.string }
  * type User = P.infer<typeof userPattern>
  */
-export type infer<p extends Pattern<any>> = InvertPattern<p>;
+export type infer<p extends Pattern<any>> = InvertPattern<p, unknown>;
+
+export type narrow<i, p extends Pattern<any>> = ExtractPreciseValue<
+  i,
+  InvertPattern<p, i>
+>;
 
 /**
  * `P.optional(subpattern)` takes a sub pattern and returns a pattern which matches if the
@@ -47,9 +57,9 @@ export function optional<
   const p extends unknown extends input ? UnknownPattern : Pattern<input>
 >(pattern: p): OptionalP<input, p> {
   return {
-    [symbols.matcher]() {
+    [matcher]() {
       return {
-        match: <I>(value: I | input) => {
+        match: <UnknownInput>(value: UnknownInput | input) => {
           let selections: Record<string, unknown[]> = {};
           const selector = (key: string, value: any) => {
             selections[key] = value;
@@ -101,9 +111,9 @@ export function array<
   const p extends Pattern<WithDefault<UnwrapArray<input>, unknown>>
 >(...args: [pattern?: p]): ArrayP<input, p> & Iterable<ArrayP<input, p>> {
   return {
-    [symbols.matcher]() {
+    [matcher]() {
       return {
-        match: <I>(value: I | input) => {
+        match: <UnknownInput>(value: UnknownInput | input) => {
           if (!Array.isArray(value)) return { matched: false };
 
           if (args.length === 0) return { matched: true };
@@ -160,9 +170,9 @@ export function set<
   const p extends Pattern<WithDefault<UnwrapSet<input>, unknown>>
 >(...args: [pattern?: p]): SetP<input, p> {
   return {
-    [symbols.matcher]() {
+    [matcher]() {
       return {
-        match: <I>(value: I | input) => {
+        match: <UnknownInput>(value: UnknownInput | input) => {
           if (!(value instanceof Set)) return { matched: false };
 
           let selections: Record<string, unknown[]> = {};
@@ -224,9 +234,9 @@ export function map<
   ...args: [patternKey?: pkey, patternValue?: pvalue]
 ): MapP<input, pkey, pvalue> {
   return {
-    [symbols.matcher]() {
+    [matcher]() {
       return {
-        match: <I>(value: I | input) => {
+        match: <UnknownInput>(value: UnknownInput | input) => {
           if (!(value instanceof Map)) return { matched: false };
 
           let selections: Record<string, unknown[]> = {};
@@ -299,7 +309,7 @@ export function intersection<
   const ps extends readonly [Pattern<input>, ...Pattern<input>[]]
 >(...patterns: ps): AndP<input, ps> {
   return {
-    [symbols.matcher]: () => ({
+    [matcher]: () => ({
       match: (value) => {
         let selections: Record<string, unknown[]> = {};
         const selector = (key: string, value: any) => {
@@ -335,8 +345,8 @@ export function union<
   const ps extends readonly [Pattern<input>, ...Pattern<input>[]]
 >(...patterns: ps): OrP<input, ps> {
   return {
-    [symbols.matcher]: () => ({
-      match: <I>(value: I | input) => {
+    [matcher]: () => ({
+      match: <UnknownInput>(value: UnknownInput | input) => {
         let selections: Record<string, unknown[]> = {};
         const selector = (key: string, value: any) => {
           selections[key] = value;
@@ -373,8 +383,8 @@ export function not<input, const p extends Pattern<input> | UnknownPattern>(
   pattern: p
 ): NotP<input, p> {
   return {
-    [symbols.matcher]: () => ({
-      match: <I>(value: I | input) => ({
+    [matcher]: () => ({
+      match: <UnknownInput>(value: UnknownInput | input) => ({
         matched: !matchPattern(pattern, value, () => {}),
       }),
       getSelectionKeys: () => [],
@@ -410,8 +420,8 @@ export function when<input, p extends (value: input) => unknown>(
   p extends (value: any) => value is infer narrowed ? narrowed : never
 > {
   return {
-    [symbols.matcher]: () => ({
-      match: <I>(value: I | input) => ({
+    [matcher]: () => ({
+      match: <UnknownInput>(value: UnknownInput | input) => ({
         matched: Boolean(predicate(value as input)),
       }),
     }),
@@ -457,7 +467,7 @@ export function select(
       ? undefined
       : args[0];
   return {
-    [symbols.matcher]() {
+    [matcher]() {
       return {
         match: (value) => {
           let selections: Record<string, unknown> = {
@@ -672,3 +682,15 @@ export function typed<input>(): {
     when: when as any,
   };
 }
+
+export type Matchable<
+  narrowFn extends Fn,
+  input = unknown,
+  pattern = never
+> = CustomP<input, pattern, narrowFn>;
+
+export type Matcher<
+  narrowFn extends Fn,
+  input = unknown,
+  pattern = never
+> = ReturnType<CustomP<input, pattern, narrowFn>[matcher]>;

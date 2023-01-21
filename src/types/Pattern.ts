@@ -1,6 +1,9 @@
 import type * as symbols from '../internals/symbols';
-import { MergeUnion, Primitives } from './helpers';
-import { None, Some, SelectionType } from './FindSelected';
+import { Fn, MergeUnion, Primitives, ValueOf, WithDefault } from './helpers';
+import { None, Some, SelectionType, FindSelectionUnion } from './FindSelected';
+import { matcher } from '../patterns';
+import { InvertPattern } from './InvertPattern';
+import { ExtractPreciseValue } from './ExtractPreciseValue';
 
 export type MatcherType =
   | 'not'
@@ -11,7 +14,8 @@ export type MatcherType =
   | 'map'
   | 'set'
   | 'select'
-  | 'default';
+  | 'default'
+  | 'custom';
 
 // We use a separate MatcherProtocol type to preserves
 // the type level information (selections and excluded) used
@@ -53,7 +57,7 @@ export interface Matcher<
   // it has been fully matched by this pattern
   excluded = narrowed
 > {
-  [symbols.matcher](): MatcherProtocol<
+  [matcher](): MatcherProtocol<
     input,
     narrowed,
     matcherType,
@@ -64,13 +68,30 @@ export interface Matcher<
   [symbols.isVariadic]?: boolean;
 }
 
+// We fall back to `a` if we weren't able to extract anything more precise
+export type MatchedValue<a, invpattern> = WithDefault<
+  ExtractPreciseValue<a, invpattern>,
+  a
+>;
+
 export type AnyMatcher = Matcher<any, any, any, any, any>;
 
 type UnknownMatcher = Matcher<unknown, unknown, any, any>;
 
-export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
+export type CustomP<input, pattern, narrowFn extends Fn> = Matcher<
+  input,
+  pattern,
+  'custom',
+  None,
+  narrowFn
+>;
+//                    👆
+// for the input type to be instantiated correctly
+// on subpatterns, it has to be passed through.
 
 export type ArrayP<input, p> = Matcher<input, p, 'array'>;
+
+export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
 export type MapP<input, pkey, pvalue> = Matcher<input, [pkey, pvalue], 'map'>;
 
@@ -100,8 +121,8 @@ export type SelectP<
 
 export type AnonymousSelectP = SelectP<symbols.anonymousSelectKey>;
 
-export interface ToExclude<a> {
-  [symbols.toExclude]: a;
+export interface Override<a> {
+  [symbols.override]: a;
 }
 
 export type UnknownPattern =

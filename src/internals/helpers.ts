@@ -34,16 +34,16 @@ export const matchPattern = (
   value: any,
   select: (key: string, value: unknown) => void
 ): boolean => {
-  if (isObject(pattern)) {
-    if (isMatcher(pattern)) {
-      const matcher = pattern[symbols.matcher]();
-      const { matched, selections } = matcher.match(value);
-      if (matched && selections) {
-        Object.keys(selections).forEach((key) => select(key, selections[key]));
-      }
-      return matched;
+  if (isMatcher(pattern)) {
+    const matcher = pattern[symbols.matcher]();
+    const { matched, selections } = matcher.match(value);
+    if (matched && selections) {
+      Object.keys(selections).forEach((key) => select(key, selections[key]));
     }
+    return matched;
+  }
 
+  if (isObject(pattern)) {
     if (!isObject(value)) return false;
 
     // Tuple pattern

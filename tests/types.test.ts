@@ -190,17 +190,14 @@ describe('types', () => {
             typeof x,
             {
               type: string;
-              hello:
-                | {
-                    yo: number;
-                  }
-                | undefined;
+              hello?: { yo: number } | undefined;
             }
           >
         >;
         return 'ok';
       }
     );
+
     match<Input>({ type: 'hello' }).with({ type: P.not(P.string) }, (x) => {
       type t = Expect<Equal<typeof x, Input>>;
       return 'ok';

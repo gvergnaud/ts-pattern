@@ -73,6 +73,8 @@ export type IsMatching<a, b> = true extends IsUnion<a> | IsUnion<b>
     : b extends a
     ? true
     : false
+  : Equal<a, b> extends true
+  ? true
   : b extends readonly any[]
   ? a extends readonly any[]
     ? // both tuples

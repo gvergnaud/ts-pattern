@@ -1,5 +1,4 @@
-import { Pattern } from './types/Pattern';
-import { MatchedValue } from './types/Match';
+import { MatchedValue, Pattern } from './types/Pattern';
 import * as P from './patterns';
 import { matchPattern } from './internals/helpers';
 
@@ -18,7 +17,7 @@ import { matchPattern } from './internals/helpers';
  *    return input.name
  *  }
  */
-export function isMatching<p extends Pattern<any>>(
+export function isMatching<p extends Pattern<unknown>>(
   pattern: p
 ): (value: any) => value is MatchedValue<any, P.infer<p>>;
 /**
@@ -34,7 +33,7 @@ export function isMatching<p extends Pattern<any>>(
  *    return input.name
  *  }
  */
-export function isMatching<p extends Pattern<any>>(
+export function isMatching<p extends Pattern<unknown>>(
   pattern: p,
   value: any
 ): value is MatchedValue<any, P.infer<p>>;
