@@ -606,8 +606,7 @@ describe('and, and or patterns', () => {
 
       const errorF = (input: Input) =>
         match(input)
-          // @ts-expect-error FIXME this should work
-          .with({ value: P.array({ type: P.union('a', 'b') }) }, (x) => {})
+          .with({ value: P.array({ type: P.union('a', 'b', 'c') }) }, (x) => {})
           .exhaustive();
 
       const f = (input: Input) => {

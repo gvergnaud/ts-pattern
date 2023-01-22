@@ -1,5 +1,5 @@
 import type * as symbols from '../internals/symbols';
-import { Primitives } from './helpers';
+import { MergeUnion, Primitives } from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
 
 export type MatcherType =
@@ -114,20 +114,27 @@ export type UnknownPattern =
  * @example
  * const pattern: P.Pattern<User> = { name: P.string }
  */
-export type Pattern<a> =
+export type Pattern<a> = unknown extends a
+  ? UnknownPattern
+  : PatternInternal<a>;
+
+export type PatternInternal<
+  a,
+  objs = Exclude<a, Primitives | readonly any[]>,
+  arrays = Extract<a, readonly any[]>,
+  primitives = Extract<a, Primitives>
+> =
   | Matcher<a, unknown, any, any>
-  | (a extends Primitives
-      ? a
-      : unknown extends a
-      ? UnknownPattern
-      : a extends readonly (infer i)[]
-      ? a extends readonly [any, ...any]
-        ? { readonly [index in keyof a]: Pattern<a[index]> }
-        : readonly [] | readonly [Pattern<i>, ...Pattern<i>[]]
-      : a extends Map<infer k, infer v>
-      ? Map<k, Pattern<v>>
-      : a extends Set<infer v>
-      ? Set<Pattern<v>>
-      : a extends object
-      ? { readonly [k in keyof a]?: Pattern<Exclude<a[k], undefined>> }
-      : a);
+  | ([objs] extends [never] ? never : ObjectPattern<MergeUnion<objs>>)
+  | ([arrays] extends [never] ? never : ArrayPattern<arrays>)
+  | primitives;
+
+type ObjectPattern<a> = {
+  readonly [k in keyof a]?: Pattern<Exclude<a[k], undefined>>;
+};
+
+type ArrayPattern<a> = a extends readonly (infer i)[]
+  ? a extends readonly [any, ...any]
+    ? { readonly [index in keyof a]: Pattern<a[index]> }
+    : readonly [] | readonly [Pattern<i>, ...Pattern<i>[]]
+  : never;
