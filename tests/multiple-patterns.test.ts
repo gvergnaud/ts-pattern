@@ -163,15 +163,15 @@ describe('Multiple patterns', () => {
             return 'Object';
           }
         )
-        .with([false, 2] as const, (x) => {
+        .with([false, 2], (x) => {
           type t = Expect<Equal<typeof x, [false, 2]>>;
           return '[false, 2]';
         })
-        .with([false, P.number] as const, (x) => {
+        .with([false, P.number], (x) => {
           type t = Expect<Equal<typeof x, [false, number]>>;
           return '[false, number]';
         })
-        .with([true, P.number] as const, (x) => {
+        .with([true, P.number], (x) => {
           type t = Expect<Equal<typeof x, [true, number]>>;
           return '[true, number]';
         })
