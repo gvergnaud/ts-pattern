@@ -147,15 +147,15 @@ describe('Multiple patterns', () => {
         .with(
           { a: P.string },
           [true, 2],
-          new Map([['key', P._]]),
-          new Set([P.number]),
+          P.map('key', P._),
+          P.set(P.number),
           (x) => {
             type t = Expect<
               Equal<
                 typeof x,
                 | { a: string; b: number }
                 | [true, 2]
-                | Map<string, { x: number }>
+                | Map<'key', { x: number }>
                 | Set<number>
               >
             >;
@@ -184,8 +184,8 @@ describe('Multiple patterns', () => {
         .with(
           { a: P.string },
           [true, 2],
-          new Map([['key', P._]]),
-          new Set([P.number]),
+          P.map(P.string, P._),
+          P.set(P.number),
           (x) => 'Object'
         )
         .with([false, 2], (x) => '[false, 2]')

@@ -11,20 +11,10 @@ describe('Map', () => {
     const userPattern = { name: P.string };
 
     const res = match<Map<string, { name: string }>>(usersMap)
-      .with(
-        new Map([
-          ['angégé' as const, userPattern],
-          ['gab' as const, userPattern],
-        ]),
-        (map) => ({
-          name: map.get('angégé')!.name + ' ' + map.get('gab')!.name,
-        })
-      )
-      .with(
-        new Map([['angégé' as const, userPattern]]),
-        (map) => map.get('angégé')!
-      )
-      .with(new Map([['gab' as const, userPattern]]), (map) => map.get('gab')!)
+      .with(P.map(P.union('angégé', 'gab'), userPattern), (map) => ({
+        name: map.get('angégé')!.name + ' ' + map.get('gab')!.name,
+      }))
+      .with(P.map('angégé', userPattern), (map) => map.get('angégé')!)
       .with(P._, () => ({ name: 'unknown' }))
       .run();
 

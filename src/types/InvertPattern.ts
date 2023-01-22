@@ -50,6 +50,10 @@ export type InvertPattern<p> = p extends Matcher<
       not: ToExclude<InvertPattern<narrowed>>;
       select: InvertPattern<narrowed>;
       array: InvertPattern<narrowed>[];
+      map: narrowed extends [infer pk, infer pv]
+        ? Map<InvertPattern<pk>, InvertPattern<pv>>
+        : never;
+      set: Set<InvertPattern<narrowed>>;
       optional: InvertPattern<narrowed> | undefined;
       and: ReduceIntersection<Extract<narrowed, readonly any[]>>;
       or: ReduceUnion<Extract<narrowed, readonly any[]>>;
@@ -82,10 +86,6 @@ export type InvertPattern<p> = p extends Matcher<
     : p extends readonly []
     ? []
     : InvertPattern<pp>[]
-  : p extends Map<infer pk, infer pv>
-  ? Map<pk, InvertPattern<pv>>
-  : p extends Set<infer pv>
-  ? Set<InvertPattern<pv>>
   : IsPlainObject<p> extends true
   ? OptionalKeys<p> extends infer optKeys
     ? [optKeys] extends [never]
@@ -182,6 +182,17 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
         array: i extends readonly (infer ii)[]
           ? InvertPatternForExcludeInternal<subpattern, ii, empty>[]
           : empty;
+        map: subpattern extends [infer pk, infer pv]
+          ? i extends Map<infer ik, infer iv>
+            ? Map<
+                InvertPatternForExcludeInternal<pk, ik, empty>,
+                InvertPatternForExcludeInternal<pv, iv, empty>
+              >
+            : empty
+          : empty;
+        set: i extends Set<infer iv>
+          ? Set<InvertPatternForExcludeInternal<subpattern, iv, empty>>
+          : empty;
         optional:
           | InvertPatternForExcludeInternal<subpattern, i, empty>
           | undefined;
@@ -241,14 +252,6 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
         : p extends readonly []
         ? []
         : InvertPatternForExcludeInternal<pp, ii, empty>[]
-      : empty
-    : p extends Map<infer pk, infer pv>
-    ? i extends Map<any, infer iv>
-      ? Map<pk, InvertPatternForExcludeInternal<pv, iv, empty>>
-      : empty
-    : p extends Set<infer pv>
-    ? i extends Set<infer iv>
-      ? Set<InvertPatternForExcludeInternal<pv, iv, empty>>
       : empty
     : IsPlainObject<p> extends true
     ? i extends object
