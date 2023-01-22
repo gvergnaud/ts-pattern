@@ -436,7 +436,7 @@ describe('select', () => {
   });
 
   it('Issue #95: P.select() on empty arrays should return an empty array', () => {
-    const res = match({ a: [], b: ['text'] })
+    const res = match<{ a: string[]; b: string[] }>({ a: [], b: ['text'] })
       .with(
         { a: P.array(P.select('a')), b: P.array(P.select('b')) },
         ({ a, b }) => {

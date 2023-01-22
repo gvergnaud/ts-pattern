@@ -3,7 +3,7 @@ import { match, P } from '../src';
 
 describe('Numbers', () => {
   it('Should match exact numbers', () => {
-    const res = match(1)
+    const res = match<number>(1)
       .with(1, (v) => {
         type t = Expect<Equal<typeof v, 1>>;
         return v * 2;
