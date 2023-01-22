@@ -412,7 +412,7 @@ describe('exhaustive()', () => {
 
     it('should support P.any in a readonly tuple', () => {
       const f = (n: number, state: State) => {
-        const x = match([n, state] as const)
+        const x = match([n, state])
           .with(
             [1, { status: 'success', data: P.select() }],
             ([_, { data }]) => data.startsWith('coucou'),
@@ -665,7 +665,7 @@ describe('exhaustive()', () => {
     });
 
     it('should not exclude cases if the pattern is a literal type and the value is not', () => {
-      match({ x: 2 })
+      match<{ x: number }>({ x: 2 })
         .with({ x: 2 }, ({ x }) => {
           type t = Expect<Equal<typeof x, 2>>;
           return '';
