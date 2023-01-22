@@ -30,7 +30,7 @@ const isOptionalPattern = (
 // tells us if the value matches a given pattern.
 // @internal
 export const matchPattern = (
-  pattern: Pattern<any>,
+  pattern: any,
   value: any,
   select: (key: string, value: unknown) => void
 ): boolean => {
@@ -102,7 +102,7 @@ export const matchPattern = (
 };
 
 // @internal
-export const getSelectionKeys = (pattern: Pattern<any>): string[] => {
+export const getSelectionKeys = (pattern: any): string[] => {
   if (isObject(pattern)) {
     if (isMatcher(pattern)) {
       return pattern[symbols.matcher]().getSelectionKeys?.() ?? [];
