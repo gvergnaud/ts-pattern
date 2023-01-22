@@ -75,7 +75,6 @@ describe('real world example of a complex input type', () => {
         {
           viz: P.union('timeseries', 'query_table'),
           requests: P.array({
-            // @ts-expect-error: FIXME,  P.union  only sees 'timeseries'
             response_format: P.union('timeseries', 'scalar'),
           }),
         },
