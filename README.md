@@ -561,7 +561,7 @@ type Permission = 'editor' | 'viewer';
 type Plan = 'basic' | 'pro';
 
 const fn = (org: Plan, user: Permission) =>
-  match([org, user] as const)
+  match([org, user])
     .with(['basic', 'viewer'], () => {})
     .with(['basic', 'editor'], () => {})
     .with(['pro', 'viewer'], () => {})
@@ -570,7 +570,7 @@ const fn = (org: Plan, user: Permission) =>
     .exhaustive();
 
 const fn2 = (org: Plan, user: Permission) =>
-  match([org, user] as const)
+  match([org, user])
     .with(['basic', 'viewer'], () => {})
     .with(['basic', 'editor'], () => {})
     .with(['pro', 'viewer'], () => {})
@@ -1368,7 +1368,7 @@ type Permission = 'editor' | 'viewer';
 type Plan = 'basic' | 'pro';
 
 const fn = (org: Plan, user: Permission): string =>
-  match([org, user] as const)
+  match([org, user])
     .with(['basic', 'viewer'], () => {})
     .with(['basic', 'editor'], () => {})
     .with(['pro', 'viewer'], () => {})
