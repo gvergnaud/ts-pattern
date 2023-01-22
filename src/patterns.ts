@@ -7,6 +7,8 @@ import {
   UnknownPattern,
   OptionalP,
   ArrayP,
+  MapP,
+  SetP,
   AndP,
   OrP,
   NotP,
@@ -68,7 +70,14 @@ export function optional<
   };
 }
 
-type Elem<xs> = xs extends ReadonlyArray<infer x> ? x : never;
+type UnwrapArray<xs> = xs extends readonly (infer x)[] ? x : never;
+
+type UnwrapSet<xs> = xs extends Set<infer x> ? x : never;
+
+type UnwrapMapKey<xs> = xs extends Map<infer k, any> ? k : never;
+
+type UnwrapMapValue<xs> = xs extends Map<any, infer v> ? v : never;
+
 type WithDefault<a, b> = [a] extends [never] ? b : a;
 
 /**
@@ -83,7 +92,7 @@ type WithDefault<a, b> = [a] extends [never] ? b : a;
  */
 export function array<
   input,
-  const p extends Pattern<WithDefault<Elem<input>, unknown>>
+  const p extends Pattern<WithDefault<UnwrapArray<input>, unknown>>
 >(pattern: p): ArrayP<input, p> {
   return {
     [symbols.matcher]() {
@@ -114,6 +123,109 @@ export function array<
       };
     },
   };
+}
+
+/**
+ * `P.set(subpattern)` takes a sub pattern and returns a pattern that matches
+ * sets if all their elements match the sub pattern.
+ *
+ * [Read `P.set` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Pset-patterns)
+ *
+ * @example
+ *  match(value)
+ *   .with({ users: P.set(P.string) }, () => 'will match Set<string>')
+ */
+export function set<
+  input,
+  const p extends Pattern<WithDefault<UnwrapSet<input>, unknown>>
+>(pattern: p): SetP<input, p> {
+  return {
+    [symbols.matcher]() {
+      return {
+        match: <I>(value: I | input) => {
+          if (!(value instanceof Set)) return { matched: false };
+
+          let selections: Record<string, unknown[]> = {};
+
+          if (value.size === 0) {
+            return { matched: true, selections };
+          }
+
+          const selector = (key: string, value: unknown) => {
+            selections[key] = (selections[key] || []).concat([value]);
+          };
+
+          const matched = setEvery(value, (v) =>
+            matchPattern(pattern, v, selector)
+          );
+
+          return { matched, selections };
+        },
+        getSelectionKeys: () => getSelectionKeys(pattern),
+      };
+    },
+  };
+}
+
+const setEvery = <T>(set: Set<T>, predicate: (value: T) => boolean) => {
+  for (const value of set) {
+    if (predicate(value)) continue
+    return false
+  }
+  return true
+}
+
+/**
+ * `P.set(subpattern)` takes a sub pattern and returns a pattern that matches
+ * sets if all their elements match the sub pattern.
+ *
+ * [Read `P.set` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Pset-patterns)
+ *
+ * @example
+ *  match(value)
+ *   .with({ users: P.set(P.string) }, () => 'will match Set<string>')
+ */
+export function map<
+  input,
+  const pkey extends Pattern<WithDefault<UnwrapMapKey<input>, unknown>>,
+  const pvalue extends Pattern<WithDefault<UnwrapMapValue<input>, unknown>>
+>(patternKey: pkey, patternValue: pvalue): MapP<input, pkey, pvalue> {
+  return {
+    [symbols.matcher]() {
+      return {
+        match: <I>(value: I | input) => {
+          if (!(value instanceof Map)) return { matched: false };
+
+          let selections: Record<string, unknown[]> = {};
+
+          if (value.size === 0) {
+            return { matched: true, selections };
+          }
+
+          const selector = (key: string, value: unknown) => {
+            selections[key] = (selections[key] || []).concat([value]);
+          };
+
+          const matched = mapEvery(value, (v, k) =>{
+            const keyMatch = matchPattern(patternKey, k, selector)
+            const valueMatch = matchPattern(patternValue, v, selector)
+            return keyMatch && valueMatch
+          });
+
+          return { matched, selections };
+        },
+        getSelectionKeys: () => getSelectionKeys(patternKey).concat(getSelectionKeys(patternValue)),
+      };
+    },
+  };
+}
+
+const mapEvery = <K, T>(map: Map<K, T>, predicate: (value: T, key: K) => boolean) => {
+  for (const [key, value] of map.entries()) {
+    if (predicate(value, key)) continue;
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -475,7 +587,7 @@ export function instanceOf<T extends AnyConstructor>(
  *  )
  */
 export function typed<input>(): {
-  array<const p extends Pattern<Elem<input>>>(pattern: p): ArrayP<input, p>;
+  array<const p extends Pattern<UnwrapArray<input>>>(pattern: p): ArrayP<input, p>;
 
   optional<const p extends Pattern<input>>(pattern: p): OptionalP<input, p>;
 

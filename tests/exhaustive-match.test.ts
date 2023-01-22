@@ -432,13 +432,13 @@ describe('exhaustive()', () => {
       const input = new Set(['']) as Input;
 
       match(input)
-        .with(new Set([P.string]), (x) => x)
+        .with(P.set(P.string), (x) => x)
         // @ts-expect-error
         .exhaustive();
 
       match(input)
-        .with(new Set([P.string]), (x) => x)
-        .with(new Set([P.number]), (x) => new Set([]))
+        .with(P.set(P.string), (x) => x)
+        .with(P.set(P.number), (x) => new Set([]))
         .exhaustive();
     });
 
@@ -448,15 +448,15 @@ describe('exhaustive()', () => {
 
       expect(
         match(input)
-          .with(new Set([P.string]), (x) => x)
+          .with(P.set(P.string), (x) => x)
           // @ts-expect-error
           .exhaustive()
       ).toEqual(input);
 
       expect(
         match(input)
-          .with(new Set([P.string]), (x) => 1)
-          .with(new Set([P.number]), (x) => 2)
+          .with(P.set(P.string), (x) => 1)
+          .with(P.set(P.number), (x) => 2)
           .exhaustive()
       ).toEqual(1);
     });
@@ -467,21 +467,21 @@ describe('exhaustive()', () => {
 
       expect(
         match(input)
-          .with(new Map([['hello' as const, P.number]]), (x) => x)
+          .with(P.map('hello', P.number), (x) => x)
           // @ts-expect-error
           .exhaustive()
       ).toEqual(input);
 
       expect(
         match(input)
-          .with(new Map([['hello' as const, 1 as const]]), (x) => x)
+          .with(P.map('hello', 1), (x) => x)
           // @ts-expect-error
           .exhaustive()
       ).toEqual(input);
 
       expect(
         match(input)
-          .with(new Map([['hello', 1 as const]]), (x) => x)
+          .with(P.map('hello', 1), (x) => x)
           // @ts-expect-error
           .exhaustive()
       ).toEqual(input);

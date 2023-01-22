@@ -8,6 +8,8 @@ export type MatcherType =
   | 'or'
   | 'and'
   | 'array'
+  | 'map'
+  | 'set'
   | 'select'
   | 'default';
 
@@ -66,6 +68,10 @@ export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
 export type ArrayP<input, p> = Matcher<input, p, 'array'>;
 
+export type MapP<input, pkey, pvalue> = Matcher<input, [pkey, pvalue], 'map'>;
+
+export type SetP<input, p> = Matcher<input, p, 'set'>;
+
 export type AndP<input, ps> = Matcher<input, ps, 'and'>;
 
 export type OrP<input, ps> = Matcher<input, ps, 'or'>;
@@ -98,8 +104,6 @@ export type UnknownPattern =
   | readonly []
   | readonly [UnknownPattern, ...UnknownPattern[]]
   | { readonly [k: string]: UnknownPattern }
-  | Set<UnknownPattern>
-  | Map<unknown, UnknownPattern>
   | Primitives
   | UnknownMatcher;
 
@@ -120,7 +124,7 @@ export type Pattern<a> = unknown extends a
 
 export type PatternInternal<
   a,
-  objs = Exclude<a, Primitives | readonly any[]>,
+  objs = Exclude<a, Primitives | Map<any, any> | Set<any> | readonly any[]>,
   arrays = Extract<a, readonly any[]>,
   primitives = Extract<a, Primitives>
 > =
