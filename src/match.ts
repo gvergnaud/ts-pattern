@@ -22,13 +22,7 @@ import { matchPattern } from './internals/helpers';
  *    .exhaustive();
  *
  */
-export function match<input extends [any, ...any], output = symbols.unset>(
-  value: input
-): Match<input, output>;
-export function match<input, output = symbols.unset>(
-  value: input
-): Match<input, output>;
-export function match<input, output = symbols.unset>(
+export function match<const input, output = symbols.unset>(
   value: input
 ): Match<input, output> {
   return new MatchExpression(value, []) as any;

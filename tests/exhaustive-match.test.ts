@@ -665,7 +665,7 @@ describe('exhaustive()', () => {
     });
 
     it('should not exclude cases if the pattern is a literal type and the value is not', () => {
-      match({ x: 2 })
+      match<{ x: number }>({ x: 2 })
         .with({ x: 2 }, ({ x }) => {
           type t = Expect<Equal<typeof x, 2>>;
           return '';

@@ -361,7 +361,7 @@ describe('type narrowing inheritence', () => {
       const size = 10;
       let canShowInlineLegend = true as boolean;
 
-      match(true)
+      match<boolean>(true)
         .with(size >= 100 && width > height * 2.25, () => 'table')
         .with(size >= 100 && height > width * 1.5, () => 'table')
         .with(canShowInlineLegend, () => 'inline')
