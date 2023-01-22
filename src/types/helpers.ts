@@ -216,3 +216,14 @@ export type All<bools extends boolean[]> = bools[number] extends true
 export type Extends<a, b> = [a] extends [b] ? true : false;
 
 export type Not<a extends boolean> = a extends true ? false : true;
+
+type AllKeys<a> = a extends any ? keyof a : never;
+
+// Merge unions of objects into a single object with unions of keys
+export type MergeUnion<a> = {
+  readonly [k in AllKeys<a>]: a extends any
+    ? k extends keyof a
+      ? a[k]
+      : never
+    : never;
+};

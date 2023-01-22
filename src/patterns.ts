@@ -69,6 +69,7 @@ export function optional<
 }
 
 type Elem<xs> = xs extends Array<infer x> ? x : never;
+type WithDefault<a, b> = [a] extends [never] ? b : a;
 
 /**
  * `P.array(subpattern)` takes a sub pattern and returns a pattern, which matches
@@ -82,7 +83,7 @@ type Elem<xs> = xs extends Array<infer x> ? x : never;
  */
 export function array<
   input,
-  const p extends unknown extends input ? UnknownPattern : Pattern<Elem<input>>
+  const p extends Pattern<WithDefault<Elem<input>, unknown>>
 >(pattern: p): ArrayP<input, p> {
   return {
     [symbols.matcher]() {
