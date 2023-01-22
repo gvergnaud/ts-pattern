@@ -951,9 +951,11 @@ console.log(output);
 // => 'a list of posts!'
 ```
 
-### Sets
+### `P.set` patterns
 
-Patterns can be Sets.
+To match a Set, you can use `P.set(subpattern)`.
+It takes a sub-pattern, and will match if **all elements** inside the set
+match this sub-pattern.
 
 ```ts
 import { match, P } from 'ts-pattern';
@@ -963,26 +965,20 @@ type Input = Set<string | number>;
 const input: Input = new Set([1, 2, 3]);
 
 const output = match(input)
-  .with(new Set([1, 'hello']), (set) => `Set contains 1 and 'hello'`)
-  .with(new Set([1, 2]), (set) => `Set contains 1 and 2`)
-  .with(new Set([P.string]), (set) => `Set contains only strings`)
-  .with(new Set([P.number]), (set) => `Set contains only numbers`)
+  .with(P.set(1), (set) => `Set contains only 1`)
+  .with(P.set(P.string), (set) => `Set contains only strings`)
+  .with(P.set(P.number), (set) => `Set contains only numbers`)
   .otherwise(() => '');
 
 console.log(output);
-// => 'Set contains 1 and 2'
+// => "Set contains only numbers"
 ```
 
-If a Set pattern contains one single wildcard pattern, it will match if
-each value in the input set match the wildcard.
+### `P.map` patterns
 
-If a Set pattern contains several values, it will match if the
-input Set contains each of these values.
-
-### Maps
-
-Patterns can be Maps. They match if the input is a Map, and if each
-value match the corresponding sub-pattern.
+To match a Map, you can use `P.map(keyPattern, valuePattern)`.
+It takes a subpattern to match against the key, a subpattern to match agains the value, and will match if **all elements** inside this map
+match these two sub-patterns.
 
 ```ts
 import { match, P } from 'ts-pattern';
@@ -996,19 +992,16 @@ const input: Input = new Map([
 ]);
 
 const output = match(input)
-  .with(new Map([['b', 2]]), (map) => `map.get('b') is 2`)
-  .with(new Map([['a', P.string]]), (map) => `map.get('a') is a string`)
+  .with(P.map(P.string, P.number), (map) => `map's type is Map<string, number>`)
+  .with(P.map(P.string, P.string), (map) => `map's type is Map<string, string>`)
   .with(
-    new Map([
-      ['a', P.number],
-      ['c', P.number],
-    ]),
-    (map) => `map.get('a') and map.get('c') are number`
+    P.map(P.union('a', 'c'), P.number),
+    (map) => `map's type is Map<'a' | 'c', number>`
   )
   .otherwise(() => '');
 
 console.log(output);
-// => 'map.get('b') is 2'
+// => "map's type is Map<string, number>"
 ```
 
 ### `P.when` patterns

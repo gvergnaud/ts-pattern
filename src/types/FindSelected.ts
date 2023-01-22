@@ -57,6 +57,9 @@ export type FindSelectionUnion<
       array: i extends readonly (infer ii)[]
         ? MapList<FindSelectionUnion<ii, pattern>>
         : never;
+      // FIXME: selection for map and set is supported at the value level
+      map: never;
+      set: never;
       optional: MapOptional<FindSelectionUnion<i, pattern>>;
       or: MapOptional<
         ReduceFindSelectionUnion<i, Extract<pattern, readonly any[]>>
