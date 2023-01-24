@@ -22,9 +22,16 @@ import { matchPattern } from './internals/helpers';
  *    .exhaustive();
  *
  */
-export const match = <input, output = symbols.unset>(
-  value: input
-): Match<input, output> => new MatchExpression(value, []) as any;
+export function match<
+  Input extends readonly [any, ...any[]],
+  Output = symbols.unset
+>(value: Input): Match<Input, Output>;
+export function match<Input, Output = symbols.unset>(
+  value: Input
+): Match<Input, Output>;
+export function match(value: unknown): unknown {
+  return new MatchExpression(value, []);
+}
 
 /**
  * This class represents a match expression. It follows the

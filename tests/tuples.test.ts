@@ -79,15 +79,15 @@ describe('tuple ([a, b])', () => {
         expect(
           match<[string, number], string>(tuple)
             .with(['hello', 20], (x) => {
-              type t = Expect<Equal<typeof x, [string, number]>>;
+              type t = Expect<Equal<typeof x, ['hello', 20]>>;
               return `perfect match`;
             })
             .with(['hello', P._], (x) => {
-              type t = Expect<Equal<typeof x, [string, number]>>;
+              type t = Expect<Equal<typeof x, ['hello', number]>>;
               return `string match`;
             })
             .with([P._, 20], (x) => {
-              type t = Expect<Equal<typeof x, [string, number]>>;
+              type t = Expect<Equal<typeof x, [string, 20]>>;
               return `number match`;
             })
             .with([P.string, P.number], (x) => {
@@ -178,7 +178,7 @@ describe('tuple ([a, b])', () => {
     const state = { type: 'a' } as State;
     const event = { type: 'c' } as Event;
 
-    const output = match([state, event] as const)
+    const output = match([state, event])
       .with([{ type: 'a' }, { type: 'c' }], () => 'a + c')
       .otherwise(() => 'no');
 

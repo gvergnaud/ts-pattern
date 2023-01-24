@@ -59,7 +59,7 @@ type OrgPlan = 'basic' | 'pro' | 'premium'; // | 'enterprise';
 
 const exampleFunction2 = (org: OrgPlan, user: UserType) =>
   // 1. Checking several enums with tuples
-  match([org, user] as const)
+  match([org, user])
     .with(['basic', P._], () => `Please upgrade to unlock this feature!`)
     // 2. `.with()` can take several patterns. It will match if one of them do.
     .with(

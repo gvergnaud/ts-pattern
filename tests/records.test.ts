@@ -18,16 +18,30 @@ describe('Records ({})', () => {
       match<Vector, string>(vector)
         .with({ x: 1, y: 1, z: 1 }, (x) => {
           type t = Expect<
-            Equal<typeof x, Vector3 | { x: number; y: number; z: number }>
+            Equal<
+              typeof x,
+              {
+                x: 1;
+                y: 1;
+                z: 1;
+              }
+            >
           >;
           return 'vector3';
         })
         .with({ x: 2, y: 1 }, (x) => {
-          type t = Expect<Equal<typeof x, Vector3 | Vector2>>;
+          type t = Expect<
+            Equal<typeof x, { x: 2; y: 1; z: number } | { x: 2; y: 1 }>
+          >;
           return 'vector2';
         })
         .with({ x: 1 }, (x) => {
-          type t = Expect<Equal<typeof x, Vector3 | Vector2 | Vector1>>;
+          type t = Expect<
+            Equal<
+              typeof x,
+              { x: 1; y: number; z: number } | { x: 1; y: number } | { x: 1 }
+            >
+          >;
           return 'vector1';
         })
         .otherwise(() => 'no match')

@@ -3,7 +3,7 @@ import type { Pattern, Matcher } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
-import type { WithDefault, Union, GuardValue } from './helpers';
+import type { WithDefault, Union, GuardValue, Narrow } from './helpers';
 import type { FindSelected } from './FindSelected';
 
 // We fall back to `a` if we weren't able to extract anything more precise
@@ -37,7 +37,7 @@ export type Match<
     c,
     value extends MatchedValue<i, InvertPattern<p>>
   >(
-    pattern: p,
+    pattern: Narrow<p>,
     handler: (
       selections: FindSelected<value, p>,
       value: value
@@ -126,7 +126,7 @@ export type Match<
     c,
     value extends GuardValue<pred>
   >(
-    pattern: pat,
+    pattern: Narrow<pat>,
     predicate: pred,
     handler: (
       selections: FindSelected<value, pat>,

@@ -212,3 +212,10 @@ export type Some<bools extends boolean[]> = true extends bools[number]
 export type All<bools extends boolean[]> = bools[number] extends true
   ? true
   : false;
+
+export type Narrow<A> =
+  | (A extends [] ? [] : never)
+  | (A extends Primitives ? A : never)
+  | {
+      [K in keyof A]: A[K] extends Function ? A[K] : Narrow<A[K]>;
+    };

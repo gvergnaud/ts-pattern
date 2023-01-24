@@ -412,7 +412,7 @@ describe('exhaustive()', () => {
 
     it('should support P.any in a readonly tuple', () => {
       const f = (n: number, state: State) => {
-        const x = match([n, state] as const)
+        const x = match([n, state])
           .with(
             [1, { status: 'success', data: P.select() }],
             ([_, { data }]) => data.startsWith('coucou'),
@@ -667,7 +667,7 @@ describe('exhaustive()', () => {
     it('should not exclude cases if the pattern is a literal type and the value is not', () => {
       match({ x: 2 })
         .with({ x: 2 }, ({ x }) => {
-          type t = Expect<Equal<typeof x, number>>;
+          type t = Expect<Equal<typeof x, 2>>;
           return '';
         })
         // @ts-expect-error
@@ -900,7 +900,7 @@ describe('exhaustive()', () => {
                   {
                     age: 'c' | 'd';
                     sex: 'b';
-                    oopsThisIsATypo: string;
+                    oopsThisIsATypo: 'c';
                   }
                 >
               >;
