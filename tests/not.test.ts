@@ -274,13 +274,18 @@ describe('not', () => {
 
   it('exhaustive should work when P.not is followed by the anti-pattern', () => {
     match<number>(1)
-      .with(P.not(P.number), () => '2')
+      .with(P.not(P.number), () => 'not 2')
       .with(P.number, () => '2')
       .exhaustive();
 
     match<1 | 2>(1)
       .with(P.not(2), () => '1')
       .with(2, () => '2')
+      .exhaustive();
+
+    match<'a' | 'b' | 'c'>('a')
+      .with(P.not('a'), () => '1')
+      .with('a', () => '2')
       .exhaustive();
 
     match<number>(1)
