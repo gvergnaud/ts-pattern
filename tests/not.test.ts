@@ -257,8 +257,6 @@ describe('not', () => {
       )
       // This should work
       .with({ type: 'video', seconds: 10 }, () => 'video of 10 seconds.')
-      // Technically, this pattern is exhaustive but there is no way to make sure it is
-      // without negated types (https://github.com/microsoft/TypeScript/pull/29317).
       .otherwise(() => 'something else');
   });
 
@@ -272,5 +270,25 @@ describe('not', () => {
         )
         // @ts-expect-error
         .exhaustive();
+  });
+
+  it('exhaustive should work when P.not is followed by the anti-pattern', () => {
+    match<number>(1)
+      .with(P.not(P.number), () => '2')
+      .with(P.number, () => '2')
+      .exhaustive();
+
+    match<1 | 2>(1)
+      .with(P.not(2), () => '1')
+      .with(2, () => '2')
+      .exhaustive();
+
+    match<number>(1)
+      .with(P.not(2), () => 'not 2')
+      .with(2, () => '2')
+      // FIXME: Technically, this pattern is exhaustive but I don't see a way to make sure it is
+      // without negated types (https://github.com/microsoft/TypeScript/pull/29317).
+      // @ts-expect-error
+      .exhaustive();
   });
 });
