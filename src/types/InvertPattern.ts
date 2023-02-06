@@ -7,6 +7,10 @@ import {
   Compute,
   Cast,
   Equal,
+  Extends,
+  Not,
+  All,
+  NonLiteralPrimitive,
 } from './helpers';
 import type { Matcher, Pattern, ToExclude } from './Pattern';
 
@@ -133,6 +137,21 @@ type ExcludeIfExists<a, b> =
     // (Unless negative types are added in the future)
     unknown extends a
     ? never
+    : All<
+        [
+          // if `a` is one of the non-literal primitive
+          Extends<a, NonLiteralPrimitive>,
+          Not<IsLiteral<a>>,
+          // and b is a literal
+          IsLiteral<b>
+        ]
+      > extends true
+    ? // we shouldn't exclude because this will result in
+      // excluding the whole primitive type even though only
+      // one value has been handled by this pattern.
+      // In other words `P.not(10)` on a `number` input shouldn't
+      // exclude `number`.
+      never
     : DeepExclude<a, b>;
 
 /**

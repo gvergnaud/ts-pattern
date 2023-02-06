@@ -241,4 +241,24 @@ describe('not', () => {
       expect(notMatch(input)).toEqual(expected)
     );
   });
+
+  it("issue #138 — P.not on literals shouln't exclude the whole primitive type.", () => {
+    type Input =
+      | { type: 'user'; name: string }
+      | { type: 'image'; src: string }
+      | { type: 'video'; seconds: number };
+
+    let input = { type: 'user', name: 'Gabriel' } as unknown as Input;
+
+    match(input)
+      .with(
+        { type: 'video', seconds: P.not(10) },
+        () => 'not video of 10 seconds.'
+      )
+      // This should work
+      .with({ type: 'video', seconds: 10 }, () => 'video of 10 seconds.')
+      // Technically, this pattern is exhaustive but there is no way to make sure it is
+      // without negated types (https://github.com/microsoft/TypeScript/pull/29317).
+      .otherwise(() => 'something else');
+  });
 });

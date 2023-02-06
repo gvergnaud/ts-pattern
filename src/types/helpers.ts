@@ -188,6 +188,8 @@ export type Primitives =
   | symbol
   | bigint;
 
+export type NonLiteralPrimitive = Exclude<Primitives, undefined | null>;
+
 export type TupleKeys = 0 | 1 | 2 | 3 | 4;
 
 export type Union<a, b> = [b] extends [a] ? a : [a] extends [b] ? b : a | b;
@@ -212,3 +214,7 @@ export type Some<bools extends boolean[]> = true extends bools[number]
 export type All<bools extends boolean[]> = bools[number] extends true
   ? true
   : false;
+
+export type Extends<a, b> = [a] extends [b] ? true : false;
+
+export type Not<a extends boolean> = a extends true ? false : true;
