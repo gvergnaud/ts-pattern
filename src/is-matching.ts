@@ -6,7 +6,7 @@ import { matchPattern } from './internals/helpers';
 /**
  * `isMatching` takes pattern and returns a **type guard** function, cheching if a value matches this pattern.
  *
- * [Read `isMatching` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#ismatching)
+ * [Read  documentation for `isMatching` on GitHub](https://github.com/gvergnaud/ts-pattern#ismatching)
  *
  * @example
  *  const hasName = isMatching({ name: P.string })
@@ -24,7 +24,7 @@ export function isMatching<p extends Pattern<any>>(
 /**
  * `isMatching` takes pattern and a value and checks if the value matches this pattern.
  *
- * [Read `isMatching` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#ismatching)
+ * [Read  documentation for `isMatching` on GitHub](https://github.com/gvergnaud/ts-pattern#ismatching)
  *
  * @example
  *  declare let input: unknown

@@ -109,7 +109,7 @@ export type UnknownPattern =
  * They can also be wildcards, like `P._`, `P.string`, `P.number`,
  * or other matchers, like `P.when(predicate)`, `P.not(pattern)`, etc.
  *
- * [Read `Patterns` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#patterns)
+ * [Read documentation for `P.Pattern` on GitHub](https://github.com/gvergnaud/ts-pattern#patterns)
  *
  * @example
  * const pattern: P.Pattern<User> = { name: P.string }

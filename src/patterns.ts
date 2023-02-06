@@ -22,7 +22,7 @@ export { Pattern };
  * `P.infer<typeof somePattern>` will return the type of the value
  * matched by this pattern.
  *
- * [Read `P.infer` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Pinfer)
+ * [Read documentation for `P.infer` on GitHub](https://github.com/gvergnaud/ts-pattern#Pinfer)
  *
  * @example
  * const userPattern = { name: P.string }
@@ -34,7 +34,7 @@ export type infer<p extends Pattern<any>> = InvertPattern<p>;
  * `P.optional(subpattern)` takes a sub pattern and returns a pattern which matches if the
  * key is undefined or if it is defined and the sub pattern matches its value.
  *
- * [Read `P.optional` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Poptional-patterns)
+ * [Read documentation for `P.optional` on GitHub](https://github.com/gvergnaud/ts-pattern#Poptional-patterns)
 
 * @example
  *  match(value)
@@ -74,7 +74,7 @@ type Elem<xs> = xs extends Array<infer x> ? x : never;
  * `P.array(subpattern)` takes a sub pattern and returns a pattern, which matches
  * arrays if all their elements match the sub pattern.
  *
- * [Read `P.array` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Parray-patterns)
+ * [Read documentation for `P.array` on GitHub](https://github.com/gvergnaud/ts-pattern#Parray-patterns)
  *
  * @example
  *  match(value)
@@ -119,7 +119,7 @@ export function array<
  * `P.intersection(...patterns)` returns a pattern which matches
  * only if **every** patterns provided in parameter match the input.
  *
- * [Read `P.intersection` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Pintersection-patterns)
+ * [Read documentation for `P.intersection` on GitHub](https://github.com/gvergnaud/ts-pattern#Pintersection-patterns)
  *
  * @example
  *  match(value)
@@ -163,7 +163,7 @@ export function intersection<
  * `P.union(...patterns)` returns a pattern which matches
  * if **at least one** of the patterns provided in parameter match the input.
  *
- * [Read `P.union` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Punion-patterns)
+ * [Read documentation for `P.union` on GitHub](https://github.com/gvergnaud/ts-pattern#Punion-patterns)
  *
  * @example
  *  match(value)
@@ -204,7 +204,7 @@ export function union<
  * `P.not(pattern)` returns a pattern which matches if the sub pattern
  * doesn't match.
  *
- * [Read `P.not` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Pnot-patterns)
+ * [Read documentation for `P.not` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnot-patterns)
  *
  * @example
  *  match<{ a: string | number }>(value)
@@ -230,7 +230,7 @@ export function not<
  * `P.when((value) => boolean)` returns a pattern which matches
  * if the predicate returns true for the current input.
  *
- * [Read `P.when` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Pwhen-patterns)
+ * [Read documentation for `P.when` on GitHub](https://github.com/gvergnaud/ts-pattern#Pwhen-patterns)
  *
  * @example
  *  match<{ age: number }>(value)
@@ -265,7 +265,7 @@ export function when<input, p extends (value: input) => unknown>(
  * `P.select()` is a pattern which will always match,
  * and will inject the selected piece of input in the handler function.
  *
- * [Read `P.select` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Pselect-patterns)
+ * [Read documentation for `P.select` on GitHub](https://github.com/gvergnaud/ts-pattern#Pselect-patterns)
  *
  * @example
  *  match<{ age: number }>(value)
@@ -364,7 +364,7 @@ function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
 /**
  * `P.any` is a wildcard pattern, matching **any value**.
  *
- * [Read `P.any` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#P_-wildcard)
+ * [Read documentation for `P.any` on GitHub](https://github.com/gvergnaud/ts-pattern#P_-wildcard)
  *
  * @example
  *  match(value)
@@ -376,7 +376,7 @@ export const any = when(isUnknown);
  * `P._` is a wildcard pattern, matching **any value**.
  * It's an alias to `P.any`.
  *
- * [Read `P._` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#P_-wildcard)
+ * [Read documentation for `P._` on GitHub](https://github.com/gvergnaud/ts-pattern#P_-wildcard)
  *
  * @example
  *  match(value)
@@ -387,7 +387,7 @@ export const _ = any;
 /**
  * `P.string` is a wildcard pattern matching any **string**.
  *
- * [Read `P.string` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Pstring-wildcard)
+ * [Read documentation for `P.string` on GitHub](https://github.com/gvergnaud/ts-pattern#Pstring-wildcard)
  *
  * @example
  *  match(value)
@@ -399,7 +399,7 @@ export const string = when(isString);
 /**
  * `P.number` is a wildcard pattern matching any **number**.
  *
- * [Read `P.number` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumber-wildcard)
+ * [Read documentation for `P.number` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumber-wildcard)
  *
  * @example
  *  match(value)
@@ -410,7 +410,7 @@ export const number = when(isNumber);
 /**
  * `P.boolean` is a wildcard pattern matching any **boolean**.
  *
- * [Read `P.boolean` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#boolean-wildcard)
+ * [Read documentation for `P.boolean` on GitHub](https://github.com/gvergnaud/ts-pattern#boolean-wildcard)
  *
  * @example
  *   .with(P.boolean, () => 'will match on booleans')
@@ -420,7 +420,7 @@ export const boolean = when(isBoolean);
 /**
  * `P.bigint` is a wildcard pattern matching any **bigint**.
  *
- * [Read `P.bigint` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#bigint-wildcard)
+ * [Read documentation for `P.bigint` on GitHub](https://github.com/gvergnaud/ts-pattern#bigint-wildcard)
  *
  * @example
  *   .with(P.bigint, () => 'will match on bigints')
@@ -430,7 +430,7 @@ export const bigint = when(isBigInt);
 /**
  * `P.symbol` is a wildcard pattern matching any **symbol**.
  *
- * [Read `P.symbol` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#symbol-wildcard)
+ * [Read documentation for `P.symbol` on GitHub](https://github.com/gvergnaud/ts-pattern#symbol-wildcard)
  *
  * @example
  *   .with(P.symbol, () => 'will match on symbols')
@@ -440,7 +440,7 @@ export const symbol = when(isSymbol);
 /**
  * `P.nullish` is a wildcard pattern matching **null** or **undefined**.
  *
- * [Read `P.nullish` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#nullish-wildcard)
+ * [Read documentation for `P.nullish` on GitHub](https://github.com/gvergnaud/ts-pattern#nullish-wildcard)
  *
  * @example
  *   .with(P.nullish, () => 'will match on null or undefined')
@@ -450,7 +450,7 @@ export const nullish = when(isNullish);
 /**
  * `P.instanceOf(SomeClass)` is a pattern matching instances of a given class.
  *
- * [Read `P.instanceOf` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Pinstanceof-patterns)
+ * [Read documentation for `P.instanceOf` on GitHub](https://github.com/gvergnaud/ts-pattern#Pinstanceof-patterns)
  *
  *  @example
  *   .with(P.instanceOf(SomeClass), () => 'will match on SomeClass instances')
@@ -468,7 +468,7 @@ export function instanceOf<T extends AnyConstructor>(
  * It returns all utility functions to create patterns,
  * Like `array`, `union`, `intersection`, etc.
  *
- * [Read `P.typed` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#Ptyped)
+ * [Read documentation for `P.typed` on GitHub](https://github.com/gvergnaud/ts-pattern#Ptyped)
  *
  * @example
  *  .with(

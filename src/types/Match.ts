@@ -30,7 +30,7 @@ export type Match<
    * `.with(pattern, handler)` Registers a pattern and an handler function which
    * will be called if this pattern matches the input value.
    *
-   * [Read `.with()` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#with)
+   * [Read documentation for `.with()` on GitHub](https://github.com/gvergnaud/ts-pattern#with)
    **/
   with<
     p extends Pattern<i>,
@@ -145,7 +145,7 @@ export type Match<
    * `.when(predicate, handler)` Registers a predicate function and an handler function.
    * If the predicate returns true, the handler function will be chosen to handle the input.
    *
-   * [Read `.when()` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#when)
+   * [Read documentation for `.when()` on GitHub](https://github.com/gvergnaud/ts-pattern#when)
    **/
   when<pred extends (value: i) => unknown, c, value extends GuardValue<pred>>(
     predicate: pred,
@@ -165,7 +165,7 @@ export type Match<
    *
    * Equivalent to `.with(P._, () => x).exhaustive()`
    *
-   * [Read `.otherwise()` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#otherwise)
+   * [Read documentation for `.otherwise()` on GitHub](https://github.com/gvergnaud/ts-pattern#otherwise)
    *
    **/
   otherwise<c>(
@@ -179,7 +179,7 @@ export type Match<
    * every case, and you should add another `.with(...)` clause
    * to prevent potential runtime errors.
    *
-   * [Read `.exhaustive()` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
+   * [Read documentation for `.exhaustive()` on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
    *
    * */
   exhaustive: DeepExcludeAll<i, patternValueTuples> extends infer remainingCases
