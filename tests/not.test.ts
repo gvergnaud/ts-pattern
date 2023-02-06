@@ -261,4 +261,16 @@ describe('not', () => {
       // without negated types (https://github.com/microsoft/TypeScript/pull/29317).
       .otherwise(() => 'something else');
   });
+
+  it("shouldn't consider unexhaustive patterns exhaustive", () => {
+    const f = (input: { type: 'video'; seconds: number }) =>
+      match(input)
+        .with(
+          // not 10, but still can be any number.
+          { type: 'video', seconds: P.not(10) },
+          () => 'not video of 10 seconds.'
+        )
+        // @ts-expect-error
+        .exhaustive();
+  });
 });
