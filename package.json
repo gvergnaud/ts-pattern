@@ -56,6 +56,6 @@
     "microbundle": "^0.15.0",
     "prettier": "^2.5.1",
     "ts-jest": "^27.1.2",
-    "typescript": "^5.0.0-dev.20230121"
+    "typescript": "^5.0.0-beta"
   }
 }
