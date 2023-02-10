@@ -90,10 +90,16 @@ type WithDefault<a, b> = [a] extends [never] ? b : a;
  *  match(value)
  *   .with({ users: P.array({ name: P.string }) }, () => 'will match { name: string }[]')
  */
+export function array<input>(): ArrayP<input, unknown> &
+  Iterable<ArrayP<input, unknown>>;
 export function array<
   input,
   const p extends Pattern<WithDefault<UnwrapArray<input>, unknown>>
->(pattern: p): ArrayP<input, p> {
+>(pattern: p): ArrayP<input, p> & Iterable<ArrayP<input, p>>;
+export function array<
+  input,
+  const p extends Pattern<WithDefault<UnwrapArray<input>, unknown>>
+>(pattern?: p): ArrayP<input, p> & Iterable<ArrayP<input, p>> {
   return {
     [symbols.matcher]() {
       return {
@@ -121,6 +127,9 @@ export function array<
         },
         getSelectionKeys: () => getSelectionKeys(pattern),
       };
+    },
+    *[Symbol.iterator]() {
+      yield pattern ? array(pattern) : array();
     },
   };
 }
