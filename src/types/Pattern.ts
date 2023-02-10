@@ -62,6 +62,8 @@ export interface Matcher<
   >;
 }
 
+export type AnyMatcher = Matcher<any, any, any, any, any>;
+
 type UnknownMatcher = Matcher<unknown, unknown, any, any>;
 
 export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
@@ -103,6 +105,7 @@ export interface ToExclude<a> {
 export type UnknownPattern =
   | readonly []
   | readonly [UnknownPattern, ...UnknownPattern[]]
+  | readonly [...UnknownPattern[], UnknownPattern]
   | { readonly [k: string]: UnknownPattern }
   | Primitives
   | UnknownMatcher;
@@ -140,5 +143,8 @@ type ObjectPattern<a> = {
 type ArrayPattern<a> = a extends readonly (infer i)[]
   ? a extends readonly [any, ...any]
     ? { readonly [index in keyof a]: Pattern<a[index]> }
-    : readonly [] | readonly [Pattern<i>, ...Pattern<i>[]]
+    :
+        | readonly []
+        | readonly [Pattern<i>, ...Pattern<i>[]]
+        | readonly [...Pattern<i>[], Pattern<i>]
   : never;
