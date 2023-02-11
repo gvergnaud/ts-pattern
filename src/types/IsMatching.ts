@@ -1,4 +1,58 @@
-import { Primitives, IsPlainObject, IsUnion } from './helpers';
+import {
+  Primitives,
+  IsPlainObject,
+  IsUnion,
+  ValueOf,
+  Length,
+  IsLiteral,
+  All,
+  Equal,
+} from './helpers';
+
+type IsMatchingTuple<a extends readonly any[], b extends readonly any[]> = [
+  a,
+  b
+] extends [readonly [], readonly []]
+  ? true
+  : [a, b] extends [
+      readonly [infer a1, ...infer aRest],
+      readonly [infer b1, ...infer bRest]
+    ]
+  ? IsMatching<a1, b1> extends true
+    ? IsMatchingTuple<aRest, bRest>
+    : false
+  : false;
+
+type IsMatchingArray<
+  a extends readonly any[],
+  b extends readonly any[]
+> = b extends readonly []
+  ? true // if b is an empty array and a is an array, the pattern matches.
+  : b extends readonly [infer b1, ...infer bRest]
+  ? a extends readonly [infer a1, ...infer aRest]
+    ? IsMatching<a1, b1> extends true
+      ? IsMatchingArray<aRest, bRest>
+      : false
+    : // if a is shorter than b, doesn't match
+    // example: a is [], b is [any, ...any[]]
+    a extends readonly []
+    ? false
+    : IsMatching<ValueOf<a>, b1> extends true
+    ? IsMatchingArray<a, bRest>
+    : false
+  : b extends readonly [...infer bInit, infer b1]
+  ? a extends readonly [...infer aInit, infer a1]
+    ? IsMatching<a1, b1> extends true
+      ? IsMatchingArray<aInit, bInit>
+      : false
+    : // if a is shorter than b, doesn't match
+    // example: a is [], b is [any, ...any[]]
+    a extends readonly []
+    ? false
+    : IsMatching<ValueOf<a>, b1> extends true
+    ? IsMatchingArray<a, bInit>
+    : false
+  : IsMatching<ValueOf<a>, ValueOf<b>>;
 
 export type IsMatching<a, b> = true extends IsUnion<a> | IsUnion<b>
   ? true extends (
@@ -12,57 +66,22 @@ export type IsMatching<a, b> = true extends IsUnion<a> | IsUnion<b>
   unknown extends b
   ? true
   : b extends Primitives
-  ? b extends a
+  ? // if the pattern is a primitive, we want to check if there is
+    // an overlap between a and b!
+    a extends b
     ? true
-    : false
-  : [b, a] extends [readonly any[], readonly any[]]
-  ? [b, a] extends [
-      readonly [infer b1, infer b2, infer b3, infer b4, infer b5],
-      readonly [infer a1, infer a2, infer a3, infer a4, infer a5]
-    ]
-    ? [
-        IsMatching<a1, b1>,
-        IsMatching<a2, b2>,
-        IsMatching<a3, b3>,
-        IsMatching<a4, b4>,
-        IsMatching<a5, b5>
-      ] extends [true, true, true, true, true]
-      ? true
-      : false
-    : [b, a] extends [
-        readonly [infer b1, infer b2, infer b3, infer b4],
-        readonly [infer a1, infer a2, infer a3, infer a4]
-      ]
-    ? [
-        IsMatching<a1, b1>,
-        IsMatching<a2, b2>,
-        IsMatching<a3, b3>,
-        IsMatching<a4, b4>
-      ] extends [true, true, true, true]
-      ? true
-      : false
-    : [b, a] extends [
-        readonly [infer b1, infer b2, infer b3],
-        readonly [infer a1, infer a2, infer a3]
-      ]
-    ? [IsMatching<a1, b1>, IsMatching<a2, b2>, IsMatching<a3, b3>] extends [
-        true,
-        true,
-        true
-      ]
-      ? true
-      : false
-    : [b, a] extends [
-        readonly [infer b1, infer b2],
-        readonly [infer a1, infer a2]
-      ]
-    ? [IsMatching<a1, b1>, IsMatching<a2, b2>] extends [true, true]
-      ? true
-      : false
-    : [b, a] extends [readonly [infer b1], readonly [infer a1]]
-    ? IsMatching<a1, b1>
     : b extends a
     ? true
+    : false
+  : b extends readonly any[]
+  ? a extends readonly any[]
+    ? // both tuples
+      All<[IsLiteral<Length<a>>, IsLiteral<Length<b>>]> extends true
+      ? // lengths are different
+        Equal<Length<a>, Length<b>> extends false
+        ? false
+        : IsMatchingTuple<a, b>
+      : IsMatchingArray<a, b>
     : false
   : IsPlainObject<b> extends true
   ? true extends ( // `true extends union` means "if some cases of the a union are matching"
