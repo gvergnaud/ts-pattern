@@ -5,8 +5,9 @@ import type {
   Primitives,
   TupleKeys,
   UnionToTuple,
+  ValueOf,
 } from './helpers';
-import type { Matcher, Pattern } from './Pattern';
+import type { AnyMatcher, Matcher, Pattern } from './Pattern';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 
@@ -40,6 +41,54 @@ type ReduceFindSelectionUnion<
   ? ReduceFindSelectionUnion<i, tail, output | FindSelectionUnion<i, head>>
   : output;
 
+type FindSelectionUnionInArray<
+  i,
+  p,
+  path extends any[] = [],
+  output = never
+> = i extends readonly (infer ii)[]
+  ? p extends readonly []
+    ? output
+    : p extends readonly [infer p1, ...infer pRest]
+    ? i extends readonly [infer i1, ...infer iRest]
+      ? FindSelectionUnionInArray<
+          iRest,
+          pRest,
+          [...path, p['length']],
+          output | FindSelectionUnion<i1, p1, [...path, p['length']]>
+        >
+      : FindSelectionUnionInArray<
+          ii[],
+          pRest,
+          [...path, p['length']],
+          output | FindSelectionUnion<ii, p1, [...path, p['length']]>
+        >
+    : p extends readonly [...infer pInit, infer p1]
+    ? i extends readonly [...infer iInit, infer i1]
+      ? FindSelectionUnionInArray<
+          iInit,
+          pInit,
+          [...path, p['length']],
+          output | FindSelectionUnion<i1, p1, [...path, p['length']]>
+        >
+      : FindSelectionUnionInArray<
+          ii[],
+          pInit,
+          [...path, p['length']],
+          output | FindSelectionUnion<ii, p1, [...path, p['length']]>
+        >
+    : // If P is a matcher, in this case, it's likely an array matcher
+    p extends readonly [...(readonly (infer pRest & AnyMatcher)[])]
+    ? output | FindSelectionUnion<i, pRest, [...path, p['length']]>
+    :
+        | output
+        | FindSelectionUnion<
+            ii,
+            ValueOf<p>,
+            [...path, Extract<p, readonly any[]>['length']]
+          >
+  : output;
+
 export type FindSelectionUnion<
   i,
   p,
@@ -68,20 +117,8 @@ export type FindSelectionUnion<
       not: never;
       default: sel extends Some<infer k> ? { [kk in k]: [i, path] } : never;
     }[matcherType]
-  : p extends readonly (infer pp)[]
-  ? i extends readonly (infer ii)[]
-    ? p extends readonly [any, ...any]
-      ? i extends readonly [any, ...any]
-        ? {
-            [k in TupleKeys & keyof i & keyof p]: FindSelectionUnion<
-              i[k],
-              p[k],
-              [...path, k]
-            >;
-          }[TupleKeys & keyof i & keyof p]
-        : FindSelectionUnion<ii, p[number], [...path, 0]>
-      : FindSelectionUnion<ii, pp, [...path, 0]>
-    : never
+  : p extends readonly any[]
+  ? FindSelectionUnionInArray<i, p>
   : p extends {}
   ? i extends {}
     ? {
