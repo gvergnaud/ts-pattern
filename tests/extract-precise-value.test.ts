@@ -5,16 +5,16 @@ import { Event, Option, State } from './types-catalog/utils';
 
 describe('ExtractPreciseValue', () => {
   it('should correctly extract the matching value from the input and an inverted pattern', () => {
+    type res1 = ExtractPreciseValue<
+      { type: 'test' } | ['hello', Option<string>] | 'hello'[],
+      ['hello', { kind: 'some' }]
+    >;
+
+    type test1 = Expect<
+      Equal<res1, ['hello', { kind: 'some'; value: string }]>
+    >;
+
     type cases = [
-      Expect<
-        Equal<
-          ExtractPreciseValue<
-            { type: 'test' } | ['hello', Option<string>] | 'hello'[],
-            ['hello', { kind: 'some' }]
-          >,
-          ['hello', { kind: 'some'; value: string }]
-        >
-      >,
       Expect<
         Equal<
           ExtractPreciseValue<
