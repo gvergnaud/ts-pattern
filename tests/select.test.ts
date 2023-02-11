@@ -22,7 +22,7 @@ describe('select', () => {
     expect(
       match<string[], string[]>(['you', 'hello'])
         .with([P.select('first')], ({ first }, xs) => {
-          type t = Expect<Equal<typeof xs, string[]>>;
+          type t = Expect<Equal<typeof xs, [string]>>;
           type t2 = Expect<Equal<typeof first, string>>;
           return [first];
         })
