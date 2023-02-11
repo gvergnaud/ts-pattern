@@ -146,8 +146,15 @@ export function array<
  */
 export function set<
   input,
+>(): SetP<input, unknown>;
+export function set<
+  input,
   const p extends Pattern<WithDefault<UnwrapSet<input>, unknown>>
->(pattern: p): SetP<input, p> {
+>(pattern: p): SetP<input, p>;
+export function set<
+  input,
+  const p extends Pattern<WithDefault<UnwrapSet<input>, unknown>>
+>(...args: [pattern?: p]): SetP<input, p> {
   return {
     [symbols.matcher]() {
       return {
@@ -160,9 +167,13 @@ export function set<
             return { matched: true, selections };
           }
 
+          if (args.length === 0) return { matched: true };
+
           const selector = (key: string, value: unknown) => {
             selections[key] = (selections[key] || []).concat([value]);
           };
+
+          const pattern = args[0];
 
           const matched = setEvery(value, (v) =>
             matchPattern(pattern, v, selector)
@@ -170,7 +181,7 @@ export function set<
 
           return { matched, selections };
         },
-        getSelectionKeys: () => getSelectionKeys(pattern),
+        getSelectionKeys: () => args[0] !== undefined ? getSelectionKeys(args[0]) : [],
       };
     },
   };
@@ -194,11 +205,17 @@ const setEvery = <T>(set: Set<T>, predicate: (value: T) => boolean) => {
  *  match(value)
  *   .with({ users: P.set(P.string) }, () => 'will match Set<string>')
  */
+export function map<input>(): MapP<input, unknown, unknown>;
 export function map<
   input,
   const pkey extends Pattern<WithDefault<UnwrapMapKey<input>, unknown>>,
   const pvalue extends Pattern<WithDefault<UnwrapMapValue<input>, unknown>>
->(patternKey: pkey, patternValue: pvalue): MapP<input, pkey, pvalue> {
+>(patternKey: pkey, patternValue: pvalue): MapP<input, pkey, pvalue>
+export function map<
+  input,
+  const pkey extends Pattern<WithDefault<UnwrapMapKey<input>, unknown>>,
+  const pvalue extends Pattern<WithDefault<UnwrapMapValue<input>, unknown>>
+>(...args: [patternKey?: pkey, patternValue?: pvalue]): MapP<input, pkey, pvalue> {
   return {
     [symbols.matcher]() {
       return {
@@ -215,6 +232,12 @@ export function map<
             selections[key] = (selections[key] || []).concat([value]);
           };
 
+          if (args.length === 0) return { matched: true };
+          if (args.length === 1) {
+            throw new Error(`\`P.map\` wasn\'t given enough arguments. Expected (key, value), received ${args[0]}`)
+          }
+          const [patternKey, patternValue] = args
+
           const matched = mapEvery(value, (v, k) =>{
             const keyMatch = matchPattern(patternKey, k, selector)
             const valueMatch = matchPattern(patternValue, v, selector)
@@ -223,7 +246,10 @@ export function map<
 
           return { matched, selections };
         },
-        getSelectionKeys: () => getSelectionKeys(patternKey).concat(getSelectionKeys(patternValue)),
+        getSelectionKeys: () => [
+          ...(args[0] !== undefined ? getSelectionKeys(args[0]) : []),
+          ...(args[1] !== undefined ? getSelectionKeys(args[1]) : [])
+        ]
       };
     },
   };

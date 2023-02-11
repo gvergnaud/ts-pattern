@@ -1,5 +1,4 @@
 import { match, P } from '../src';
-import { InvertPattern } from '../src/types/InvertPattern';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('variadic tuples ([a, ...b[]])', () => {
