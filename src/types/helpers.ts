@@ -227,3 +227,26 @@ export type MergeUnion<a> = {
       : never
     : never;
 };
+
+export type IsFixedSizeTuple<a extends readonly any[]> = IsLiteral<Length<a>>;
+
+// is it a fixed size or a variadic tuple
+export type IsTuple<a extends readonly any[]> = a extends
+  | readonly []
+  | readonly [any, ...any]
+  | readonly [...any, any]
+  ? true
+  : false;
+
+export type IsStrictArray<a extends readonly any[]> = Not<IsTuple<a>>;
+
+export type IsReadonlyArray<a> = a extends readonly any[]
+  ? a extends any[] // mutable array
+    ? false
+    : true
+  : false;
+
+export type MaybeAddReadonly<
+  a,
+  shouldAdd extends boolean
+> = shouldAdd extends true ? Readonly<a> : a;

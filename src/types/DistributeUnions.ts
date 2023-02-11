@@ -7,6 +7,10 @@ import type {
   IsPlainObject,
   Length,
   UnionToTuple,
+  IsReadonlyArray,
+  ValueOf,
+  MaybeAddReadonly,
+  IsStrictArray,
 } from './helpers';
 import { IsMatching } from './IsMatching';
 
@@ -133,6 +137,35 @@ export type FindUnions<
     ? [...FindUnions<a1, p1, [...path, 0]>, ...FindUnions<a2, p2, [...path, 1]>]
     : [a, p] extends [readonly [infer a1], readonly [infer p1]]
     ? FindUnions<a1, p1, [...path, 0]>
+    : /**
+     * Special case when matching with a variadic tuple on a regular array.
+     * in this case we turne the input array `A[]` into `[] | [A, ...A[]]`
+     * to remove one of these cases during DeepExclude.
+     */
+    p extends readonly [] | readonly [any, ...any] | readonly [...any, any]
+    ? IsStrictArray<Extract<a, readonly any[]>> extends false
+      ? []
+      : [
+          MaybeAddReadonly<
+            | (a extends readonly [any, ...any] | readonly [...any, any]
+                ? never
+                : [])
+            | (p extends readonly [...any, any]
+                ? [...Extract<a, readonly any[]>, ValueOf<a>]
+                : [ValueOf<a>, ...Extract<a, readonly any[]>]),
+            IsReadonlyArray<a>
+          > extends infer aUnion
+            ? {
+                cases: aUnion extends any
+                  ? {
+                      value: aUnion;
+                      subUnions: [];
+                    }
+                  : never;
+                path: path;
+              }
+            : never
+        ]
     : []
   : a extends Set<any>
   ? []

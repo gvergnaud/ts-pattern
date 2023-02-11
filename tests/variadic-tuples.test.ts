@@ -318,17 +318,17 @@ describe('variadic tuples ([a, ...b[]])', () => {
 
       match(xs)
         .with([P.any, ...P.array()], (xs) => {
-          return 'branch 1';
+          return 'branch 1' as const;
         })
         // @ts-expect-error: empty list case missing
         .exhaustive();
 
       const res = match(xs)
         .with([P.any, ...P.array()], (xs) => {
-          return 'branch 1';
+          return 'branch 1' as const;
         })
         .with([], (xs) => {
-          return 'branch 2';
+          return 'branch 2' as const;
         })
         .exhaustive();
 
@@ -340,30 +340,30 @@ describe('variadic tuples ([a, ...b[]])', () => {
 
       match(xs)
         .with([P.any, P.any, ...P.array()], (xs) => {
-          return 'branch 1';
+          return 'branch 1' as const;
         })
         // @ts-expect-error: empty list case missing
         .exhaustive();
 
       match(xs)
         .with([P.any, P.any, ...P.array()], (xs) => {
-          return 'branch 1';
+          return 'branch 1' as const;
         })
         .with([P.any, ...P.array()], (xs) => {
-          return 'branch 1';
+          return 'branch 1' as const;
         })
         // @ts-expect-error: empty list case missing
         .exhaustive();
 
       const res = match(xs)
         .with([P.any, P.any, ...P.array()], (xs) => {
-          return 'branch 1';
+          return 'branch 1' as const;
         })
         .with([P.any, ...P.array()], (xs) => {
-          return 'branch 1';
+          return 'branch 1' as const;
         })
         .with([], (xs) => {
-          return 'branch 2';
+          return 'branch 2' as const;
         })
         .exhaustive();
 
