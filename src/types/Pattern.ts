@@ -60,6 +60,8 @@ export interface Matcher<
     selections,
     excluded
   >;
+  // only used for array matchers
+  [symbols.isVariadic]?: boolean;
 }
 
 export type AnyMatcher = Matcher<any, any, any, any, any>;
