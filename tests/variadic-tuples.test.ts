@@ -1,11 +1,10 @@
 import { match, P } from '../src';
+import { InvertPattern } from '../src/types/InvertPattern';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('variadic tuples ([a, ...b[]])', () => {
   it('unknown input', () => {
     const xs: unknown[] = [1, 2, 3, 'a', 'b', 'c'];
-
-    type t = P.Pattern<unknown[]>;
 
     match(xs)
       .with([P.any, ...P.array()], (xs) => {
@@ -93,6 +92,83 @@ describe('variadic tuples ([a, ...b[]])', () => {
         type t = Expect<Equal<typeof xs, [42, ...number[], 7]>>;
         return [];
       })
+      .otherwise(() => []);
+
+    match(xs)
+      .with([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...P.array(P.number), 7], (xs) => {
+        type t = Expect<
+          Equal<typeof xs, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...number[], 7]>
+        >;
+        return [];
+      })
+      .otherwise(() => []);
+
+    match(xs)
+      .with([...P.array(P.number), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], (xs) => {
+        type t = Expect<
+          Equal<typeof xs, [...number[], 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]>
+        >;
+        return [];
+      })
+      .otherwise(() => []);
+
+    match(xs)
+      .with(
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          ...P.array(P.number),
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+        ],
+        (xs) => {
+          type t = Expect<
+            Equal<
+              typeof xs,
+              [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                ...number[],
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+              ]
+            >
+          >;
+          return [];
+        }
+      )
       .otherwise(() => []);
 
     match(xs)
