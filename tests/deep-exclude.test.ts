@@ -226,6 +226,34 @@ describe('DeepExclude', () => {
     });
   });
 
+  describe('Variadic', () => {
+    it('should correctly turn variadic exclude into their opposite', () => {
+      type res1 = DeepExclude<number[], [number, ...number[]]>;
+      type test1 = Expect<Equal<res1, []>>;
+
+      type res2 = DeepExclude<number[], []>;
+      type test2 = Expect<Equal<res2, [number, ...number[]]>>;
+
+      type res3 = DeepExclude<number[], [...number[], number]>;
+      type test3 = Expect<Equal<res3, []>>;
+
+      type res4 = DeepExclude<[number, ...number[]], [...number[], number]>;
+      type test4 = Expect<Equal<res4, never>>;
+    });
+
+    it('should only exclude if the pattern really matches', () => {
+      type res1 = DeepExclude<number[], [string, ...number[]]>;
+      type test1 = Expect<Equal<res1, number[]>>;
+
+      type res3 = DeepExclude<number[], [...string[], number]>;
+      type test3 = Expect<Equal<res3, number[]>>;
+
+      // matches, but some cases may not have been handled.
+      type res4 = DeepExclude<[number, ...string[]], [...number[], string]>;
+      type test4 = Expect<Equal<res4, [number, ...string[]]>>;
+    });
+  });
+
   describe('List', () => {
     type cases = [
       Expect<Equal<DeepExclude<(1 | 2 | 3)[], 1[]>, (1 | 2 | 3)[]>>,
@@ -237,6 +265,11 @@ describe('DeepExclude', () => {
     ];
 
     it('should work with empty list patterns', () => {
+      type res1 = DeepExclude<{ values: (1 | 2 | 3)[] }, { values: [] }>;
+      type test1 = Expect<
+        Equal<res1, { values: [1 | 2 | 3, ...(1 | 2 | 3)[]] }>
+      >;
+
       type cases = [
         Expect<Equal<DeepExclude<[] | [1, 2, 3], []>, [1, 2, 3]>>,
         Expect<
@@ -249,12 +282,6 @@ describe('DeepExclude', () => {
           Equal<
             DeepExclude<{ values: [1, 2, 3] }, { values: [] }>,
             { values: [1, 2, 3] }
-          >
-        >,
-        Expect<
-          Equal<
-            DeepExclude<{ values: (1 | 2 | 3)[] }, { values: [] }>,
-            { values: (1 | 2 | 3)[] }
           >
         >
       ];

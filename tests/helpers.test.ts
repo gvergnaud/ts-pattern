@@ -8,6 +8,7 @@ import {
   Take,
   IntersectObjects,
   UpdateAt,
+  IsReadonlyArray,
 } from '../src/types/helpers';
 
 describe('helpers', () => {
@@ -162,5 +163,29 @@ describe('helpers', () => {
         >
       >;
     });
+  });
+
+  describe('IsReadonlyArray', () => {
+    type t1 = IsReadonlyArray<readonly []>;
+    type test1 = Expect<Equal<t1, true>>;
+    type t2 = IsReadonlyArray<readonly number[]>;
+    type test2 = Expect<Equal<t2, true>>;
+    type t3 = IsReadonlyArray<readonly [number]>;
+    type test3 = Expect<Equal<t3, true>>;
+    type t4 = IsReadonlyArray<readonly [number, ...(readonly any[])]>;
+    type test4 = Expect<Equal<t4, true>>;
+    type t5 = IsReadonlyArray<readonly [...(readonly any[]), number]>;
+    type test5 = Expect<Equal<t5, true>>;
+
+    type t6 = IsReadonlyArray<[]>;
+    type test6 = Expect<Equal<t6, false>>;
+    type t7 = IsReadonlyArray<number[]>;
+    type test7 = Expect<Equal<t7, false>>;
+    type t8 = IsReadonlyArray<[number]>;
+    type test8 = Expect<Equal<t8, false>>;
+    type t9 = IsReadonlyArray<[number, ...any[]]>;
+    type test9 = Expect<Equal<t9, false>>;
+    type t10 = IsReadonlyArray<[...any[], number]>;
+    type test10 = Expect<Equal<t10, false>>;
   });
 });

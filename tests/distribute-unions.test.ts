@@ -426,6 +426,95 @@ describe('FindAllUnions', () => {
     ];
   });
 
+  it('when matched against an empty array, the input should be turned into a union of empty array and non-empty array', () => {
+    type res1 = FindUnions<readonly number[], readonly []>;
+    type tes1 = Expect<
+      Equal<
+        res1,
+        [
+          {
+            cases:
+              | {
+                  value: readonly [];
+                  subUnions: [];
+                }
+              | {
+                  value: readonly [number, ...(readonly number[])];
+                  subUnions: [];
+                };
+            path: [];
+          }
+        ]
+      >
+    >;
+
+    type res2 = FindUnions<[number], []>;
+    type tes2 = Expect<Equal<res2, []>>;
+
+    type res3 = FindUnions<[number], [number, ...number[]]>;
+    type tes3 = Expect<Equal<res3, []>>;
+
+    type res4 = FindUnions<[number], [...number[], number]>;
+    type tes4 = Expect<Equal<res4, []>>;
+
+    type res5 = FindUnions<[number], [...number[], number]>;
+    type tes5 = Expect<Equal<res5, []>>;
+
+    type res6 = FindUnions<readonly number[], readonly [number, ...number[]]>;
+    type tes6 = Expect<
+      Equal<
+        res6,
+        [
+          {
+            cases:
+              | {
+                  value: readonly [];
+                  subUnions: [];
+                }
+              | {
+                  value: readonly [number, ...(readonly number[])];
+                  subUnions: [];
+                };
+            path: [];
+          }
+        ]
+      >
+    >;
+
+    type res7 = FindUnions<readonly number[], readonly [...number[], number]>;
+    type tes7 = Expect<
+      Equal<
+        res7,
+        [
+          {
+            cases:
+              | {
+                  value: readonly [];
+                  subUnions: [];
+                }
+              | {
+                  value: readonly [...number[], number];
+                  subUnions: [];
+                };
+            path: [];
+          }
+        ]
+      >
+    >;
+
+    type res8 = FindUnions<
+      readonly [...number[], number],
+      readonly [...number[], number]
+    >;
+    type tes8 = Expect<Equal<res8, []>>;
+
+    type res9 = FindUnions<
+      readonly [number, ...number[]],
+      readonly [number, ...number[]]
+    >;
+    type tes9 = Expect<Equal<res9, []>>;
+  });
+
   it('should avoid duplicating the unions, even if the pattern matches the same path twice', () => {
     type cases = [
       Expect<
@@ -753,9 +842,11 @@ describe('DistributeMatchingUnions', () => {
   });
 
   it('should work for non unions', () => {
+    type res1 = DistributeMatchingUnions<[], []>;
+    type test1 = Expect<Equal<res1, []>>;
+
     type cases = [
       Expect<Equal<DistributeMatchingUnions<{}, {}>, {}>>,
-      Expect<Equal<DistributeMatchingUnions<[], []>, []>>,
       Expect<
         Equal<
           DistributeMatchingUnions<Map<string, string>, Map<string, string>>,
