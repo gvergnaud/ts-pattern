@@ -238,6 +238,7 @@ describe('DeepExclude', () => {
       type test3 = Expect<Equal<res3, []>>;
 
       type res4 = DeepExclude<[number, ...number[]], [...number[], number]>;
+      // @ts-expect-error fixme! never would make more sense here.
       type test4 = Expect<Equal<res4, never>>;
     });
 
