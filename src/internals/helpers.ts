@@ -6,7 +6,7 @@
 
 import * as symbols from './symbols';
 import { SelectionType } from '../types/FindSelected';
-import { Pattern, Matcher, MatcherType } from '../types/Pattern';
+import { Pattern, Matcher, MatcherType, AnyMatcher } from '../types/Pattern';
 
 // @internal
 export const isObject = (value: unknown): value is Object =>
@@ -46,9 +46,56 @@ export const matchPattern = (
 
     if (!isObject(value)) return false;
 
+    // Tuple pattern
     if (Array.isArray(pattern)) {
       if (!Array.isArray(value)) return false;
-      // Tuple pattern
+      let startPatterns = [];
+      let endPatterns = [];
+      let variadicPatterns: AnyMatcher[] = [];
+
+      for (const i of pattern.keys()) {
+        const subpattern = pattern[i];
+        if (isMatcher(subpattern) && subpattern[symbols.isVariadic]) {
+          variadicPatterns.push(subpattern);
+        } else if (variadicPatterns.length) {
+          endPatterns.push(subpattern);
+        } else {
+          startPatterns.push(subpattern);
+        }
+      }
+
+      if (variadicPatterns.length) {
+        if (variadicPatterns.length > 1) {
+          throw new Error(
+            `Pattern error: Using \`...P.array(...)\` several time in a single pattern is not allowed.`
+          );
+        }
+
+        if (value.length < startPatterns.length + endPatterns.length) {
+          return false;
+        }
+
+        const startValues = value.slice(0, startPatterns.length);
+        const endValues =
+          endPatterns.length === 0 ? [] : value.slice(-endPatterns.length);
+        const middleValues = value.slice(
+          startPatterns.length,
+          endPatterns.length === 0 ? Infinity : -endPatterns.length
+        );
+
+        return (
+          startPatterns.every((subPattern, i) =>
+            matchPattern(subPattern, startValues[i], select)
+          ) &&
+          endPatterns.every((subPattern, i) =>
+            matchPattern(subPattern, endValues[i], select)
+          ) &&
+          (variadicPatterns.length === 0
+            ? true
+            : matchPattern(variadicPatterns[0], middleValues, select))
+        );
+      }
+
       return pattern.length === value.length
         ? pattern.every((subPattern, i) =>
             matchPattern(subPattern, value[i], select)
