@@ -1,6 +1,7 @@
 import type * as symbols from '../internals/symbols';
 import { MergeUnion, Primitives } from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
+import { matcher } from '../patterns';
 
 export type MatcherType =
   | 'not'
@@ -11,7 +12,8 @@ export type MatcherType =
   | 'map'
   | 'set'
   | 'select'
-  | 'default';
+  | 'default'
+  | 'custom';
 
 // We use a separate MatcherProtocol type to preserves
 // the type level information (selections and excluded) used
@@ -53,7 +55,7 @@ export interface Matcher<
   // it has been fully matched by this pattern
   excluded = narrowed
 > {
-  [symbols.matcher](): MatcherProtocol<
+  [matcher](): MatcherProtocol<
     input,
     narrowed,
     matcherType,
@@ -84,6 +86,17 @@ export type NotP<input, p> = Matcher<input, p, 'not'>;
 
 export type GuardP<input, narrowed> = Matcher<input, narrowed>;
 
+export interface MatcherFunction {
+  input: unknown;
+  output: unknown;
+}
+
+export type Apply<Fn extends MatcherFunction, Input> = (Fn & {
+  input: Input;
+})['output'];
+
+export type CustomP<T extends MatcherFunction> = Matcher<unknown, T, 'custom'>;
+
 export type GuardExcludeP<input, narrowed, excluded> = Matcher<
   input,
   narrowed,
@@ -100,8 +113,8 @@ export type SelectP<
 
 export type AnonymousSelectP = SelectP<symbols.anonymousSelectKey>;
 
-export interface ToExclude<a> {
-  [symbols.toExclude]: a;
+export interface Override<a> {
+  [symbols.override]: a;
 }
 
 export type UnknownPattern =

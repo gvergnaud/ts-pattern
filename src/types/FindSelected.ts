@@ -120,6 +120,7 @@ export type FindSelectionUnion<
       and: ReduceFindSelectionUnion<i, Extract<pattern, readonly any[]>>;
       not: never;
       default: sel extends Some<infer k> ? { [kk in k]: [i, path] } : never;
+      custom: never;
     }[matcherType]
   : p extends readonly any[]
   ? FindSelectionUnionInArray<i, p>

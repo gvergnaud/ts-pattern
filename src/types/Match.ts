@@ -1,5 +1,5 @@
 import type * as symbols from '../internals/symbols';
-import type { Pattern, Matcher } from './Pattern';
+import type { Pattern, Matcher, AnyMatcher, MatcherType } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
@@ -37,7 +37,7 @@ export type Match<
   with<
     const p extends Pattern<i>,
     c,
-    value extends MatchedValue<i, InvertPattern<p>>
+    value extends MatchedValue<i, InvertPattern<p, i>>
   >(
     /**
      * HACK: Using `IsNever<p>` here is a hack to
@@ -66,7 +66,7 @@ export type Match<
     const p2 extends Pattern<i>,
     c,
     p extends p1 | p2,
-    value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
+    value extends p extends any ? MatchedValue<i, InvertPattern<p, i>> : never
   >(
     p1: p1,
     p2: p2,
@@ -90,7 +90,7 @@ export type Match<
     const ps extends readonly Pattern<i>[],
     c,
     p extends p1 | p2 | p3 | ps[number],
-    value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
+    value extends p extends any ? MatchedValue<i, InvertPattern<p, i>> : never
   >(
     ...args: [
       p1: p1,
@@ -132,7 +132,7 @@ export type Match<
 
   with<
     const pat extends Pattern<i>,
-    pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
+    pred extends (value: MatchedValue<i, InvertPattern<pat, i>>) => unknown,
     c,
     value extends GuardValue<pred>
   >(

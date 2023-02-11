@@ -252,3 +252,21 @@ export type MaybeAddReadonly<
   a,
   shouldAdd extends boolean
 > = shouldAdd extends true ? Readonly<a> : a;
+
+export type MapKey<T> = T extends Map<infer K, any> ? K : never;
+
+export type MapValue<T> = T extends Map<any, infer V> ? V : never;
+
+export type SetValue<T> = T extends Set<infer V> ? V : never;
+
+export type ExtractPlainObject<T> = T extends any
+  ? IsPlainObject<T> extends true
+    ? T
+    : never
+  : never;
+
+export type GetKey<O, K> = O extends any
+  ? K extends keyof O
+    ? O[K]
+    : never
+  : never;

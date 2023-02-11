@@ -1,4 +1,4 @@
-import type { ToExclude } from './Pattern';
+import type { Override } from './Pattern';
 import type {
   BuiltInObjects,
   Compute,
@@ -20,8 +20,8 @@ export type ExtractPreciseValue<a, b> = unknown extends b
   ? b
   : b extends readonly []
   ? []
-  : b extends ToExclude<infer b1>
-  ? DeepExclude<a, b1>
+  : b extends Override<infer b1>
+  ? b1
   : b extends readonly any[]
   ? ExtractPreciseArrayValue<a, b>
   : b extends Map<infer bk, infer bv>
