@@ -16,6 +16,8 @@ export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;
 
 type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 
+type TSPatternError<i> = { __nonExhaustive: never } & i;
+
 /**
  * #### Match
  * An interface to create a pattern matching clause.
@@ -201,6 +203,15 @@ export type Match<
    * `.run()` runs the pattern matching expression and return the result value.
    * */
   run(): PickReturnValue<o, inferredOutput>;
+
+  /**
+   * `.returnType<T>()` Lets you specific a return type for all your code branches.
+   * 
+   * [Read documentation for `.returnType()` on GitHub](https://github.com/gvergnaud/ts-pattern#returnType)
+   * */
+  returnType: [inferredOutput] extends [never]
+    ? <Output>() => Match<i, Output, patternValueTuples>
+    : TSPatternError<'calling `.returnType<T>()` is only allowed directly after `match(...)`.'>;
 };
 
 /**

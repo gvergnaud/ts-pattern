@@ -136,4 +136,8 @@ class MatchExpression<i, o> {
       `Pattern matching error: no pattern matches value ${displayedValue}`
     );
   }
+
+  returnType() {
+    return this;
+  }
 }
