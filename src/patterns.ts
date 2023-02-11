@@ -99,13 +99,16 @@ export function array<
 export function array<
   input,
   const p extends Pattern<WithDefault<UnwrapArray<input>, unknown>>
->(pattern?: p): ArrayP<input, p> & Iterable<ArrayP<input, p>> {
+>(...args: [pattern?: p]): ArrayP<input, p> & Iterable<ArrayP<input, p>> {
   return {
     [symbols.matcher]() {
       return {
         match: <I>(value: I | input) => {
           if (!Array.isArray(value)) return { matched: false };
 
+          if (args.length === 0) return { matched: true };
+
+          const pattern = args[0];
           let selections: Record<string, unknown[]> = {};
 
           if (value.length === 0) {
@@ -125,11 +128,16 @@ export function array<
 
           return { matched, selections };
         },
-        getSelectionKeys: () => getSelectionKeys(pattern),
+        getSelectionKeys: () => args.length === 0 ? [] : getSelectionKeys(args[0]),
       };
     },
     *[Symbol.iterator]() {
-      yield pattern ? array(pattern) : array();
+      yield Object.assign(
+        args.length === 0 
+          ? array()
+          : array(args[0]),
+        { [symbols.isVariadic]: true }
+      );
     },
   };
 }
@@ -181,7 +189,7 @@ export function set<
 
           return { matched, selections };
         },
-        getSelectionKeys: () => args[0] !== undefined ? getSelectionKeys(args[0]) : [],
+        getSelectionKeys: () => args.length === 0 ? [] : getSelectionKeys(args[0]),
       };
     },
   };
@@ -246,10 +254,13 @@ export function map<
 
           return { matched, selections };
         },
-        getSelectionKeys: () => [
-          ...(args[0] !== undefined ? getSelectionKeys(args[0]) : []),
-          ...(args[1] !== undefined ? getSelectionKeys(args[1]) : [])
-        ]
+        getSelectionKeys: () =>
+          args.length === 0
+            ? []
+            : [
+              ...getSelectionKeys(args[0]),
+              ...getSelectionKeys(args[1])
+            ]
       };
     },
   };
