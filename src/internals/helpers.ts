@@ -56,32 +56,6 @@ export const matchPattern = (
         : false;
     }
 
-    if (pattern instanceof Map) {
-      if (!(value instanceof Map)) return false;
-      return Array.from(pattern.keys()).every((key) =>
-        matchPattern(pattern.get(key), value.get(key), select)
-      );
-    }
-
-    if (pattern instanceof Set) {
-      if (!(value instanceof Set)) return false;
-
-      if (pattern.size === 0) return value.size === 0;
-
-      if (pattern.size === 1) {
-        const [subPattern] = Array.from(pattern.values());
-        return isMatcher(subPattern)
-          ? Array.from(value.values()).every((v) =>
-              matchPattern(subPattern, v, select)
-            )
-          : value.has(subPattern);
-      }
-
-      return Array.from(pattern.values()).every((subPattern) =>
-        value.has(subPattern)
-      );
-    }
-
     return Object.keys(pattern).every((k: string): boolean => {
       // @ts-ignore
       const subPattern = pattern[k];
