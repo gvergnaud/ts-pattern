@@ -3,7 +3,7 @@ import {
   InvertPattern,
   InvertPatternForExclude,
 } from '../src/types/InvertPattern';
-import { GuardP, Matcher } from '../src/types/Pattern';
+import { ArrayP, GuardP, Matcher } from '../src/types/Pattern';
 
 describe('InvertPattern', () => {
   describe('variadic tuples', () => {
@@ -197,22 +197,11 @@ describe('InvertPatternForExclude', () => {
   });
 
   it('should work with objects', () => {
-    type t = InvertPatternForExclude<
+    type res1 = InvertPatternForExclude<
       { a: Matcher<unknown, string> },
       { a: string; b: number } | [1, 2]
     >;
-
-    type cases = [
-      Expect<
-        Equal<
-          InvertPatternForExclude<
-            { a: Matcher<unknown, string> },
-            { a: string; b: number } | [1, 2]
-          >,
-          Readonly<{ a: string }>
-        >
-      >
-    ];
+    type test1 = Expect<Equal<res1, Readonly<{ a: string }>>>;
   });
 
   describe('Tuples', () => {
@@ -296,6 +285,22 @@ describe('InvertPatternForExclude', () => {
       type input3 = [...number[]];
       type inverted3 = InvertPatternForExclude<pattern3, input3>;
       type test3 = Expect<Equal<inverted3, readonly [...2[]]>>;
+
+      type pattern4 = readonly [
+        GuardP<unknown, unknown>,
+        ...ArrayP<unknown, unknown>[]
+      ];
+      type input4 = [string | number, ...(string | number)[]];
+      type inverted4 = InvertPatternForExclude<pattern4, input4>;
+      //    ^?
+      type test4 = Expect<
+        Equal<inverted4, readonly [unknown, ...(string | number)[]]>
+      >;
+
+      type pattern5 = ArrayP<unknown, unknown>;
+      type input5 = (string | number)[];
+      type inverted5 = InvertPatternForExclude<pattern5, input5>;
+      type test5 = Expect<Equal<inverted5, (string | number)[]>>;
     });
 
     it('[a, b, ...c[]]', () => {
