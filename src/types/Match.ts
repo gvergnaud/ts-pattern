@@ -1,16 +1,11 @@
 import type * as symbols from '../internals/symbols';
-import type { Pattern, Matcher, AnyMatcher, MatcherType } from './Pattern';
+import type { Pattern, MatchedValue } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
 import type { WithDefault, Union, GuardValue, IsNever } from './helpers';
 import type { FindSelected } from './FindSelected';
 
-// We fall back to `a` if we weren't able to extract anything more precise
-export type MatchedValue<a, invpattern> = WithDefault<
-  ExtractPreciseValue<a, invpattern>,
-  a
->;
 
 export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;
 

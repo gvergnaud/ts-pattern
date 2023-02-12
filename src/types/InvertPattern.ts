@@ -25,7 +25,7 @@ import type {
   Override,
   AnyMatcher,
   Apply,
-  MatcherFunction,
+  Lambda,
 } from './Pattern';
 
 type OptionalKeys<p> = ValueOf<{
@@ -134,7 +134,7 @@ export type InvertPattern<p, input> = 0 extends 1 & p
       and: ReduceIntersection<Extract<subpattern, readonly any[]>, input>;
       or: ReduceUnion<Extract<subpattern, readonly any[]>, input>;
       default: [subpattern] extends [never] ? input : subpattern;
-      custom: Override<Apply<Extract<subpattern, MatcherFunction>, input>>;
+      custom: Override<Apply<Extract<subpattern, Lambda>, input>>;
     }[matcherType]
   : p extends Primitives
   ? p
@@ -337,7 +337,7 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
           InvertPatternForExcludeInternal<subpattern, i>
         >;
         default: excluded;
-        custom: Apply<Extract<subpattern, MatcherFunction>, i>;
+        custom: Apply<Extract<subpattern, Lambda>, i>;
       }[matcherType]
     : p extends readonly any[]
     ? InvertArrayPatternForExclude<p, Extract<i, readonly any[]>, empty>
@@ -348,6 +348,7 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
         : OptionalKeys<p> extends infer optKeys
         ? [optKeys] extends [never]
           ? {
+              // FIXME: -readonly breaks deep exclude if the input is a readonly object
               -readonly [k in keyof p]: k extends keyof i
                 ? InvertPatternForExcludeInternal<p[k], i[k], empty>
                 : InvertPattern<p[k], unknown>;

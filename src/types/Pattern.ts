@@ -1,7 +1,9 @@
 import type * as symbols from '../internals/symbols';
-import { MergeUnion, Primitives } from './helpers';
+import { MergeUnion, Primitives, ValueOf, WithDefault } from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
 import { matcher } from '../patterns';
+import { InvertPattern } from './InvertPattern';
+import { ExtractPreciseValue } from './ExtractPreciseValue';
 
 export type MatcherType =
   | 'not'
@@ -66,13 +68,32 @@ export interface Matcher<
   [symbols.isVariadic]?: boolean;
 }
 
+// We fall back to `a` if we weren't able to extract anything more precise
+export type MatchedValue<a, invpattern> = WithDefault<
+  ExtractPreciseValue<a, invpattern>,
+  a
+>;
+
+export interface Lambda {
+  input: unknown;
+  output: unknown;
+}
+
 export type AnyMatcher = Matcher<any, any, any, any, any>;
 
 type UnknownMatcher = Matcher<unknown, unknown, any, any>;
 
 export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
-export type ArrayP<input, p> = Matcher<input, p, 'array'>;
+// Seems to really work!
+interface ArrayLambda<p> extends Lambda {
+  output: MatchedValue<
+    this['input'],
+    InvertPattern<p, ValueOf<Extract<this['input'], readonly any[]>>>[]
+  >;
+}
+
+export type ArrayP<input, p> = CustomP<input, ArrayLambda<p>>;
 
 export type MapP<input, pkey, pvalue> = Matcher<input, [pkey, pvalue], 'map'>;
 
@@ -86,16 +107,11 @@ export type NotP<input, p> = Matcher<input, p, 'not'>;
 
 export type GuardP<input, narrowed> = Matcher<input, narrowed>;
 
-export interface MatcherFunction {
-  input: unknown;
-  output: unknown;
-}
-
-export type Apply<Fn extends MatcherFunction, Input> = (Fn & {
+export type Apply<Fn extends Lambda, Input> = (Fn & {
   input: Input;
 })['output'];
 
-export type CustomP<T extends MatcherFunction> = Matcher<unknown, T, 'custom'>;
+export type CustomP<input, T extends Lambda> = Matcher<input, T, 'custom'>;
 
 export type GuardExcludeP<input, narrowed, excluded> = Matcher<
   input,

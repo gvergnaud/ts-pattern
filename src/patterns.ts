@@ -18,7 +18,7 @@ import {
   AnonymousSelectP,
   GuardExcludeP,
   CustomP,
-  MatcherFunction,
+  Lambda,
 } from './types/Pattern';
 
 export { Pattern };
@@ -679,6 +679,6 @@ export function typed<input>(): {
 }
 
 
-export type Matchable<T extends MatcherFunction> = CustomP<T>;
+export type Matchable<T extends Lambda, input = unknown> = CustomP<input, T>;
 
-export type Matcher<T extends MatcherFunction> = ReturnType<CustomP<T>[matcher]>;
+export type Matcher<T extends Lambda, input = unknown> = ReturnType<CustomP<input, T>[matcher]>;

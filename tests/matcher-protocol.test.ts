@@ -1,12 +1,12 @@
 import { isMatching, match, P } from '../src';
 import { DeepExclude } from '../src/types/DeepExclude';
-import { MatcherFunction, UnknownPattern } from '../src/types/Pattern';
+import { Lambda, UnknownPattern } from '../src/types/Pattern';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('matcher protocol', () => {
   type ExtractSomeValue<Input> = Input extends Some<infer V> ? V : never;
 
-  interface SomeMatcherFunction extends MatcherFunction {
+  interface SomeLambda extends Lambda {
     output: ExtractSomeValue<this['input']>;
   }
 
@@ -14,12 +14,12 @@ describe('matcher protocol', () => {
     constructor(private value: T) {}
 
     static pattern<Input, const Pattern extends P.Pattern<Input>>(pattern: Pattern) {
-      interface SomePatternMatcherFunction extends MatcherFunction {
+      interface SomePatternLambda extends Lambda {
         output: P.infer<Pattern>;
       }
       
       return {
-        [P.matcher](): P.Matcher<SomePatternMatcherFunction> {
+        [P.matcher](): P.Matcher<SomePatternLambda> {
           return {
             match: (input) => {
               if (input instanceof Some && isMatching(pattern, input)) {
@@ -33,7 +33,7 @@ describe('matcher protocol', () => {
       };
     }
 
-    static [P.matcher](): P.Matcher<SomeMatcherFunction> {
+    static [P.matcher](): P.Matcher<SomeLambda> {
       return {
         match: (input) => {
           if (input instanceof Some) {
@@ -46,7 +46,7 @@ describe('matcher protocol', () => {
     }
   }
 
-  interface NoneMatcherFunction extends MatcherFunction {
+  interface NoneLambda extends Lambda {
     output: None;
   }
 
@@ -57,7 +57,7 @@ describe('matcher protocol', () => {
       this.coucou = 1;
     }
 
-    static [P.matcher](): P.Matcher<NoneMatcherFunction> {
+    static [P.matcher](): P.Matcher<NoneLambda> {
       return {
         match: (input) => {
           return { matched: input instanceof None };
@@ -70,6 +70,10 @@ describe('matcher protocol', () => {
 
   const x = Some.pattern(10);
   const x2 = Some.pattern(P.number);
+
+  match({a: ['asd', 'sda']})
+    .with({ a: P.array('') }, () => [])
+    .exhaustive()
 
   match<{ option: Option<number | string> }>({ option: new Some(12) }).with(
     { option: Some.pattern(10) },
@@ -119,5 +123,6 @@ describe('matcher protocol', () => {
     .with(Some, (value) => {
       type t = Expect<Equal<typeof value, number | string>>;
     })
+    .with(None, () => '')
     .exhaustive();
 });
