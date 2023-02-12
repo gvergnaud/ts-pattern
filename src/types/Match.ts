@@ -25,7 +25,7 @@ type TSPatternError<i> = { __nonExhaustive: never } & i;
 export type Match<
   i,
   o,
-  patternValueTuples extends any[] = [],
+  handledCases extends any[] = [],
   inferredOutput = never
 > = {
   /**
@@ -57,7 +57,7 @@ export type Match<
     ? Match<
         Exclude<i, excluded>,
         o,
-        [...patternValueTuples, excluded],
+        [...handledCases, excluded],
         Union<inferredOutput, c>
       >
     : never;
@@ -79,7 +79,7 @@ export type Match<
     ? Match<
         Exclude<i, excluded1 | excluded2>,
         o,
-        [...patternValueTuples, excluded1, excluded2],
+        [...handledCases, excluded1, excluded2],
         Union<inferredOutput, c>
       >
     : never;
@@ -121,7 +121,7 @@ export type Match<
         >,
         o,
         [
-          ...patternValueTuples,
+          ...handledCases,
           excluded1,
           excluded2,
           excluded3,
@@ -147,10 +147,10 @@ export type Match<
     ? Match<
         Exclude<i, narrowed>,
         o,
-        [...patternValueTuples, narrowed],
+        [...handledCases, narrowed],
         Union<inferredOutput, c>
       >
-    : Match<i, o, patternValueTuples, Union<inferredOutput, c>>;
+    : Match<i, o, handledCases, Union<inferredOutput, c>>;
 
   /**
    * `.when(predicate, handler)` Registers a predicate function and an handler function.
@@ -165,10 +165,10 @@ export type Match<
     ? Match<
         Exclude<i, narrowed>,
         o,
-        [...patternValueTuples, narrowed],
+        [...handledCases, narrowed],
         Union<inferredOutput, c>
       >
-    : Match<i, o, patternValueTuples, Union<inferredOutput, c>>;
+    : Match<i, o, handledCases, Union<inferredOutput, c>>;
 
   /**
    * `.otherwise()` takes a function returning the **default value**, and
@@ -193,7 +193,7 @@ export type Match<
    * [Read documentation for `.exhaustive()` on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
    *
    * */
-  exhaustive: DeepExcludeAll<i, patternValueTuples> extends infer remainingCases
+  exhaustive: DeepExcludeAll<i, handledCases> extends infer remainingCases
     ? [remainingCases] extends [never]
       ? () => PickReturnValue<o, inferredOutput>
       : NonExhaustiveError<remainingCases>
@@ -210,7 +210,7 @@ export type Match<
    * [Read documentation for `.returnType()` on GitHub](https://github.com/gvergnaud/ts-pattern#returnType)
    * */
   returnType: [inferredOutput] extends [never]
-    ? <Output>() => Match<i, Output, patternValueTuples>
+    ? <output>() => Match<i, output, handledCases>
     : TSPatternError<'calling `.returnType<T>()` is only allowed directly after `match(...)`.'>;
 };
 
