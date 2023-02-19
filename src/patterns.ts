@@ -242,7 +242,7 @@ export function map<
 
           if (args.length === 0) return { matched: true };
           if (args.length === 1) {
-            throw new Error(`\`P.map\` wasn\'t given enough arguments. Expected (key, value), received ${args[0]}`)
+            throw new Error(`\`P.map\` wasn\'t given enough arguments. Expected (key, value), received ${args[0]?.toString()}`)
           }
           const [patternKey, patternValue] = args
 
