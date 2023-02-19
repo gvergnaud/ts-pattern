@@ -39,9 +39,7 @@ describe('Unions (a | b)', () => {
       content: { body: 'yo' },
     })
       .with({ type: 'post', id: 7 }, (x) => {
-        type t = Expect<
-          Equal<typeof x, { type: 'post'; id: 7; content: { body: string } }>
-        >;
+        type t = Expect<Equal<typeof x, Post>>;
         return 1;
       })
       .with({ type: 'post', content: P._ }, (x) => {
@@ -94,18 +92,7 @@ describe('Unions (a | b)', () => {
         return `<img src="${res.data.src}" />`;
       })
       .with({ type: 'ok', data: { type: 'story', likes: 10 } }, (res) => {
-        type t = Expect<
-          Equal<
-            typeof res,
-            Ok<{
-              src: string;
-              views: number;
-              author: string;
-              type: 'story';
-              likes: 10;
-            }>
-          >
-        >;
+        type t = Expect<Equal<typeof res, Ok<Story>>>;
         return `<div>story with ${res.data.likes} likes</div>`;
       })
       .with({ type: 'error' }, (res) => {

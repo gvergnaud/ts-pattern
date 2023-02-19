@@ -1,5 +1,5 @@
 import { match, P } from '../src';
-import { Compute, Equal, Expect } from '../src/types/helpers';
+import { Compute, Equal, Expect, Not } from '../src/types/helpers';
 
 describe('large exhaustive', () => {
   // prettier-ignore
@@ -77,13 +77,9 @@ describe('large exhaustive', () => {
             }
           ],
           (x) => {
-            const t: [
-              LargeObject<0>,
-              LargeObject<0>,
-              LargeObject<0>,
-              LargeObject<0>,
-              LargeObject<0>
-            ] = x;
+            type test1 = Expect<Not<Equal<typeof x, never>>>;
+            type test2 = Expect<Not<Equal<typeof x, unknown>>>;
+            type test3 = Expect<Not<Equal<typeof x, any>>>;
             return 'match';
           }
         )

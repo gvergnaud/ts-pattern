@@ -106,9 +106,9 @@ export interface ToExclude<a> {
 
 export type UnknownPattern =
   | readonly []
-  | readonly [UnknownPattern, ...UnknownPattern[]]
-  | readonly [...UnknownPattern[], UnknownPattern]
-  | { readonly [k: string]: UnknownPattern }
+  | readonly [unknown, ...unknown[]]
+  | readonly [...unknown[], unknown]
+  | { readonly [k: string]: unknown }
   | Primitives
   | UnknownMatcher;
 
@@ -123,7 +123,9 @@ export type UnknownPattern =
  * @example
  * const pattern: P.Pattern<User> = { name: P.string }
  */
-export type Pattern<a> = unknown extends a ? unknown : PatternInternal<a>;
+export type Pattern<a> = unknown extends a
+  ? UnknownPattern
+  : PatternInternal<a>;
 
 export type PatternInternal<
   a,
