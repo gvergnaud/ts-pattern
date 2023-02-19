@@ -1,6 +1,6 @@
 import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers';
 import * as symbols from './internals/symbols';
-import { GuardFunction } from './types/helpers';
+import { GuardFunction, IsNever, Primitives } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
   Pattern,
@@ -211,10 +211,9 @@ export function union<
  *   .with({ a: P.not(P.string) }, (x) => 'will match { a: number }'
  *   )
  */
-export function not<
-  input,
-  p extends unknown extends input ? UnknownPattern : Pattern<input> | undefined
->(pattern: p): NotP<input, p> {
+export function not<input, p extends Pattern<input> | Primitives>(
+  pattern: p
+): NotP<input, p> {
   return {
     [symbols.matcher]: () => ({
       match: <I>(value: I | input) => ({

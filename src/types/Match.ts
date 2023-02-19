@@ -3,7 +3,7 @@ import type { Pattern, Matcher } from './Pattern';
 import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
-import type { WithDefault, Union, GuardValue } from './helpers';
+import type { WithDefault, Union, GuardValue, IsNever } from './helpers';
 import type { FindSelected } from './FindSelected';
 
 // We fall back to `a` if we weren't able to extract anything more precise
@@ -37,7 +37,15 @@ export type Match<
     c,
     value extends MatchedValue<i, InvertPattern<p>>
   >(
-    pattern: p,
+    /**
+     * HACK: Using `IsNever<p>` here is a hack to
+     * make sure the type checker forwards
+     * the input type parameter to pattern
+     * creator functions like `P.when`, `P.not`
+     * `P.union` when they are passed to `.with`
+     * directly.
+     */
+    pattern: IsNever<p> extends true ? Pattern<i> : p,
     handler: (
       selections: FindSelected<value, p>,
       value: value

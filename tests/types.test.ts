@@ -368,4 +368,54 @@ describe('type narrowing inheritence', () => {
         .otherwise(() => 'none');
     });
   });
+
+  it('should correctly instantiate the input type on every pattern creator functions', () => {
+    match<'a' | 'b'>('a').with(
+      P.when((x) => {
+        type test = Expect<Equal<typeof x, 'a' | 'b'>>;
+        return true;
+      }),
+      () => 'a'
+    );
+
+    match<'a' | 'b'>('a').with(
+      // @ts-expect-error
+      P.union('somethingwrong'),
+      () => 'a'
+    );
+
+    match<{ type: 'a' } | { type: 'b' }>({ type: 'a' }).with(
+      // @ts-expect-error
+      P.intersection('asd'),
+      () => 'a'
+    );
+
+    match<{ type: 'a' } | { type: 'b' }>({ type: 'a' }).with(
+      // @ts-expect-error
+      P.intersection('asd'),
+      () => 'a'
+    );
+
+    match<{ type: 'a' } | { type: 'b' }>({ type: 'a' }).with(
+      P.intersection({
+        // @ts-expect-error
+        type: P.union('oops'),
+      }),
+      () => 'a'
+    );
+
+    match<{ type: 'a' } | { type: 'b' }>({ type: 'a' }).with(
+      // @ts-expect-error
+      P.optional('asd'),
+      () => 'a'
+    );
+
+    match<{ type: 'a' } | { type: 'b' }>({ type: 'a' }).with(
+      P.optional({
+        // @ts-expect-error
+        type: P.union('oops'),
+      }),
+      () => 'a'
+    );
+  });
 });

@@ -76,6 +76,8 @@ export type Expect<a extends true> = a;
 
 export type IsAny<a> = 0 extends 1 & a ? true : false;
 
+export type IsNever<T> = [T] extends [never] ? true : false;
+
 export type Length<it extends readonly any[]> = it['length'];
 
 export type Iterator<
