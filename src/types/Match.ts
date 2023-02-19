@@ -1,7 +1,10 @@
 import type * as symbols from '../internals/symbols.js';
 import type { Pattern, Matcher } from './Pattern.js';
 import type { ExtractPreciseValue } from './ExtractPreciseValue.js';
-import type { InvertPatternForExclude, InvertPattern } from './InvertPattern.js';
+import type {
+  InvertPatternForExclude,
+  InvertPattern,
+} from './InvertPattern.js';
 import type { DeepExclude } from './DeepExclude.js';
 import type { WithDefault, Union, GuardValue } from './helpers.js';
 import type { FindSelected } from './FindSelected.js';
