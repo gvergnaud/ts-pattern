@@ -3,5 +3,8 @@
   "compilerOptions": {
     "composite": true,
     "rootDir": "src",
+    /* 🌐 https://github.com/developit/microbundle#using-with-typescript */
+    "target": "ESNext",
+    "module": "ESNext",
   },
 }
