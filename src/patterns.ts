@@ -1,7 +1,7 @@
-import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers';
-import * as symbols from './internals/symbols';
-import { GuardFunction } from './types/helpers';
-import { InvertPattern } from './types/InvertPattern';
+import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers.js';
+import * as symbols from './internals/symbols.js';
+import { GuardFunction } from './types/helpers.js';
+import { InvertPattern } from './types/InvertPattern.js';
 import {
   Pattern,
   UnknownPattern,
@@ -14,7 +14,7 @@ import {
   SelectP,
   AnonymousSelectP,
   GuardExcludeP,
-} from './types/Pattern';
+} from './types/Pattern.js';
 
 export { Pattern };
 

@@ -1,4 +1,4 @@
-import type { ToExclude } from './Pattern';
+import type { ToExclude } from './Pattern.js';
 import type {
   BuiltInObjects,
   Compute,
@@ -6,8 +6,8 @@ import type {
   IsAny,
   IsPlainObject,
   LeastUpperBound,
-} from './helpers';
-import { DeepExclude } from './DeepExclude';
+} from './helpers.js';
+import { DeepExclude } from './DeepExclude.js';
 
 export type ExtractPreciseValue<a, b> = unknown extends b
   ? a

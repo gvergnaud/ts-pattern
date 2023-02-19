@@ -1,8 +1,8 @@
-import { Pattern } from './types/Pattern';
-import { GuardValue } from './types/helpers';
-import { Match, PickReturnValue } from './types/Match';
-import * as symbols from './internals/symbols';
-import { matchPattern } from './internals/helpers';
+import { Pattern } from './types/Pattern.js';
+import { GuardValue } from './types/helpers.js';
+import { Match, PickReturnValue } from './types/Match.js';
+import * as symbols from './internals/symbols.js';
+import { matchPattern } from './internals/helpers.js';
 
 /**
  * `match` creates a **pattern matching expression**.

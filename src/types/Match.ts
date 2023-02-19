@@ -1,10 +1,10 @@
-import type * as symbols from '../internals/symbols';
-import type { Pattern, Matcher } from './Pattern';
-import type { ExtractPreciseValue } from './ExtractPreciseValue';
-import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
-import type { DeepExclude } from './DeepExclude';
-import type { WithDefault, Union, GuardValue } from './helpers';
-import type { FindSelected } from './FindSelected';
+import type * as symbols from '../internals/symbols.js';
+import type { Pattern, Matcher } from './Pattern.js';
+import type { ExtractPreciseValue } from './ExtractPreciseValue.js';
+import type { InvertPatternForExclude, InvertPattern } from './InvertPattern.js';
+import type { DeepExclude } from './DeepExclude.js';
+import type { WithDefault, Union, GuardValue } from './helpers.js';
+import type { FindSelected } from './FindSelected.js';
 
 // We fall back to `a` if we weren't able to extract anything more precise
 export type MatchedValue<a, invpattern> = WithDefault<

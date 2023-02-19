@@ -1,4 +1,4 @@
-import { DeepExclude } from './DeepExclude';
+import { DeepExclude } from './DeepExclude.js';
 import {
   IsPlainObject,
   Primitives,
@@ -11,8 +11,8 @@ import {
   Not,
   All,
   NonLiteralPrimitive,
-} from './helpers';
-import type { Matcher, Pattern, ToExclude } from './Pattern';
+} from './helpers.js';
+import type { Matcher, Pattern, ToExclude } from './Pattern.js';
 
 type OptionalKeys<p> = ValueOf<{
   [k in keyof p]: p[k] extends Matcher<any, any, infer matcherType>

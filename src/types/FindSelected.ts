@@ -1,6 +1,6 @@
-import type * as symbols from '../internals/symbols';
-import type { Cast, Equal, IsAny, TupleKeys, UnionToTuple } from './helpers';
-import type { Matcher, Pattern } from './Pattern';
+import type * as symbols from '../internals/symbols.js';
+import type { Cast, Equal, IsAny, TupleKeys, UnionToTuple } from './helpers.js';
+import type { Matcher, Pattern } from './Pattern.js';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 

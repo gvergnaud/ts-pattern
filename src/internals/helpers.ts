@@ -4,9 +4,9 @@
  * @internal
  */
 
-import * as symbols from './symbols';
-import { SelectionType } from '../types/FindSelected';
-import { Pattern, Matcher, MatcherType } from '../types/Pattern';
+import * as symbols from './symbols.js';
+import { SelectionType } from '../types/FindSelected.js';
+import { Pattern, Matcher, MatcherType } from '../types/Pattern.js';
 
 // @internal
 export const isObject = (value: unknown): value is Object =>

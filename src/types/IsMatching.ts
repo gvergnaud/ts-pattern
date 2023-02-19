@@ -1,4 +1,4 @@
-import { Primitives, IsPlainObject, IsUnion } from './helpers';
+import { Primitives, IsPlainObject, IsUnion } from './helpers.js';
 
 export type IsMatching<a, p> = true extends IsUnion<a> | IsUnion<p>
   ? true extends (

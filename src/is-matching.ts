@@ -1,7 +1,7 @@
-import { Pattern } from './types/Pattern';
-import { MatchedValue } from './types/Match';
-import * as P from './patterns';
-import { matchPattern } from './internals/helpers';
+import { Pattern } from './types/Pattern.js';
+import { MatchedValue } from './types/Match.js';
+import * as P from './patterns.js';
+import { matchPattern } from './internals/helpers.js';
 
 /**
  * `isMatching` takes pattern and returns a **type guard** function, cheching if a value matches this pattern.
