@@ -1,11 +1,14 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "composite": true,
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "declaration": true,
     "target": "es6",
     "strict": true,
     "outDir": "dist/"
   },
-  "include": ["src/"],
-  "exclude": ["tests/", "dist/", "examples/"]
+  "include": [
+    "src"
+  ],
 }

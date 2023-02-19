@@ -11,6 +11,8 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.modern.js"
     },
+    "./types/*": "./dist/types/*",
+    "./internals/*": "./dist/internals/*",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
@@ -18,14 +20,14 @@
   "module": "./dist/index.module.js",
   "unpkg": "./dist/index.umd.js",
   "scripts": {
-    "build": "microbundle",
-    "dev": "microbundle watch",
+    "build": "microbundle --tsconfig ./tsconfig.prod.json",
+    "dev": "microbundle watch --tsconfig ./tsconfig.prod.json",
     "prepublishOnly": "npm run test && npm run build",
     "test": "jest",
     "clear-test": "jest --clearCache",
-    "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics",
+    "perf": "./node_modules/.bin/tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics",
     "fmt": "prettier ./src/** ./tests/** -w",
-    "check": "tsc --strict --noEmit --extendedDiagnostics"
+    "check": "./node_modules/.bin/tsc --project tsconfig.prod.json --strict --noEmit --extendedDiagnostics"
   },
   "files": [
     "dist/**/*"
