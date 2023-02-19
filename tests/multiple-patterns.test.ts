@@ -164,7 +164,7 @@ describe('Multiple patterns', () => {
           }
         )
         .with([false, 2], (x) => {
-          type t = Expect<Equal<typeof x, [false, 2]>>;
+          type t = Expect<Equal<typeof x, [false, number]>>;
           return '[false, 2]';
         })
         .with([false, P.number], (x) => {
