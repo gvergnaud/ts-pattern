@@ -10,6 +10,7 @@ describe('variadic tuples ([a, ...b[]])', () => {
             .with([P.any, ...P.array()], () => 'non empty')
             .otherwise(() => 'empty');
 
+        expect(f([])).toBe('empty');
         expect(f([1])).toBe('non empty');
         expect(f([1, 2])).toBe('non empty');
         expect(f([1, 2, 3])).toBe('non empty');
@@ -22,6 +23,7 @@ describe('variadic tuples ([a, ...b[]])', () => {
             .with([...P.array(), P.any], () => 'non empty')
             .otherwise(() => 'empty');
 
+        expect(f([])).toBe('empty');
         expect(f([1])).toBe('non empty');
         expect(f([1, 2])).toBe('non empty');
         expect(f([1, 2, 3])).toBe('non empty');
