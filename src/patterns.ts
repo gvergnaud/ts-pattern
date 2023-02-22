@@ -68,7 +68,7 @@ export function optional<
   };
 }
 
-type Elem<xs> = xs extends Array<infer x> ? x : never;
+type Elem<xs> = xs extends readonly (infer x)[] ? x : never;
 
 /**
  * `P.array(subpattern)` takes a sub pattern and returns a pattern, which matches
