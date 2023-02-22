@@ -107,7 +107,13 @@ type InvertArrayPattern<
  */
 export type InvertPattern<p, input> = 0 extends 1 & p
   ? never
-  : p extends Matcher<infer _input, infer subpattern, infer matcherType, any>
+  : p extends Matcher<
+      infer _input,
+      infer subpattern,
+      infer matcherType,
+      any,
+      infer fns
+    >
   ? {
       not: DeepExclude<input, InvertPattern<subpattern, input>>;
       select: InvertPattern<subpattern, input>;
@@ -125,11 +131,10 @@ export type InvertPattern<p, input> = 0 extends 1 & p
       or: ReduceUnion<Extract<subpattern, readonly any[]>, input>;
       default: [subpattern] extends [never] ? input : subpattern;
       custom: Override<
-        subpattern extends {
+        fns extends {
           narrow: infer narrow extends Fn;
-          args: infer args extends readonly any[];
         }
-          ? Apply<narrow, [input, ...args]>
+          ? Apply<narrow, [input, subpattern]>
           : never
       >;
     }[matcherType]
@@ -331,11 +336,10 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
           InvertPatternForExcludeInternal<subpattern, i>
         >;
         default: excluded;
-        custom: subpattern extends {
+        custom: excluded extends {
           narrow: infer narrow extends Fn;
-          args: infer args extends readonly any[];
         }
-          ? Apply<narrow, [i, ...args]>
+          ? Apply<narrow, [i, subpattern]>
           : never;
       }[matcherType]
     : p extends readonly any[]

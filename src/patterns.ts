@@ -679,7 +679,7 @@ export function typed<input>(): {
 
 
 export type Matchable<fns extends { select: Fn, narrow: Fn }, input = unknown> =
-  CustomP<input, fns>;
+  CustomP<input, never, fns>;
 
 export type Matcher<fns extends { select: Fn, narrow: Fn }, input = unknown> =
-  ReturnType<CustomP<input, fns>[matcher]>;
+  ReturnType<CustomP<input, never, fns>[matcher]>;

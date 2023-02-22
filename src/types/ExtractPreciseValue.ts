@@ -10,7 +10,9 @@ import type {
 } from './helpers';
 import { DeepExclude } from './DeepExclude';
 
-export type ExtractPreciseValue<a, b> = unknown extends b
+export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
+  ? b1
+  : unknown extends b
   ? a
   : // inlining IsAny for perf
   0 extends 1 & b
@@ -20,8 +22,6 @@ export type ExtractPreciseValue<a, b> = unknown extends b
   ? b
   : b extends readonly []
   ? []
-  : b extends Override<infer b1>
-  ? b1
   : b extends readonly any[]
   ? ExtractPreciseArrayValue<a, b>
   : b extends Map<infer bk, infer bv>

@@ -98,7 +98,13 @@ export type FindSelectionUnion<
   ? never
   : p extends Primitives
   ? never
-  : p extends Matcher<any, infer pattern, infer matcherType, infer sel>
+  : p extends Matcher<
+      any,
+      infer pattern,
+      infer matcherType,
+      infer sel,
+      infer fns
+    >
   ? {
       select: sel extends Some<infer k>
         ? { [kk in k]: [i, path] } | FindSelectionUnion<i, pattern, path>
@@ -113,11 +119,10 @@ export type FindSelectionUnion<
       and: ReduceFindSelectionUnion<i, Extract<pattern, readonly any[]>>;
       not: never;
       default: sel extends Some<infer k> ? { [kk in k]: [i, path] } : never;
-      custom: pattern extends {
+      custom: fns extends {
         select: infer select extends Fn;
-        args: infer args extends any[];
       }
-        ? Apply<select, [i, ...args]>
+        ? Apply<select, [i, pattern]>
         : never;
     }[matcherType]
   : p extends readonly any[]

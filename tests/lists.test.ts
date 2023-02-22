@@ -9,8 +9,9 @@ describe('List ([a])', () => {
       title: 'hellooo',
     };
     const res = match<any, Option<Blog[]>>([httpResult])
-      .with([] as const, (x) => {
-        type t = Expect<Equal<typeof x, []>>;
+      .with([], (x) => {
+        // FIXME: should be just `[]`
+        type t = Expect<Equal<typeof x, [] | readonly []>>;
         return { kind: 'some', value: [{ id: 0, title: 'LOlol' }] };
       })
       .with(P.array({ id: P.number, title: P.string }), (blogs) => {

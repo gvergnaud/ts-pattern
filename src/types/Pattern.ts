@@ -79,13 +79,17 @@ type UnknownMatcher = Matcher<unknown, unknown, any, any>;
 
 export type CustomP<
   input,
+  pattern,
   fns extends { select: Fn; narrow: Fn; args?: any[] }
-> = Matcher<input, fns, 'custom', None, never>;
+> = Matcher<input, pattern, 'custom', None, fns>;
+//                    👆
+// for the input type to be instantiated correctly
+// on subpatterns, it has to be passed through.
 
 interface ArrayNarrowFn extends Fn {
   return: this['args'] extends [infer input, infer p, ...any]
-    ? input extends infer arr & readonly (infer value)[]
-      ? MatchedValue<arr, InvertPattern<p, value>[]>
+    ? input extends readonly (infer value)[]
+      ? ExtractPreciseValue<input, InvertPattern<p, value>[]>
       : never
     : never;
 }
@@ -106,10 +110,10 @@ interface ArraySelectFn extends Fn {
 
 export type ArrayP<input, p> = CustomP<
   input,
+  p,
   {
     narrow: ArrayNarrowFn;
     select: ArraySelectFn;
-    args: [p];
   }
 >;
 
