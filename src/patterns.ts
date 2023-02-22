@@ -1,7 +1,7 @@
 import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers';
 import * as symbols from './internals/symbols';
 import { matcher } from './internals/symbols';
-import { GuardFunction } from './types/helpers';
+import { Fn, GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
   Pattern,
@@ -18,7 +18,6 @@ import {
   AnonymousSelectP,
   GuardExcludeP,
   CustomP,
-  Lambda,
 } from './types/Pattern';
 
 export { Pattern };
@@ -679,6 +678,8 @@ export function typed<input>(): {
 }
 
 
-export type Matchable<T extends Lambda, input = unknown> = CustomP<input, T>;
+export type Matchable<fns extends { select: Fn, narrow: Fn }, input = unknown> =
+  CustomP<input, fns>;
 
-export type Matcher<T extends Lambda, input = unknown> = ReturnType<CustomP<input, T>[matcher]>;
+export type Matcher<fns extends { select: Fn, narrow: Fn }, input = unknown> =
+  ReturnType<CustomP<input, fns>[matcher]>;

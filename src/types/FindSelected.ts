@@ -7,6 +7,8 @@ import type {
   TupleKeys,
   ValueOf,
   UnionToTuple,
+  Apply,
+  Fn,
 } from './helpers';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
@@ -24,12 +26,6 @@ export type SelectionType = None | Some<string>;
 type MapOptional<selections> = {
   [k in keyof selections]: selections[k] extends [infer v, infer subpath]
     ? [v | undefined, subpath]
-    : never;
-};
-
-type MapList<selections> = {
-  [k in keyof selections]: selections[k] extends [infer v, infer subpath]
-    ? [v[], subpath]
     : never;
 };
 
@@ -107,9 +103,6 @@ export type FindSelectionUnion<
       select: sel extends Some<infer k>
         ? { [kk in k]: [i, path] } | FindSelectionUnion<i, pattern, path>
         : never;
-      array: i extends readonly (infer ii)[]
-        ? MapList<FindSelectionUnion<ii, pattern>>
-        : never;
       // FIXME: selection for map and set is supported at the value level
       map: never;
       set: never;
@@ -120,7 +113,12 @@ export type FindSelectionUnion<
       and: ReduceFindSelectionUnion<i, Extract<pattern, readonly any[]>>;
       not: never;
       default: sel extends Some<infer k> ? { [kk in k]: [i, path] } : never;
-      custom: never;
+      custom: pattern extends {
+        select: infer select extends Fn;
+        args: infer args extends any[];
+      }
+        ? Apply<select, [i, ...args]>
+        : never;
     }[matcherType]
   : p extends readonly any[]
   ? FindSelectionUnionInArray<i, p>

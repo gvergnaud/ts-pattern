@@ -1,6 +1,6 @@
 import type * as symbols from '../internals/symbols';
-import { MergeUnion, Primitives, ValueOf, WithDefault } from './helpers';
-import { None, Some, SelectionType } from './FindSelected';
+import { Fn, MergeUnion, Primitives, ValueOf, WithDefault } from './helpers';
+import { None, Some, SelectionType, FindSelectionUnion } from './FindSelected';
 import { matcher } from '../patterns';
 import { InvertPattern } from './InvertPattern';
 import { ExtractPreciseValue } from './ExtractPreciseValue';
@@ -10,7 +10,6 @@ export type MatcherType =
   | 'optional'
   | 'or'
   | 'and'
-  | 'array'
   | 'map'
   | 'set'
   | 'select'
@@ -74,26 +73,47 @@ export type MatchedValue<a, invpattern> = WithDefault<
   a
 >;
 
-export interface Lambda {
-  input: unknown;
-  output: unknown;
-}
-
 export type AnyMatcher = Matcher<any, any, any, any, any>;
 
 type UnknownMatcher = Matcher<unknown, unknown, any, any>;
 
-export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
+export type CustomP<
+  input,
+  fns extends { select: Fn; narrow: Fn; args?: any[] }
+> = Matcher<input, fns, 'custom', None, never>;
 
-// Seems to really work!
-interface ArrayLambda<p> extends Lambda {
-  output: MatchedValue<
-    this['input'],
-    InvertPattern<p, ValueOf<Extract<this['input'], readonly any[]>>>[]
-  >;
+interface ArrayNarrowFn extends Fn {
+  return: this['args'] extends [infer input, infer p, ...any]
+    ? input extends infer arr & readonly (infer value)[]
+      ? MatchedValue<arr, InvertPattern<p, value>[]>
+      : never
+    : never;
 }
 
-export type ArrayP<input, p> = CustomP<input, ArrayLambda<p>>;
+type MapList<selections> = {
+  [k in keyof selections]: selections[k] extends [infer v, infer subpath]
+    ? [v[], subpath]
+    : never;
+};
+
+interface ArraySelectFn extends Fn {
+  return: this['args'] extends [infer input, infer p, ...any]
+    ? input extends readonly (infer value)[]
+      ? MapList<FindSelectionUnion<value, p>>
+      : never
+    : never;
+}
+
+export type ArrayP<input, p> = CustomP<
+  input,
+  {
+    narrow: ArrayNarrowFn;
+    select: ArraySelectFn;
+    args: [p];
+  }
+>;
+
+export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
 export type MapP<input, pkey, pvalue> = Matcher<input, [pkey, pvalue], 'map'>;
 
@@ -106,12 +126,6 @@ export type OrP<input, ps> = Matcher<input, ps, 'or'>;
 export type NotP<input, p> = Matcher<input, p, 'not'>;
 
 export type GuardP<input, narrowed> = Matcher<input, narrowed>;
-
-export type Apply<Fn extends Lambda, Input> = (Fn & {
-  input: Input;
-})['output'];
-
-export type CustomP<input, T extends Lambda> = Matcher<input, T, 'custom'>;
 
 export type GuardExcludeP<input, narrowed, excluded> = Matcher<
   input,

@@ -1,5 +1,4 @@
-import { Pattern } from './types/Pattern';
-import { MatchedValue } from './types/Match';
+import { MatchedValue, Pattern } from './types/Pattern';
 import * as P from './patterns';
 import { matchPattern } from './internals/helpers';
 

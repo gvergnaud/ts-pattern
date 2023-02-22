@@ -270,3 +270,20 @@ export type GetKey<O, K> = O extends any
     ? O[K]
     : never
   : never;
+
+export interface Fn {
+  [rawArgs]: unknown;
+  args: this[rawArgs] extends infer args extends unknown[] ? args : never;
+  arg0: this[rawArgs] extends [infer arg, ...any] ? arg : never;
+  arg1: this[rawArgs] extends [any, infer arg, ...any] ? arg : never;
+  arg2: this[rawArgs] extends [any, any, infer arg, ...any] ? arg : never;
+  arg3: this[rawArgs] extends [any, any, any, infer arg, ...any] ? arg : never;
+  return: unknown;
+}
+
+export type Apply<fn extends Fn, args extends unknown[]> = (fn & {
+  [rawArgs]: args;
+})['return'];
+
+declare const rawArgs: unique symbol;
+type rawArgs = typeof rawArgs;

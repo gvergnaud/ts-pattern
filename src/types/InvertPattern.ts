@@ -1,4 +1,3 @@
-import type * as symbols from '../internals/symbols';
 import { DeepExclude } from './DeepExclude';
 import {
   IsPlainObject,
@@ -18,15 +17,10 @@ import {
   SetValue,
   ExtractPlainObject,
   GetKey,
-} from './helpers';
-import type {
-  Matcher,
-  Pattern,
-  Override,
-  AnyMatcher,
   Apply,
-  Lambda,
-} from './Pattern';
+  Fn,
+} from './helpers';
+import type { Matcher, Pattern, Override, AnyMatcher } from './Pattern';
 
 type OptionalKeys<p> = ValueOf<{
   [k in keyof p]: 0 extends 1 & p[k] // inlining IsAny for perf
@@ -117,10 +111,6 @@ export type InvertPattern<p, input> = 0 extends 1 & p
   ? {
       not: DeepExclude<input, InvertPattern<subpattern, input>>;
       select: InvertPattern<subpattern, input>;
-      array: InvertPattern<
-        subpattern,
-        ValueOf<Extract<input, readonly any[]>>
-      >[];
       map: subpattern extends [infer pk, infer pv]
         ? Map<
             InvertPattern<pk, MapKey<Extract<input, Map<any, any>>>>,
@@ -134,7 +124,14 @@ export type InvertPattern<p, input> = 0 extends 1 & p
       and: ReduceIntersection<Extract<subpattern, readonly any[]>, input>;
       or: ReduceUnion<Extract<subpattern, readonly any[]>, input>;
       default: [subpattern] extends [never] ? input : subpattern;
-      custom: Override<Apply<Extract<subpattern, Lambda>, input>>;
+      custom: Override<
+        subpattern extends {
+          narrow: infer narrow extends Fn;
+          args: infer args extends readonly any[];
+        }
+          ? Apply<narrow, [input, ...args]>
+          : never
+      >;
     }[matcherType]
   : p extends Primitives
   ? p
@@ -308,9 +305,6 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
       >
     ? {
         select: InvertPatternForExcludeInternal<subpattern, i, empty>;
-        array: i extends readonly (infer ii)[]
-          ? InvertPatternForExcludeInternal<subpattern, ii, empty>[]
-          : empty;
         map: subpattern extends [infer pk, infer pv]
           ? i extends Map<infer ik, infer iv>
             ? Map<
@@ -337,7 +331,12 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
           InvertPatternForExcludeInternal<subpattern, i>
         >;
         default: excluded;
-        custom: Apply<Extract<subpattern, Lambda>, i>;
+        custom: subpattern extends {
+          narrow: infer narrow extends Fn;
+          args: infer args extends readonly any[];
+        }
+          ? Apply<narrow, [i, ...args]>
+          : never;
       }[matcherType]
     : p extends readonly any[]
     ? InvertArrayPatternForExclude<p, Extract<i, readonly any[]>, empty>
