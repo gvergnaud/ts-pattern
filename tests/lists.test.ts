@@ -39,4 +39,23 @@ describe('List ([a])', () => {
 
     expect(reverse([1, 2, 3])).toEqual([3, 2, 1]);
   });
+
+  it('issue #148: P.array should support readonly arrays as its input', () => {
+    type Input = readonly {
+      readonly title: string;
+      readonly content: string;
+    }[];
+
+    const input: Input = [
+      { title: 'Hello world!', content: 'This is a very interesting content' },
+      { title: 'Bonjour!', content: 'This is a very interesting content too' },
+    ];
+
+    const output = match<Input, string>(input)
+      .with(
+        P.array({ title: P.string, content: P.string }),
+        (posts) => 'a list of posts!'
+      )
+      .otherwise(() => 'something else');
+  });
 });

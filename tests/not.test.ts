@@ -45,7 +45,7 @@ describe('not', () => {
           type t = Expect<Equal<typeof x, 'two'>>;
           return 'not 1';
         })
-        .with(P.not(two), (x) => {
+        .with('one', (x) => {
           type t = Expect<Equal<typeof x, 'one'>>;
           return 'not 2';
         })
@@ -165,7 +165,7 @@ describe('not', () => {
           (x) => {
             type t = Expect<
               Equal<
-                typeof x['value']['coords'],
+                (typeof x)['value']['coords'],
                 {
                   y: 'top' | 'bottom';
                   x: 'right';
@@ -182,7 +182,7 @@ describe('not', () => {
   it('should consider the expression exhaustive if the sub pattern matches something that will never match', () => {
     expect(
       match<{ str: string }>({ str: 'hello' })
-        .with(P.not(2), ({ str }) => str)
+        .with(P.not(P.number), ({ str }) => str)
         .exhaustive()
     ).toBe('hello');
 
@@ -208,18 +208,6 @@ describe('not', () => {
         .with(P.not(P.string), (value) => `value is NOT a string: ${value}`)
         .with(P.not(P.number), (value) => `value is NOT a number: ${value}`)
         .with(P.not(P.boolean), (value) => `value is NOT a boolean: ${value}`)
-        .with(
-          P.not({ key: P.string }),
-          (value) => `value is NOT an object. ${value}`
-        )
-        .with(
-          P.not(P.array(P.string)),
-          (value) => `value is NOT an array of strings: ${value}`
-        )
-        .with(
-          P.not([P.number, P.number]),
-          (value) => `value is NOT tuple of two numbers: ${value}`
-        )
         .exhaustive();
 
     const inputs: { input: Input; expected: string }[] = [

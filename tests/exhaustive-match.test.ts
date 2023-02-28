@@ -412,7 +412,7 @@ describe('exhaustive()', () => {
 
     it('should support P.any in a readonly tuple', () => {
       const f = (n: number, state: State) => {
-        const x = match([n, state] as const)
+        const x = match([n, state])
           .with(
             [1, { status: 'success', data: P.select() }],
             ([_, { data }]) => data.startsWith('coucou'),

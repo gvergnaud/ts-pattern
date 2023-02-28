@@ -1,10 +1,6 @@
-import {
-  matchPattern,
-  getSelectionKeys,
-  flatMap,
-} from './internals/helpers.js';
+import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers.js';
 import * as symbols from './internals/symbols.js';
-import { GuardFunction } from './types/helpers.js';
+import { GuardFunction, IsNever, Primitives } from './types/helpers.js';
 import { InvertPattern } from './types/InvertPattern.js';
 import {
   Pattern,
@@ -72,7 +68,7 @@ export function optional<
   };
 }
 
-type Elem<xs> = xs extends Array<infer x> ? x : never;
+type Elem<xs> = xs extends readonly (infer x)[] ? x : never;
 
 /**
  * `P.array(subpattern)` takes a sub pattern and returns a pattern, which matches
@@ -215,10 +211,9 @@ export function union<
  *   .with({ a: P.not(P.string) }, (x) => 'will match { a: number }'
  *   )
  */
-export function not<
-  input,
-  p extends unknown extends input ? UnknownPattern : Pattern<input> | undefined
->(pattern: p): NotP<input, p> {
+export function not<input, p extends Pattern<input> | Primitives>(
+  pattern: p
+): NotP<input, p> {
   return {
     [symbols.matcher]: () => ({
       match: <I>(value: I | input) => ({

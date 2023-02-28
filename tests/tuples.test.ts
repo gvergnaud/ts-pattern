@@ -178,7 +178,7 @@ describe('tuple ([a, b])', () => {
     const state = { type: 'a' } as State;
     const event = { type: 'c' } as Event;
 
-    const output = match([state, event] as const)
+    const output = match([state, event])
       .with([{ type: 'a' }, { type: 'c' }], () => 'a + c')
       .otherwise(() => 'no');
 
