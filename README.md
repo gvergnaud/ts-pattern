@@ -30,7 +30,7 @@ type Result =
 
 const result: Result = ...;
 
-return match(result)
+const html = match(result)
   .with({ type: 'error' }, () => `<p>Oups! An error occured</p>`)
   .with({ type: 'ok', data: { type: 'text' } }, (res) => `<p>${res.data.content}</p>`)
   .with({ type: 'ok', data: { type: 'img', src: P.select() } }, (src) => `<img src=${src} />`)
