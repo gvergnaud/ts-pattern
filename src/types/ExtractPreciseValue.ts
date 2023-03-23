@@ -87,7 +87,9 @@ export type ExtractPreciseValue<a, b> = unknown extends b
     ? a extends b
       ? a
       : b extends a
-      ? b
+      ? [Exclude<keyof a, keyof b>] extends [never]
+        ? b
+        : Compute<b & Omit<a, keyof b>>
       : [keyof a & keyof b] extends [never]
       ? never
       : ExcludeObjectIfContainsNever<

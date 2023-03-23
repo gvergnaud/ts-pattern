@@ -68,4 +68,42 @@ describe('optional properties', () => {
     expect(f({ type: 'test2', otherProp: '' })).toEqual(2);
     expect(f({ type: 'test3' })).toEqual(3);
   });
+
+  it('issue #142: When pattern matching on an optional property, other optional properties should remain on the object', () => {
+    enum SomeEnum {
+      Foo = 'Foo',
+      Bar = 'Bar',
+    }
+
+    type SomeObject = {
+      a?: SomeEnum;
+      b?: string;
+      c?: boolean;
+    };
+
+    const input = {
+      a: SomeEnum.Foo,
+      b: 'not important',
+    } as SomeObject;
+
+    const result = match(input)
+      .with({ a: SomeEnum.Foo }, (value) => {
+        type t = Expect<
+          Equal<
+            typeof value,
+            {
+              a: SomeEnum.Foo;
+              b?: string | undefined;
+              c?: boolean | undefined;
+            }
+          >
+        >;
+        return `Foo: ${value.b}`;
+      })
+      .with({ a: SomeEnum.Bar }, (value) => `Bar: ${value.b}`)
+      .with({ a: undefined }, (value) => `<undefined>: ${value.b}`)
+      .exhaustive();
+
+    expect(result).toEqual(`Foo: not important`);
+  });
 });
