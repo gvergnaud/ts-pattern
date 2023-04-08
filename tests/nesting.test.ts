@@ -22,23 +22,7 @@ describe('Nesting', () => {
         .with(
           { type: 'post', content: { video: { id: 2, content: { src: '' } } } },
           (x) => {
-            type t = Expect<
-              Equal<
-                typeof x,
-                {
-                  type: 'post';
-                  id: number;
-                  content: {
-                    body: string;
-                    video: {
-                      type: 'video';
-                      id: 2;
-                      content: { src: '' };
-                    };
-                  };
-                }
-              >
-            >;
+            type t = Expect<Equal<typeof x, Post>>;
             return 1;
           }
         )
@@ -121,7 +105,7 @@ describe('Nesting', () => {
   describe('array', () => {
     it('it should work on 2 levels', () => {
       expect(
-        match([{ two: '2', foo: 2, bar: true }] as const)
+        match([{ two: '2', foo: 2, bar: true }])
           .with([{ foo: P.any, bar: P.select('bar') }], ({ bar }) => bar)
           .exhaustive()
       ).toEqual(true);
@@ -129,7 +113,7 @@ describe('Nesting', () => {
 
     it('it should work on 3 levels', () => {
       expect(
-        match([[{ two: '2', foo: 2, bar: true }]] as const)
+        match([[{ two: '2', foo: 2, bar: true }]])
           .with([[{ foo: P.any, bar: P.select('bar') }]], ({ bar }) => bar)
           .exhaustive()
       ).toEqual(true);
@@ -137,7 +121,7 @@ describe('Nesting', () => {
 
     it('it should work on 4 levels', () => {
       expect(
-        match([[[{ two: '2', foo: 2, bar: true }]]] as const)
+        match([[[{ two: '2', foo: 2, bar: true }]]])
           .with([[[{ foo: P.any, bar: P.select('bar') }]]], ({ bar }) => bar)
           .exhaustive()
       ).toEqual(true);
@@ -145,7 +129,7 @@ describe('Nesting', () => {
 
     it('it should work on 5 levels', () => {
       expect(
-        match([[[[{ two: '2', foo: 2, bar: true }]]]] as const)
+        match([[[[{ two: '2', foo: 2, bar: true }]]]])
           .with([[[[{ foo: P.any, bar: P.any }]]]], ([[[[{ bar }]]]]) => bar)
           .exhaustive()
       ).toEqual(true);

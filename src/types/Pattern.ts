@@ -10,6 +10,7 @@ export type MatcherType =
   | 'optional'
   | 'or'
   | 'and'
+  | 'array'
   | 'map'
   | 'set'
   | 'select'
@@ -86,36 +87,7 @@ export type CustomP<
 // for the input type to be instantiated correctly
 // on subpatterns, it has to be passed through.
 
-interface ArrayNarrowFn extends Fn {
-  return: this['args'] extends [infer input, infer p, ...any]
-    ? input extends readonly (infer value)[]
-      ? ExtractPreciseValue<input, InvertPattern<p, value>[]>
-      : never
-    : never;
-}
-
-type MapList<selections> = {
-  [k in keyof selections]: selections[k] extends [infer v, infer subpath]
-    ? [v[], subpath]
-    : never;
-};
-
-interface ArraySelectFn extends Fn {
-  return: this['args'] extends [infer input, infer p, ...any]
-    ? input extends readonly (infer value)[]
-      ? MapList<FindSelectionUnion<value, p>>
-      : never
-    : never;
-}
-
-export type ArrayP<input, p> = CustomP<
-  input,
-  p,
-  {
-    narrow: ArrayNarrowFn;
-    select: ArraySelectFn;
-  }
->;
+export type ArrayP<input, p> = Matcher<input, p, 'array'>;
 
 export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
