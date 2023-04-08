@@ -94,7 +94,11 @@ export type FindSelectionUnion<
   p,
   // path just serves as an id, to identify different anonymous patterns which have the same type
   path extends any[] = []
-> = IsAny<i> extends true
+  // inlining IsAny for perf
+> = 0 extends 1 & i
+  ? never
+  : // inlining IsAny for perf
+  0 extends 1 & p
   ? never
   : p extends Primitives
   ? never
