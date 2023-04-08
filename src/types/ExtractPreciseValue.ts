@@ -12,7 +12,11 @@ import { DeepExclude } from './DeepExclude';
 
 export type ExtractPreciseValue<a, b> = unknown extends b
   ? a
-  : IsAny<a> extends true
+  : // inlining IsAny for perf
+  0 extends 1 & b
+  ? a
+  : // inlining IsAny for perf
+  0 extends 1 & a
   ? b
   : b extends readonly []
   ? []

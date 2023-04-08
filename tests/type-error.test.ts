@@ -115,4 +115,15 @@ describe('type errors', () => {
         // @ts-expect-error
         .exhaustive();
   });
+
+  it("if a pattern is any, the outer expression shouldn't throw a type error", () => {
+    const anyVar = null as any;
+
+    match({ a: 'a' })
+      .with({ a: anyVar }, (x) => {
+        type t = Expect<Equal<typeof x, { a: never }>>;
+        return 'Ok';
+      })
+      .otherwise(() => 'ko');
+  });
 });
