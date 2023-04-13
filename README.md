@@ -17,6 +17,8 @@ with smart type inference.
   </a>
 </p>
 
+
+
 ```ts
 import { match, P } from 'ts-pattern';
 
@@ -41,6 +43,9 @@ const html = match(result)
 
 Write **better** and **safer conditions**. Pattern matching lets you express complex conditions in a single, compact expression. Your code becomes **shorter** and **more readable**. Exhaustiveness checking ensures you haven’t forgotten **any possible case**.
 
+![ts-pattern](https://user-images.githubusercontent.com/9265418/231688650-7cd957a9-8edc-4db8-a5fe-61e1c2179d91.gif)
+
+
 ## Features
 
 - Pattern-match on **any data structure**: nested [Objects](#objects), [Arrays](#tuples-arrays), [Tuples](#tuples-arrays), [Sets](#sets), [Maps](#maps) and all primitive types.
@@ -58,7 +63,7 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 
 Pattern Matching is implemented in Haskell, Rust, Swift, Elixir and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years. Luckily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
 
-Read the introduction blog post: [Bringing Pattern Matching to TypeScript 🎨 Introducing TS-Pattern v3.0](https://dev.to/gvergnaud/bringing-pattern-matching-to-typescript-introducing-ts-pattern-v3-0-o1k)
+Read the introduction blog post: [Bringing Pattern Matching to TypeScript 🎨 Introducing TS-Pattern](https://dev.to/gvergnaud/bringing-pattern-matching-to-typescript-introducing-ts-pattern-v3-0-o1k)
 
 ## Installation
 
