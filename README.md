@@ -44,7 +44,7 @@ const html = match(result)
 Write **better** and **safer conditions**. Pattern matching lets you express complex conditions in a single, compact expression. Your code becomes **shorter** and **more readable**. Exhaustiveness checking ensures you haven’t forgotten **any possible case**.
 
 ![ts-pattern](https://user-images.githubusercontent.com/9265418/231688650-7cd957a9-8edc-4db8-a5fe-61e1c2179d91.gif)
-
+<p align="center"><i>Animation by <a target="_blank" href="https://twitter.com/nicoespeon/status/1644342570389061634?s=20">@nicoespeon</a></i></p>
 
 ## Features
 
