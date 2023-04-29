@@ -20,6 +20,7 @@ import {
   Apply,
   Fn,
   ReadonlyArrayValue,
+  ExtractWithDefault,
 } from './helpers';
 import type { Matcher, Pattern, Override, AnyMatcher } from './Pattern';
 
@@ -56,7 +57,7 @@ type InvertArrayPattern<
   endOutput extends any[] = []
 > = i extends readonly (infer ii)[]
   ? p extends readonly []
-    ? MaybeAddReadonly<[...startOutput, ...endOutput], IsReadonlyArray<i>>
+    ? [...startOutput, ...endOutput]
     : p extends readonly [infer p1, ...infer pRest]
     ? i extends readonly [infer i1, ...infer iRest]
       ? InvertArrayPattern<
@@ -87,18 +88,12 @@ type InvertArrayPattern<
         >
     : // If P is a matcher, in this case, it's likely an array matcher
     p extends readonly [...(readonly (infer pRest & AnyMatcher)[])]
-    ? MaybeAddReadonly<
-        [
-          ...startOutput,
-          ...Extract<InvertPattern<pRest, i>, readonly any[]>,
-          ...endOutput
-        ],
-        IsReadonlyArray<i>
-      >
-    : MaybeAddReadonly<
-        [...startOutput, ...InvertPattern<ValueOf<p>, ii>[], ...endOutput],
-        IsReadonlyArray<i>
-      >
+    ? [
+        ...startOutput,
+        ...Extract<InvertPattern<pRest, i>, readonly any[]>,
+        ...endOutput
+      ]
+    : [...startOutput, ...InvertPattern<ValueOf<p>, ii>[], ...endOutput]
   : never;
 
 /**
@@ -143,7 +138,7 @@ export type InvertPattern<p, input> = 0 extends 1 & p
   : p extends Primitives
   ? p
   : p extends readonly any[]
-  ? InvertArrayPattern<p, input>
+  ? InvertArrayPattern<p, ExtractWithDefault<input, readonly any[], unknown[]>>
   : IsPlainObject<p> extends true
   ? OptionalKeys<p> extends infer optKeys
     ? [optKeys] extends [never]
@@ -224,17 +219,19 @@ type InvertArrayPatternForExclude<
   p,
   i,
   empty,
+  isReadonly extends boolean,
   startOutput extends any[] = [],
   endOutput extends any[] = []
 > = i extends readonly (infer ii)[]
   ? p extends readonly []
-    ? MaybeAddReadonly<[...startOutput, ...endOutput], IsReadonlyArray<i>>
+    ? MaybeAddReadonly<[...startOutput, ...endOutput], isReadonly>
     : p extends readonly [infer p1, ...infer pRest]
     ? i extends readonly [infer i1, ...infer iRest]
       ? InvertArrayPatternForExclude<
           pRest,
           iRest,
           empty,
+          isReadonly,
           [...startOutput, InvertPatternForExcludeInternal<p1, i1, empty>],
           endOutput
         >
@@ -242,6 +239,7 @@ type InvertArrayPatternForExclude<
           pRest,
           ii[],
           empty,
+          isReadonly,
           [...startOutput, InvertPatternForExcludeInternal<p1, ii, empty>],
           endOutput
         >
@@ -251,6 +249,7 @@ type InvertArrayPatternForExclude<
           pInit,
           iInit,
           empty,
+          isReadonly,
           startOutput,
           [...endOutput, InvertPatternForExcludeInternal<p1, i1, empty>]
         >
@@ -258,6 +257,7 @@ type InvertArrayPatternForExclude<
           pInit,
           ii[],
           empty,
+          isReadonly,
           startOutput,
           [...endOutput, InvertPatternForExcludeInternal<p1, ii, empty>]
         >
@@ -272,7 +272,7 @@ type InvertArrayPatternForExclude<
           >,
           ...endOutput
         ],
-        IsReadonlyArray<i>
+        isReadonly
       >
     : MaybeAddReadonly<
         [
@@ -280,7 +280,7 @@ type InvertArrayPatternForExclude<
           ...InvertPatternForExcludeInternal<ValueOf<p>, ii, empty>[],
           ...endOutput
         ],
-        IsReadonlyArray<i>
+        isReadonly
       >
   : empty;
 
@@ -348,7 +348,14 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
           : never;
       }[matcherType]
     : p extends readonly any[]
-    ? InvertArrayPatternForExclude<p, Extract<i, readonly any[]>, empty>
+    ? Extract<i, readonly any[]> extends infer arrayInput
+      ? InvertArrayPatternForExclude<
+          p,
+          arrayInput,
+          empty,
+          IsReadonlyArray<arrayInput>
+        >
+      : never
     : IsPlainObject<p> extends true
     ? i extends object
       ? [keyof p & keyof i] extends [never]
@@ -357,17 +364,18 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
         ? [optKeys] extends [never]
           ? {
               // FIXME: -readonly breaks deep exclude if the input is a readonly object
-              -readonly [k in keyof p]: k extends keyof i
+              // why do we need it?
+              readonly [k in keyof p]: k extends keyof i
                 ? InvertPatternForExcludeInternal<p[k], i[k], empty>
                 : InvertPattern<p[k], unknown>;
             }
           : Compute<
               {
-                -readonly [k in Exclude<keyof p, optKeys>]: k extends keyof i
+                readonly [k in Exclude<keyof p, optKeys>]: k extends keyof i
                   ? InvertPatternForExcludeInternal<p[k], i[k], empty>
                   : InvertPattern<p[k], unknown>;
               } & {
-                -readonly [k in Extract<optKeys, keyof p>]?: k extends keyof i
+                readonly [k in Extract<optKeys, keyof p>]?: k extends keyof i
                   ? InvertPatternForExcludeInternal<p[k], i[k], empty>
                   : InvertPattern<p[k], unknown>;
               }

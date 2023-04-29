@@ -29,6 +29,12 @@ type MapOptional<selections> = {
     : never;
 };
 
+type MapList<selections> = {
+  [k in keyof selections]: selections[k] extends [infer v, infer subpath]
+    ? [v[], subpath]
+    : never;
+};
+
 type ReduceFindSelectionUnion<
   i,
   ps extends readonly any[],
@@ -85,12 +91,6 @@ type FindSelectionUnionInArray<
           >
   : output;
 
-type MapList<selections> = {
-  [k in keyof selections]: selections[k] extends [infer v, infer subpath]
-    ? [v[], subpath]
-    : never;
-};
-
 export type FindSelectionUnion<
   i,
   p,
@@ -115,12 +115,12 @@ export type FindSelectionUnion<
       select: sel extends Some<infer k>
         ? { [kk in k]: [i, path] } | FindSelectionUnion<i, pattern, path>
         : never;
-      // FIXME: selection for map and set is supported at the value level
-      map: never;
-      set: never;
       array: i extends readonly (infer ii)[]
         ? MapList<FindSelectionUnion<ii, pattern>>
         : never;
+      // FIXME: selection for map and set is supported at the value level
+      map: never;
+      set: never;
       optional: MapOptional<FindSelectionUnion<i, pattern>>;
       or: MapOptional<
         ReduceFindSelectionUnion<i, Extract<pattern, readonly any[]>>

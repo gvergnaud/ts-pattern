@@ -3,12 +3,12 @@ import type {
   BuiltInObjects,
   Compute,
   ExcludeObjectIfContainsNever,
-  IsAny,
   IsPlainObject,
+  IsReadonlyArray,
   LeastUpperBound,
+  MaybeAddReadonly,
   ValueOf,
 } from './helpers';
-import { DeepExclude } from './DeepExclude';
 
 export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
   ? b1
@@ -23,7 +23,7 @@ export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
   : b extends readonly []
   ? []
   : b extends readonly any[]
-  ? ExtractPreciseArrayValue<a, b>
+  ? ExtractPreciseArrayValue<a, b, IsReadonlyArray<a>>
   : b extends Map<infer bk, infer bv>
   ? a extends Map<infer ak, infer av>
     ? Map<ExtractPreciseValue<ak, bk>, ExtractPreciseValue<av, bv>>
@@ -66,11 +66,12 @@ export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
 type ExtractPreciseArrayValue<
   a,
   b,
+  isReadonly extends boolean,
   startOutput extends any[] = [],
   endOutput extends any[] = []
 > = a extends readonly (infer aItem)[]
   ? b extends readonly []
-    ? [...startOutput, ...endOutput]
+    ? MaybeAddReadonly<[...startOutput, ...endOutput], isReadonly>
     : b extends readonly [infer b1, ...infer bRest]
     ? a extends readonly [infer a1, ...infer aRest]
       ? ExtractPreciseValue<a1, b1> extends infer currentValue
@@ -79,6 +80,7 @@ type ExtractPreciseArrayValue<
           : ExtractPreciseArrayValue<
               aRest,
               bRest,
+              isReadonly,
               [...startOutput, currentValue],
               endOutput
             >
@@ -89,6 +91,7 @@ type ExtractPreciseArrayValue<
         : ExtractPreciseArrayValue<
             aItem[],
             bRest,
+            isReadonly,
             [...startOutput, currentValue],
             endOutput
           >
@@ -101,6 +104,7 @@ type ExtractPreciseArrayValue<
           : ExtractPreciseArrayValue<
               aInit,
               bInit,
+              isReadonly,
               startOutput,
               [...endOutput, currentValue]
             >
@@ -111,6 +115,7 @@ type ExtractPreciseArrayValue<
         : ExtractPreciseArrayValue<
             aItem[],
             bInit,
+            isReadonly,
             startOutput,
             [...endOutput, currentValue]
           >
@@ -118,6 +123,9 @@ type ExtractPreciseArrayValue<
     : ExtractPreciseValue<ValueOf<b>, aItem> extends infer currentValue
     ? [currentValue] extends [never]
       ? never
-      : [...startOutput, ...currentValue[], ...endOutput]
+      : MaybeAddReadonly<
+          [...startOutput, ...currentValue[], ...endOutput],
+          isReadonly
+        >
     : never
   : LeastUpperBound<a, b>;

@@ -155,6 +155,8 @@ export type IntersectObjects<a> = (
 
 export type WithDefault<a, def> = [a] extends [never] ? def : a;
 
+export type ExtractWithDefault<a, b, def> = a extends b ? a : def;
+
 export type IsLiteral<a> = [a] extends [null | undefined]
   ? true
   : [a] extends [string]
