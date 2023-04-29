@@ -128,16 +128,14 @@ export function array<
 
           return { matched, selections };
         },
-        getSelectionKeys: () => args.length === 0 ? [] : getSelectionKeys(args[0]),
+        getSelectionKeys: () =>
+          args.length === 0 ? [] : getSelectionKeys(args[0]),
       };
     },
     *[Symbol.iterator]() {
-      yield Object.assign(
-        args.length === 0 
-          ? array()
-          : array(args[0]),
-        { [symbols.isVariadic]: true }
-      );
+      yield Object.assign(args.length === 0 ? array() : array(args[0]), {
+        [symbols.isVariadic]: true,
+      });
     },
   };
 }
@@ -152,9 +150,7 @@ export function array<
  *  match(value)
  *   .with({ users: P.set(P.string) }, () => 'will match Set<string>')
  */
-export function set<
-  input,
->(): SetP<input, unknown>;
+export function set<input>(): SetP<input, unknown>;
 export function set<
   input,
   const p extends Pattern<WithDefault<UnwrapSet<input>, unknown>>
@@ -189,7 +185,8 @@ export function set<
 
           return { matched, selections };
         },
-        getSelectionKeys: () => args.length === 0 ? [] : getSelectionKeys(args[0]),
+        getSelectionKeys: () =>
+          args.length === 0 ? [] : getSelectionKeys(args[0]),
       };
     },
   };
@@ -197,11 +194,11 @@ export function set<
 
 const setEvery = <T>(set: Set<T>, predicate: (value: T) => boolean) => {
   for (const value of set) {
-    if (predicate(value)) continue
-    return false
+    if (predicate(value)) continue;
+    return false;
   }
-  return true
-}
+  return true;
+};
 
 /**
  * `P.set(subpattern)` takes a sub pattern and returns a pattern that matches
@@ -218,12 +215,14 @@ export function map<
   input,
   const pkey extends Pattern<WithDefault<UnwrapMapKey<input>, unknown>>,
   const pvalue extends Pattern<WithDefault<UnwrapMapValue<input>, unknown>>
->(patternKey: pkey, patternValue: pvalue): MapP<input, pkey, pvalue>
+>(patternKey: pkey, patternValue: pvalue): MapP<input, pkey, pvalue>;
 export function map<
   input,
   const pkey extends Pattern<WithDefault<UnwrapMapKey<input>, unknown>>,
   const pvalue extends Pattern<WithDefault<UnwrapMapValue<input>, unknown>>
->(...args: [patternKey?: pkey, patternValue?: pvalue]): MapP<input, pkey, pvalue> {
+>(
+  ...args: [patternKey?: pkey, patternValue?: pvalue]
+): MapP<input, pkey, pvalue> {
   return {
     [symbols.matcher]() {
       return {
@@ -242,14 +241,16 @@ export function map<
 
           if (args.length === 0) return { matched: true };
           if (args.length === 1) {
-            throw new Error(`\`P.map\` wasn\'t given enough arguments. Expected (key, value), received ${args[0]?.toString()}`)
+            throw new Error(
+              `\`P.map\` wasn\'t given enough arguments. Expected (key, value), received ${args[0]?.toString()}`
+            );
           }
-          const [patternKey, patternValue] = args
+          const [patternKey, patternValue] = args;
 
-          const matched = mapEvery(value, (v, k) =>{
-            const keyMatch = matchPattern(patternKey, k, selector)
-            const valueMatch = matchPattern(patternValue, v, selector)
-            return keyMatch && valueMatch
+          const matched = mapEvery(value, (v, k) => {
+            const keyMatch = matchPattern(patternKey, k, selector);
+            const valueMatch = matchPattern(patternValue, v, selector);
+            return keyMatch && valueMatch;
           });
 
           return { matched, selections };
@@ -257,22 +258,22 @@ export function map<
         getSelectionKeys: () =>
           args.length === 0
             ? []
-            : [
-              ...getSelectionKeys(args[0]),
-              ...getSelectionKeys(args[1])
-            ]
+            : [...getSelectionKeys(args[0]), ...getSelectionKeys(args[1])],
       };
     },
   };
 }
 
-const mapEvery = <K, T>(map: Map<K, T>, predicate: (value: T, key: K) => boolean) => {
+const mapEvery = <K, T>(
+  map: Map<K, T>,
+  predicate: (value: T, key: K) => boolean
+) => {
   for (const [key, value] of map.entries()) {
     if (predicate(value, key)) continue;
     return false;
   }
   return true;
-}
+};
 
 /**
  * `P.intersection(...patterns)` returns a pattern which matches
@@ -340,9 +341,10 @@ export function union<
         const selector = (key: string, value: any) => {
           selections[key] = value;
         };
-        flatMap(patterns as readonly UnknownPattern[], getSelectionKeys).forEach((key) =>
-          selector(key, undefined)
-        );
+        flatMap(
+          patterns as readonly UnknownPattern[],
+          getSelectionKeys
+        ).forEach((key) => selector(key, undefined));
         const matched = (patterns as readonly UnknownPattern[]).some((p) =>
           matchPattern(p, value, selector)
         );
@@ -367,10 +369,9 @@ export function union<
  *   )
  */
 
-export function not<
-  input,
-  const p extends Pattern<input> | UnknownPattern
->(pattern: p): NotP<input, p> {
+export function not<input, const p extends Pattern<input> | UnknownPattern>(
+  pattern: p
+): NotP<input, p> {
   return {
     [symbols.matcher]: () => ({
       match: <I>(value: I | input) => ({
@@ -633,7 +634,9 @@ export function instanceOf<T extends AnyConstructor>(
  *  )
  */
 export function typed<input>(): {
-  array<const p extends Pattern<UnwrapArray<input>>>(pattern: p): ArrayP<input, p>;
+  array<const p extends Pattern<UnwrapArray<input>>>(
+    pattern: p
+  ): ArrayP<input, p>;
 
   optional<const p extends Pattern<input>>(pattern: p): OptionalP<input, p>;
 
