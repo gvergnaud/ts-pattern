@@ -190,11 +190,7 @@ describe('types', () => {
             typeof x,
             {
               type: string;
-              hello:
-                | {
-                    yo: number;
-                  }
-                | undefined;
+              hello?: { yo: number } | undefined;
             }
           >
         >;

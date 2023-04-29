@@ -39,7 +39,7 @@ type ReduceUnion<
   i,
   output = never
 > = tuple extends readonly [infer p, ...infer tail]
-  ? ReduceUnion<tail, i, output | InvertPattern<p, i>>
+  ? ReduceUnion<tail, i, output | InvertPatternInternal<p, i>>
   : output;
 
 type ReduceIntersection<
@@ -47,7 +47,7 @@ type ReduceIntersection<
   i,
   output = unknown
 > = tuple extends readonly [infer p, ...infer tail]
-  ? ReduceIntersection<tail, i, output & InvertPattern<p, i>>
+  ? ReduceIntersection<tail, i, output & InvertPatternInternal<p, i>>
   : output;
 
 type InvertArrayPattern<
@@ -63,13 +63,13 @@ type InvertArrayPattern<
       ? InvertArrayPattern<
           pRest,
           iRest,
-          [...startOutput, InvertPattern<p1, i1>],
+          [...startOutput, InvertPatternInternal<p1, i1>],
           endOutput
         >
       : InvertArrayPattern<
           pRest,
           ii[],
-          [...startOutput, InvertPattern<p1, ii>],
+          [...startOutput, InvertPatternInternal<p1, ii>],
           endOutput
         >
     : p extends readonly [...infer pInit, infer p1]
@@ -78,30 +78,34 @@ type InvertArrayPattern<
           pInit,
           iInit,
           startOutput,
-          [...endOutput, InvertPattern<p1, i1>]
+          [...endOutput, InvertPatternInternal<p1, i1>]
         >
       : InvertArrayPattern<
           pInit,
           ii[],
           startOutput,
-          [...endOutput, InvertPattern<p1, ii>]
+          [...endOutput, InvertPatternInternal<p1, ii>]
         >
     : // If P is a matcher, in this case, it's likely an array matcher
     p extends readonly [...(readonly (infer pRest & AnyMatcher)[])]
     ? [
         ...startOutput,
-        ...Extract<InvertPattern<pRest, i>, readonly any[]>,
+        ...Extract<InvertPatternInternal<pRest, i>, readonly any[]>,
         ...endOutput
       ]
-    : [...startOutput, ...InvertPattern<ValueOf<p>, ii>[], ...endOutput]
+    : [...startOutput, ...InvertPatternInternal<ValueOf<p>, ii>[], ...endOutput]
   : never;
 
 /**
- * ### InvertPattern
+ * ### InvertPatternInternal
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
-export type InvertPattern<p, input> = 0 extends 1 & p
+export type InvertPattern<p, input> = Equal<p, Pattern<input>> extends true
+  ? never
+  : InvertPatternInternal<p, input>;
+
+type InvertPatternInternal<p, input> = 0 extends 1 & p
   ? never
   : p extends Matcher<
       infer _input,
@@ -111,18 +115,20 @@ export type InvertPattern<p, input> = 0 extends 1 & p
       infer fns
     >
   ? {
-      not: DeepExclude<input, InvertPattern<subpattern, input>>;
-      select: InvertPattern<subpattern, input>;
-      array: InvertPattern<subpattern, ReadonlyArrayValue<input>>[];
+      not: DeepExclude<input, InvertPatternInternal<subpattern, input>>;
+      select: InvertPatternInternal<subpattern, input>;
+      array: InvertPatternInternal<subpattern, ReadonlyArrayValue<input>>[];
       map: subpattern extends [infer pk, infer pv]
         ? Map<
-            InvertPattern<pk, MapKey<Extract<input, Map<any, any>>>>,
-            InvertPattern<pv, MapValue<Extract<input, Map<any, any>>>>
+            InvertPatternInternal<pk, MapKey<Extract<input, Map<any, any>>>>,
+            InvertPatternInternal<pv, MapValue<Extract<input, Map<any, any>>>>
           >
         : never;
-      set: Set<InvertPattern<subpattern, SetValue<Extract<input, Set<any>>>>>;
+      set: Set<
+        InvertPatternInternal<subpattern, SetValue<Extract<input, Set<any>>>>
+      >;
       optional:
-        | InvertPattern<subpattern, Exclude<input, undefined>>
+        | InvertPatternInternal<subpattern, Exclude<input, undefined>>
         | undefined;
       and: ReduceIntersection<Extract<subpattern, readonly any[]>, input>;
       or: ReduceUnion<Extract<subpattern, readonly any[]>, input>;
@@ -143,19 +149,19 @@ export type InvertPattern<p, input> = 0 extends 1 & p
   ? OptionalKeys<p> extends infer optKeys
     ? [optKeys] extends [never]
       ? {
-          [k in Exclude<keyof p, optKeys>]: InvertPattern<
+          [k in Exclude<keyof p, optKeys>]: InvertPatternInternal<
             p[k],
             GetKey<ExtractPlainObject<input>, k>
           >;
         }
       : Compute<
           {
-            [k in Exclude<keyof p, optKeys>]: InvertPattern<
+            [k in Exclude<keyof p, optKeys>]: InvertPatternInternal<
               p[k],
               GetKey<ExtractPlainObject<input>, k>
             >;
           } & {
-            [k in Extract<optKeys, keyof p>]?: InvertPattern<
+            [k in Extract<optKeys, keyof p>]?: InvertPatternInternal<
               p[k],
               GetKey<ExtractPlainObject<input>, k>
             >;
@@ -367,17 +373,17 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
               // why do we need it?
               readonly [k in keyof p]: k extends keyof i
                 ? InvertPatternForExcludeInternal<p[k], i[k], empty>
-                : InvertPattern<p[k], unknown>;
+                : InvertPatternInternal<p[k], unknown>;
             }
           : Compute<
               {
                 readonly [k in Exclude<keyof p, optKeys>]: k extends keyof i
                   ? InvertPatternForExcludeInternal<p[k], i[k], empty>
-                  : InvertPattern<p[k], unknown>;
+                  : InvertPatternInternal<p[k], unknown>;
               } & {
                 readonly [k in Extract<optKeys, keyof p>]?: k extends keyof i
                   ? InvertPatternForExcludeInternal<p[k], i[k], empty>
-                  : InvertPattern<p[k], unknown>;
+                  : InvertPatternInternal<p[k], unknown>;
               }
             >
         : empty

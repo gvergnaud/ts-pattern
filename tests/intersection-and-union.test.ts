@@ -618,19 +618,16 @@ describe('and, and or patterns', () => {
                 Equal<
                   typeof x,
                   | {
-                      value:
-                        | { type: 'a'; n: number }[]
-                        | { type: 'b'; s: string }[];
+                      value: {
+                        type: 'a';
+                        n: number;
+                      }[];
                     }
                   | {
-                      value:
-                        | { type: 'a'; n: number }[]
-                        | { type: 'b'; s: string }[];
-                    }
-                  | {
-                      value:
-                        | { type: 'a'; n: number }[]
-                        | { type: 'b'; s: string }[];
+                      value: {
+                        type: 'b';
+                        s: string;
+                      }[];
                     }
                 >
               >;
