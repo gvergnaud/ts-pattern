@@ -205,7 +205,7 @@ export type Match<
 
   /**
    * `.returnType<T>()` Lets you specific a return type for all your code branches.
-   * 
+   *
    * [Read documentation for `.returnType()` on GitHub](https://github.com/gvergnaud/ts-pattern#returnType)
    * */
   returnType: [inferredOutput] extends [never]

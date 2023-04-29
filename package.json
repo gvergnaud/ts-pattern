@@ -54,8 +54,8 @@
     "@types/jest": "^27.0.2",
     "jest": "^27.4.5",
     "microbundle": "^0.15.0",
-    "prettier": "^2.8.4",
+    "prettier": "^2.8.8",
     "ts-jest": "^27.1.2",
-    "typescript": "^5.0.0-beta"
+    "typescript": "^5.0.4"
   }
 }
