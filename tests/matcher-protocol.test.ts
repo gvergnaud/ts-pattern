@@ -13,7 +13,7 @@ describe('matcher protocol', () => {
     constructor(private value: T) {}
     static pattern<Input, const Pattern extends P.Pattern<Input>>(pattern: Pattern) {
       interface SomeNarrowFn extends Fn {
-        return: Some<P.infer<Pattern>>;
+        return: P.infer<Pattern>
       }
       return {
         [P.matcher](): P.Matcher<{ narrow: SomeNarrowFn, select: Constant<never>  }> {
@@ -28,7 +28,7 @@ describe('matcher protocol', () => {
         },
       } as P.Matchable<{ narrow: SomeNarrowFn, select: Constant<never>  }>;
     }
-    static [P.matcher](): P.Matcher<{narrow: SomeNarrowFn, select: Constant<never> }> {
+    static [P.matcher](): P.Matcher<{ narrow: SomeNarrowFn, select: Constant<never> }> {
       return {
         match: (input) => {
           if (input instanceof Some) {
@@ -78,6 +78,7 @@ describe('matcher protocol', () => {
     .with({ option: Some }, (value) => {
       type t = Expect<Equal<typeof value, { option: number | string }>>;
     })
+    .with({ option: None }, () => "none")
     .exhaustive();
   match<Option<number | string>>(new Some(12)).with(
     Some.pattern(10),

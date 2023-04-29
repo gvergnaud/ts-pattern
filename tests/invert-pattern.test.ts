@@ -3,7 +3,7 @@ import {
   InvertPattern,
   InvertPatternForExclude,
 } from '../src/types/InvertPattern';
-import { ArrayP, GuardP, Matcher } from '../src/types/Pattern';
+import { ArrayP, GuardP, Matcher, Pattern } from '../src/types/Pattern';
 
 describe('InvertPattern', () => {
   describe('variadic tuples', () => {
@@ -359,14 +359,32 @@ describe('InvertPatternForExclude', () => {
       type test1 = Expect<Equal<inverted1, ['Hello', ...number[], true]>>;
     });
   });
+});
 
-  describe('issue #44', () => {
-    it('if the pattern contains unknown keys, inverted this pattern should keep them', () => {
-      type input = { sex: 'a' | 'b'; age: 'c' | 'd' };
-      type pattern = Readonly<{ sex: 'a'; unknownKey: 'c' }>;
-      type inverted = InvertPatternForExclude<pattern, input>;
+describe('issue #44', () => {
+  it('if the pattern contains unknown keys, inverted this pattern should keep them', () => {
+    type input = { sex: 'a' | 'b'; age: 'c' | 'd' };
+    type pattern = Readonly<{ sex: 'a'; unknownKey: 'c' }>;
+    type inverted = InvertPatternForExclude<pattern, input>;
 
-      type cases = [Expect<Equal<inverted, pattern>>];
-    });
+    type cases = [Expect<Equal<inverted, pattern>>];
+  });
+});
+
+describe('it should return never if the input pattern is Pattern<input>', () => {
+  it('InvertPattern', () => {
+    type input = { sex: 'a' | 'b'; age: 'c' | 'd' };
+    type pattern = Pattern<input>;
+    type inverted = InvertPattern<pattern, input>;
+    //    ^?
+    type test1 = Expect<Equal<inverted, never>>;
+  });
+
+  it('InvertPatternForExclude', () => {
+    type input = { sex: 'a' | 'b'; age: 'c' | 'd' };
+    type pattern = Pattern<input>;
+    type inverted = InvertPatternForExclude<pattern, input>;
+    //    ^?
+    type test1 = Expect<Equal<inverted, never>>;
   });
 });
