@@ -6,9 +6,9 @@
   "source": "src/index.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
       "import": "./dist/index.module.js",
-      "types": "./dist/index.d.ts",
       "default": "./dist/index.modern.js"
     },
     "./package.json": "./package.json"
