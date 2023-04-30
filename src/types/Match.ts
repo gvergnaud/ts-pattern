@@ -6,7 +6,6 @@ import type { DeepExclude } from './DeepExclude';
 import type { WithDefault, Union, GuardValue, IsNever } from './helpers';
 import type { FindSelected } from './FindSelected';
 
-
 export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;
 
 type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
@@ -85,7 +84,7 @@ export type Match<
     const ps extends readonly Pattern<i>[],
     c,
     p extends p1 | p2 | p3 | ps[number],
-    value extends p extends any ? MatchedValue<i, InvertPattern<p, i>> : never
+    value extends MatchedValue<i, InvertPattern<p, i>>
   >(
     ...args: [
       p1: p1,

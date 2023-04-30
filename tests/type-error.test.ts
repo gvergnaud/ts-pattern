@@ -1,4 +1,16 @@
 import { match, P } from '../src';
+import { DeepExclude } from '../src/types/DeepExclude';
+import { ExtractPreciseValue } from '../src/types/ExtractPreciseValue';
+import {
+  InvertPattern,
+  InvertPatternForExclude,
+} from '../src/types/InvertPattern';
+import {
+  NotP,
+  GuardP,
+  PatternInternal,
+  MatchedValue,
+} from '../src/types/Pattern';
 import { Equal, Expect } from '../src/types/helpers';
 import { Option } from './types-catalog/utils';
 

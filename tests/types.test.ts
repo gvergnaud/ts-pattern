@@ -197,6 +197,7 @@ describe('types', () => {
         return 'ok';
       }
     );
+
     match<Input>({ type: 'hello' }).with({ type: P.not(P.string) }, (x) => {
       type t = Expect<Equal<typeof x, Input>>;
       return 'ok';

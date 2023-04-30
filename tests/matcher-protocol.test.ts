@@ -11,12 +11,17 @@ describe('matcher protocol', () => {
   }
   class Some<T> {
     constructor(private value: T) {}
-    static pattern<Input, const Pattern extends P.Pattern<Input>>(pattern: Pattern) {
+    static pattern<Input, const Pattern extends P.Pattern<Input>>(
+      pattern: Pattern
+    ) {
       interface SomeNarrowFn extends Fn {
-        return: P.infer<Pattern>
+        return: P.infer<Pattern>;
       }
       return {
-        [P.matcher](): P.Matcher<{ narrow: SomeNarrowFn, select: Constant<never>  }> {
+        [P.matcher](): P.Matcher<{
+          narrow: SomeNarrowFn;
+          select: Constant<never>;
+        }> {
           return {
             match: (input) => {
               if (input instanceof Some && isMatching(pattern, input)) {
@@ -26,9 +31,12 @@ describe('matcher protocol', () => {
             },
           };
         },
-      } as P.Matchable<{ narrow: SomeNarrowFn, select: Constant<never>  }>;
+      } as P.Matchable<{ narrow: SomeNarrowFn; select: Constant<never> }>;
     }
-    static [P.matcher](): P.Matcher<{ narrow: SomeNarrowFn, select: Constant<never> }> {
+    static [P.matcher](): P.Matcher<{
+      narrow: SomeNarrowFn;
+      select: Constant<never>;
+    }> {
       return {
         match: (input) => {
           if (input instanceof Some) {
@@ -47,7 +55,10 @@ describe('matcher protocol', () => {
     constructor() {
       this.coucou = 1;
     }
-    static [P.matcher](): P.Matcher<{ narrow: NoneNarrowFn, select: Constant<never> }> {
+    static [P.matcher](): P.Matcher<{
+      narrow: NoneNarrowFn;
+      select: Constant<never>;
+    }> {
       return {
         match: (input) => {
           return { matched: input instanceof None };
@@ -78,7 +89,7 @@ describe('matcher protocol', () => {
     .with({ option: Some }, (value) => {
       type t = Expect<Equal<typeof value, { option: number | string }>>;
     })
-    .with({ option: None }, () => "none")
+    .with({ option: None }, (x) => 'none')
     .exhaustive();
   match<Option<number | string>>(new Some(12)).with(
     Some.pattern(10),

@@ -41,7 +41,7 @@ export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
       : b extends a
       ? [Exclude<keyof a, keyof b>] extends [never]
         ? b
-        : Compute<b & Omit<a, keyof b>>
+        : ExcludeObjectIfContainsNever<Compute<b & Omit<a, keyof b>>>
       : [keyof a & keyof b] extends [never]
       ? never
       : ExcludeObjectIfContainsNever<

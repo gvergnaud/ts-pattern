@@ -101,7 +101,7 @@ type InvertArrayPattern<
  * Since patterns have special wildcard values, we need a way
  * to transform a pattern into the type of value it represents
  */
-export type InvertPattern<p, input> = Pattern<input> extends p
+export type InvertPattern<p, input> = Equal<Pattern<input>, p> extends true
   ? never
   : InvertPatternInternal<p, input>;
 
@@ -293,7 +293,7 @@ type InvertArrayPatternForExclude<
 /**
  * ### InvertPatternForExclude
  */
-export type InvertPatternForExclude<p, i> = Pattern<i> extends p
+export type InvertPatternForExclude<p, i> = Equal<Pattern<i>, p> extends true
   ? never
   : InvertPatternForExcludeInternal<p, i>;
 
