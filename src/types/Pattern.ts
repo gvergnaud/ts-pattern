@@ -78,11 +78,13 @@ export type AnyMatcher = Matcher<any, any, any, any, any>;
 
 type UnknownMatcher = Matcher<unknown, unknown, any, any>;
 
-export type CustomP<
+export type CustomP<input, pattern, narrowFn extends Fn> = Matcher<
   input,
   pattern,
-  fns extends { select: Fn; narrow: Fn; args?: any[] }
-> = Matcher<input, pattern, 'custom', None, fns>;
+  'custom',
+  None,
+  narrowFn
+>;
 //                    👆
 // for the input type to be instantiated correctly
 // on subpatterns, it has to be passed through.

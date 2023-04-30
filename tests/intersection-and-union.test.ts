@@ -159,7 +159,6 @@ describe('and, and or patterns', () => {
             >;
             return 'branch 2';
           })
-          // FIXME: This should work
           .exhaustive();
     });
 

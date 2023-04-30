@@ -112,7 +112,7 @@ type InvertPatternInternal<p, input> = 0 extends 1 & p
       infer subpattern,
       infer matcherType,
       any,
-      infer fns
+      infer narrowFn
     >
   ? {
       not: DeepExclude<input, InvertPatternInternal<subpattern, input>>;
@@ -134,11 +134,7 @@ type InvertPatternInternal<p, input> = 0 extends 1 & p
       or: ReduceUnion<Extract<subpattern, readonly any[]>, input>;
       default: [subpattern] extends [never] ? input : subpattern;
       custom: Override<
-        fns extends {
-          narrow: infer narrow extends Fn;
-        }
-          ? Apply<narrow, [input, subpattern]>
-          : never
+        narrowFn extends Fn ? Apply<narrowFn, [input, subpattern]> : never
       >;
     }[matcherType]
   : p extends Primitives
@@ -347,10 +343,8 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
           InvertPatternForExcludeInternal<subpattern, i>
         >;
         default: excluded;
-        custom: excluded extends {
-          narrow: infer narrow extends Fn;
-        }
-          ? Apply<narrow, [i, subpattern]>
+        custom: excluded extends infer narrowFn extends Fn
+          ? Apply<narrowFn, [i, subpattern]>
           : never;
       }[matcherType]
     : p extends readonly any[]
@@ -369,8 +363,6 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
         : OptionalKeys<p> extends infer optKeys
         ? [optKeys] extends [never]
           ? {
-              // FIXME: -readonly breaks deep exclude if the input is a readonly object
-              // why do we need it?
               readonly [k in keyof p]: k extends keyof i
                 ? InvertPatternForExcludeInternal<p[k], i[k], empty>
                 : InvertPatternInternal<p[k], unknown>;

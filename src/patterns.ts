@@ -1,6 +1,7 @@
 import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers';
 import * as symbols from './internals/symbols';
 import { matcher } from './internals/symbols';
+import { ExtractPreciseValue } from './types/ExtractPreciseValue';
 import { Fn, GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
@@ -35,6 +36,11 @@ export { matcher };
  * type User = P.infer<typeof userPattern>
  */
 export type infer<p extends Pattern<any>> = InvertPattern<p, unknown>;
+
+export type narrow<i, p extends Pattern<any>> = ExtractPreciseValue<
+  i,
+  InvertPattern<p, i>
+>;
 
 /**
  * `P.optional(subpattern)` takes a sub pattern and returns a pattern which matches if the
@@ -677,9 +683,14 @@ export function typed<input>(): {
   };
 }
 
+export type Matchable<
+  narrowFn extends Fn,
+  input = unknown,
+  pattern = never
+> = CustomP<input, pattern, narrowFn>;
 
-export type Matchable<fns extends { select: Fn, narrow: Fn }, input = unknown> =
-  CustomP<input, never, fns>;
-
-export type Matcher<fns extends { select: Fn, narrow: Fn }, input = unknown> =
-  ReturnType<CustomP<input, never, fns>[matcher]>;
+export type Matcher<
+  narrowFn extends Fn,
+  input = unknown,
+  pattern = never
+> = ReturnType<CustomP<input, pattern, narrowFn>[matcher]>;

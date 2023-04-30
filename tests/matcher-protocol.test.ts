@@ -2,26 +2,20 @@ import { isMatching, match, P } from '../src';
 import { Equal, Expect, Fn } from '../src/types/helpers';
 
 describe('matcher protocol', () => {
-  type ExtractSomeValue<Input> = Input extends Some<infer V> ? V : never;
-  interface SomeNarrowFn extends Fn {
-    return: ExtractSomeValue<this['arg0']>;
+  type OptionValue<T> = T extends Some<infer V> ? V : never;
+  interface SomeNarrowFn<p extends P.Pattern<unknown> = never> extends Fn {
+    return: [p] extends [never]
+      ? Some<OptionValue<this['arg0']>>
+      : Some<P.narrow<OptionValue<this['arg0']>, p>>;
   }
-  interface Constant<T> extends Fn {
-    return: T;
-  }
+
   class Some<T> {
     constructor(private value: T) {}
-    static pattern<Input, const Pattern extends P.Pattern<Input>>(
-      pattern: Pattern
-    ) {
-      interface SomeNarrowFn extends Fn {
-        return: P.infer<Pattern>;
-      }
+    static pattern<input, pattern extends P.Pattern<OptionValue<input>>>(
+      pattern: pattern
+    ): P.Matchable<SomeNarrowFn<pattern>, input, pattern> {
       return {
-        [P.matcher](): P.Matcher<{
-          narrow: SomeNarrowFn;
-          select: Constant<never>;
-        }> {
+        [P.matcher](): P.Matcher<SomeNarrowFn<pattern>, input, pattern> {
           return {
             match: (input) => {
               if (input instanceof Some && isMatching(pattern, input)) {
@@ -31,12 +25,9 @@ describe('matcher protocol', () => {
             },
           };
         },
-      } as P.Matchable<{ narrow: SomeNarrowFn; select: Constant<never> }>;
+      };
     }
-    static [P.matcher](): P.Matcher<{
-      narrow: SomeNarrowFn;
-      select: Constant<never>;
-    }> {
+    static [P.matcher](): P.Matcher<SomeNarrowFn> {
       return {
         match: (input) => {
           if (input instanceof Some) {
@@ -55,10 +46,7 @@ describe('matcher protocol', () => {
     constructor() {
       this.coucou = 1;
     }
-    static [P.matcher](): P.Matcher<{
-      narrow: NoneNarrowFn;
-      select: Constant<never>;
-    }> {
+    static [P.matcher](): P.Matcher<NoneNarrowFn> {
       return {
         match: (input) => {
           return { matched: input instanceof None };
@@ -67,16 +55,25 @@ describe('matcher protocol', () => {
     }
   }
   type Option<T> = Some<T> | None;
+
   match<{ option: Option<number | string> }>({ option: new Some(12) }).with(
     { option: Some.pattern(10) },
     (value) => {
-      type t = Expect<Equal<typeof value, { option: 10 }>>;
+      type t = Expect<Equal<typeof value, { option: Some<10> }>>;
     }
   );
+
+  match<{ option: Option<number | string> }>({ option: new Some(12) }).with(
+    { option: Some.pattern(10) },
+    (value) => {
+      type t = Expect<Equal<typeof value, { option: Some<10> }>>;
+    }
+  );
+
   match<{ option: Option<number | string> }>({ option: new Some(12) }).with(
     { option: Some },
     (value) => {
-      type t = Expect<Equal<typeof value, { option: number | string }>>;
+      type t = Expect<Equal<typeof value, { option: Some<number | string> }>>;
     }
   );
   match<{ option: Option<number | string> }>({ option: new Some(12) }).with(
@@ -87,28 +84,32 @@ describe('matcher protocol', () => {
   );
   match<{ option: Option<number | string> }>({ option: new Some(12) })
     .with({ option: Some }, (value) => {
-      type t = Expect<Equal<typeof value, { option: number | string }>>;
+      type t = Expect<Equal<typeof value, { option: Some<number | string> }>>;
     })
     .with({ option: None }, (x) => 'none')
     .exhaustive();
+
   match<Option<number | string>>(new Some(12)).with(
     Some.pattern(10),
     (value) => {
-      type t = Expect<Equal<typeof value, 10>>;
+      type t = Expect<Equal<typeof value, Some<10>>>;
     }
   );
+
   match<Option<number | string>>(new Some(12)).with(
     Some.pattern(P.number),
     (value) => {
-      type t = Expect<Equal<typeof value, number>>;
+      type t = Expect<Equal<typeof value, Some<number>>>;
     }
   );
+
   match<Option<number | string>>(new Some(12)).with(None, (value) => {
     type t = Expect<Equal<typeof value, None>>;
   });
+
   match<Option<number | string>>(new Some(12))
     .with(Some, (value) => {
-      type t = Expect<Equal<typeof value, number | string>>;
+      type t = Expect<Equal<typeof value, Some<number | string>>>;
     })
     .with(None, () => '')
     .exhaustive();

@@ -31,7 +31,8 @@ export type Match<
   with<
     const p extends Pattern<i>,
     c,
-    value extends MatchedValue<i, InvertPattern<p, i>>
+    value extends MatchedValue<i, InvertPattern<p, i>>,
+    excluded = InvertPatternForExclude<p, value>
   >(
     /**
      * HACK: Using `IsNever<p>` here is a hack to
@@ -46,14 +47,12 @@ export type Match<
       selections: FindSelected<value, p>,
       value: value
     ) => PickReturnValue<o, c>
-  ): [InvertPatternForExclude<p, value>] extends [infer excluded]
-    ? Match<
-        Exclude<i, excluded>,
-        o,
-        [...handledCases, excluded],
-        Union<inferredOutput, c>
-      >
-    : never;
+  ): Match<
+    Exclude<i, excluded>,
+    o,
+    [...handledCases, excluded],
+    Union<inferredOutput, c>
+  >;
 
   with<
     const p1 extends Pattern<i>,
