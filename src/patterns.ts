@@ -59,7 +59,7 @@ export function optional<
   return {
     [matcher]() {
       return {
-        match: <I>(value: I | input) => {
+        match: <UnknownInput>(value: UnknownInput | input) => {
           let selections: Record<string, unknown[]> = {};
           const selector = (key: string, value: any) => {
             selections[key] = value;
@@ -113,7 +113,7 @@ export function array<
   return {
     [matcher]() {
       return {
-        match: <I>(value: I | input) => {
+        match: <UnknownInput>(value: UnknownInput | input) => {
           if (!Array.isArray(value)) return { matched: false };
 
           if (args.length === 0) return { matched: true };
@@ -172,7 +172,7 @@ export function set<
   return {
     [matcher]() {
       return {
-        match: <I>(value: I | input) => {
+        match: <UnknownInput>(value: UnknownInput | input) => {
           if (!(value instanceof Set)) return { matched: false };
 
           let selections: Record<string, unknown[]> = {};
@@ -236,7 +236,7 @@ export function map<
   return {
     [matcher]() {
       return {
-        match: <I>(value: I | input) => {
+        match: <UnknownInput>(value: UnknownInput | input) => {
           if (!(value instanceof Map)) return { matched: false };
 
           let selections: Record<string, unknown[]> = {};
@@ -346,7 +346,7 @@ export function union<
 >(...patterns: ps): OrP<input, ps> {
   return {
     [matcher]: () => ({
-      match: <I>(value: I | input) => {
+      match: <UnknownInput>(value: UnknownInput | input) => {
         let selections: Record<string, unknown[]> = {};
         const selector = (key: string, value: any) => {
           selections[key] = value;
@@ -384,7 +384,7 @@ export function not<input, const p extends Pattern<input> | UnknownPattern>(
 ): NotP<input, p> {
   return {
     [matcher]: () => ({
-      match: <I>(value: I | input) => ({
+      match: <UnknownInput>(value: UnknownInput | input) => ({
         matched: !matchPattern(pattern, value, () => {}),
       }),
       getSelectionKeys: () => [],
@@ -421,7 +421,7 @@ export function when<input, p extends (value: input) => unknown>(
 > {
   return {
     [matcher]: () => ({
-      match: <I>(value: I | input) => ({
+      match: <UnknownInput>(value: UnknownInput | input) => ({
         matched: Boolean(predicate(value as input)),
       }),
     }),

@@ -1,27 +1,26 @@
+import * as symbols from '../src/internals/symbols';
 import { isMatching, match, P } from '../src';
-import { DeepExclude } from '../src/types/DeepExclude';
-import { DistributeMatchingUnions } from '../src/types/DistributeUnions';
-import { IsMatching } from '../src/types/IsMatching';
 import { Equal, Expect, Fn } from '../src/types/helpers';
 
 describe('matcher protocol', () => {
-  type OptionValue<T> = T extends Some<infer V> ? V : never;
+  type SomeValue<T> = T extends Some<infer V> ? V : never;
+
   interface SomeNarrowFn<p extends P.Pattern<unknown> = never> extends Fn {
     return: [p] extends [never]
-      ? Some<OptionValue<this['arg0']>>
-      : Some<P.narrow<OptionValue<this['arg0']>, p>>;
+      ? Some<SomeValue<this['arg0']>>
+      : Some<P.narrow<SomeValue<this['arg0']>, p>>;
   }
 
   class Some<T> {
-    constructor(private value: T) {}
-    static pattern<input, pattern extends P.Pattern<OptionValue<input>>>(
+    constructor(public value: T) {}
+    static pattern<input, pattern extends P.Pattern<SomeValue<input>>>(
       pattern: pattern
     ) {
       return {
         [P.matcher](): P.Matcher<SomeNarrowFn<pattern>, input, pattern> {
           return {
             match: (input) => {
-              if (input instanceof Some && isMatching(pattern, input)) {
+              if (input instanceof Some && isMatching(pattern, input.value)) {
                 return { matched: true, value: input.value };
               }
               return { matched: false };
@@ -59,87 +58,69 @@ describe('matcher protocol', () => {
   }
   type Option<T> = Some<T> | None;
 
-  match<{ option: Option<number | string> }>({ option: new Some(12) }).with(
-    { option: Some.pattern(10) },
-    (value) => {
-      type t = Expect<Equal<typeof value, { option: Some<10> }>>;
-    }
-  );
-
-  match<{ option: Option<number | string> }>({ option: new Some(12) }).with(
-    { option: Some.pattern(10) },
-    (value) => {
-      type t = Expect<Equal<typeof value, { option: Some<10> }>>;
-    }
-  );
-
-  match<{ option: Option<number | string> }>({ option: new Some(12) }).with(
-    { option: Some },
-    (value) => {
-      type t = Expect<Equal<typeof value, { option: Some<number | string> }>>;
-    }
-  );
-  match<{ option: Option<number | string> }>({ option: new Some(12) }).with(
-    { option: None },
-    (value) => {
-      type t = Expect<Equal<typeof value, { option: None }>>;
-    }
-  );
-
-  type test1 = DeepExclude<
-    //   ^?
-    { option: Option<number | string> },
-    { option: Some<number | string> }
-  >;
-
-  type test2 = DistributeMatchingUnions<
-    //   ^?
-    { option: Option<number | string> },
-    { option: Some<number | string> }
-  >;
-
-  // ❌ should be true. Need to check.
-  type test3 = IsMatching<
-    //   ^?
-    { option: Option<number | string> },
-    { option: Some<number | string> }
-  >;
-
-  type test4 = IsMatching<
-    //   ^?
-    Some<number | string>,
-    Some<number | string>
-  >;
-
-  match<{ option: Option<number | string> }>({ option: new Some(12) })
-    .with({ option: Some }, (value) => {
-      type t = Expect<Equal<typeof value, { option: Some<number | string> }>>;
+  it('should support taking a sub pattern', () => {
+    const res = match<{ option: Option<number | string> }>({
+      option: new Some(12),
     })
-    .with({ option: None }, (x) => 'none')
-    .exhaustive();
+      .with({ option: Some.pattern(7) }, (value) => {
+        type t = Expect<Equal<typeof value, { option: Some<7> }>>;
+        return value.option.value;
+      })
+      .with({ option: Some.pattern(12) }, (value) => {
+        type t = Expect<Equal<typeof value, { option: Some<12> }>>;
+        return value.option.value;
+      })
+      .with({ option: None }, () => '')
+      .with({ option: Some }, () => '')
+      .exhaustive();
 
-  match<Option<number | string>>(new Some(12)).with(
-    Some.pattern(10),
-    (value) => {
-      type t = Expect<Equal<typeof value, Some<10>>>;
-    }
-  );
-
-  match<Option<number | string>>(new Some(12)).with(
-    Some.pattern(P.number),
-    (value) => {
-      type t = Expect<Equal<typeof value, Some<number>>>;
-    }
-  );
-
-  match<Option<number | string>>(new Some(12)).with(None, (value) => {
-    type t = Expect<Equal<typeof value, None>>;
+    expect(res).toBe(12);
   });
 
-  match<Option<number | string>>(new Some(12))
-    .with(Some, (value) => {
-      type t = Expect<Equal<typeof value, Some<number | string>>>;
+  it('should support nesting', () => {
+    const res = match<{ option: Option<number | string> }>({
+      option: new Some(12),
     })
-    .with(None, () => '')
-    .exhaustive();
+      .with({ option: Some }, (x) => {
+        type t = Expect<Equal<typeof x, { option: Some<number | string> }>>;
+        return `Some ${x.option.value}`;
+      })
+      .with({ option: None }, (x) => {
+        type t = Expect<Equal<typeof x, { option: None }>>;
+        return 'None';
+      })
+      .exhaustive();
+
+    expect(res).toBe(`Some 12`);
+  });
+
+  it('it should work without nesting too', () => {
+    expect(
+      match<Option<number | string>>(new Some(12))
+        .with(Some.pattern(10), (some) => {
+          type t = Expect<Equal<typeof some, Some<10>>>;
+          return `10`;
+        })
+        .with(Some.pattern(12), (some) => `12`)
+        .with(Some.pattern(P.any), (some) => `any`)
+        .with(None, () => 0)
+        .exhaustive()
+    ).toBe('12');
+
+    match<Option<number | string>>(new Some(12)).with(
+      Some.pattern(P.number),
+      (some) => {
+        type t = Expect<Equal<typeof some, Some<number>>>;
+      }
+    );
+
+    match<Option<number | string>>(new Some(12))
+      .with(Some, (some) => {
+        type t = Expect<Equal<typeof some, Some<number | string>>>;
+      })
+      .with(None, (none) => {
+        type t = Expect<Equal<typeof none, None>>;
+      })
+      .exhaustive();
+  });
 });
