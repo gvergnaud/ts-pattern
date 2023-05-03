@@ -63,6 +63,7 @@ describe('IsMatching', () => {
 
     it('Object', () => {
       type cases = [
+        Expect<Equal<IsMatching<{}, {}>, true>>,
         Expect<
           Equal<
             IsMatching<{ type: 'a'; color: 'yellow' | 'green' }, { type: 'a' }>,

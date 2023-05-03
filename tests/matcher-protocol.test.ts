@@ -1,4 +1,7 @@
 import { isMatching, match, P } from '../src';
+import { DeepExclude } from '../src/types/DeepExclude';
+import { DistributeMatchingUnions } from '../src/types/DistributeUnions';
+import { IsMatching } from '../src/types/IsMatching';
 import { Equal, Expect, Fn } from '../src/types/helpers';
 
 describe('matcher protocol', () => {
@@ -13,7 +16,7 @@ describe('matcher protocol', () => {
     constructor(private value: T) {}
     static pattern<input, pattern extends P.Pattern<OptionValue<input>>>(
       pattern: pattern
-    ): P.Matchable<SomeNarrowFn<pattern>, input, pattern> {
+    ) {
       return {
         [P.matcher](): P.Matcher<SomeNarrowFn<pattern>, input, pattern> {
           return {
@@ -82,6 +85,32 @@ describe('matcher protocol', () => {
       type t = Expect<Equal<typeof value, { option: None }>>;
     }
   );
+
+  type test1 = DeepExclude<
+    //   ^?
+    { option: Option<number | string> },
+    { option: Some<number | string> }
+  >;
+
+  type test2 = DistributeMatchingUnions<
+    //   ^?
+    { option: Option<number | string> },
+    { option: Some<number | string> }
+  >;
+
+  // ❌ should be true. Need to check.
+  type test3 = IsMatching<
+    //   ^?
+    { option: Option<number | string> },
+    { option: Some<number | string> }
+  >;
+
+  type test4 = IsMatching<
+    //   ^?
+    Some<number | string>,
+    Some<number | string>
+  >;
+
   match<{ option: Option<number | string> }>({ option: new Some(12) })
     .with({ option: Some }, (value) => {
       type t = Expect<Equal<typeof value, { option: Some<number | string> }>>;
