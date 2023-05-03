@@ -1,6 +1,7 @@
 import * as symbols from '../src/internals/symbols';
 import { isMatching, match, P } from '../src';
 import { Equal, Expect, Fn } from '../src/types/helpers';
+import { UnknownPattern } from '../src/types/Pattern';
 
 describe('matcher protocol', () => {
   type SomeValue<T> = T extends Some<infer V> ? V : never;
@@ -11,31 +12,26 @@ describe('matcher protocol', () => {
       : Some<P.narrow<SomeValue<this['arg0']>, p>>;
   }
 
-  class Some<T> {
+  class Some<const T> {
     constructor(public value: T) {}
-    static pattern<input, pattern extends P.Pattern<SomeValue<input>>>(
-      pattern: pattern
-    ) {
+
+    static [P.matcher](): P.Matcher<SomeNarrowFn> {
       return {
-        [P.matcher](): P.Matcher<SomeNarrowFn<pattern>, input, pattern> {
+        match: (input) => {
           return {
-            match: (input) => {
-              if (input instanceof Some && isMatching(pattern, input.value)) {
-                return { matched: true, value: input.value };
-              }
-              return { matched: false };
-            },
+            matched: input instanceof Some,
           };
         },
       };
     }
-    static [P.matcher](): P.Matcher<SomeNarrowFn> {
+
+    [P.matcher](): P.Matcher<SomeNarrowFn<Extract<T, UnknownPattern>>> {
       return {
         match: (input) => {
-          if (input instanceof Some) {
-            return { matched: true, value: input.value };
-          }
-          return { matched: false };
+          return {
+            matched:
+              input instanceof Some && isMatching<any>(this.value, input.value),
+          };
         },
       };
     }
@@ -62,11 +58,11 @@ describe('matcher protocol', () => {
     const res = match<{ option: Option<number | string> }>({
       option: new Some(12),
     })
-      .with({ option: Some.pattern(7) }, (value) => {
+      .with({ option: new Some(7) }, (value) => {
         type t = Expect<Equal<typeof value, { option: Some<7> }>>;
         return value.option.value;
       })
-      .with({ option: Some.pattern(12) }, (value) => {
+      .with({ option: new Some(12) }, (value) => {
         type t = Expect<Equal<typeof value, { option: Some<12> }>>;
         return value.option.value;
       })
@@ -75,6 +71,13 @@ describe('matcher protocol', () => {
       .exhaustive();
 
     expect(res).toBe(12);
+
+    match<Option<number | string>>(new Some(12)).with(
+      new Some(P.number),
+      (some) => {
+        type t = Expect<Equal<typeof some, Some<number>>>;
+      }
+    );
   });
 
   it('should support nesting', () => {
@@ -97,18 +100,18 @@ describe('matcher protocol', () => {
   it('it should work without nesting too', () => {
     expect(
       match<Option<number | string>>(new Some(12))
-        .with(Some.pattern(10), (some) => {
+        .with(new Some(10), (some) => {
           type t = Expect<Equal<typeof some, Some<10>>>;
           return `10`;
         })
-        .with(Some.pattern(12), (some) => `12`)
-        .with(Some.pattern(P.any), (some) => `any`)
+        .with(new Some(12), (some) => `12`)
+        .with(new Some(P.any), (some) => `any`)
         .with(None, () => 0)
         .exhaustive()
     ).toBe('12');
 
     match<Option<number | string>>(new Some(12)).with(
-      Some.pattern(P.number),
+      new Some(P.number),
       (some) => {
         type t = Expect<Equal<typeof some, Some<number>>>;
       }
