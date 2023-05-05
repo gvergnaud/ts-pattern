@@ -360,6 +360,16 @@ function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
     val instanceof classConstructor;
 }
 
+function doesStartWith<T extends string>(suffix: T) {
+  return (val: unknown): val is `${T}${string}` =>
+    typeof val === 'string' && val.startsWith(suffix);
+}
+
+function doesEndWith<T extends string>(suffix: T) {
+  return (val: unknown): val is `${string}${T}` =>
+    typeof val === 'string' && val.endsWith(suffix);
+}
+
 /**
  * `P.any` is a wildcard pattern, matching **any value**.
  *
@@ -458,6 +468,34 @@ export function instanceOf<T extends AnyConstructor>(
   classConstructor: T
 ): GuardP<unknown, InstanceType<T>> {
   return when(isInstanceOf(classConstructor));
+}
+
+/**
+ * `P.startsWith(SomeString)` is a pattern matching strings that start with the given prefix.
+ *
+ * [Read documentation for `P.startsWith` on GitHub](https://github.com/gvergnaud/ts-pattern#PstartsWith-patterns)
+ *
+ *  @example
+ *   .with(P.startsWith('2023-'), () => 'will match on strings starting with 2023-')
+ */
+export function startsWith<T extends string>(
+  prefix: T
+): GuardP<unknown, `${T}${string}`> {
+  return when(doesStartWith(prefix));
+}
+
+/**
+ * `P.endsWith(SomeString)` is a pattern matching strings that end with the given suffix.
+ *
+ * [Read documentation for `P.endsWith` on GitHub](https://github.com/gvergnaud/ts-pattern#PendsWith-patterns)
+ *
+ *  @example
+ *   .with(P.endsWith('.jpg'), () => 'will match on strings ending with .jpg')
+ */
+export function endsWith<T extends string>(
+  suffix: T
+): GuardP<unknown, `${string}${T}`> {
+  return when(doesEndWith(suffix));
 }
 
 /**
