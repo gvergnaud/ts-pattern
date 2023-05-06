@@ -1,4 +1,3 @@
-import * as symbols from '../src/internals/symbols';
 import { isMatching, match, P } from '../src';
 import { Equal, Expect, Fn } from '../src/types/helpers';
 import { UnknownPattern } from '../src/types/Pattern';
