@@ -8,15 +8,15 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "default": "./dist/index.js"
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.cjs"
     },
     "./package.json": "./package.json"
   },
   "types": "dist/index.d.ts",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.mjs",
-  "unpkg": "dist/index.umd.js",
+  "unpkg": "dist/index.umd.cjs",
   "scripts": {
     "build": "rimraf dist && microbundle",
     "dev": "microbundle watch",
