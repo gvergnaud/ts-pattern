@@ -81,13 +81,13 @@ type UnknownMatcher = Matcher<unknown, unknown, any, any>;
 export type CustomP<input, pattern, narrowFn extends Fn> = Matcher<
   input,
   pattern,
+  //  👆
+  // for the input type to be instantiated correctly
+  // on subpatterns, it has to be passed through.
   'custom',
   None,
   narrowFn
 >;
-//                    👆
-// for the input type to be instantiated correctly
-// on subpatterns, it has to be passed through.
 
 export type ArrayP<input, p> = Matcher<input, p, 'array'>;
 
