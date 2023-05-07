@@ -6,9 +6,15 @@
   "source": "src/index.ts",
   "exports": {
     ".": {
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs",
       "default": "./dist/index.mjs"
     },
     "./package.json": "./package.json"
@@ -18,7 +24,7 @@
   "module": "dist/index.mjs",
   "unpkg": "dist/index.umd.cjs",
   "scripts": {
-    "build": "rimraf dist && microbundle",
+    "build": "rimraf dist && microbundle && sh ./scripts/generate-cts.sh",
     "dev": "microbundle watch",
     "prepublishOnly": "npm run test && npm run build",
     "test": "jest",
