@@ -133,9 +133,7 @@ type InvertPatternInternal<p, input> = 0 extends 1 & p
       and: ReduceIntersection<Extract<subpattern, readonly any[]>, input>;
       or: ReduceUnion<Extract<subpattern, readonly any[]>, input>;
       default: [subpattern] extends [never] ? input : subpattern;
-      custom: Override<
-        narrowFn extends Fn ? Apply<narrowFn, [input, subpattern]> : never
-      >;
+      custom: Override<narrowFn extends Fn ? Apply<narrowFn, input> : never>;
     }[matcherType]
   : p extends Primitives
   ? p
@@ -344,7 +342,7 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
         >;
         default: excluded;
         custom: excluded extends infer narrowFn extends Fn
-          ? Apply<narrowFn, [i, subpattern]>
+          ? Apply<narrowFn, i>
           : never;
       }[matcherType]
     : p extends readonly any[]

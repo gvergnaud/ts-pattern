@@ -6,9 +6,9 @@ describe('matcher protocol', () => {
   type SomeValue<T> = T extends Some<infer V> ? V : never;
 
   interface SomeNarrowFn<p extends P.Pattern<unknown> = never> extends Fn {
-    return: [p] extends [never]
-      ? Some<SomeValue<this['arg0']>>
-      : Some<P.narrow<SomeValue<this['arg0']>, p>>;
+    output: [p] extends [never]
+      ? Some<SomeValue<this['input']>>
+      : Some<P.narrow<SomeValue<this['input']>, p>>;
   }
 
   class Some<const T> {
@@ -36,7 +36,7 @@ describe('matcher protocol', () => {
     }
   }
   interface NoneNarrowFn extends Fn {
-    return: None;
+    output: None;
   }
   class None {
     coucou: number;
