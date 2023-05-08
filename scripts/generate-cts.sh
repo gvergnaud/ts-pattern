@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# TypeScript projects using `moduleResolution: nodenext` expect
+# explicit extensions to be included in declaration files,
+# and to have a different set of declarations for commonjs
+# modules (.d.cts) and ES modules (.d.ts). `tsc` unfortunately
+# doesn't provide a way to generate these declarations files,
+# so I'm manually creating them in this script.
+
 files=$(find dist -type f -name "*.d.ts");
 
 # Loop through the declaration files
