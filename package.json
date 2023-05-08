@@ -12,17 +12,17 @@
       },
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/index.mjs"
+        "default": "./dist/index.js"
       },
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.mjs"
+      "default": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },
   "types": "dist/index.d.ts",
   "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "unpkg": "dist/index.umd.cjs",
+  "module": "dist/index.js",
+  "unpkg": "dist/index.umd.js",
   "scripts": {
     "build": "rimraf dist && microbundle && sh ./scripts/generate-cts.sh",
     "dev": "microbundle watch",
