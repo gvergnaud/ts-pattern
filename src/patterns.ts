@@ -593,7 +593,57 @@ export const any = when(isUnknown);
 export const _ = any;
 
 /**
- * `P.string` is a wildcard pattern matching any **string**.
+ * `P.string.startsWith(start)` is a pattern, matching **strings** starting with `start`.
+ *
+ * [Read documentation for `P.string.startsWith` on GitHub](https://github.com/gvergnaud/ts-pattern#PstringstartsWith)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.string.startsWith('A'), () => 'value starts with an A')
+ */
+
+const startsWith = <input, const start extends string>(
+  start: start
+): GuardP<input, `${start}${string}`> =>
+  when((value) => isString(value) && value.startsWith(start));
+
+/**
+ * `P.string.endsWith(end)` is a pattern, matching **strings** ending with `end`.
+ *
+ * [Read documentation for `P.string.endsWith` on GitHub](https://github.com/gvergnaud/ts-pattern#PstringendsWith)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.string.endsWith('!'), () => 'value ends with an !')
+ */
+const endsWith = <input, const end extends string>(
+  end: end
+): GuardP<input, `${string}${end}`> =>
+  when((value) => isString(value) && value.endsWith(end));
+
+/**
+ * `P.string.includes(substr)` is a pattern, matching **strings** containing `substr`.
+ *
+ * [Read documentation for `P.string.includes` on GitHub](https://github.com/gvergnaud/ts-pattern#Pstringincludes)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.string.includes('http'), () => 'value contains http')
+ */
+const includes = <input, const substr extends string>(
+  substr: substr
+): GuardExcludeP<input, string, never> =>
+  when((value) => isString(value) && value.includes(substr));
+
+const assignStringMethods = <p extends GuardP<any, any>>(pattern: p) =>
+  Object.assign(pattern, {
+    startsWith,
+    endsWith,
+    includes,
+  });
+
+/**
+ * `P.string` is a wildcard pattern, matching any **string**.
  *
  * [Read documentation for `P.string` on GitHub](https://github.com/gvergnaud/ts-pattern#Pstring-wildcard)
  *
@@ -601,11 +651,10 @@ export const _ = any;
  *  match(value)
  *   .with(P.string, () => 'will match on strings')
  */
-
-export const string = when(isString);
+export const string = assignStringMethods(when(isString));
 
 /**
- * `P.number` is a wildcard pattern matching any **number**.
+ * `P.number` is a wildcard pattern, matching any **number**.
  *
  * [Read documentation for `P.number` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumber-wildcard)
  *
@@ -616,7 +665,7 @@ export const string = when(isString);
 export const number = when(isNumber);
 
 /**
- * `P.boolean` is a wildcard pattern matching any **boolean**.
+ * `P.boolean` is a wildcard pattern, matching any **boolean**.
  *
  * [Read documentation for `P.boolean` on GitHub](https://github.com/gvergnaud/ts-pattern#boolean-wildcard)
  *
@@ -626,7 +675,7 @@ export const number = when(isNumber);
 export const boolean = when(isBoolean);
 
 /**
- * `P.bigint` is a wildcard pattern matching any **bigint**.
+ * `P.bigint` is a wildcard pattern, matching any **bigint**.
  *
  * [Read documentation for `P.bigint` on GitHub](https://github.com/gvergnaud/ts-pattern#bigint-wildcard)
  *
@@ -636,7 +685,7 @@ export const boolean = when(isBoolean);
 export const bigint = when(isBigInt);
 
 /**
- * `P.symbol` is a wildcard pattern matching any **symbol**.
+ * `P.symbol` is a wildcard pattern, matching any **symbol**.
  *
  * [Read documentation for `P.symbol` on GitHub](https://github.com/gvergnaud/ts-pattern#symbol-wildcard)
  *
@@ -646,7 +695,7 @@ export const bigint = when(isBigInt);
 export const symbol = when(isSymbol);
 
 /**
- * `P.nullish` is a wildcard pattern matching **null** or **undefined**.
+ * `P.nullish` is a wildcard pattern, matching **null** or **undefined**.
  *
  * [Read documentation for `P.nullish` on GitHub](https://github.com/gvergnaud/ts-pattern#nullish-wildcard)
  *

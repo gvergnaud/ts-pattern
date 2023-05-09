@@ -1,10 +1,58 @@
+import { P, match } from '../src';
+import { Equal, Expect } from '../src/types/helpers';
+
 describe('chainable methods', () => {
   describe('string', () => {
-    it(`P.string.includes('str')`, () => {});
-    it(`P.string.startsWith('str')`, () => {});
-    it(`P.string.endsWith('str')`, () => {});
+    it(`P.string.includes('str')`, () => {
+      const f = (input: string | number) =>
+        match(input)
+          .with(P.string.includes('!!'), (value) => {
+            type t = Expect<Equal<typeof value, string>>;
+            return 'includes !!';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | number>>;
+            return 'something else';
+          });
+
+      expect(f('hello!!')).toBe('includes !!');
+      expect(f('nope')).toBe('something else');
+    });
+
+    it(`P.string.startsWith('str')`, () => {
+      const f = (input: string | number) =>
+        match(input)
+          .with(P.string.startsWith('hello '), (value) => {
+            type t = Expect<Equal<typeof value, `hello ${string}`>>;
+            return 'starts with hello';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | number>>;
+            return 'something else';
+          });
+
+      expect(f('hello gabriel')).toBe('starts with hello');
+      expect(f('gabriel')).toBe('something else');
+    });
+
+    it(`P.string.endsWith('str')`, () => {
+      const f = (input: string | number) =>
+        match(input)
+          .with(P.string.endsWith('!!'), (value) => {
+            type t = Expect<Equal<typeof value, `${string}!!`>>;
+            return 'ends with !!';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | number>>;
+            return 'something else';
+          });
+
+      expect(f('hello!!')).toBe('ends with !!');
+      expect(f('nope')).toBe('something else');
+    });
     it(`P.string.regex('[a-z]+')`, () => {});
   });
+
   describe('number', () => {
     it(`P.number.between(1, 10)`, () => {});
     it(`P.number.lt(12)`, () => {});
