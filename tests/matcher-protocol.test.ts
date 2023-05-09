@@ -1,20 +1,17 @@
 import { isMatching, match, P } from '../src';
-import { Equal, Expect, Fn } from '../src/types/helpers';
-import { UnknownPattern } from '../src/types/Pattern';
+import { Equal, Expect } from '../src/types/helpers';
 
 describe('matcher protocol', () => {
   type SomeValue<T> = T extends Some<infer V> ? V : never;
 
-  interface SomeNarrowFn<p extends P.Pattern<unknown> = never> extends Fn {
-    output: [p] extends [never]
-      ? Some<SomeValue<this['input']>>
-      : Some<P.narrow<SomeValue<this['input']>, p>>;
+  interface SomeNarrowFn extends P.unstable_Fn {
+    output: Some<SomeValue<this['input']>>;
   }
 
   class Some<const T> {
     constructor(public value: T) {}
 
-    static [P.matcher](): P.Matcher<SomeNarrowFn> {
+    static [P.matcher](): P.unstable_Matcher<SomeNarrowFn> {
       return {
         match: (input) => {
           return {
@@ -24,7 +21,9 @@ describe('matcher protocol', () => {
       };
     }
 
-    [P.matcher](): P.Matcher<SomeNarrowFn<Extract<T, UnknownPattern>>> {
+    [P.matcher](): P.unstable_Matcher<
+      Some<T extends P.Pattern<unknown> ? P.infer<T> : T>
+    > {
       return {
         match: (input) => {
           return {
@@ -35,15 +34,13 @@ describe('matcher protocol', () => {
       };
     }
   }
-  interface NoneNarrowFn extends Fn {
-    output: None;
-  }
+
   class None {
     coucou: number;
     constructor() {
       this.coucou = 1;
     }
-    static [P.matcher](): P.Matcher<NoneNarrowFn> {
+    static [P.matcher](): P.unstable_Matcher<None> {
       return {
         match: (input) => {
           return { matched: input instanceof None };

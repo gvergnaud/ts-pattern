@@ -21,9 +21,50 @@ import {
   CustomP,
 } from './types/Pattern';
 
-export { Pattern };
+export { Pattern, Fn as unstable_Fn };
 
 export { matcher };
+
+/**
+ * @experimental
+ * A `Matchable` is an object implementing
+ * the Matcher Protocol. It must have a `[P.matcher]: P.Matcher<NarrowFn>`
+ * key, which defines how this object should be matched by TS-Pattern.
+ *
+ * Note that this api is unstable.
+ *
+ * @example
+ * ```ts
+ * class Some<T> implements P.unstable_Matchable {
+ *  [P.matcher](): P.unstable_Matcher<Some<T>>
+ * }
+ * ```
+ */
+export type unstable_Matchable<
+  narrowedOrFn,
+  input = unknown,
+  pattern = never
+> = CustomP<input, pattern, narrowedOrFn>;
+
+/**
+ * @experimental
+ * A `Matcher` is an object with `match` function, which
+ * defines how this object should be matched by TS-Pattern.
+ *
+ * Note that this api is unstable.
+ *
+ * @example
+ * ```ts
+ * class Some<T> implements P.unstable_Matchable {
+ *  [P.matcher](): P.unstable_Matcher<Some<T>>
+ * }
+ * ```
+ */
+export type unstable_Matcher<
+  narrowedOrFn,
+  input = unknown,
+  pattern = never
+> = ReturnType<CustomP<input, pattern, narrowedOrFn>[matcher]>;
 
 /**
  * `P.infer<typeof somePattern>` will return the type of the value
@@ -682,15 +723,3 @@ export function typed<input>(): {
     when: when as any,
   };
 }
-
-export type Matchable<
-  narrowFn extends Fn,
-  input = unknown,
-  pattern = never
-> = CustomP<input, pattern, narrowFn>;
-
-export type Matcher<
-  narrowFn extends Fn,
-  input = unknown,
-  pattern = never
-> = ReturnType<CustomP<input, pattern, narrowFn>[matcher]>;

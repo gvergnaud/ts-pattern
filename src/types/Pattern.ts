@@ -78,7 +78,7 @@ export type AnyMatcher = Matcher<any, any, any, any, any>;
 
 type UnknownMatcher = Matcher<unknown, unknown, any, any>;
 
-export type CustomP<input, pattern, narrowFn extends Fn> = Matcher<
+export type CustomP<input, pattern, narrowedOrFn> = Matcher<
   input,
   pattern,
   //  👆
@@ -86,7 +86,7 @@ export type CustomP<input, pattern, narrowFn extends Fn> = Matcher<
   // on subpatterns, it has to be passed through.
   'custom',
   None,
-  narrowFn
+  narrowedOrFn
 >;
 
 export type ArrayP<input, p> = Matcher<input, p, 'array'>;
