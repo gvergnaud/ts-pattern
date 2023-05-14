@@ -2,7 +2,7 @@ import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers';
 import * as symbols from './internals/symbols';
 import { matcher } from './internals/symbols';
 import { ExtractPreciseValue } from './types/ExtractPreciseValue';
-import { Fn, GuardFunction } from './types/helpers';
+import { Call, Fn, GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
   Pattern,
@@ -84,20 +84,80 @@ export type narrow<i, p extends Pattern<any>> = ExtractPreciseValue<
   InvertPattern<p, i>
 >;
 
-type Chainable<p> = p & {
-  optional<input>(): Chainable<OptionalP<input, p>>;
-  and<input, p2 extends Pattern<input>>(
-    pattern: p2
-  ): Chainable<AndP<input, [p, p2]>>;
-  or<input, p2 extends Pattern<input>>(
-    pattern: p2
-  ): Chainable<OrP<input, [p, p2]>>;
-  select<input>(): Chainable<SelectP<symbols.anonymousSelectKey, input, p>>;
-  select<input, k extends string>(
-    key: k,
-    pattern: p
-  ): Chainable<SelectP<k, input, p>>;
-};
+type Chainable<p, omitted extends string = never> = p &
+  Omit<
+    {
+      /**
+       * `P.optional(subpattern)` takes a sub pattern and returns a pattern which matches if the
+       * key is undefined or if it is defined and the sub pattern matches its value.
+       *
+       * [Read documentation for `P.optional` on GitHub](https://github.com/gvergnaud/ts-pattern#Poptional-patterns)
+       *
+       * @example
+       *  match(value)
+       *   .with({ greeting: P.optional('Hello') }, () => 'will match { greeting?: "Hello" }')
+       */
+      optional<input>(): Chainable<OptionalP<input, p>, omitted | 'optional'>;
+      /**
+       * `P.intersection(...patterns)` returns a pattern which matches
+       * only if **every** patterns provided in parameter match the input.
+       *
+       * [Read documentation for `P.intersection` on GitHub](https://github.com/gvergnaud/ts-pattern#Pintersection-patterns)
+       *
+       * @example
+       *  match(value)
+       *   .with(
+       *     {
+       *       user: P.intersection(
+       *         { firstname: P.string },
+       *         { lastname: P.string },
+       *         { age: P.when(age => age > 21) }
+       *       )
+       *     },
+       *     ({ user }) => 'will match { firstname: string, lastname: string, age: number } if age > 21'
+       *   )
+       */
+      and<input, p2 extends Pattern<input>>(
+        pattern: p2
+      ): Chainable<AndP<input, [p, p2]>, omitted>;
+      /**
+       * `P.union(...patterns)` returns a pattern which matches
+       * if **at least one** of the patterns provided in parameter match the input.
+       *
+       * [Read documentation for `P.union` on GitHub](https://github.com/gvergnaud/ts-pattern#Punion-patterns)
+       *
+       * @example
+       *  match(value)
+       *   .with(
+       *     { type: P.union('a', 'b', 'c') },
+       *     ({ user }) => 'will match { type: "a" | "b" | "c" }'
+       *   )
+       */
+      or<input, p2 extends Pattern<input>>(
+        pattern: p2
+      ): Chainable<OrP<input, [p, p2]>, omitted>;
+      /**
+       * `P.select()` is a pattern which will always match,
+       * and will inject the selected piece of input in the handler function.
+       *
+       * [Read documentation for `P.select` on GitHub](https://github.com/gvergnaud/ts-pattern#Pselect-patterns)
+       *
+       * @example
+       *  match<{ age: number }>(value)
+       *   .with({ age: P.select() }, (age) => 'age: number'
+       *   )
+       */
+      select<input>(): Chainable<
+        SelectP<symbols.anonymousSelectKey, input, p>,
+        omitted | 'select'
+      >;
+      select<input, k extends string>(
+        key: k,
+        pattern: p
+      ): Chainable<SelectP<k, input, p>, omitted | 'select'>;
+    },
+    omitted
+  >;
 
 const chainable = <p extends Matcher<any, any, any, any, any>>(
   pattern: p
@@ -116,15 +176,15 @@ const chainable = <p extends Matcher<any, any, any, any, any>>(
  * key is undefined or if it is defined and the sub pattern matches its value.
  *
  * [Read documentation for `P.optional` on GitHub](https://github.com/gvergnaud/ts-pattern#Poptional-patterns)
-
-* @example
+ *
+ * @example
  *  match(value)
  *   .with({ greeting: P.optional('Hello') }, () => 'will match { greeting?: "Hello" }')
  */
 export function optional<
   input,
   const p extends unknown extends input ? UnknownPattern : Pattern<input>
->(pattern: p): Chainable<OptionalP<input, p>> {
+>(pattern: p): Chainable<OptionalP<input, p>, 'optional'> {
   return chainable({
     [matcher]() {
       return {
@@ -515,7 +575,7 @@ export function when<input, p extends (value: input) => unknown>(
  *   .with({ age: P.select() }, (age) => 'age: number'
  *   )
  */
-export function select(): Chainable<AnonymousSelectP>;
+export function select(): Chainable<AnonymousSelectP, 'select'>;
 export function select<
   input,
   const patternOrKey extends
@@ -524,16 +584,19 @@ export function select<
 >(
   patternOrKey: patternOrKey
 ): patternOrKey extends string
-  ? Chainable<SelectP<patternOrKey>>
-  : Chainable<SelectP<symbols.anonymousSelectKey, input, patternOrKey>>;
+  ? Chainable<SelectP<patternOrKey, 'select'>>
+  : Chainable<
+      SelectP<symbols.anonymousSelectKey, input, patternOrKey>,
+      'select'
+    >;
 export function select<
   input,
   const p extends unknown extends input ? UnknownPattern : Pattern<input>,
   const k extends string
->(key: k, pattern: p): Chainable<SelectP<k, input, p>>;
+>(key: k, pattern: p): Chainable<SelectP<k, input, p>, 'select'>;
 export function select(
   ...args: [keyOrPattern?: unknown | string, pattern?: unknown]
-): Chainable<SelectP<string>> {
+): Chainable<SelectP<string>, 'select'> {
   const key: string | undefined =
     typeof args[0] === 'string' ? args[0] : undefined;
   const pattern: unknown =
@@ -684,13 +747,90 @@ const regex = <input, const expr extends string | RegExp>(
 ): Chainable<GuardExcludeP<input, string, never>> =>
   when((value) => isString(value) && Boolean(value.match(expr)));
 
-const assignStringMethods = <p extends GuardP<any, any>>(pattern: p) =>
+type MaybeAnd<omitted, input, p1, p2> = [omitted] extends [never]
+  ? p2
+  : AndP<input, [p1, p2]>;
+
+type StringChainable<
+  p extends Matcher<any, any, any, any, any>,
+  omitted extends string = never
+> = Chainable<p, omitted> &
+  Omit<
+    {
+      /**
+       * `P.string.startsWith(start)` is a pattern, matching **strings** starting with `start`.
+       *
+       * [Read documentation for `P.string.startsWith` on GitHub](https://github.com/gvergnaud/ts-pattern#PstringstartsWith)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.string.startsWith('A'), () => 'value starts with an A')
+       */
+      startsWith<input, const start extends string>(
+        start: start
+      ): StringChainable<
+        MaybeAnd<omitted, input, p, GuardP<input, `${start}${string}`>>,
+        omitted | 'startsWith'
+      >;
+      /**
+       * `P.string.endsWith(end)` is a pattern, matching **strings** ending with `end`.
+       *
+       * [Read documentation for `P.string.endsWith` on GitHub](https://github.com/gvergnaud/ts-pattern#PstringendsWith)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.string.endsWith('!'), () => 'value ends with an !')
+       */
+      endsWith<input, const end extends string>(
+        end: end
+      ): StringChainable<
+        MaybeAnd<omitted, input, p, GuardP<input, `${string}${end}`>>,
+        omitted | 'endsWith'
+      >;
+      /**
+       * `P.string.includes(substr)` is a pattern, matching **strings** containing `substr`.
+       *
+       * [Read documentation for `P.string.includes` on GitHub](https://github.com/gvergnaud/ts-pattern#Pstringincludes)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.string.includes('http'), () => 'value contains http')
+       */
+      includes<input, const substr extends string>(
+        substr: substr
+      ): StringChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, string, never>>,
+        omitted
+      >;
+      /**
+       * `P.string.regex(expr)` is a pattern, matching **strings** that `expr` regular expression.
+       *
+       * [Read documentation for `P.string.regex` on GitHub](https://github.com/gvergnaud/ts-pattern#Pstringregex)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.string.regex(/^https?:\/\//), () => 'url')
+       */
+      regex<input, const expr extends string | RegExp>(
+        expr: expr
+      ): StringChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, string, never>>,
+        omitted
+      >;
+    },
+    omitted
+  >;
+
+const stringChainable = <p extends Matcher<any, any, any, any, any>>(
+  pattern: p
+): StringChainable<p> =>
   Object.assign(pattern, {
-    startsWith,
-    endsWith,
-    includes,
-    regex,
-  });
+    startsWith: (s: any) =>
+      stringChainable(intersection(pattern, startsWith(s))),
+    endsWith: (s: any) => stringChainable(intersection(pattern, endsWith(s))),
+    includes: (s: any) => stringChainable(intersection(pattern, includes(s))),
+    regex: (s: any) => stringChainable(intersection(pattern, regex(s))),
+  }) as any;
 
 /**
  * `P.string` is a wildcard pattern, matching any **string**.
@@ -701,7 +841,9 @@ const assignStringMethods = <p extends GuardP<any, any>>(pattern: p) =>
  *  match(value)
  *   .with(P.string, () => 'will match on strings')
  */
-export const string = assignStringMethods(when(isString));
+export const string: StringChainable<GuardP<unknown, string>> = stringChainable(
+  when(isString)
+);
 
 /**
  * `P.number.between(min, max)` matches **number** between `min` and `max`,
@@ -830,18 +972,160 @@ export const negative = <input>(): Chainable<
   GuardExcludeP<input, number, never>
 > => when((value) => isNumber(value) && value < 0);
 
-const assignNumberMethods = <p extends GuardP<any, any>>(pattern: p) =>
+type NumberChainable<p, omitted extends string = never> = Chainable<
+  p,
+  omitted
+> &
+  Omit<
+    {
+      /**
+       * `P.number.between(min, max)` matches **number** between `min` and `max`,
+       * equal to min or equal to max.
+       *
+       * [Read documentation for `P.number.between` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberbetween)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.number.between(0, 10), () => '0 <= numbers <= 10')
+       */
+      between<input, const min extends number, const max extends number>(
+        min: min,
+        max: max
+      ): NumberChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        omitted
+      >;
+      /**
+       * `P.number.lt(max)` matches **number** smaller than `max`.
+       *
+       * [Read documentation for `P.number.lt` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberlt)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.number.lt(10), () => 'numbers < 10')
+       */
+      lt<input, const max extends number>(
+        max: max
+      ): NumberChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        omitted
+      >;
+      /**
+       * `P.number.gt(min)` matches **number** greater than `min`.
+       *
+       * [Read documentation for `P.number.gt` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbergt)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.number.gt(10), () => 'numbers > 10')
+       */
+      gt<input, const min extends number>(
+        min: min
+      ): NumberChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        omitted
+      >;
+      /**
+       * `P.number.lte(max)` matches **number** smaller than or equal to `max`.
+       *
+       * [Read documentation for `P.number.lte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberlte)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.number.lte(10), () => 'numbers <= 10')
+       */
+      lte<input, const max extends number>(
+        max: max
+      ): NumberChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        omitted
+      >;
+      /**
+       * `P.number.gte(min)` matches **number** greater than or equal to `min`.
+       *
+       * [Read documentation for `P.number.gte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbergte)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.number.gte(10), () => 'numbers >= 10')
+       */
+      gte<input, const min extends number>(
+        min: min
+      ): NumberChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        omitted
+      >;
+      /**
+       * `P.number.int` matches **integer** numbers.
+       *
+       * [Read documentation for `P.number.int` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberint)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.number.int, () => 'an integer')
+       */
+      int<input>(): NumberChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        omitted | 'int'
+      >;
+      /**
+       * `P.number.finite` matches **finite numbers**.
+       *
+       * [Read documentation for `P.number.finite` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberfinite)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.number.finite, () => 'not Infinity')
+       */
+      finite<input>(): NumberChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        omitted | 'finite'
+      >;
+      /**
+       * `P.number.positive` matches **positive** numbers.
+       *
+       * [Read documentation for `P.number.positive` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberpositive)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.number.positive, () => 'number > 0')
+       */
+      positive<input>(): NumberChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        omitted | 'positive' | 'negative'
+      >;
+      /**
+       * `P.number.negative` matches **negative** numbers.
+       *
+       * [Read documentation for `P.number.negative` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbernegative)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.number.negative, () => 'number < 0')
+       */
+      negative<input>(): NumberChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        omitted | 'positive' | 'negative' | 'negative'
+      >;
+    },
+    omitted
+  >;
+
+const numberChainable = <p extends Matcher<any, any, any, any, any>>(
+  pattern: p
+): NumberChainable<p> =>
   Object.assign(pattern, {
-    between,
-    lt,
-    gt,
-    gte,
-    lte,
-    int,
-    finite,
-    positive,
-    negative,
-  });
+    between: (min: number, max: number) =>
+      numberChainable(intersection(pattern, between(min, max))),
+    lt: (max: number) => numberChainable(intersection(pattern, lt(max))),
+    gt: (min: number) => numberChainable(intersection(pattern, gt(min))),
+    lte: (max: number) => numberChainable(intersection(pattern, lte(max))),
+    gte: (min: number) => numberChainable(intersection(pattern, gte(min))),
+    int: () => numberChainable(intersection(pattern, int())),
+    finite: () => numberChainable(intersection(pattern, finite())),
+    positive: () => numberChainable(intersection(pattern, positive())),
+    negative: () => numberChainable(intersection(pattern, negative())),
+  }) as any;
 
 /**
  * `P.number` is a wildcard pattern, matching any **number**.
@@ -852,7 +1136,7 @@ const assignNumberMethods = <p extends GuardP<any, any>>(pattern: p) =>
  *  match(value)
  *   .with(P.number, () => 'will match on numbers')
  */
-export const number = assignNumberMethods(when(isNumber));
+export const number = numberChainable(when(isNumber));
 
 /**
  * `P.boolean` is a wildcard pattern, matching any **boolean**.
@@ -966,16 +1250,134 @@ export const negativeBigInt = <input>(): Chainable<
   GuardExcludeP<input, bigint, never>
 > => when((value) => isBigInt(value) && value < 0);
 
-const assignBigintMethods = <p extends GuardP<any, any>>(pattern: p) =>
+type BigIntChainable<p, omitted extends string = never> = Chainable<
+  p,
+  omitted
+> &
+  Omit<
+    {
+      /**
+       * `P.bigint.between(min, max)` matches **bigint** between `min` and `max`,
+       * equal to min or equal to max.
+       *
+       * [Read documentation for `P.bigint.between` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintbetween)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.bigint.between(0, 10), () => '0 <= numbers <= 10')
+       */
+      between<input, const min extends bigint, const max extends bigint>(
+        min: min,
+        max: max
+      ): BigIntChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        omitted
+      >;
+      /**
+       * `P.bigint.lt(max)` matches **bigint** smaller than `max`.
+       *
+       * [Read documentation for `P.bigint.lt` on GitHub](https://github.com/gvergnaud/ts-pattern#bigintlt)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.bigint.lt(10), () => 'numbers < 10')
+       */
+      lt<input, const max extends bigint>(
+        max: max
+      ): BigIntChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        omitted
+      >;
+      /**
+       * `P.bigint.gt(min)` matches **bigint** greater than `min`.
+       *
+       * [Read documentation for `P.bigint.gt` on GitHub](https://github.com/gvergnaud/ts-pattern#bigintgt)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.bigint.gt(10), () => 'numbers > 10')
+       */
+      gt<input, const min extends bigint>(
+        min: min
+      ): BigIntChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        omitted
+      >;
+      /**
+       * `P.bigint.lte(max)` matches **bigint** smaller than or equal to `max`.
+       *
+       * [Read documentation for `P.bigint.lte` on GitHub](https://github.com/gvergnaud/ts-pattern#bigintlte)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.bigint.lte(10), () => 'bigints <= 10')
+       */
+      lte<input, const max extends bigint>(
+        max: max
+      ): BigIntChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        omitted
+      >;
+      /**
+       * `P.bigint.gte(min)` matches **bigint** greater than or equal to `min`.
+       *
+       * [Read documentation for `P.bigint.gte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintgte)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.bigint.gte(10), () => 'bigints >= 10')
+       */
+      gte<input, const min extends bigint>(
+        min: min
+      ): BigIntChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        omitted
+      >;
+      /**
+       * `P.bigint.positive` matches **positive** bigints.
+       *
+       * [Read documentation for `P.bigint.positive` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintpositive)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.bigint.positive, () => 'bigint > 0')
+       */
+      positive<input>(): BigIntChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        omitted | 'positive' | 'negative'
+      >;
+      /**
+       * `P.bigint.negative` matches **negative** bigints.
+       *
+       * [Read documentation for `P.bigint.negative` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintnegative)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.bigint.negative, () => 'bigint < 0')
+       */
+      negative<input>(): BigIntChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        omitted | 'positive' | 'negative' | 'negative'
+      >;
+    },
+    omitted
+  >;
+
+const bigintChainable = <p extends Matcher<any, any, any, any, any>>(
+  pattern: p
+): BigIntChainable<p> =>
   Object.assign(pattern, {
-    between: betweenBigInt,
-    lt: ltBigInt,
-    gt: gtBigInt,
-    gte: gteBigInt,
-    lte: lteBigInt,
-    positive: positiveBigInt,
-    negative: negativeBigInt,
-  });
+    between: (min: bigint, max: bigint) =>
+      bigintChainable(intersection(pattern, betweenBigInt(min, max))),
+    lt: (max: bigint) => bigintChainable(intersection(pattern, ltBigInt(max))),
+    gt: (min: bigint) => bigintChainable(intersection(pattern, gtBigInt(min))),
+    lte: (max: bigint) =>
+      bigintChainable(intersection(pattern, lteBigInt(max))),
+    gte: (min: bigint) =>
+      bigintChainable(intersection(pattern, gteBigInt(min))),
+    positive: () => bigintChainable(intersection(pattern, positiveBigInt())),
+    negative: () => bigintChainable(intersection(pattern, negativeBigInt())),
+  }) as any;
 
 /**
  * `P.bigint` is a wildcard pattern, matching any **bigint**.
@@ -985,7 +1387,7 @@ const assignBigintMethods = <p extends GuardP<any, any>>(pattern: p) =>
  * @example
  *   .with(P.bigint, () => 'will match on bigints')
  */
-export const bigint = assignBigintMethods(when(isBigInt));
+export const bigint = bigintChainable(when(isBigInt));
 
 /**
  * `P.symbol` is a wildcard pattern, matching any **symbol**.

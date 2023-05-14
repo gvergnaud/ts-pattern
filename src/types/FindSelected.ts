@@ -7,7 +7,7 @@ import type {
   TupleKeys,
   ValueOf,
   UnionToTuple,
-  Apply,
+  Call,
   Fn,
 } from './helpers';
 

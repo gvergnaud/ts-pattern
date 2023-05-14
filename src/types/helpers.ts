@@ -282,6 +282,6 @@ export interface Fn {
   output: unknown;
 }
 
-export type Apply<fn extends Fn, input> = (fn & {
+export type Call<fn extends Fn, input> = (fn & {
   input: input;
 })['output'];

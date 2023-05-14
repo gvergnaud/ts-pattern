@@ -17,7 +17,7 @@ import {
   SetValue,
   ExtractPlainObject,
   GetKey,
-  Apply,
+  Call,
   Fn,
   ReadonlyArrayValue,
   ExtractWithDefault,
@@ -134,7 +134,7 @@ type InvertPatternInternal<p, input> = 0 extends 1 & p
       or: ReduceUnion<Extract<subpattern, readonly any[]>, input>;
       default: [subpattern] extends [never] ? input : subpattern;
       custom: Override<
-        narrowedOrFn extends Fn ? Apply<narrowedOrFn, input> : narrowedOrFn
+        narrowedOrFn extends Fn ? Call<narrowedOrFn, input> : narrowedOrFn
       >;
     }[matcherType]
   : p extends Primitives
@@ -344,7 +344,7 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
         >;
         default: excluded;
         custom: excluded extends infer narrowedOrFn extends Fn
-          ? Apply<narrowedOrFn, i>
+          ? Call<narrowedOrFn, i>
           : excluded;
       }[matcherType]
     : p extends readonly any[]
