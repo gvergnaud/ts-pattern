@@ -1,6 +1,7 @@
 import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers';
 import * as symbols from './internals/symbols';
 import { matcher } from './internals/symbols';
+import { isMatching } from './is-matching';
 import { ExtractPreciseValue } from './types/ExtractPreciseValue';
 import { Call, Fn, GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
@@ -663,6 +664,15 @@ function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
     val instanceof classConstructor;
 }
 
+// These aliases could be inferred, but lead to nicer display names in IDEs.
+type AnyPattern = Chainable<GuardP<unknown, unknown>, never>;
+type StringPattern = StringChainable<GuardP<unknown, string>, never>;
+type NumberPattern = NumberChainable<GuardP<unknown, number>, never>;
+type BooleanPattern = Chainable<GuardP<unknown, boolean>, never>;
+type BigIntPattern = BigIntChainable<GuardP<unknown, bigint>, never>;
+type SymbolPattern = Chainable<GuardP<unknown, symbol>, never>;
+type NullishPattern = Chainable<GuardP<unknown, null | undefined>, never>;
+
 /**
  * `P.any` is a wildcard pattern, matching **any value**.
  *
@@ -672,7 +682,7 @@ function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
  *  match(value)
  *   .with(P.any, () => 'will always match')
  */
-export const any = chainable(when(isUnknown));
+export const any: AnyPattern = chainable(when(isUnknown));
 
 /**
  * `P._` is a wildcard pattern, matching **any value**.
@@ -837,9 +847,7 @@ const stringChainable = <p extends Matcher<any, any, any, any, any>>(
  *  match(value)
  *   .with(P.string, () => 'will match on strings')
  */
-export const string: StringChainable<GuardP<unknown, string>> = stringChainable(
-  when(isString)
-);
+export const string: StringPattern = stringChainable(when(isString));
 
 /**
  * `P.number.between(min, max)` matches **number** between `min` and `max`,
@@ -1129,7 +1137,7 @@ const numberChainable = <p extends Matcher<any, any, any, any, any>>(
  *  match(value)
  *   .with(P.number, () => 'will match on numbers')
  */
-export const number = numberChainable(when(isNumber));
+export const number: NumberPattern = numberChainable(when(isNumber));
 
 /**
  * `P.bigint.between(min, max)` matches **bigint** between `min` and `max`,
@@ -1368,7 +1376,7 @@ const bigintChainable = <p extends Matcher<any, any, any, any, any>>(
  * @example
  *   .with(P.bigint, () => 'will match on bigints')
  */
-export const bigint = bigintChainable(when(isBigInt));
+export const bigint: BigIntPattern = bigintChainable(when(isBigInt));
 
 /**
  * `P.boolean` is a wildcard pattern, matching any **boolean**.
@@ -1378,7 +1386,7 @@ export const bigint = bigintChainable(when(isBigInt));
  * @example
  *   .with(P.boolean, () => 'will match on booleans')
  */
-export const boolean = chainable(when(isBoolean));
+export const boolean: BooleanPattern = chainable(when(isBoolean));
 
 /**
  * `P.symbol` is a wildcard pattern, matching any **symbol**.
@@ -1388,7 +1396,7 @@ export const boolean = chainable(when(isBoolean));
  * @example
  *   .with(P.symbol, () => 'will match on symbols')
  */
-export const symbol = chainable(when(isSymbol));
+export const symbol: SymbolPattern = chainable(when(isSymbol));
 
 /**
  * `P.nullish` is a wildcard pattern, matching **null** or **undefined**.
@@ -1398,7 +1406,7 @@ export const symbol = chainable(when(isSymbol));
  * @example
  *   .with(P.nullish, () => 'will match on null or undefined')
  */
-export const nullish = chainable(when(isNullish));
+export const nullish: NullishPattern = chainable(when(isNullish));
 
 /**
  * `P.instanceOf(SomeClass)` is a pattern matching instances of a given class.
@@ -1412,6 +1420,26 @@ export function instanceOf<T extends AnyConstructor>(
   classConstructor: T
 ): Chainable<GuardP<unknown, InstanceType<T>>> {
   return chainable(when(isInstanceOf(classConstructor)));
+}
+
+/**
+ * `P.shape(somePattern)` allows for calling methods like `.optional()` or `.select()`
+ * On structural patterns, like objects and arrays.
+ *
+ * [Read documentation for `P.shape` on GitHub](https://github.com/gvergnaud/ts-pattern#Pshape-patterns)
+ *
+ *  @example
+ *   .with(
+ *     {
+ *       state: P.shape({ status: "success" }).optional().select()
+ *     },
+ *     (state) => 'match the success state, or undefined.'
+ *   )
+ */
+export function shape<input, p extends Pattern<input>>(
+  pattern: p
+): Chainable<GuardP<input, InvertPattern<p, input>>> {
+  return chainable(when(isMatching(pattern)));
 }
 
 /**

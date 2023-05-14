@@ -143,7 +143,9 @@ describe('chainable methods', () => {
         const f = (input?: string | number) =>
           match({ input })
             .with(
-              { input: P.string.startsWith('hello ').optional().select() },
+              {
+                input: P.string.startsWith('hello ').optional().select(),
+              },
               (value) => {
                 type t = Expect<
                   Equal<typeof value, `hello ${string}` | undefined>

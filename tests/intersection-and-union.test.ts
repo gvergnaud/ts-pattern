@@ -223,8 +223,8 @@ describe('and, and or patterns', () => {
       const f = (n: Parent) =>
         match(n)
           .with(
-            P.intersection(P.instanceOf(Child1), {
-              a: P.optional(P.instanceOf(Child2)),
+            P.instanceOf(Child1).and({
+              a: P.instanceOf(Child2).optional(),
               b: P.instanceOf(Child2),
             }),
             (x) => {
@@ -235,12 +235,10 @@ describe('and, and or patterns', () => {
             }
           )
           .with(
-            P.intersection(
-              { a: P.instanceOf(Child1) },
-              P.union(
-                { a: { a: P.instanceOf(Child1), b: P.instanceOf(Child1) } },
-                { b: { a: P.instanceOf(Child2), b: P.instanceOf(Child2) } }
-              )
+            P.shape({ a: P.instanceOf(Child1) }).and(
+              P.shape({
+                a: { a: P.instanceOf(Child1), b: P.instanceOf(Child1) },
+              }).or({ b: { a: P.instanceOf(Child2), b: P.instanceOf(Child2) } })
             ),
             (x) => {
               type t = Expect<
