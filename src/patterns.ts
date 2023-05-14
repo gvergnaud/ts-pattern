@@ -753,9 +753,8 @@ export const gte = <input, const min extends number>(
  *  match(value)
  *   .with(P.number.int, () => 'an integer')
  */
-export const int: GuardExcludeP<unknown, number, never> = when(
-  (value) => isNumber(value) && Number.isInteger(value)
-);
+export const int = <input>(): GuardExcludeP<input, number, never> =>
+  when((value) => isNumber(value) && Number.isInteger(value));
 
 /**
  * `P.number.finite` matches **finite numbers**.
@@ -766,9 +765,8 @@ export const int: GuardExcludeP<unknown, number, never> = when(
  *  match(value)
  *   .with(P.number.finite, () => 'not Infinity')
  */
-export const finite: GuardExcludeP<unknown, number, never> = when(
-  (value) => isNumber(value) && Number.isFinite(value)
-);
+export const finite = <input>(): GuardExcludeP<input, number, never> =>
+  when((value) => isNumber(value) && Number.isFinite(value));
 
 /**
  * `P.number.positive` matches **positive** numbers.
@@ -779,9 +777,8 @@ export const finite: GuardExcludeP<unknown, number, never> = when(
  *  match(value)
  *   .with(P.number.positive, () => 'number > 0')
  */
-export const positive: GuardExcludeP<unknown, number, never> = when(
-  (value) => isNumber(value) && value > 0
-);
+export const positive = <input>(): GuardExcludeP<input, number, never> =>
+  when((value) => isNumber(value) && value > 0);
 
 /**
  * `P.number.negative` matches **negative** numbers.
@@ -792,9 +789,8 @@ export const positive: GuardExcludeP<unknown, number, never> = when(
  *  match(value)
  *   .with(P.number.negative, () => 'number < 0')
  */
-export const negative: GuardExcludeP<unknown, number, never> = when(
-  (value) => isNumber(value) && value < 0
-);
+export const negative = <input>(): GuardExcludeP<input, number, never> =>
+  when((value) => isNumber(value) && value < 0);
 
 const assignNumberMethods = <p extends GuardP<any, any>>(pattern: p) =>
   Object.assign(pattern, {
@@ -830,18 +826,115 @@ export const number = assignNumberMethods(when(isNumber));
  */
 export const boolean = when(isBoolean);
 
-// TODO
+/**
+ * `P.bigint.between(min, max)` matches **bigint** between `min` and `max`,
+ * equal to min or equal to max.
+ *
+ * [Read documentation for `P.bigint.between` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintbetween)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.bigint.between(0, 10), () => '0 <= numbers <= 10')
+ */
+export const betweenBigInt = <
+  input,
+  const min extends bigint,
+  const max extends bigint
+>(
+  min: min,
+  max: max
+): GuardExcludeP<input, bigint, never> =>
+  when((value) => isBigInt(value) && min <= value && max >= value);
+
+/**
+ * `P.bigint.lt(max)` matches **bigint** smaller than `max`.
+ *
+ * [Read documentation for `P.bigint.lt` on GitHub](https://github.com/gvergnaud/ts-pattern#bigintlt)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.bigint.lt(10), () => 'numbers < 10')
+ */
+export const ltBigInt = <input, const max extends bigint>(
+  max: max
+): GuardExcludeP<input, bigint, never> =>
+  when((value) => isBigInt(value) && value < max);
+
+/**
+ * `P.bigint.gt(min)` matches **bigint** greater than `min`.
+ *
+ * [Read documentation for `P.bigint.gt` on GitHub](https://github.com/gvergnaud/ts-pattern#bigintgt)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.bigint.gt(10), () => 'numbers > 10')
+ */
+export const gtBigInt = <input, const min extends bigint>(
+  min: min
+): GuardExcludeP<input, bigint, never> =>
+  when((value) => isBigInt(value) && value > min);
+
+/**
+ * `P.bigint.lte(max)` matches **bigint** smaller than or equal to `max`.
+ *
+ * [Read documentation for `P.bigint.lte` on GitHub](https://github.com/gvergnaud/ts-pattern#bigintlte)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.bigint.lte(10), () => 'bigints <= 10')
+ */
+export const lteBigInt = <input, const max extends bigint>(
+  max: max
+): GuardExcludeP<input, bigint, never> =>
+  when((value) => isBigInt(value) && value <= max);
+
+/**
+ * `P.bigint.gte(min)` matches **bigint** greater than or equal to `min`.
+ *
+ * [Read documentation for `P.bigint.gte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintgte)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.bigint.gte(10), () => 'bigints >= 10')
+ */
+export const gteBigInt = <input, const min extends bigint>(
+  min: min
+): GuardExcludeP<input, bigint, never> =>
+  when((value) => isBigInt(value) && value >= min);
+
+/**
+ * `P.bigint.positive` matches **positive** bigints.
+ *
+ * [Read documentation for `P.bigint.positive` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintpositive)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.bigint.positive, () => 'bigint > 0')
+ */
+export const positiveBigInt = <input>(): GuardExcludeP<input, bigint, never> =>
+  when((value) => isBigInt(value) && value > 0);
+
+/**
+ * `P.bigint.negative` matches **negative** bigints.
+ *
+ * [Read documentation for `P.bigint.negative` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintnegative)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.bigint.negative, () => 'bigint < 0')
+ */
+export const negativeBigInt = <input>(): GuardExcludeP<input, bigint, never> =>
+  when((value) => isBigInt(value) && value < 0);
+
 const assignBigintMethods = <p extends GuardP<any, any>>(pattern: p) =>
   Object.assign(pattern, {
-    between,
-    lt,
-    gt,
-    gte,
-    lte,
-    int,
-    finite,
-    positive,
-    negative,
+    between: betweenBigInt,
+    lt: ltBigInt,
+    gt: gtBigInt,
+    gte: gteBigInt,
+    lte: lteBigInt,
+    positive: positiveBigInt,
+    negative: negativeBigInt,
   });
 
 /**

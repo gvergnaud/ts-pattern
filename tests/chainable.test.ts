@@ -102,7 +102,7 @@ describe('chainable methods', () => {
       expect(f('gabriel')).toBe('something else');
     });
 
-    it(`P.number.lt(12)`, () => {
+    it(`P.number.lt(..)`, () => {
       const f = (input: string | number | bigint) =>
         match(input)
           .with(P.number.lt(10), (value) => {
@@ -118,14 +118,239 @@ describe('chainable methods', () => {
       expect(f(12)).toBe('no');
       expect(f(10n)).toBe('no');
     });
-    it(`P.number.gt(12)`, () => {});
-    it(`P.number.gte(12)`, () => {});
-    it(`P.number.lte(12)`, () => {});
-    it(`P.number.int(12)`, () => {});
-    it(`P.number.finite()`, () => {});
-    it(`P.number.positive()`, () => {});
-    it(`P.number.negative()`, () => {});
+    it(`P.number.gt(..)`, () => {
+      const f = (input: string | number | bigint) =>
+        match(input)
+          .with(P.number.gt(10), (value) => {
+            type t = Expect<Equal<typeof value, number>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | number | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5)).toBe('no');
+      expect(f(10)).toBe('no');
+      expect(f(12)).toBe('yes');
+    });
+    it(`P.number.gte(..)`, () => {
+      const f = (input: string | number | bigint) =>
+        match(input)
+          .with(P.number.gte(10), (value) => {
+            type t = Expect<Equal<typeof value, number>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | number | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5)).toBe('no');
+      expect(f(10)).toBe('yes');
+      expect(f(12)).toBe('yes');
+    });
+    it(`P.number.lte(..)`, () => {
+      const f = (input: string | number | bigint) =>
+        match(input)
+          .with(P.number.lte(10), (value) => {
+            type t = Expect<Equal<typeof value, number>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | number | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5)).toBe('yes');
+      expect(f(10)).toBe('yes');
+      expect(f(12)).toBe('no');
+    });
+    it(`P.number.int(..)`, () => {
+      const f = (input: string | number | bigint) =>
+        match(input)
+          .with(P.number.int(), (value) => {
+            type t = Expect<Equal<typeof value, number>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | number | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5)).toBe('yes');
+      expect(f(10.123)).toBe('no');
+      expect(f(-Infinity)).toBe('no');
+    });
+    it(`P.number.finite()`, () => {
+      const f = (input: string | number | bigint) =>
+        match(input)
+          .with(P.number.finite(), (value) => {
+            type t = Expect<Equal<typeof value, number>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | number | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5)).toBe('yes');
+      expect(f(10.123)).toBe('yes');
+      expect(f(-Infinity)).toBe('no');
+    });
+    it(`P.number.positive()`, () => {
+      const f = (input: string | number | bigint) =>
+        match(input)
+          .with(P.number.positive(), (value) => {
+            type t = Expect<Equal<typeof value, number>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | number | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5)).toBe('yes');
+      expect(f(10.123)).toBe('yes');
+      expect(f(-10.123)).toBe('no');
+      expect(f(-Infinity)).toBe('no');
+    });
+    it(`P.number.negative()`, () => {
+      const f = (input: string | number | bigint) =>
+        match(input)
+          .with(P.number.negative(), (value) => {
+            type t = Expect<Equal<typeof value, number>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | number | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5)).toBe('no');
+      expect(f(10.123)).toBe('no');
+      expect(f(-10.123)).toBe('yes');
+      expect(f(-Infinity)).toBe('yes');
+    });
   });
+
+  describe('bigint', () => {
+    it(`P.bigint.between(1, 10)`, () => {
+      const f = (input: string | bigint) =>
+        match(input)
+          .with(P.bigint.between(0n, 10n), (value) => {
+            type t = Expect<Equal<typeof value, bigint>>;
+            return 'between 0 and 10';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | bigint>>;
+            return 'something else';
+          });
+
+      expect(f(5n)).toBe('between 0 and 10');
+      expect(f(0n)).toBe('between 0 and 10');
+      expect(f(10n)).toBe('between 0 and 10');
+      expect(f('gabriel')).toBe('something else');
+    });
+
+    it(`P.bigint.lt(..)`, () => {
+      const f = (input: string | bigint) =>
+        match(input)
+          .with(P.bigint.lt(10n), (value) => {
+            type t = Expect<Equal<typeof value, bigint>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5n)).toBe('yes');
+      expect(f(12n)).toBe('no');
+      expect(f(10n)).toBe('no');
+    });
+    it(`P.bigint.gt(..)`, () => {
+      const f = (input: string | bigint) =>
+        match(input)
+          .with(P.bigint.gt(10n), (value) => {
+            type t = Expect<Equal<typeof value, bigint>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5n)).toBe('no');
+      expect(f(10n)).toBe('no');
+      expect(f(12n)).toBe('yes');
+    });
+    it(`P.bigint.gte(..)`, () => {
+      const f = (input: string | bigint) =>
+        match(input)
+          .with(P.bigint.gte(10n), (value) => {
+            type t = Expect<Equal<typeof value, bigint>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5n)).toBe('no');
+      expect(f(10n)).toBe('yes');
+      expect(f(12n)).toBe('yes');
+    });
+    it(`P.bigint.lte(..)`, () => {
+      const f = (input: string | bigint) =>
+        match(input)
+          .with(P.bigint.lte(10n), (value) => {
+            type t = Expect<Equal<typeof value, bigint>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5n)).toBe('yes');
+      expect(f(10n)).toBe('yes');
+      expect(f(12n)).toBe('no');
+    });
+    it(`P.bigint.positive()`, () => {
+      const f = (input: string | bigint) =>
+        match(input)
+          .with(P.bigint.positive(), (value) => {
+            type t = Expect<Equal<typeof value, bigint>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5n)).toBe('yes');
+      expect(f(10123n)).toBe('yes');
+      expect(f(-10123n)).toBe('no');
+    });
+    it(`P.bigint.negative()`, () => {
+      const f = (input: string | bigint) =>
+        match(input)
+          .with(P.bigint.negative(), (value) => {
+            type t = Expect<Equal<typeof value, bigint>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | bigint>>;
+            return 'no';
+          });
+
+      expect(f(5n)).toBe('no');
+      expect(f(10123n)).toBe('no');
+      expect(f(-10123n)).toBe('yes');
+    });
+  });
+
   describe('all', () => {
     it(`P.number.optional()`, () => {});
     it(`P.string.optional()`, () => {});
