@@ -635,11 +635,26 @@ const includes = <input, const substr extends string>(
 ): GuardExcludeP<input, string, never> =>
   when((value) => isString(value) && value.includes(substr));
 
+/**
+ * `P.string.regex(expr)` is a pattern, matching **strings** that `expr` regular expression.
+ *
+ * [Read documentation for `P.string.regex` on GitHub](https://github.com/gvergnaud/ts-pattern#Pstringregex)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.string.regex(/^https?:\/\//), () => 'url')
+ */
+const regex = <input, const expr extends string | RegExp>(
+  expr: expr
+): GuardExcludeP<input, string, never> =>
+  when((value) => isString(value) && Boolean(value.match(expr)));
+
 const assignStringMethods = <p extends GuardP<any, any>>(pattern: p) =>
   Object.assign(pattern, {
     startsWith,
     endsWith,
     includes,
+    regex,
   });
 
 /**
@@ -654,6 +669,147 @@ const assignStringMethods = <p extends GuardP<any, any>>(pattern: p) =>
 export const string = assignStringMethods(when(isString));
 
 /**
+ * `P.number.between(min, max)` matches **number** between `min` and `max`,
+ * equal to min or equal to max.
+ *
+ * [Read documentation for `P.number.between` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberbetween)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.number.between(0, 10), () => '0 <= numbers <= 10')
+ */
+export const between = <
+  input,
+  const min extends number,
+  const max extends number
+>(
+  min: min,
+  max: max
+): GuardExcludeP<input, number, never> =>
+  when((value) => isNumber(value) && min <= value && max >= value);
+
+/**
+ * `P.number.lt(max)` matches **number** smaller than `max`.
+ *
+ * [Read documentation for `P.number.lt` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberlt)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.number.lt(10), () => 'numbers < 10')
+ */
+export const lt = <input, const max extends number>(
+  max: max
+): GuardExcludeP<input, number, never> =>
+  when((value) => isNumber(value) && value < max);
+
+/**
+ * `P.number.gt(min)` matches **number** greater than `min`.
+ *
+ * [Read documentation for `P.number.gt` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbergt)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.number.gt(10), () => 'numbers > 10')
+ */
+export const gt = <input, const min extends number>(
+  min: min
+): GuardExcludeP<input, number, never> =>
+  when((value) => isNumber(value) && value > min);
+
+/**
+ * `P.number.lte(max)` matches **number** smaller than or equal to `max`.
+ *
+ * [Read documentation for `P.number.lte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberlte)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.number.lte(10), () => 'numbers <= 10')
+ */
+export const lte = <input, const max extends number>(
+  max: max
+): GuardExcludeP<input, number, never> =>
+  when((value) => isNumber(value) && value <= max);
+
+/**
+ * `P.number.gte(min)` matches **number** greater than or equal to `min`.
+ *
+ * [Read documentation for `P.number.gte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbergte)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.number.gte(10), () => 'numbers >= 10')
+ */
+export const gte = <input, const min extends number>(
+  min: min
+): GuardExcludeP<input, number, never> =>
+  when((value) => isNumber(value) && value >= min);
+
+/**
+ * `P.number.int` matches **integer** numbers.
+ *
+ * [Read documentation for `P.number.int` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberint)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.number.int, () => 'an integer')
+ */
+export const int: GuardExcludeP<unknown, number, never> = when(
+  (value) => isNumber(value) && Number.isInteger(value)
+);
+
+/**
+ * `P.number.finite` matches **finite numbers**.
+ *
+ * [Read documentation for `P.number.finite` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberfinite)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.number.finite, () => 'not Infinity')
+ */
+export const finite: GuardExcludeP<unknown, number, never> = when(
+  (value) => isNumber(value) && Number.isFinite(value)
+);
+
+/**
+ * `P.number.positive` matches **positive** numbers.
+ *
+ * [Read documentation for `P.number.positive` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberpositive)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.number.positive, () => 'number > 0')
+ */
+export const positive: GuardExcludeP<unknown, number, never> = when(
+  (value) => isNumber(value) && value > 0
+);
+
+/**
+ * `P.number.negative` matches **negative** numbers.
+ *
+ * [Read documentation for `P.number.negative` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbernegative)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.number.negative, () => 'number < 0')
+ */
+export const negative: GuardExcludeP<unknown, number, never> = when(
+  (value) => isNumber(value) && value < 0
+);
+
+const assignNumberMethods = <p extends GuardP<any, any>>(pattern: p) =>
+  Object.assign(pattern, {
+    between,
+    lt,
+    gt,
+    gte,
+    lte,
+    int,
+    finite,
+    positive,
+    negative,
+  });
+
+/**
  * `P.number` is a wildcard pattern, matching any **number**.
  *
  * [Read documentation for `P.number` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumber-wildcard)
@@ -662,7 +818,7 @@ export const string = assignStringMethods(when(isString));
  *  match(value)
  *   .with(P.number, () => 'will match on numbers')
  */
-export const number = when(isNumber);
+export const number = assignNumberMethods(when(isNumber));
 
 /**
  * `P.boolean` is a wildcard pattern, matching any **boolean**.
@@ -674,6 +830,20 @@ export const number = when(isNumber);
  */
 export const boolean = when(isBoolean);
 
+// TODO
+const assignBigintMethods = <p extends GuardP<any, any>>(pattern: p) =>
+  Object.assign(pattern, {
+    between,
+    lt,
+    gt,
+    gte,
+    lte,
+    int,
+    finite,
+    positive,
+    negative,
+  });
+
 /**
  * `P.bigint` is a wildcard pattern, matching any **bigint**.
  *
@@ -682,7 +852,7 @@ export const boolean = when(isBoolean);
  * @example
  *   .with(P.bigint, () => 'will match on bigints')
  */
-export const bigint = when(isBigInt);
+export const bigint = assignBigintMethods(when(isBigInt));
 
 /**
  * `P.symbol` is a wildcard pattern, matching any **symbol**.
