@@ -59,7 +59,7 @@ describe('optional', () => {
       }
     );
 
-    match(input).with({ type: 'a', a: P.optional(P.select()) }, (x) => {
+    match(input).with({ type: 'a', a: P.select().optional() }, (x) => {
       type t = Expect<
         Equal<typeof x, { name: string; age: number } | undefined>
       >;

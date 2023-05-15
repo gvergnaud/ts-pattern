@@ -153,8 +153,7 @@ type Chainable<p, omitted extends string = never> = p &
         omitted | 'select' | 'or' | 'and'
       >;
       select<input, k extends string>(
-        key: k,
-        pattern: p
+        key: k
       ): Chainable<SelectP<k, input, p>, omitted | 'select' | 'or' | 'and'>;
     },
     omitted

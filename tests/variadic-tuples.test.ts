@@ -503,7 +503,7 @@ describe('variadic tuples ([a, ...b[]])', () => {
         .with(
           [
             P.select('a', 42),
-            ...P.array(P.select('b', P.number)),
+            ...P.array(P.number.select('b')),
             P.select('c', '!'),
           ],
           (xs) => {
