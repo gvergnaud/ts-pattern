@@ -21,6 +21,7 @@ import {
   Fn,
   ReadonlyArrayValue,
   ExtractWithDefault,
+  WithDefault,
 } from './helpers';
 import type { Matcher, Pattern, Override, AnyMatcher } from './Pattern';
 
@@ -147,19 +148,19 @@ type InvertPatternInternal<p, input> = 0 extends 1 & p
       ? {
           [k in Exclude<keyof p, optKeys>]: InvertPatternInternal<
             p[k],
-            GetKey<ExtractPlainObject<input>, k>
+            WithDefault<GetKey<ExtractPlainObject<input>, k>, unknown>
           >;
         }
       : Compute<
           {
             [k in Exclude<keyof p, optKeys>]: InvertPatternInternal<
               p[k],
-              GetKey<ExtractPlainObject<input>, k>
+              WithDefault<GetKey<ExtractPlainObject<input>, k>, unknown>
             >;
           } & {
             [k in Extract<optKeys, keyof p>]?: InvertPatternInternal<
               p[k],
-              GetKey<ExtractPlainObject<input>, k>
+              WithDefault<GetKey<ExtractPlainObject<input>, k>, unknown>
             >;
           }
         >

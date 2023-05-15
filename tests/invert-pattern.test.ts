@@ -1,4 +1,4 @@
-import { Compute, Equal, Expect } from '../src/types/helpers';
+import { Equal, Expect } from '../src/types/helpers';
 import {
   InvertPattern,
   InvertPatternForExclude,
@@ -31,6 +31,17 @@ describe('InvertPattern', () => {
       type inverted3 = InvertPattern<pattern3, unknown>;
       //    ^?
       type test3 = Expect<Equal<inverted3, [string, ...number[]]>>;
+
+      type pattern6 = {
+        key: readonly [
+          GuardP<unknown, string>,
+          ...ArrayP<unknown, GuardP<unknown, string>>[]
+        ];
+      };
+      type input6 = unknown;
+      type inverted6 = InvertPattern<pattern6, input6>;
+      //   ^?
+      type test6 = Expect<Equal<inverted6, { key: [string, ...string[]] }>>;
     });
 
     it('[a, b, ...c[]]', () => {
