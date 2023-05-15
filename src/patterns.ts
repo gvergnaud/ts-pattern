@@ -725,6 +725,30 @@ const endsWith = <input, const end extends string>(
   when((value) => isString(value) && value.endsWith(end));
 
 /**
+ * `P.string.minLength(min)` is a pattern, matching **strings** with at least `min` characters.
+ *
+ * [Read documentation for `P.string.minLength` on GitHub](https://github.com/gvergnaud/ts-pattern#PstringminLength)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.string.minLength(10), () => 'string with more length >= 10')
+ */
+const minLength = <input, const min extends number>(min: min) =>
+  when((value) => isString(value) && value.length >= min);
+
+/**
+ * `P.string.maxLength(max)` is a pattern, matching **strings** with at most `max` characters.
+ *
+ * [Read documentation for `P.string.maxLength` on GitHub](https://github.com/gvergnaud/ts-pattern#PstringmaxLength)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.string.maxLength(10), () => 'string with more length <= 10')
+ */
+const maxLength = <input, const max extends number>(max: max) =>
+  when((value) => isString(value) && value.length <= max);
+
+/**
  * `P.string.includes(substr)` is a pattern, matching **strings** containing `substr`.
  *
  * [Read documentation for `P.string.includes` on GitHub](https://github.com/gvergnaud/ts-pattern#Pstringincludes)
@@ -793,6 +817,36 @@ type StringChainable<
         omitted | 'endsWith'
       >;
       /**
+       * `P.string.minLength(min)` is a pattern, matching **strings** with at least `min` characters.
+       *
+       * [Read documentation for `P.string.minLength` on GitHub](https://github.com/gvergnaud/ts-pattern#PstringminLength)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.string.minLength(10), () => 'string with more length <= 10')
+       */
+      minLength<input, const min extends number>(
+        min: min
+      ): StringChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, string, never>>,
+        omitted | 'minLength'
+      >;
+      /**
+       * `P.string.maxLength(max)` is a pattern, matching **strings** with at most `max` characters.
+       *
+       * [Read documentation for `P.string.maxLength` on GitHub](https://github.com/gvergnaud/ts-pattern#PstringmaxLength)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.string.maxLength(10), () => 'string with more length >= 10')
+       */
+      maxLength<input, const max extends number>(
+        max: max
+      ): StringChainable<
+        MaybeAnd<omitted, input, p, GuardExcludeP<input, string, never>>,
+        omitted | 'maxLength'
+      >;
+      /**
        * `P.string.includes(substr)` is a pattern, matching **strings** containing `substr`.
        *
        * [Read documentation for `P.string.includes` on GitHub](https://github.com/gvergnaud/ts-pattern#Pstringincludes)
@@ -830,11 +884,17 @@ const stringChainable = <p extends Matcher<any, any, any, any, any>>(
   pattern: p
 ): StringChainable<p> =>
   Object.assign(pattern, {
-    startsWith: (s: any) =>
-      stringChainable(intersection(pattern, startsWith(s))),
-    endsWith: (s: any) => stringChainable(intersection(pattern, endsWith(s))),
-    includes: (s: any) => stringChainable(intersection(pattern, includes(s))),
-    regex: (s: any) => stringChainable(intersection(pattern, regex(s))),
+    startsWith: (str: string) =>
+      stringChainable(intersection(pattern, startsWith(str))),
+    endsWith: (str: string) =>
+      stringChainable(intersection(pattern, endsWith(str))),
+    minLength: (min: number) =>
+      stringChainable(intersection(pattern, minLength(min))),
+    maxLength: (max: number) =>
+      stringChainable(intersection(pattern, maxLength(max))),
+    includes: (str: string) =>
+      stringChainable(intersection(pattern, includes(str))),
+    regex: (str: string) => stringChainable(intersection(pattern, regex(str))),
   }) as any;
 
 /**

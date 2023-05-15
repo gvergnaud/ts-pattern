@@ -19,7 +19,7 @@ import { matchPattern } from './internals/helpers';
  */
 export function isMatching<p extends Pattern<unknown>>(
   pattern: p
-): (value: any) => value is MatchedValue<any, P.infer<p>>;
+): (value: any) => value is P.infer<p>;
 /**
  * `isMatching` takes pattern and a value and checks if the value matches this pattern.
  *

@@ -50,6 +50,41 @@ describe('chainable methods', () => {
       expect(f('hello!!')).toBe('ends with !!');
       expect(f('nope')).toBe('something else');
     });
+
+    it(`P.string.minLength(..)`, () => {
+      const f = (input: string | number) =>
+        match(input)
+          .with(P.string.minLength(2), (value) => {
+            type t = Expect<Equal<typeof value, string>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | number>>;
+            return 'no';
+          });
+
+      expect(f('aa')).toBe('yes');
+      expect(f('aaa')).toBe('yes');
+      expect(f('a')).toBe('no');
+    });
+
+    it(`P.string.maxLength(..)`, () => {
+      const f = (input: string | number) =>
+        match(input)
+          .with(P.string.maxLength(10), (value) => {
+            type t = Expect<Equal<typeof value, string>>;
+            return 'yes';
+          })
+          .otherwise((value) => {
+            type t = Expect<Equal<typeof value, string | number>>;
+            return 'no';
+          });
+
+      expect(f('aaa')).toBe('yes');
+      expect(f('aaaaaaaaaa')).toBe('yes');
+      expect(f('aaaaaaaaaaa')).toBe('no');
+    });
+
     it(`P.string.regex('^[a-z]+$')`, () => {
       const f = (input: string | number) =>
         match(input)
