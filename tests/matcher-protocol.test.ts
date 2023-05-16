@@ -13,11 +13,9 @@ describe('matcher protocol', () => {
 
     static [P.matcher](): P.unstable_Matcher<SomeNarrowFn> {
       return {
-        match: (input) => {
-          return {
-            matched: input instanceof Some,
-          };
-        },
+        match: (input) => ({
+          matched: input instanceof Some,
+        }),
       };
     }
 
