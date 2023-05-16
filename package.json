@@ -1,6 +1,6 @@
 {
   "name": "ts-pattern",
-  "version": "5.0.0-rc.0",
+  "version": "5.0.0-rc.1",
   "description": " The exhaustive Pattern Matching library for TypeScript.",
   "type": "module",
   "source": "src/index.ts",
