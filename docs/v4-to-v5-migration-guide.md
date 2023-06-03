@@ -1,16 +1,19 @@
 # TS-Pattern v4 to v5 Migration Guide
 
-## Breaking changes
+This file contains all breaking changes and new features between the version 4 and 5 of TS-Pattern.
 
-### `.with` is now eagerly evaluated
+# Breaking changes
 
-In the previous version of TS-Pattern, no logic would be executed until you called `.exhaustive()` or `.otherwise(...)`. For example, in the following code block, nothing would be logged to the console:
+## `.with` is now evaluated eagerly
+
+In the previous version of TS-Pattern, no code would execute until you called `.exhaustive()` or `.otherwise(...)`. For example, in the following code block, nothing would be logged to the console or thrown:
 
 ```ts
 // TS-Pattern v4
-function someFunction(
-  input: { type: 'ok'; value: number } | { type: 'error'; error: Error }
-) {
+type Input = { type: 'ok'; value: number } | { type: 'error'; error: Error };
+
+// We don't call `.exhaustive`, so handlers don't run.
+function someFunction(input: Input) {
   match(input)
     .with({ type: 'ok' }, ({ value }) => {
       console.log(value);
@@ -18,7 +21,6 @@ function someFunction(
     .with({ type: 'error' }, ({ error }) => {
       throw error;
     });
-  // We don't call `.exhaustive` here, so the code won't run
 }
 
 someFunction({ type: 'ok', value: 42 }); // nothing happens
@@ -33,7 +35,7 @@ someFunction({ type: 'ok', value: 42 }); // logs "42" to the console!
 
 Handlers are now evaluated **eagerly** instead of lazily. In practice, this shouldn't change anything as long as you always finish your pattern matching expressions by either `.exhaustive` or `.otherwise`.
 
-### Matching on Map and Sets
+## Matching on Map and Sets
 
 Matching `Set` and `Map` instances using `.with(new Set(...))` and `.with(new Map(...))` is no longer supported. If you want to match specific sets and maps, you should now use the `P.map(keyPattern, valuePattern)` and `P.set(valuePattern)` patterns:
 
@@ -54,15 +56,15 @@ const someFunction = (value: Set<number> | Map<string, number>) =>
 - The subpattern we provide in `P.set(subpattern)` should match all values in the set.
 - The value subpattern we provide `P.map(keyPattern, subpattern)` should only match the values matching `keyPattern` for the whole `P.map(..)` pattern to match the input.
 
-## New features
+# New features
 
-### chainable methods
+## chainable methods
 
 TS-Pattern v5's major addition is the ability to chain methods to narrow down the values matched by primitive patterns, like `P.string` or `P.number`.
 
 Since a few examples is worth a thousand words, here are a few ways you can use chainable methods:
 
-#### P.number methods
+### P.number methods
 
 ```ts
 const example = (position: { x: number; y: number }) =>
@@ -81,17 +83,17 @@ const example = (position: { x: number; y: number }) =>
 
 Here is the full list of number methods:
 
-- `P.number.between(min, max)`
-- `P.number.lt(max)`
-- `P.number.gt(min)`
-- `P.number.lte(max)`
-- `P.number.gte(min)`
-- `P.number.int()`
-- `P.number.finite()`
-- `P.number.positive()`
-- `P.number.negative()`
+- `P.number.between(min, max)`: matches numbers between `min` and `max`.
+- `P.number.lt(max)`: matches numbers smaller than `max`.
+- `P.number.gt(min)`: matches numbers greater than `min`.
+- `P.number.lte(max)`: matches numbers smaller than or equal to `max`.
+- `P.number.gte(min)`: matches numbers greater than or equal to `min`.
+- `P.number.int()`: matches integers.
+- `P.number.finite()`: matches all numbers except `Infinity` and `-Infinity`
+- `P.number.positive()`: matches positive numbers.
+- `P.number.negative()`: matches negative numbers.
 
-#### P.string methods
+### P.string methods
 
 ```ts
 const example = (query: string) =>
@@ -106,14 +108,14 @@ const example = (query: string) =>
 
 Here is the full list of string methods:
 
-- `P.string.startsWith(str)`
-- `P.string.endsWith(str)`
-- `P.string.minLength(number)`
-- `P.string.maxLength(number)`
-- `P.string.includes(str)`
-- `P.string.regex(RegExp)`
+- `P.string.startsWith(str)`: matches strings that start with `str`.
+- `P.string.endsWith(str)`: matches strings that end with `str`.
+- `P.string.minLength(min)`: matches strings with at least `min` characters.
+- `P.string.maxLength(max)`: matches strings with at most `max` characters.
+- `P.string.includes(str)`: matches strings that contain `str`.
+- `P.string.regex(RegExp)`: matches strings if they match this regular expression.
 
-#### Global methods
+### Global methods
 
 Some methods are available for all primitive type patterns:
 
@@ -147,7 +149,7 @@ const example = (value: unknown) =>
     .otherwise(() => null);
 ```
 
-### Variadic tuple patterns
+## Variadic tuple patterns
 
 With TS-Pattern, you are now able to create array (or more accurately tuple) pattern with a variable number of elements:
 
@@ -205,4 +207,29 @@ const example = (value: unknown) =>
     .otherwise(() => null);
 ```
 
-### `.returnType`
+## `.returnType`
+
+In TS-Pattern v4, the only way to explicitly set the return type of your whole `match` expression was to use type the `<Input, Output>` type parameters on the `match` function:
+
+```ts
+// TS-Pattern v4
+match<
+  { isAdmin: boolean; plan: 'free' | 'paid' }, // input type
+  number // return type
+>({ isAdmin, plan })
+  .with({ isAdmin: true }, () => 123)
+  .with({ plan: 'free' }, () => 'Oops!');
+//                              ~~~~~~ ❌ not a number.
+```
+
+the main drawback is that you need to set the **_input type_** explicitly **_too_**, even though TypeScript should be able to infer it.
+
+In TS-Pattern v5, you can use the `.returnType<Type>()` method to only set the return type:
+
+```ts
+match({ isAdmin, plan })
+  .returnType<number>() // 👈 new
+  .with({ isAdmin: true }, () => 123)
+  .with({ plan: 'free' }, () => 'Oops!');
+//                              ~~~~~~ ❌ not a number.
+```
