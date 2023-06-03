@@ -54,7 +54,7 @@ const someFunction = (value: Set<number> | Map<string, number>) =>
 ```
 
 - The subpattern we provide in `P.set(subpattern)` should match all values in the set.
-- The value subpattern we provide `P.map(keyPattern, subpattern)` should only match the values matching `keyPattern` for the whole `P.map(..)` pattern to match the input.
+- The value subpattern we provide in `P.map(keyPattern, subpattern)` should only match the values matching `keyPattern` for the whole `P.map(..)` pattern to match the input.
 
 # New features
 
@@ -209,7 +209,7 @@ const example = (value: unknown) =>
 
 ## `.returnType`
 
-In TS-Pattern v4, the only way to explicitly set the return type of your whole `match` expression was to use type the `<Input, Output>` type parameters on the `match` function:
+In TS-Pattern v4, the only way to explicitly set the return type of your `match` expression is to set the two `<Input, Output>` type parameters of `match`:
 
 ```ts
 // TS-Pattern v4

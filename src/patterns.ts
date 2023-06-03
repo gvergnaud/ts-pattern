@@ -1202,7 +1202,7 @@ export const number: NumberPattern = numberChainable(when(isNumber));
  * `P.bigint.between(min, max)` matches **bigint** between `min` and `max`,
  * equal to min or equal to max.
  *
- * [Read documentation for `P.bigint.between` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintbetween)
+ * [Read documentation for `P.bigint.between` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberbetween)
  *
  * @example
  *  match(value)
@@ -1308,7 +1308,7 @@ type BigIntChainable<p, omitted extends string = never> = Chainable<
        * `P.bigint.between(min, max)` matches **bigint** between `min` and `max`,
        * equal to min or equal to max.
        *
-       * [Read documentation for `P.bigint.between` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintbetween)
+       * [Read documentation for `P.bigint.between` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberbetween)
        *
        * @example
        *  match(value)
@@ -1369,7 +1369,7 @@ type BigIntChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.bigint.gte(min)` matches **bigint** greater than or equal to `min`.
        *
-       * [Read documentation for `P.bigint.gte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintgte)
+       * [Read documentation for `P.bigint.gte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbergte)
        *
        * @example
        *  match(value)
@@ -1384,7 +1384,7 @@ type BigIntChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.bigint.positive` matches **positive** bigints.
        *
-       * [Read documentation for `P.bigint.positive` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintpositive)
+       * [Read documentation for `P.bigint.positive` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberpositive)
        *
        * @example
        *  match(value)
@@ -1397,7 +1397,7 @@ type BigIntChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.bigint.negative` matches **negative** bigints.
        *
-       * [Read documentation for `P.bigint.negative` on GitHub](https://github.com/gvergnaud/ts-pattern#Pbigintnegative)
+       * [Read documentation for `P.bigint.negative` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbernegative)
        *
        * @example
        *  match(value)
