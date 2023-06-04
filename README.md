@@ -1147,13 +1147,13 @@ declare const input: Input;
 const output = match(input)
   .with(
     {
-      author: P.select({ age: P.when((age) => age > 18) }),
+      author: P.select({ age: P.number.gt(18) }),
     },
     (author) => author // author: User
   )
   .with(
     {
-      author: P.select('author', { age: P.when((age) => age > 18) }),
+      author: P.select('author', { age: P.number.gt(18) }),
       content: P.select(),
     },
     ({ author, content }) => author // author: User, content: Post
