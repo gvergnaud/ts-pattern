@@ -205,7 +205,7 @@ describe('variadic tuples ([a, ...b[]])', () => {
 
       match(xs)
         .with([42, ...P.array(P.number)], (xs) => {
-          type t = Expect<Equal<typeof xs, [number, ...number[]]>>;
+          type t = Expect<Equal<typeof xs, [42, ...number[]]>>;
           return [];
         })
         .otherwise(() => {
@@ -214,7 +214,7 @@ describe('variadic tuples ([a, ...b[]])', () => {
 
       match(xs)
         .with([42, ...P.array(P.number), '!' as const], (xs) => {
-          type t = Expect<Equal<typeof xs, [number, ...number[], '!']>>;
+          type t = Expect<Equal<typeof xs, [42, ...number[], '!']>>;
           return [];
         })
         .otherwise(() => {
@@ -223,7 +223,7 @@ describe('variadic tuples ([a, ...b[]])', () => {
 
       match(xs)
         .with([1, 2, ...P.array(P.number)], (xs) => {
-          type t = Expect<Equal<typeof xs, [number, number, ...number[]]>>;
+          type t = Expect<Equal<typeof xs, [1, 2, ...number[]]>>;
           return [];
         })
         .otherwise(() => {
@@ -261,14 +261,14 @@ describe('variadic tuples ([a, ...b[]])', () => {
 
       match(xs)
         .with([42, ...P.array(P.number)], (xs) => {
-          type t = Expect<Equal<typeof xs, [number, ...number[]]>>;
+          type t = Expect<Equal<typeof xs, [42, ...number[]]>>;
           return [];
         })
         .otherwise(() => []);
 
       match(xs)
         .with([42, ...P.array(P.number), 7], (xs) => {
-          type t = Expect<Equal<typeof xs, [number, ...number[], 7]>>;
+          type t = Expect<Equal<typeof xs, [42, ...number[], 7]>>;
           return [];
         })
         .otherwise(() => []);
@@ -278,23 +278,7 @@ describe('variadic tuples ([a, ...b[]])', () => {
           [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...P.array(P.number), 7],
           (xs) => {
             type t = Expect<
-              Equal<
-                typeof xs,
-                [
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  ...number[],
-                  number
-                ]
-              >
+              Equal<typeof xs, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...number[], 7]>
             >;
             return [];
           }
@@ -340,27 +324,27 @@ describe('variadic tuples ([a, ...b[]])', () => {
               Equal<
                 typeof xs,
                 [
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  10,
                   ...number[],
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number,
-                  number
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  10
                 ]
               >
             >;
@@ -371,7 +355,7 @@ describe('variadic tuples ([a, ...b[]])', () => {
 
       match(xs)
         .with([1, 2, ...P.array(P.number)], (xs) => {
-          type t = Expect<Equal<typeof xs, [number, number, ...number[]]>>;
+          type t = Expect<Equal<typeof xs, [1, 2, ...number[]]>>;
           return [];
         })
         .otherwise(() => []);

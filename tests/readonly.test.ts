@@ -60,9 +60,7 @@ describe('readonly', () => {
       ) =>
         match(input)
           .with({ t: 'a', x: [2, 'hello', 2] }, (x) => {
-            type t = Expect<
-              Equal<typeof x, { t: 'a'; x: [number, string, 2] }>
-            >;
+            type t = Expect<Equal<typeof x, { t: 'a'; x: [2, 'hello', 2] }>>;
             return 'ok';
           })
           .with({ t: 'a', x: [2, 'hello', 2] as const }, (x) => {
