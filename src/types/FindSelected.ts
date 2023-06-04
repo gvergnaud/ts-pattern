@@ -1,15 +1,6 @@
 import type * as symbols from '../internals/symbols';
 import type { AnyMatcher, Matcher, Pattern } from './Pattern';
-import type {
-  Equal,
-  IsAny,
-  Primitives,
-  TupleKeys,
-  ValueOf,
-  UnionToTuple,
-  Call,
-  Fn,
-} from './helpers';
+import type { Equal, Primitives, ValueOf, UnionToTuple } from './helpers';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 

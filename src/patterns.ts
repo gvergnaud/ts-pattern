@@ -3,7 +3,7 @@ import * as symbols from './internals/symbols';
 import { matcher } from './internals/symbols';
 import { isMatching } from './is-matching';
 import { ExtractPreciseValue } from './types/ExtractPreciseValue';
-import { Call, Fn, GuardFunction } from './types/helpers';
+import { Fn, GuardFunction } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
   Pattern,

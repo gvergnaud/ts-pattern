@@ -1,5 +1,4 @@
 import { Pattern } from './types/Pattern';
-import { GuardValue } from './types/helpers';
 import { Match, PickReturnValue } from './types/Match';
 import * as symbols from './internals/symbols';
 import { matchPattern } from './internals/helpers';
@@ -28,9 +27,7 @@ export function match<const input, output = symbols.unset>(
   return new MatchExpression(value) as any;
 }
 
-type MatchState<output> = 
-  | { matched: true, value: output }
-  | { matched: false };
+type MatchState<output> = { matched: true; value: output } | { matched: false };
 
 const defaultMatchState: MatchState<never> = { matched: false };
 
@@ -51,7 +48,7 @@ class MatchExpression<i, o> {
 
   with(...args: any[]): MatchExpression<i, any> {
     if (this.state.matched) return this;
-    
+
     const handler = args[args.length - 1];
 
     const patterns: Pattern<i>[] = [args[0]];
@@ -67,7 +64,7 @@ class MatchExpression<i, o> {
     }
 
     let selected: Record<string, unknown> = {};
-    
+
     const matched = Boolean(
       patterns.some((pattern) =>
         matchPattern(pattern, this.input, (key, value) => {
@@ -78,23 +75,19 @@ class MatchExpression<i, o> {
 
     const state = matched
       ? {
-          matched: true as const, 
-          value:
-            handler(
-              Object.keys(selected).length
+          matched: true as const,
+          value: handler(
+            Object.keys(selected).length
               ? symbols.anonymousSelectKey in selected
                 ? selected[symbols.anonymousSelectKey]
                 : selected
               : this.input,
-              this.input
-            ),
+            this.input
+          ),
         }
-      : { matched: false as const }
+      : { matched: false as const };
 
-    return new MatchExpression(
-      this.input,
-      state
-    );
+    return new MatchExpression(this.input, state);
   }
 
   when<p extends (value: i) => unknown, c>(
@@ -107,13 +100,13 @@ class MatchExpression<i, o> {
 
     return new MatchExpression<i, PickReturnValue<o, c>>(
       this.input,
-      matched ? { matched: true, value: handler(this.input, this.input) } : { matched: false }
+      matched
+        ? { matched: true, value: handler(this.input, this.input) }
+        : { matched: false }
     );
   }
 
-  otherwise<c>(
-    handler: (value: i, value2: i) => PickReturnValue<o, c>
-  ): any {
+  otherwise<c>(handler: (value: i, value2: i) => PickReturnValue<o, c>): any {
     if (this.state.matched) return this.state.value;
     return handler(this.input, this.input);
   }
@@ -123,7 +116,7 @@ class MatchExpression<i, o> {
   }
 
   run() {
-    if (this.state.matched)  return this.state.value;
+    if (this.state.matched) return this.state.value;
 
     let displayedValue;
     try {

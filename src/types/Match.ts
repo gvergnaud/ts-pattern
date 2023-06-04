@@ -1,9 +1,8 @@
 import type * as symbols from '../internals/symbols';
 import type { Pattern, MatchedValue } from './Pattern';
-import type { ExtractPreciseValue } from './ExtractPreciseValue';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
-import type { WithDefault, Union, GuardValue, IsNever } from './helpers';
+import type { Union, GuardValue, IsNever } from './helpers';
 import type { FindSelected } from './FindSelected';
 
 export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;

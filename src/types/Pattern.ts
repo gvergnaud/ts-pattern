@@ -1,8 +1,7 @@
 import type * as symbols from '../internals/symbols';
-import { Fn, MergeUnion, Primitives, ValueOf, WithDefault } from './helpers';
-import { None, Some, SelectionType, FindSelectionUnion } from './FindSelected';
+import { MergeUnion, Primitives, WithDefault } from './helpers';
+import { None, Some, SelectionType } from './FindSelected';
 import { matcher } from '../patterns';
-import { InvertPattern } from './InvertPattern';
 import { ExtractPreciseValue } from './ExtractPreciseValue';
 
 export type MatcherType =
