@@ -1,6 +1,13 @@
 import { match, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
-import { none, Option, some } from './types-catalog/utils';
+import {
+  AsyncResult,
+  AsyncResultError,
+  AsyncResultSuccess,
+  none,
+  Option,
+  some,
+} from './types-catalog/utils';
 
 describe('generics', () => {
   type State<T> =
@@ -96,6 +103,47 @@ describe('generics', () => {
           return 'ok';
         })
         .otherwise(() => 'nope');
+    };
+  });
+
+  it("shouldn't get stucked on type parameters if they aren't included in the pattern", () => {
+    const fn = <TResult, TError>(result: AsyncResult<TResult, TError>) => {
+      return match(result)
+        .with({ status: 'success' }, (x) => {
+          type test = Expect<
+            Equal<typeof x, AsyncResultSuccess<TResult, TError>>
+          >;
+        })
+        .with({ status: 'error' }, (x) => {
+          type test = Expect<
+            Equal<typeof x, AsyncResultError<TResult, TError>>
+          >;
+        })
+        .with({ status: 'loading' }, (x) => {
+          type test = Expect<
+            Equal<
+              typeof x,
+              {
+                status: 'loading';
+                error?: TError | undefined;
+                data?: TResult | undefined;
+              }
+            >
+          >;
+        })
+        .with({ status: 'idle' }, (x) => {
+          type test = Expect<
+            Equal<
+              typeof x,
+              {
+                status: 'idle';
+                error?: TError | undefined;
+                data?: TResult | undefined;
+              }
+            >
+          >;
+        })
+        .exhaustive();
     };
   });
 });

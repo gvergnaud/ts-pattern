@@ -1,6 +1,6 @@
 import { ExtractPreciseValue } from '../src/types/ExtractPreciseValue';
 import { Expect, Equal } from '../src/types/helpers';
-import { Event, Option, State } from './types-catalog/utils';
+import { AsyncResult, Event, Option, State } from './types-catalog/utils';
 
 describe('ExtractPreciseValue', () => {
   it('should correctly extract the matching value from the input and an inverted pattern', () => {
@@ -469,5 +469,28 @@ describe('ExtractPreciseValue', () => {
       >;
       type t3 = Expect<Equal<res3, ['a', ...boolean[], 2]>>;
     });
+  });
+});
+
+describe('generics', () => {
+  it("shouldn't get stuck on generics in the input structure that aren't matched by the pattern", () => {
+    const fn = <TResult, TError>() => {
+      type res1 = ExtractPreciseValue<
+        // ^?
+        AsyncResult<TResult, TError>,
+        { status: 'loading' }
+      >;
+
+      type test1 = Expect<
+        Equal<
+          res1,
+          {
+            status: 'loading';
+            data?: TResult | undefined;
+            error?: TError | undefined;
+          }
+        >
+      >;
+    };
   });
 });

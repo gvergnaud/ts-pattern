@@ -50,3 +50,32 @@ export type BigUnion =
   | 'x'
   | 'y'
   | 'z';
+
+type AsyncResultStatus = 'idle' | 'loading' | 'error' | 'success';
+
+export interface BaseAsyncResult<TData, TError = Error> {
+  status: AsyncResultStatus;
+  data?: TData;
+  error?: TError;
+}
+
+export interface AsyncResultIdleOrLoading<TData, TError = Error>
+  extends BaseAsyncResult<TData, TError> {
+  status: 'idle' | 'loading';
+}
+
+export interface AsyncResultSuccess<TData, TError = Error>
+  extends BaseAsyncResult<TData, TError> {
+  status: 'success';
+  data: TData;
+}
+
+export interface AsyncResultError<TData, TError = Error>
+  extends BaseAsyncResult<TData, TError> {
+  status: 'error';
+  error: TError;
+}
+export type AsyncResult<TData, TError = Error> =
+  | AsyncResultIdleOrLoading<TData, TError>
+  | AsyncResultSuccess<TData, TError>
+  | AsyncResultError<TData, TError>;

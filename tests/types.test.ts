@@ -335,8 +335,13 @@ describe('type narrowing inheritence', () => {
       const f = (input: Input) =>
         match(input)
           .with({ type: 'a' }, () => 'a handled')
-          // @ts-expect-error duplicates shouldn't be permitted
-          .with({ type: 'a' }, () => 'duplicated')
+          .with(
+            {
+              // @ts-expect-error duplicates shouldn't be permitted
+              type: 'a',
+            },
+            () => 'duplicated'
+          )
           .with({ type: 'b' }, () => 'b handled')
           .exhaustive();
     });
