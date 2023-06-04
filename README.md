@@ -954,7 +954,7 @@ console.log(output);
 // => 'a list of posts!'
 ```
 
-#### Matching variadic tuples with `P.array`
+### Matching variadic tuples with `P.array`
 
 In TypeScript, [Variadic Tuple Types](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-0.html#variadic-tuple-types) are array types created with the `...` spread operator, like `[string, ...string[]]`, `[number, ...boolean[], string]` etc. You can match against variadic tuple types using array literals containing `...P.array(subpattern)`:
 
