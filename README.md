@@ -1483,9 +1483,11 @@ It's particularly useful when validating an API response.
 const postPattern = {
   title: P.string,
   content: P.string,
-  likeCount: P.number,
+  stars: P.number.between(1, 5).optional(),
   author: {
-    name: P.string,
+    firstName: P.string,
+    lastName: P.string.optional(),
+    followerCount: P.number,
   },
 };
 
