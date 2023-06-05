@@ -24,7 +24,7 @@
   "module": "dist/index.js",
   "unpkg": "dist/index.umd.js",
   "scripts": {
-    "build": "rimraf dist && microbundle && sh ./scripts/generate-cts.sh",
+    "build": "rimraf dist && microbundle --format modern,cjs,umd && sh ./scripts/generate-cts.sh",
     "dev": "microbundle watch",
     "prepublishOnly": "npm run test && npm run build",
     "test": "jest",
