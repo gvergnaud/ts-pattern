@@ -58,4 +58,19 @@ describe('List ([a])', () => {
       )
       .otherwise(() => 'something else');
   });
+
+  it('type narrowing should work on nested arrays', () => {
+    const fn = (input: { queries?: { q?: string[]; a: number }[] }) =>
+      match(input).with(
+        {
+          queries: P.array({ q: P.array(P.string) }),
+        },
+        (x) => {
+          type t = Expect<
+            Equal<typeof x, { queries: { a: number; q: string[] }[] }>
+          >;
+          return x.queries[0].q[0];
+        }
+      );
+  });
 });

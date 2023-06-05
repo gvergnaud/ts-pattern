@@ -235,7 +235,7 @@ export type MergeUnion<a> = {
 export type IsFixedSizeTuple<a extends readonly any[]> = IsLiteral<Length<a>>;
 
 // is it a fixed size or a variadic tuple
-export type IsTuple<a extends readonly any[]> = a extends
+export type IsTuple<a> = a extends
   | readonly []
   | readonly [any, ...any]
   | readonly [...any, any]

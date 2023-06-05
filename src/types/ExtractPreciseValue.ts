@@ -120,7 +120,7 @@ type ExtractPreciseArrayValue<
             [...endOutput, currentValue]
           >
       : never
-    : ExtractPreciseValue<ValueOf<b>, aItem> extends infer currentValue
+    : ExtractPreciseValue<aItem, ValueOf<b>> extends infer currentValue
     ? [currentValue] extends [never]
       ? never
       : MaybeAddReadonly<

@@ -209,14 +209,17 @@ describe('ExtractPreciseValue', () => {
   });
 
   it('should work with arrays', () => {
-    type cases = [
-      Expect<
-        Equal<
-          ExtractPreciseValue<boolean | { type: string } | string[], string[]>,
-          string[]
-        >
-      >
-    ];
+    type res1 = ExtractPreciseValue<
+      boolean | { type: string } | string[],
+      string[]
+    >;
+    type test1 = Expect<Equal<res1, string[]>>;
+
+    type res2 = ExtractPreciseValue<
+      ({ a: string } | { b?: number | boolean; c: string })[],
+      { b: number }[]
+    >;
+    type test2 = Expect<Equal<res2, { b: number; c: string }[]>>;
   });
 
   describe('Optional properties', () => {
