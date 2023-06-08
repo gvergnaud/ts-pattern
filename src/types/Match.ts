@@ -25,7 +25,7 @@ export type Match<
    * `.with(pattern, handler)` Registers a pattern and an handler function which
    * will be called if this pattern matches the input value.
    *
-   * [Read documentation for `.with()` on GitHub](https://github.com/gvergnaud/ts-pattern#with)
+   * [Read the documentation for `.with()` on GitHub](https://github.com/gvergnaud/ts-pattern#with)
    **/
   with<
     const p extends Pattern<i>,
@@ -147,7 +147,7 @@ export type Match<
    * `.when(predicate, handler)` Registers a predicate function and an handler function.
    * If the predicate returns true, the handler function will be chosen to handle the input.
    *
-   * [Read documentation for `.when()` on GitHub](https://github.com/gvergnaud/ts-pattern#when)
+   * [Read the documentation for `.when()` on GitHub](https://github.com/gvergnaud/ts-pattern#when)
    **/
   when<pred extends (value: i) => unknown, c, value extends GuardValue<pred>>(
     predicate: pred,
@@ -167,7 +167,7 @@ export type Match<
    *
    * Equivalent to `.with(P._, () => x).exhaustive()`
    *
-   * [Read documentation for `.otherwise()` on GitHub](https://github.com/gvergnaud/ts-pattern#otherwise)
+   * [Read the documentation for `.otherwise()` on GitHub](https://github.com/gvergnaud/ts-pattern#otherwise)
    *
    **/
   otherwise<c>(
@@ -181,7 +181,7 @@ export type Match<
    * every case, and you should add another `.with(...)` clause
    * to prevent potential runtime errors.
    *
-   * [Read documentation for `.exhaustive()` on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
+   * [Read the documentation for `.exhaustive()` on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
    *
    * */
   exhaustive: DeepExcludeAll<i, handledCases> extends infer remainingCases
@@ -198,7 +198,7 @@ export type Match<
   /**
    * `.returnType<T>()` Lets you specific a return type for all your code branches.
    *
-   * [Read documentation for `.returnType()` on GitHub](https://github.com/gvergnaud/ts-pattern#returnType)
+   * [Read the documentation for `.returnType()` on GitHub](https://github.com/gvergnaud/ts-pattern#returnType)
    * */
   returnType: [inferredOutput] extends [never]
     ? <output>() => Match<i, output, handledCases>
