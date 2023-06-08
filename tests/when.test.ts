@@ -17,7 +17,7 @@ describe('when', () => {
       expect(
         match(value)
           .with(
-            P.typed<number>().when((x) => x > 10 && x < 50),
+            P.when((x) => x > 10 && x < 50),
             () => true
           )
           .otherwise(() => false)

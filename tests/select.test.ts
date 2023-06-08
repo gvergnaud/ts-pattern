@@ -213,10 +213,7 @@ describe('select', () => {
           return 'empty';
         })
         .with(
-          P.typed<Input>().array([
-            { name: P.any },
-            { post: P.array({ title: P.select() }) },
-          ]),
+          P.array([{ name: P.any }, { post: P.array({ title: P.select() }) }]),
           (titles) => {
             type t1 = Expect<Equal<typeof titles, string[][]>>;
             return titles

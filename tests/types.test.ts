@@ -124,7 +124,7 @@ describe('types', () => {
     );
 
     match<Input>({ type: 'hello' }).with(
-      P.typed<Input>().when((x) => {
+      P.when((x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return true;
       }),
