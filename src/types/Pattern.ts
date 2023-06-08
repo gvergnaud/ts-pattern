@@ -67,6 +67,8 @@ export interface Matcher<
   [symbols.isVariadic]?: boolean;
 }
 
+type PatternMatcher<input> = Matcher<input, unknown, any, any>;
+
 // We fall back to `a` if we weren't able to extract anything more precise
 export type MatchedValue<a, invpattern> = WithDefault<
   ExtractPreciseValue<a, invpattern>,
@@ -75,7 +77,7 @@ export type MatchedValue<a, invpattern> = WithDefault<
 
 export type AnyMatcher = Matcher<any, any, any, any, any>;
 
-type UnknownMatcher = Matcher<unknown, unknown, any, any>;
+type UnknownMatcher = PatternMatcher<unknown>;
 
 export type CustomP<input, pattern, narrowedOrFn> = Matcher<
   input,
@@ -143,29 +145,26 @@ export type UnknownPattern =
  * @example
  * const pattern: P.Pattern<User> = { name: P.string }
  */
-export type Pattern<a> = unknown extends a ? UnknownPattern : ValuePattern<a>;
+export type Pattern<a> = unknown extends a ? UnknownPattern : KnownPattern<a>;
 
-type SplitPattern<a> = [
-  objs: Exclude<a, Primitives | Map<any, any> | Set<any> | readonly any[]>,
-  arrays: Extract<a, readonly any[]>,
-  primitives: Exclude<a, object>
-];
+type KnownPattern<a> = KnownPatternInternal<a>;
 
-export type ValuePattern<a> = SplitPattern<a> extends [
-  infer objs,
-  infer arrays,
-  infer primitives
-]
-  ?
-      | primitives
-      | Matcher<a, unknown, any, any>
-      | ([objs] extends [never] ? never : ObjectPattern<MergeUnion<objs>>)
-      | ([arrays] extends [never] ? never : ArrayPattern<arrays>)
-  : never;
+type KnownPatternInternal<
+  a,
+  objs = Exclude<a, Primitives | Map<any, any> | Set<any> | readonly any[]>,
+  arrays = Extract<a, readonly any[]>,
+  primitives = Exclude<a, object>
+> =
+  | primitives
+  | PatternMatcher<a>
+  | ([objs] extends [never] ? never : ObjectPattern<MergeUnion<objs>>)
+  | ([arrays] extends [never] ? never : ArrayPattern<arrays>);
 
-type ObjectPattern<a> = {
-  readonly [k in keyof a]?: Pattern<a[k]>;
-};
+type ObjectPattern<a> =
+  | {
+      readonly [k in keyof a]?: Pattern<a[k]>;
+    }
+  | never;
 
 type ArrayPattern<a> = a extends readonly (infer i)[]
   ? a extends readonly [any, ...any]

@@ -236,16 +236,13 @@ export function array<
   input,
   const p extends Pattern<WithDefault<UnwrapArray<input>, unknown>>
 >(pattern: p): Chainable<ArrayP<input, p> & Iterable<ArrayP<input, p>>>;
-export function array<
-  input,
-  const p extends Pattern<WithDefault<UnwrapArray<input>, unknown>>
->(
-  ...args: [pattern?: p]
-): Chainable<ArrayP<input, p> & Iterable<ArrayP<input, p>>> {
+export function array(
+  ...args: [pattern?: any]
+): Chainable<ArrayP<any, any> & Iterable<ArrayP<any, any>>> {
   return chainable({
     [matcher]() {
       return {
-        match: <UnknownInput>(value: UnknownInput | input) => {
+        match: (value: any) => {
           if (!Array.isArray(value)) return { matched: false };
 
           if (args.length === 0) return { matched: true };
@@ -1497,6 +1494,7 @@ export function instanceOf<T extends AnyConstructor>(
  */
 export function shape<input, p extends Pattern<input>>(
   pattern: p
-): Chainable<GuardP<input, InvertPattern<p, input>>> {
+): Chainable<GuardP<input, InvertPattern<p, input>>>;
+export function shape(pattern: UnknownPattern) {
   return chainable(when(isMatching(pattern)));
 }
