@@ -126,4 +126,37 @@ describe('type errors', () => {
       })
       .otherwise(() => 'ko');
   });
+
+  it('type errors should be well placed', () => {
+    match<{
+      a: 1;
+      b: 'hello' | 'bonjour';
+      c: { d: [number, number, boolean] };
+      e: unknown;
+    } | null>(null)
+      .with(
+        {
+          // @ts-expect-error
+          b: 'oops',
+        },
+        () => 'result'
+      )
+      .with(
+        {
+          c: {
+            d: [
+              1, 2,
+              // @ts-expect-error: number instead of boolean
+              3,
+            ],
+          },
+        },
+        () => 'x'
+      )
+      .with({ e: 1 }, () => 'bas')
+      .with({ b: 'hello' }, ({ a }) => 'result')
+      .with({ b: 'bonjour' }, ({ a }) => 'result')
+      .with(null, () => 'result')
+      .exhaustive();
+  });
 });
