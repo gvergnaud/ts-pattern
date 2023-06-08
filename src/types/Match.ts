@@ -7,9 +7,13 @@ import type { FindSelected } from './FindSelected';
 
 export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;
 
-type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
+interface NonExhaustiveError<i> {
+  __nonExhaustive: never;
+}
 
-type TSPatternError<i> = { __nonExhaustive: never } & i;
+interface TSPatternError<i> {
+  __nonExhaustive: never;
+}
 
 /**
  * #### Match
