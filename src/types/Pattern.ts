@@ -159,7 +159,7 @@ export type PatternInternal<
   | primitives;
 
 type ObjectPattern<a> = {
-  readonly [k in keyof a]?: Pattern<Exclude<a[k], undefined>>;
+  readonly [k in keyof a]?: Pattern<a[k]>;
 };
 
 type ArrayPattern<a> = a extends readonly (infer i)[]
