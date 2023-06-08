@@ -3,7 +3,7 @@ import * as symbols from './internals/symbols';
 import { matcher } from './internals/symbols';
 import { isMatching } from './is-matching';
 import { ExtractPreciseValue } from './types/ExtractPreciseValue';
-import { Fn, GuardFunction } from './types/helpers';
+import { Fn } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
   Pattern,
@@ -1482,7 +1482,7 @@ export function instanceOf<T extends AnyConstructor>(
 }
 
 /**
- * `P.shape(somePattern)` allows for calling methods like `.optional()` or `.select()`
+ * `P.shape(somePattern)` lets you call methods like `.optional()`, `.and`, `.or` and `.select()`
  * On structural patterns, like objects and arrays.
  *
  * [Read the documentation for `P.shape` on GitHub](https://github.com/gvergnaud/ts-pattern#Pshape-patterns)
