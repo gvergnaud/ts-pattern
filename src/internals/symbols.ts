@@ -13,9 +13,6 @@
  * @internal
  */
 
-export const toExclude = Symbol('@ts-pattern/to-exclude');
-export type toExclude = typeof toExclude;
-
 export const matcher = Symbol('@ts-pattern/matcher');
 export type matcher = typeof matcher;
 
@@ -27,9 +24,6 @@ export type isVariadic = typeof isVariadic;
 
 export const anonymousSelectKey = '@ts-pattern/anonymous-select-key';
 export type anonymousSelectKey = typeof anonymousSelectKey;
-
-export const input = Symbol('@ts-pattern/input');
-export type input = typeof input;
 
 export const override = Symbol('@ts-pattern/override');
 export type override = typeof override;
