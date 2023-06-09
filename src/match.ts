@@ -40,19 +40,19 @@ const defaultMatchState: MatchState<never> = { matched: false };
  * The types of this class aren't public, the public type definition
  * can be found in src/types/Match.ts.
  */
-class MatchExpression<i, o> {
+class MatchExpression<input, output> {
   constructor(
-    private input: i,
-    private state: MatchState<o> = defaultMatchState
+    private input: input,
+    private state: MatchState<output> = defaultMatchState
   ) {}
 
-  with(...args: any[]): MatchExpression<i, any> {
+  with(...args: any[]): MatchExpression<input, output> {
     if (this.state.matched) return this;
 
     const handler = args[args.length - 1];
 
-    const patterns: Pattern<i>[] = [args[0]];
-    const predicates: ((value: i) => unknown)[] = [];
+    const patterns: Pattern<input>[] = [args[0]];
+    const predicates: ((value: input) => unknown)[] = [];
 
     // case with guard as second argument
     if (args.length === 3 && typeof args[1] === 'function') {
@@ -70,7 +70,7 @@ class MatchExpression<i, o> {
         matchPattern(pattern, this.input, (key, value) => {
           selected[key] = value;
         })
-      ) && predicates.every((predicate) => predicate(this.input as any))
+      ) && predicates.every((predicate) => predicate(this.input))
     );
 
     const state = matched
@@ -90,15 +90,15 @@ class MatchExpression<i, o> {
     return new MatchExpression(this.input, state);
   }
 
-  when<p extends (value: i) => unknown, c>(
-    predicate: p,
-    handler: (value: i, value2: i) => PickReturnValue<o, c>
-  ): MatchExpression<i, any> {
+  when(
+    predicate: (value: input) => unknown,
+    handler: (value: input, value2: input) => output
+  ): MatchExpression<input, output> {
     if (this.state.matched) return this;
 
     const matched = Boolean(predicate(this.input));
 
-    return new MatchExpression<i, PickReturnValue<o, c>>(
+    return new MatchExpression<input, output>(
       this.input,
       matched
         ? { matched: true, value: handler(this.input, this.input) }
@@ -106,16 +106,16 @@ class MatchExpression<i, o> {
     );
   }
 
-  otherwise<c>(handler: (value: i, value2: i) => PickReturnValue<o, c>): any {
+  otherwise(handler: (value: input, value2: input) => output): output {
     if (this.state.matched) return this.state.value;
     return handler(this.input, this.input);
   }
 
-  exhaustive() {
+  exhaustive(): output {
     return this.run();
   }
 
-  run() {
+  run(): output {
     if (this.state.matched) return this.state.value;
 
     let displayedValue;
