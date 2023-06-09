@@ -98,7 +98,7 @@ class MatchExpression<input, output> {
 
   when(
     predicate: (value: input) => unknown,
-    handler: (value: input, value2: input) => output
+    handler: (selection: input, value: input) => output
   ): MatchExpression<input, output> {
     if (this.state.matched) return this;
 
@@ -112,9 +112,9 @@ class MatchExpression<input, output> {
     );
   }
 
-  otherwise(handler: (value: input, value2: input) => output): output {
+  otherwise(handler: (value: input) => output): output {
     if (this.state.matched) return this.state.value;
-    return handler(this.input, this.input);
+    return handler(this.input);
   }
 
   exhaustive(): output {
