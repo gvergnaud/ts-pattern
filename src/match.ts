@@ -31,7 +31,7 @@ type MatchState<output> =
   | { matched: true; value: output }
   | { matched: false; value: undefined };
 
-const defaultMatchState: MatchState<never> = {
+const unmatched: MatchState<never> = {
   matched: false,
   value: undefined,
 };
@@ -48,13 +48,14 @@ const defaultMatchState: MatchState<never> = {
 class MatchExpression<input, output> {
   constructor(
     private input: input,
-    private state: MatchState<output> = defaultMatchState
+    private state: MatchState<output> = unmatched
   ) {}
 
   with(...args: any[]): MatchExpression<input, output> {
     if (this.state.matched) return this;
 
-    const handler = args[args.length - 1];
+    const handler: (selection: unknown, value: input) => output =
+      args[args.length - 1];
 
     const patterns: Pattern<input>[] = [args[0]];
     const predicates: ((value: input) => unknown)[] = [];
@@ -90,7 +91,7 @@ class MatchExpression<input, output> {
             this.input
           ),
         }
-      : { matched: false as const };
+      : unmatched;
 
     return new MatchExpression(this.input, state);
   }
@@ -107,7 +108,7 @@ class MatchExpression<input, output> {
       this.input,
       matched
         ? { matched: true, value: handler(this.input, this.input) }
-        : { matched: false, value: undefined }
+        : unmatched
     );
   }
 
