@@ -1,5 +1,5 @@
 import { Pattern } from './types/Pattern';
-import { Match, PickReturnValue } from './types/Match';
+import { Match } from './types/Match';
 import * as symbols from './internals/symbols';
 import { matchPattern } from './internals/helpers';
 
