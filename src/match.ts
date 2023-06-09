@@ -27,9 +27,14 @@ export function match<const input, output = symbols.unset>(
   return new MatchExpression(value) as any;
 }
 
-type MatchState<output> = { matched: true; value: output } | { matched: false };
+type MatchState<output> =
+  | { matched: true; value: output }
+  | { matched: false; value: undefined };
 
-const defaultMatchState: MatchState<never> = { matched: false };
+const defaultMatchState: MatchState<never> = {
+  matched: false,
+  value: undefined,
+};
 
 /**
  * This class represents a match expression. It follows the
@@ -102,7 +107,7 @@ class MatchExpression<input, output> {
       this.input,
       matched
         ? { matched: true, value: handler(this.input, this.input) }
-        : { matched: false }
+        : { matched: false, value: undefined }
     );
   }
 
