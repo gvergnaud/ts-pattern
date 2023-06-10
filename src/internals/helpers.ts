@@ -67,7 +67,7 @@ export const matchPattern = (
       if (variadicPatterns.length) {
         if (variadicPatterns.length > 1) {
           throw new Error(
-            `Pattern error: Using \`...P.array(...)\` several time in a single pattern is not allowed.`
+            `Pattern error: Using \`...P.array(...)\` several times in a single pattern is not allowed.`
           );
         }
 
