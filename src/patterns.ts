@@ -229,9 +229,8 @@ type WithDefault<a, b> = [a] extends [never] ? b : a;
  *  match(value)
  *   .with({ users: P.array({ name: P.string }) }, () => 'will match { name: string }[]')
  */
-export function array<input>(): Chainable<
-  ArrayP<input, unknown> & Iterable<ArrayP<input, unknown>>
->;
+export function array<input>(): Chainable<ArrayP<input, unknown>> &
+  Iterable<ArrayP<input, unknown>>;
 export function array<
   input,
   const p extends Pattern<WithDefault<UnwrapArray<input>, unknown>>
