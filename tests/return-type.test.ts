@@ -36,4 +36,15 @@ describe('returnType', () => {
         // @ts-expect-error
         .otherwise(() => true);
   });
+
+  it('type errors should be well placed', () => {
+    match<null>(null)
+      .returnType<{ type: 'ok'; value: 'a' | 'b' }>()
+      .with(null, () => ({
+        type: 'ok',
+        // @ts-expect-error
+        value: 'oops',
+      }))
+      .exhaustive();
+  });
 });
