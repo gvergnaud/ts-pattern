@@ -26,8 +26,8 @@ export type Match<
   inferredOutput = never
 > = {
   /**
-   * `.with(pattern, handler)` Registers a pattern and an handler function which
-   * will be called if this pattern matches the input value.
+   * `.with(pattern, handler)` Registers a pattern and an handler function that
+   * will be called if the pattern matches the input value.
    *
    * [Read the documentation for `.with()` on GitHub](https://github.com/gvergnaud/ts-pattern#with)
    **/
@@ -149,7 +149,7 @@ export type Match<
 
   /**
    * `.when(predicate, handler)` Registers a predicate function and an handler function.
-   * If the predicate returns true, the handler function will be chosen to handle the input.
+   * If the predicate returns true, the handler function will be called.
    *
    * [Read the documentation for `.when()` on GitHub](https://github.com/gvergnaud/ts-pattern#when)
    **/
@@ -166,8 +166,8 @@ export type Match<
     : Match<i, o, handledCases, Union<inferredOutput, c>>;
 
   /**
-   * `.otherwise()` takes a function returning the **default value**, and
-   * will be used to handle the input value if no previous pattern matched.
+   * `.otherwise()` takes a **default handler function** that will be
+   * called if no previous pattern matched your input.
    *
    * Equivalent to `.with(P._, () => x).exhaustive()`
    *
@@ -179,11 +179,11 @@ export type Match<
   ): PickReturnValue<o, Union<inferredOutput, c>>;
 
   /**
-   * `.exhaustive()` runs the pattern matching expression and return the result value.
+   * `.exhaustive()` checks that all cases are handled, and return the result value.
    *
-   * If this is of type `NonExhaustiveError`, it means you aren't matching
-   * every case, and you should add another `.with(...)` clause
-   * to prevent potential runtime errors.
+   * If you get a `NonExhaustiveError`, it means that you aren't handling
+   * all cases. You should probably add another `.with(...)` clause
+   * to match the missing case and prevent runtime errors.
    *
    * [Read the documentation for `.exhaustive()` on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
    *
@@ -195,12 +195,14 @@ export type Match<
     : never;
 
   /**
-   * `.run()` runs the pattern matching expression and return the result value.
+   * `.run()` return the resulting value.
+   *
+   * ⚠️ calling this function is unsafe, and may throw if no pattern matches your input.
    * */
   run(): PickReturnValue<o, inferredOutput>;
 
   /**
-   * `.returnType<T>()` Lets you specific a return type for all your code branches.
+   * `.returnType<T>()` Lets you specific the return type of all of your branches.
    *
    * [Read the documentation for `.returnType()` on GitHub](https://github.com/gvergnaud/ts-pattern#returnType)
    * */

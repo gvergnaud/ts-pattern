@@ -5,10 +5,8 @@ import { matchPattern } from './internals/helpers';
 
 /**
  * `match` creates a **pattern matching expression**.
- *
- * Use `.with(pattern, handler)` to pattern match on the input.
- *
- * Use `.exhaustive()` or `.otherwise(() => defaultValue)` to end the expression and get the result.
+ *  * Use `.with(pattern, handler)` to pattern match on the input.
+ *  * Use `.exhaustive()` or `.otherwise(() => defaultValue)` to end the expression and get the result.
  *
  * [Read the documentation for `match` on GitHub](https://github.com/gvergnaud/ts-pattern#match)
  *
