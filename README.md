@@ -118,6 +118,8 @@ Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#s
     - [`P.instanceOf` patterns](#Pinstanceof-patterns)
     - [`P.union` patterns](#Punion-patterns)
     - [`P.intersection` patterns](#Pintersection-patterns)
+    - [`P.string` predicates](#pstring-predicates)
+    - [`P.number` and `P.bigint` predicates](#pnumber-and-pbigint-predicates)
   - [Types](#types)
     - [`P.infer`](#Pinfer)
     - [`P.Pattern`](#PPattern)
@@ -1268,7 +1270,7 @@ const output = match(input)
   .otherwise(() => '');
 ```
 
-## `P.string` helper patterns
+## `P.string` predicates
 
 `P.string` has a number of methods to help you match on specific strings.
 
@@ -1350,7 +1352,7 @@ const fn = (input: string) =>
 console.log(fn('gabriel')); // logs 'single word'
 ```
 
-## `P.number` and `P.bigint` helper patterns
+## `P.number` and `P.bigint` predicates
 
 `P.number` and `P.bigint` have several of methods to help you match on specific numbers and bigints.
 
