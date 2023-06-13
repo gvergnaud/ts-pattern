@@ -4,6 +4,6 @@
   "main": "one-file-demo.ts",
   "author": "gvergnaud",
   "dependencies": {
-    "ts-pattern": "^5.0.0-rc.1"
+    "ts-pattern": "^5.0.0"
   }
 }
