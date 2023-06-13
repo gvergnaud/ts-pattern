@@ -12,7 +12,7 @@ describe('types', () => {
     pattern = [{ status: 'success', data: '' }, P._];
     pattern = [{ status: 'success', data: P.string }, P._];
     pattern = [{ status: 'success', data: P._ }, P._];
-    pattern = [{ status: 'error', error: new Error() }, P._];
+    pattern = [{ status: 'error', error: P.instanceOf(Error) }, P._];
     pattern = [{ status: 'idle' }, P._];
     pattern = [P._, { type: 'fetch' }];
     pattern = [P._, { type: P._ }];
@@ -124,7 +124,7 @@ describe('types', () => {
     );
 
     match<Input>({ type: 'hello' }).with(
-      P.typed<Input>().when((x) => {
+      P.when((x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return true;
       }),
@@ -190,17 +190,14 @@ describe('types', () => {
             typeof x,
             {
               type: string;
-              hello:
-                | {
-                    yo: number;
-                  }
-                | undefined;
+              hello?: { yo: number } | undefined;
             }
           >
         >;
         return 'ok';
       }
     );
+
     match<Input>({ type: 'hello' }).with({ type: P.not(P.string) }, (x) => {
       type t = Expect<Equal<typeof x, Input>>;
       return 'ok';
@@ -338,8 +335,13 @@ describe('type narrowing inheritence', () => {
       const f = (input: Input) =>
         match(input)
           .with({ type: 'a' }, () => 'a handled')
-          // @ts-expect-error duplicates shouldn't be permitted
-          .with({ type: 'a' }, () => 'duplicated')
+          .with(
+            {
+              // @ts-expect-error duplicates shouldn't be permitted
+              type: 'a',
+            },
+            () => 'duplicated'
+          )
           .with({ type: 'b' }, () => 'b handled')
           .exhaustive();
     });
@@ -361,7 +363,7 @@ describe('type narrowing inheritence', () => {
       const size = 10;
       let canShowInlineLegend = true as boolean;
 
-      match(true)
+      match<boolean>(true)
         .with(size >= 100 && width > height * 2.25, () => 'table')
         .with(size >= 100 && height > width * 1.5, () => 'table')
         .with(canShowInlineLegend, () => 'inline')

@@ -1,6 +1,8 @@
 import type * as symbols from '../internals/symbols';
-import { Primitives } from './helpers';
+import { MergeUnion, Primitives, WithDefault } from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
+import { matcher } from '../patterns';
+import { ExtractPreciseValue } from './ExtractPreciseValue';
 
 export type MatcherType =
   | 'not'
@@ -8,8 +10,11 @@ export type MatcherType =
   | 'or'
   | 'and'
   | 'array'
+  | 'map'
+  | 'set'
   | 'select'
-  | 'default';
+  | 'default'
+  | 'custom';
 
 // We use a separate MatcherProtocol type to preserves
 // the type level information (selections and excluded) used
@@ -51,20 +56,47 @@ export interface Matcher<
   // it has been fully matched by this pattern
   excluded = narrowed
 > {
-  [symbols.matcher](): MatcherProtocol<
+  [matcher](): MatcherProtocol<
     input,
     narrowed,
     matcherType,
     selections,
     excluded
   >;
+  // only used for array matchers
+  [symbols.isVariadic]?: boolean;
 }
 
-type UnknownMatcher = Matcher<unknown, unknown, any, any>;
+type PatternMatcher<input> = Matcher<input, unknown, any, any>;
+
+// We fall back to `a` if we weren't able to extract anything more precise
+export type MatchedValue<a, invpattern> = WithDefault<
+  ExtractPreciseValue<a, invpattern>,
+  a
+>;
+
+export type AnyMatcher = Matcher<any, any, any, any, any>;
+
+type UnknownMatcher = PatternMatcher<unknown>;
+
+export type CustomP<input, pattern, narrowedOrFn> = Matcher<
+  input,
+  pattern,
+  //  👆
+  // for the input type to be instantiated correctly
+  // on subpatterns, it has to be passed through.
+  'custom',
+  None,
+  narrowedOrFn
+>;
+
+export type ArrayP<input, p> = Matcher<input, p, 'array'>;
 
 export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
-export type ArrayP<input, p> = Matcher<input, p, 'array'>;
+export type MapP<input, pkey, pvalue> = Matcher<input, [pkey, pvalue], 'map'>;
+
+export type SetP<input, p> = Matcher<input, p, 'set'>;
 
 export type AndP<input, ps> = Matcher<input, ps, 'and'>;
 
@@ -90,16 +122,15 @@ export type SelectP<
 
 export type AnonymousSelectP = SelectP<symbols.anonymousSelectKey>;
 
-export interface ToExclude<a> {
-  [symbols.toExclude]: a;
+export interface Override<a> {
+  [symbols.override]: a;
 }
 
 export type UnknownPattern =
   | readonly []
-  | readonly [UnknownPattern, ...UnknownPattern[]]
-  | { readonly [k: string]: UnknownPattern }
-  | Set<UnknownPattern>
-  | Map<unknown, UnknownPattern>
+  | readonly [unknown, ...unknown[]]
+  | readonly [...unknown[], unknown]
+  | { readonly [k: string]: unknown }
   | Primitives
   | UnknownMatcher;
 
@@ -109,25 +140,37 @@ export type UnknownPattern =
  * They can also be wildcards, like `P._`, `P.string`, `P.number`,
  * or other matchers, like `P.when(predicate)`, `P.not(pattern)`, etc.
  *
- * [Read documentation for `P.Pattern` on GitHub](https://github.com/gvergnaud/ts-pattern#patterns)
+ * [Read the documentation for `P.Pattern` on GitHub](https://github.com/gvergnaud/ts-pattern#patterns)
  *
  * @example
  * const pattern: P.Pattern<User> = { name: P.string }
  */
-export type Pattern<a> =
-  | Matcher<a, unknown, any, any>
-  | (a extends Primitives
-      ? a
-      : unknown extends a
-      ? UnknownPattern
-      : a extends readonly (infer i)[]
-      ? a extends readonly [any, ...any]
-        ? { readonly [index in keyof a]: Pattern<a[index]> }
-        : readonly [] | readonly [Pattern<i>, ...Pattern<i>[]]
-      : a extends Map<infer k, infer v>
-      ? Map<k, Pattern<v>>
-      : a extends Set<infer v>
-      ? Set<Pattern<v>>
-      : a extends object
-      ? { readonly [k in keyof a]?: Pattern<Exclude<a[k], undefined>> }
-      : a);
+export type Pattern<a> = unknown extends a ? UnknownPattern : KnownPattern<a>;
+
+type KnownPattern<a> = KnownPatternInternal<a>;
+
+type KnownPatternInternal<
+  a,
+  objs = Exclude<a, Primitives | Map<any, any> | Set<any> | readonly any[]>,
+  arrays = Extract<a, readonly any[]>,
+  primitives = Exclude<a, object>
+> =
+  | primitives
+  | PatternMatcher<a>
+  | ([objs] extends [never] ? never : ObjectPattern<MergeUnion<objs>>)
+  | ([arrays] extends [never] ? never : ArrayPattern<arrays>);
+
+type ObjectPattern<a> =
+  | {
+      readonly [k in keyof a]?: Pattern<a[k]>;
+    }
+  | never;
+
+type ArrayPattern<a> = a extends readonly (infer i)[]
+  ? a extends readonly [any, ...any]
+    ? { readonly [index in keyof a]: Pattern<a[index]> }
+    :
+        | readonly []
+        | readonly [Pattern<i>, ...Pattern<i>[]]
+        | readonly [...Pattern<i>[], Pattern<i>]
+  : never;

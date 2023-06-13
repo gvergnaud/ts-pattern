@@ -147,15 +147,15 @@ describe('Multiple patterns', () => {
         .with(
           { a: P.string },
           [true, 2],
-          new Map([['key', P._]]),
-          new Set([P.number]),
+          P.map('key', P._),
+          P.set(P.number),
           (x) => {
             type t = Expect<
               Equal<
                 typeof x,
                 | { a: string; b: number }
-                | [true, number]
-                | Map<string, { x: number }>
+                | [true, 2]
+                | Map<'key', { x: number }>
                 | Set<number>
               >
             >;
@@ -163,15 +163,15 @@ describe('Multiple patterns', () => {
             return 'Object';
           }
         )
-        .with([false, 2] as const, (x) => {
+        .with([false, 2], (x) => {
           type t = Expect<Equal<typeof x, [false, 2]>>;
           return '[false, 2]';
         })
-        .with([false, P.number] as const, (x) => {
+        .with([false, P.number], (x) => {
           type t = Expect<Equal<typeof x, [false, number]>>;
           return '[false, number]';
         })
-        .with([true, P.number] as const, (x) => {
+        .with([true, P.number], (x) => {
           type t = Expect<Equal<typeof x, [true, number]>>;
           return '[true, number]';
         })
@@ -184,8 +184,8 @@ describe('Multiple patterns', () => {
         .with(
           { a: P.string },
           [true, 2],
-          new Map([['key', P._]]),
-          new Set([P.number]),
+          P.map(P.string, P._),
+          P.set(P.number),
           (x) => 'Object'
         )
         .with([false, 2], (x) => '[false, 2]')
@@ -223,7 +223,7 @@ describe('Multiple patterns', () => {
   });
 
   it('issue #74: inference must work on every pattern in the list', () => {
-    match({ a: [1, 2, 3, 4] })
+    match<{ a: number[] }>({ a: [1, 2, 3, 4] })
       .with(
         {
           a: P.when((arr) => {

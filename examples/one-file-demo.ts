@@ -1,3 +1,5 @@
+import { isMatching, match, P } from 'ts-pattern';
+
 /**
  * ### One file TS-Pattern demo.
  *
@@ -11,8 +13,6 @@
  *   `P.array`, `P.optional`, etc.
  */
 
-import { isMatching, match, P } from 'ts-pattern';
-
 /**************************************************
  * Use case 1: handling discriminated union types *
  **************************************************/
@@ -22,7 +22,7 @@ type Response =
   | { type: 'image'; data: { extension: 'gif' | 'jpg' | 'png'; src: string } }
   | { type: 'text'; data: string; tags: { name: string; id: number }[] };
 
-const exampleFunction1 = (input: Response): string =>
+const example1 = (input: Response): string =>
   match(input)
     // 1. Basic pattern with inference with a wildcard
     .with({ type: 'video', data: { format: 'mp4' } }, (video) => video.data.src)
@@ -57,7 +57,7 @@ type UserType = 'editor' | 'viewer';
 // Uncomment 'enterprise' to see exhaustive checking in action
 type OrgPlan = 'basic' | 'pro' | 'premium'; // | 'enterprise';
 
-const exampleFunction2 = (org: OrgPlan, user: UserType) =>
+const example2 = (org: OrgPlan, user: UserType) =>
   // 1. Checking several enums with tuples
   match([org, user] as const)
     .with(['basic', P._], () => `Please upgrade to unlock this feature!`)
@@ -72,8 +72,31 @@ const exampleFunction2 = (org: OrgPlan, user: UserType) =>
     // 3. complex exhaustive checking
     .exhaustive();
 
+/**************************************************
+ * Use case 3: Matching specific strings or numbers
+ **************************************************/
+
+const example3 = (queries: string[]) =>
+  match(queries)
+    .with(
+      [
+        P.string.startsWith('SELECT').endsWith('FROM user').select(),
+        ...P.array(),
+      ],
+      (firstQuery) => `${firstQuery}: 👨‍👩‍👧‍👦`
+    )
+    .with(P.array(), () => 'other queries')
+    .exhaustive();
+
+const example4 = (position: { x: number; y: number }) =>
+  match(position)
+    .with({ x: P.number.gte(100) }, (value) => '⏱️')
+    .with({ x: P.number.between(0, 100) }, (value) => '⏱️')
+    .with({ x: P.number.positive(), y: P.number.positive() }, (value) => '⏱️')
+    .otherwise(() => 'x or y is negative');
+
 /******************************************
- * Use case 3: Validation an API response *
+ * Use case 4: Validation an API response *
  ******************************************/
 
 const userPattern = {
@@ -87,15 +110,17 @@ const userPattern = {
 };
 
 const postPattern = {
-  title: P.string,
+  title: P.string.minLength(2).maxLength(255),
+  stars: P.number.int().between(0, 5),
   content: P.string,
-  likeCount: P.number,
   author: userPattern,
   // 2. arrays
   comments: P.array({
     author: userPattern,
     content: P.string,
   }),
+  // 3. tuples (a non-empty array in this case)
+  tags: [P.string, ...P.array(P.string)],
 };
 
 type Post = P.infer<typeof postPattern>;

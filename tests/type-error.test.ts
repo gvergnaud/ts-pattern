@@ -115,4 +115,48 @@ describe('type errors', () => {
         // @ts-expect-error
         .exhaustive();
   });
+
+  it("if a pattern is any, the outer expression shouldn't throw a type error", () => {
+    const anyVar = null as any;
+
+    match({ a: 'a' })
+      .with({ a: anyVar }, (x) => {
+        type t = Expect<Equal<typeof x, { a: never }>>;
+        return 'Ok';
+      })
+      .otherwise(() => 'ko');
+  });
+
+  it('type errors should be well placed', () => {
+    match<{
+      a: 1;
+      b: 'hello' | 'bonjour';
+      c: { d: [number, number, boolean] };
+      e: unknown;
+    } | null>(null)
+      .with(
+        {
+          // @ts-expect-error
+          b: 'oops',
+        },
+        () => 'result'
+      )
+      .with(
+        {
+          c: {
+            d: [
+              1, 2,
+              // @ts-expect-error: number instead of boolean
+              3,
+            ],
+          },
+        },
+        () => 'x'
+      )
+      .with({ e: 1 }, () => 'bas')
+      .with({ b: 'hello' }, ({ a }) => 'result')
+      .with({ b: 'bonjour' }, ({ a }) => 'result')
+      .with(null, () => 'result')
+      .exhaustive();
+  });
 });

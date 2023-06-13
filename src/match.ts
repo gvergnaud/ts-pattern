@@ -1,17 +1,14 @@
 import { Pattern } from './types/Pattern';
-import { GuardValue } from './types/helpers';
-import { Match, PickReturnValue } from './types/Match';
+import { Match } from './types/Match';
 import * as symbols from './internals/symbols';
 import { matchPattern } from './internals/helpers';
 
 /**
  * `match` creates a **pattern matching expression**.
+ *  * Use `.with(pattern, handler)` to pattern match on the input.
+ *  * Use `.exhaustive()` or `.otherwise(() => defaultValue)` to end the expression and get the result.
  *
- * Use `.with(pattern, handler)` to pattern match on the input.
- *
- * Use `.exhaustive()` or `.otherwise(() => defaultValue)` to end the expression and get the result.
- *
- * [Read documentation for `match` on GitHub](https://github.com/gvergnaud/ts-pattern#match)
+ * [Read the documentation for `match` on GitHub](https://github.com/gvergnaud/ts-pattern#match)
  *
  * @example
  *  declare let input: "A" | "B";
@@ -22,17 +19,20 @@ import { matchPattern } from './internals/helpers';
  *    .exhaustive();
  *
  */
-export function match<input extends [any, ...any], output = symbols.unset>(
-  value: input
-): Match<input, output>;
-export function match<input, output = symbols.unset>(
-  value: input
-): Match<input, output>;
-export function match<input, output = symbols.unset>(
+export function match<const input, output = symbols.unset>(
   value: input
 ): Match<input, output> {
-  return new MatchExpression(value, []) as any;
+  return new MatchExpression(value) as any;
 }
+
+type MatchState<output> =
+  | { matched: true; value: output }
+  | { matched: false; value: undefined };
+
+const unmatched: MatchState<never> = {
+  matched: false,
+  value: undefined,
+};
 
 /**
  * This class represents a match expression. It follows the
@@ -43,20 +43,20 @@ export function match<input, output = symbols.unset>(
  * The types of this class aren't public, the public type definition
  * can be found in src/types/Match.ts.
  */
-class MatchExpression<i, o> {
+class MatchExpression<input, output> {
   constructor(
-    private value: i,
-    private cases: {
-      match: (value: i) => { matched: boolean; value: any };
-      handler: (...args: any) => any;
-    }[]
+    private input: input,
+    private state: MatchState<output> = unmatched
   ) {}
 
-  with(...args: any[]) {
-    const handler = args[args.length - 1];
+  with(...args: any[]): MatchExpression<input, output> {
+    if (this.state.matched) return this;
 
-    const patterns: Pattern<i>[] = [args[0]];
-    const predicates: ((value: i) => unknown)[] = [];
+    const handler: (selection: unknown, value: input) => output =
+      args[args.length - 1];
+
+    const patterns: Pattern<input>[] = [args[0]];
+    const predicates: ((value: input) => unknown)[] = [];
 
     // case with guard as second argument
     if (args.length === 3 && typeof args[1] === 'function') {
@@ -67,98 +67,74 @@ class MatchExpression<i, o> {
       patterns.push(...args.slice(1, args.length - 1));
     }
 
-    return new MatchExpression(
-      this.value,
-      this.cases.concat([
-        {
-          match: (value: i) => {
-            let selected: Record<string, unknown> = {};
-            const matched = Boolean(
-              patterns.some((pattern) =>
-                matchPattern(pattern, value, (key, value) => {
-                  selected[key] = value;
-                })
-              ) && predicates.every((predicate) => predicate(value as any))
-            );
-            return {
-              matched,
-              value:
-                matched && Object.keys(selected).length
-                  ? symbols.anonymousSelectKey in selected
-                    ? selected[symbols.anonymousSelectKey]
-                    : selected
-                  : value,
-            };
-          },
-          handler,
-        },
-      ])
+    let selected: Record<string, unknown> = {};
+
+    const matched = Boolean(
+      patterns.some((pattern) =>
+        matchPattern(pattern, this.input, (key, value) => {
+          selected[key] = value;
+        })
+      ) && predicates.every((predicate) => predicate(this.input))
+    );
+
+    const state = matched
+      ? {
+          matched: true as const,
+          value: handler(
+            Object.keys(selected).length
+              ? symbols.anonymousSelectKey in selected
+                ? selected[symbols.anonymousSelectKey]
+                : selected
+              : this.input,
+            this.input
+          ),
+        }
+      : unmatched;
+
+    return new MatchExpression(this.input, state);
+  }
+
+  when(
+    predicate: (value: input) => unknown,
+    handler: (selection: input, value: input) => output
+  ): MatchExpression<input, output> {
+    if (this.state.matched) return this;
+
+    const matched = Boolean(predicate(this.input));
+
+    return new MatchExpression<input, output>(
+      this.input,
+      matched
+        ? { matched: true, value: handler(this.input, this.input) }
+        : unmatched
     );
   }
 
-  when<p extends (value: i) => unknown, c>(
-    predicate: p,
-    handler: (value: GuardValue<p>) => PickReturnValue<o, c>
-  ) {
-    return new MatchExpression<i, PickReturnValue<o, c>>(
-      this.value,
-      this.cases.concat([
-        {
-          match: (value) => ({
-            matched: Boolean(predicate(value)),
-            value,
-          }),
-          handler,
-        },
-      ])
-    );
+  otherwise(handler: (value: input) => output): output {
+    if (this.state.matched) return this.state.value;
+    return handler(this.input);
   }
 
-  otherwise<c>(
-    handler: (value: i) => PickReturnValue<o, c>
-  ): PickReturnValue<o, c> {
-    return new MatchExpression<i, PickReturnValue<o, c>>(
-      this.value,
-      this.cases.concat([
-        {
-          match: (value) => ({
-            matched: true,
-            value,
-          }),
-          handler,
-        },
-      ])
-    ).run();
-  }
-
-  exhaustive() {
+  exhaustive(): output {
     return this.run();
   }
 
-  run() {
-    let selected = this.value;
-    let handler: undefined | ((...args: any) => any) = undefined;
+  run(): output {
+    if (this.state.matched) return this.state.value;
 
-    for (let i = 0; i < this.cases.length; i++) {
-      const entry = this.cases[i];
-      const matchResult = entry.match(this.value);
-      if (matchResult.matched) {
-        selected = matchResult.value;
-        handler = entry.handler;
-        break;
-      }
+    let displayedValue;
+    try {
+      displayedValue = JSON.stringify(this.input);
+    } catch (e) {
+      displayedValue = this.input;
     }
-    if (!handler) {
-      let displayedValue;
-      try {
-        displayedValue = JSON.stringify(this.value);
-      } catch (e) {
-        displayedValue = this.value;
-      }
-      throw new Error(
-        `Pattern matching error: no pattern matches value ${displayedValue}`
-      );
-    }
-    return handler(selected, this.value);
+
+    throw new Error(
+      `Pattern matching error: no pattern matches value ${displayedValue}`
+    );
+  }
+
+  returnType() {
+    return this;
   }
 }

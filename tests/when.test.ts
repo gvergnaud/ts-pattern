@@ -17,7 +17,7 @@ describe('when', () => {
       expect(
         match(value)
           .with(
-            P.typed<number>().when((x) => x > 10 && x < 50),
+            P.when((x) => x > 10 && x < 50),
             () => true
           )
           .otherwise(() => false)
@@ -213,7 +213,7 @@ describe('when', () => {
               list: P.array({
                 test: 'a',
                 sublist: ['w'],
-                maybe: P.optional(P.string),
+                maybe: P.string.optional(),
                 prop: P.when((x) => {
                   type t = Expect<Equal<typeof x, string>>;
                   return true;
@@ -257,7 +257,7 @@ describe('when', () => {
           (x) => {
             type t = Expect<
               Equal<
-                typeof x['value']['coords'],
+                (typeof x)['value']['coords'],
                 {
                   y: 'top' | 'bottom';
                   x: 'right';
@@ -364,5 +364,29 @@ describe('when', () => {
         // @ts-expect-error
         .exhaustive()
     ).toBe(true);
+  });
+
+  it('issue #153: P.when should preserve undefined.', () => {
+    type Data = { digit: number };
+
+    type Input = {
+      data: Data | undefined;
+    };
+
+    const input: Input = { data: undefined };
+
+    const result = match(input)
+      .with(
+        {
+          data: P.when((data) => {
+            type t = Expect<Equal<typeof data, Data | undefined>>;
+            return data ? data.digit > 5 : 0;
+          }),
+        },
+        () => 'digit is more than 5'
+      )
+      .otherwise(() => 'digit is less than 5');
+
+    expect(result).toBe('digit is less than 5');
   });
 });

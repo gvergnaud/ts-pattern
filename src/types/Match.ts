@@ -1,20 +1,19 @@
 import type * as symbols from '../internals/symbols';
-import type { Pattern, Matcher } from './Pattern';
-import type { ExtractPreciseValue } from './ExtractPreciseValue';
+import type { Pattern, MatchedValue } from './Pattern';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
-import type { WithDefault, Union, GuardValue, IsNever } from './helpers';
+import type { Union, GuardValue, IsNever } from './helpers';
 import type { FindSelected } from './FindSelected';
-
-// We fall back to `a` if we weren't able to extract anything more precise
-export type MatchedValue<a, invpattern> = WithDefault<
-  ExtractPreciseValue<a, invpattern>,
-  a
->;
 
 export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;
 
-type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
+interface NonExhaustiveError<i> {
+  __nonExhaustive: never;
+}
+
+interface TSPatternError<i> {
+  __nonExhaustive: never;
+}
 
 /**
  * #### Match
@@ -23,19 +22,20 @@ type NonExhaustiveError<i> = { __nonExhaustive: never } & i;
 export type Match<
   i,
   o,
-  patternValueTuples extends any[] = [],
+  handledCases extends any[] = [],
   inferredOutput = never
 > = {
   /**
-   * `.with(pattern, handler)` Registers a pattern and an handler function which
-   * will be called if this pattern matches the input value.
+   * `.with(pattern, handler)` Registers a pattern and an handler function that
+   * will be called if the pattern matches the input value.
    *
-   * [Read documentation for `.with()` on GitHub](https://github.com/gvergnaud/ts-pattern#with)
+   * [Read the documentation for `.with()` on GitHub](https://github.com/gvergnaud/ts-pattern#with)
    **/
   with<
-    p extends Pattern<i>,
+    const p extends Pattern<i>,
     c,
-    value extends MatchedValue<i, InvertPattern<p>>
+    value extends MatchedValue<i, InvertPattern<p, i>>,
+    excluded = InvertPatternForExclude<p, value>
   >(
     /**
      * HACK: Using `IsNever<p>` here is a hack to
@@ -50,21 +50,19 @@ export type Match<
       selections: FindSelected<value, p>,
       value: value
     ) => PickReturnValue<o, c>
-  ): [InvertPatternForExclude<p, value>] extends [infer excluded]
-    ? Match<
-        Exclude<i, excluded>,
-        o,
-        [...patternValueTuples, excluded],
-        Union<inferredOutput, c>
-      >
-    : never;
+  ): Match<
+    Exclude<i, excluded>,
+    o,
+    [...handledCases, excluded],
+    Union<inferredOutput, c>
+  >;
 
   with<
-    p1 extends Pattern<i>,
-    p2 extends Pattern<i>,
+    const p1 extends Pattern<i>,
+    const p2 extends Pattern<i>,
     c,
     p extends p1 | p2,
-    value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
+    value extends p extends any ? MatchedValue<i, InvertPattern<p, i>> : never
   >(
     p1: p1,
     p2: p2,
@@ -76,19 +74,19 @@ export type Match<
     ? Match<
         Exclude<i, excluded1 | excluded2>,
         o,
-        [...patternValueTuples, excluded1, excluded2],
+        [...handledCases, excluded1, excluded2],
         Union<inferredOutput, c>
       >
     : never;
 
   with<
-    p1 extends Pattern<i>,
-    p2 extends Pattern<i>,
-    p3 extends Pattern<i>,
-    ps extends Pattern<i>[],
+    const p1 extends Pattern<i>,
+    const p2 extends Pattern<i>,
+    const p3 extends Pattern<i>,
+    const ps extends readonly Pattern<i>[],
     c,
     p extends p1 | p2 | p3 | ps[number],
-    value extends p extends any ? MatchedValue<i, InvertPattern<p>> : never
+    value extends MatchedValue<i, InvertPattern<p, i>>
   >(
     ...args: [
       p1: p1,
@@ -118,7 +116,7 @@ export type Match<
         >,
         o,
         [
-          ...patternValueTuples,
+          ...handledCases,
           excluded1,
           excluded2,
           excluded3,
@@ -129,8 +127,8 @@ export type Match<
     : never;
 
   with<
-    pat extends Pattern<i>,
-    pred extends (value: MatchedValue<i, InvertPattern<pat>>) => unknown,
+    const pat extends Pattern<i>,
+    pred extends (value: MatchedValue<i, InvertPattern<pat, i>>) => unknown,
     c,
     value extends GuardValue<pred>
   >(
@@ -144,16 +142,16 @@ export type Match<
     ? Match<
         Exclude<i, narrowed>,
         o,
-        [...patternValueTuples, narrowed],
+        [...handledCases, narrowed],
         Union<inferredOutput, c>
       >
-    : Match<i, o, patternValueTuples, Union<inferredOutput, c>>;
+    : Match<i, o, handledCases, Union<inferredOutput, c>>;
 
   /**
    * `.when(predicate, handler)` Registers a predicate function and an handler function.
-   * If the predicate returns true, the handler function will be chosen to handle the input.
+   * If the predicate returns true, the handler function will be called.
    *
-   * [Read documentation for `.when()` on GitHub](https://github.com/gvergnaud/ts-pattern#when)
+   * [Read the documentation for `.when()` on GitHub](https://github.com/gvergnaud/ts-pattern#when)
    **/
   when<pred extends (value: i) => unknown, c, value extends GuardValue<pred>>(
     predicate: pred,
@@ -162,18 +160,18 @@ export type Match<
     ? Match<
         Exclude<i, narrowed>,
         o,
-        [...patternValueTuples, narrowed],
+        [...handledCases, narrowed],
         Union<inferredOutput, c>
       >
-    : Match<i, o, patternValueTuples, Union<inferredOutput, c>>;
+    : Match<i, o, handledCases, Union<inferredOutput, c>>;
 
   /**
-   * `.otherwise()` takes a function returning the **default value**, and
-   * will be used to handle the input value if no previous pattern matched.
+   * `.otherwise()` takes a **default handler function** that will be
+   * called if no previous pattern matched your input.
    *
    * Equivalent to `.with(P._, () => x).exhaustive()`
    *
-   * [Read documentation for `.otherwise()` on GitHub](https://github.com/gvergnaud/ts-pattern#otherwise)
+   * [Read the documentation for `.otherwise()` on GitHub](https://github.com/gvergnaud/ts-pattern#otherwise)
    *
    **/
   otherwise<c>(
@@ -181,25 +179,36 @@ export type Match<
   ): PickReturnValue<o, Union<inferredOutput, c>>;
 
   /**
-   * `.exhaustive()` runs the pattern matching expression and return the result value.
+   * `.exhaustive()` checks that all cases are handled, and return the result value.
    *
-   * If this is of type `NonExhaustiveError`, it means you aren't matching
-   * every case, and you should add another `.with(...)` clause
-   * to prevent potential runtime errors.
+   * If you get a `NonExhaustiveError`, it means that you aren't handling
+   * all cases. You should probably add another `.with(...)` clause
+   * to match the missing case and prevent runtime errors.
    *
-   * [Read documentation for `.exhaustive()` on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
+   * [Read the documentation for `.exhaustive()` on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
    *
    * */
-  exhaustive: DeepExcludeAll<i, patternValueTuples> extends infer remainingCases
+  exhaustive: DeepExcludeAll<i, handledCases> extends infer remainingCases
     ? [remainingCases] extends [never]
       ? () => PickReturnValue<o, inferredOutput>
       : NonExhaustiveError<remainingCases>
     : never;
 
   /**
-   * `.run()` runs the pattern matching expression and return the result value.
+   * `.run()` return the resulting value.
+   *
+   * ⚠️ calling this function is unsafe, and may throw if no pattern matches your input.
    * */
   run(): PickReturnValue<o, inferredOutput>;
+
+  /**
+   * `.returnType<T>()` Lets you specific the return type of all of your branches.
+   *
+   * [Read the documentation for `.returnType()` on GitHub](https://github.com/gvergnaud/ts-pattern#returnType)
+   * */
+  returnType: [inferredOutput] extends [never]
+    ? <output>() => Match<i, output, handledCases>
+    : TSPatternError<'calling `.returnType<T>()` is only allowed directly after `match(...)`.'>;
 };
 
 /**
@@ -225,6 +234,6 @@ type DeepExcludeAll<a, tupleList extends any[]> = [a] extends [never]
   ? DeepExcludeAll<DeepExclude<a, excluded>, tail>
   : a;
 
-type MakeTuples<ps extends any[], value> = {
+type MakeTuples<ps extends readonly any[], value> = {
   -readonly [index in keyof ps]: InvertPatternForExclude<ps[index], value>;
 };

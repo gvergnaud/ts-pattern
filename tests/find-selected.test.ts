@@ -19,22 +19,19 @@ type AnonymousSelectP = SelectP<symbols.anonymousSelectKey>;
 describe('FindSelected', () => {
   describe('should correctly return kwargs', () => {
     it('Tuples', () => {
+      type res1 = FindSelected<
+        { a: { b: { c: [3] } } },
+        {
+          a: {
+            b: {
+              c: [SelectP<'c'>];
+            };
+          };
+        }
+      >;
+      type test1 = Expect<Equal<res1, { c: 3 }>>;
+
       type cases = [
-        Expect<
-          Equal<
-            FindSelected<
-              { a: { b: { c: [3] } } },
-              {
-                a: {
-                  b: {
-                    c: [SelectP<'c'>];
-                  };
-                };
-              }
-            >,
-            { c: 3 }
-          >
-        >,
         Expect<
           Equal<
             FindSelected<[State, Event], [SelectP<'state'>, SelectP<'event'>]>,
@@ -75,6 +72,170 @@ describe('FindSelected', () => {
           >
         >
       ];
+    });
+
+    describe('variadic tuples', () => {
+      it('[a, ...b[]]', () => {
+        type res1 = FindSelected<
+          [State, ...Event[]],
+          [SelectP<'state'>, ...ArrayP<unknown, SelectP<'event'>>[]]
+        >;
+        type test1 = Expect<Equal<res1, { state: State; event: Event[] }>>;
+
+        type res2 = FindSelected<
+          [1, ...number[]],
+          [AnonymousSelectP, ...ArrayP<unknown, unknown>[]]
+        >;
+        type test2 = Expect<Equal<res2, 1>>;
+
+        type res3 = FindSelected<
+          [1, ...number[]],
+          [unknown, ...ArrayP<unknown, AnonymousSelectP>[]]
+        >;
+        type test3 = Expect<Equal<res3, number[]>>;
+      });
+
+      it('[a, b, ...c[]]', () => {
+        type res1 = FindSelected<
+          [State, State, ...Event[]],
+          [
+            SelectP<'state'>,
+            SelectP<'state2'>,
+            ...ArrayP<unknown, SelectP<'event'>>[]
+          ]
+        >;
+        type test1 = Expect<
+          Equal<res1, { state: State; state2: State; event: Event[] }>
+        >;
+
+        type res2 = FindSelected<
+          [1, 2, ...number[]],
+          [AnonymousSelectP, unknown, ...ArrayP<unknown, unknown>[]]
+        >;
+        type test2 = Expect<Equal<res2, 1>>;
+
+        type res3 = FindSelected<
+          [1, 2, ...number[]],
+          [unknown, AnonymousSelectP, ...ArrayP<unknown, unknown>[]]
+        >;
+        type test3 = Expect<Equal<res3, 2>>;
+
+        type res4 = FindSelected<
+          [1, 2, ...number[]],
+          [unknown, unknown, ...ArrayP<unknown, AnonymousSelectP>[]]
+        >;
+        type test4 = Expect<Equal<res4, number[]>>;
+      });
+      it('[...a[], b]', () => {
+        type res1 = FindSelected<
+          [...Event[], State],
+          [...ArrayP<unknown, SelectP<'event'>>[], SelectP<'state'>]
+        >;
+        type test1 = Expect<Equal<res1, { state: State; event: Event[] }>>;
+
+        type res2 = FindSelected<
+          [...number[], 1],
+          [...ArrayP<unknown, unknown>[], AnonymousSelectP]
+        >;
+        type test2 = Expect<Equal<res2, 1>>;
+
+        type res3 = FindSelected<
+          [...number[], 1],
+          [...ArrayP<unknown, AnonymousSelectP>[], unknown]
+        >;
+        type test3 = Expect<Equal<res3, number[]>>;
+      });
+      it('[...a[], b, c]', () => {
+        type res1 = FindSelected<
+          [...Event[], State, State],
+          [
+            ...ArrayP<unknown, SelectP<'event'>>[],
+            SelectP<'state'>,
+            SelectP<'state2'>
+          ]
+        >;
+        type test1 = Expect<
+          Equal<res1, { state: State; state2: State; event: Event[] }>
+        >;
+
+        type res2 = FindSelected<
+          [...number[], 1, 2],
+          [...ArrayP<unknown, unknown>[], AnonymousSelectP, unknown]
+        >;
+        type test2 = Expect<Equal<res2, 1>>;
+
+        type res3 = FindSelected<
+          [...number[], 1, 2],
+          [...ArrayP<unknown, unknown>[], unknown, AnonymousSelectP]
+        >;
+        type test3 = Expect<Equal<res3, 2>>;
+
+        type res4 = FindSelected<
+          [...number[], 1, 2],
+          [...ArrayP<unknown, AnonymousSelectP>[], unknown, unknown]
+        >;
+        type test4 = Expect<Equal<res4, number[]>>;
+      });
+
+      it('[a, ...b[], c]', () => {
+        type res1 = FindSelected<
+          [State, ...Event[], State],
+          [
+            SelectP<'state'>,
+            ...ArrayP<unknown, SelectP<'event'>>[],
+            SelectP<'state2'>
+          ]
+        >;
+        type test1 = Expect<
+          Equal<res1, { state: State; state2: State; event: Event[] }>
+        >;
+
+        type res2 = FindSelected<
+          [1, ...number[], 2],
+          [AnonymousSelectP, ...ArrayP<unknown, unknown>[], unknown]
+        >;
+        type test2 = Expect<Equal<res2, 1>>;
+
+        type res3 = FindSelected<
+          [1, ...number[], 2],
+          [unknown, ...ArrayP<unknown, unknown>[], AnonymousSelectP]
+        >;
+        type test3 = Expect<Equal<res3, 2>>;
+
+        type res4 = FindSelected<
+          [1, ...number[], 2],
+          [unknown, ...ArrayP<unknown, AnonymousSelectP>[], unknown]
+        >;
+        type test4 = Expect<Equal<res4, number[]>>;
+      });
+
+      it('[a, b, select(c), ...d[], e]', () => {
+        type res1 = FindSelected<
+          [State, State, number, ...Event[], 1],
+          [1, 2, AnonymousSelectP, ...ArrayP<unknown, 3>[], 4]
+        >;
+        type test1 = Expect<Equal<res1, number>>;
+
+        type res2 = FindSelected<
+          [State, State, Event, ...State[], 1],
+          [1, 2, AnonymousSelectP, ...ArrayP<unknown, 3>[], 4]
+        >;
+        type test2 = Expect<Equal<res2, Event>>;
+      });
+
+      it('[a, ...b[], select(c), d, e]', () => {
+        type res1 = FindSelected<
+          [State, State, State, number, State, State],
+          [1, ...ArrayP<unknown, 3>[], AnonymousSelectP, 4, 2]
+        >;
+        type test1 = Expect<Equal<res1, number>>;
+
+        type res2 = FindSelected<
+          [State, State, State, State, number, State],
+          [1, ...ArrayP<unknown, 3>[], AnonymousSelectP, 4, 2]
+        >;
+        type test2 = Expect<Equal<res2, State>>;
+      });
     });
 
     it('list selections should be wrapped in arrays', () => {
@@ -138,29 +299,26 @@ describe('FindSelected', () => {
     });
 
     it('Mixed', () => {
-      type cases = [
-        Expect<
-          Equal<
-            FindSelected<
-              { a: { b: { c: [3, 4] } } },
-              { a: { b: { c: [SelectP<'c'>, unknown] } } }
-            >,
-            { c: 3 }
-          >
-        >,
-        Expect<
-          Equal<
-            FindSelected<
-              { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
-              {
-                a: [{ c: SelectP<'c'> }, { e: 7 }];
-                b: Matcher<unknown, { d: SelectP<'d'> }, 'array'>;
-              }
-            >,
-            { c: 3; d: string[] }
-          >
-        >
-      ];
+      type res1 = FindSelected<
+        { a: { b: { c: [3, 4] } } },
+        { a: { b: { c: [SelectP<'c'>, unknown] } } }
+      >;
+
+      type res12 = FindSelected<
+        [{ c: 3 }, { e: 7 }],
+        [{ c: SelectP<'c'> }, { e: 7 }]
+      >;
+
+      type x = Extract<[1, 2], readonly any[]>;
+      type test1 = Expect<Equal<res1, { c: 3 }>>;
+      type res2 = FindSelected<
+        { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
+        {
+          a: [{ c: SelectP<'c'> }, { e: 7 }];
+          b: Matcher<unknown, { d: SelectP<'d'> }, 'array'>;
+        }
+      >;
+      type test2 = Expect<Equal<res2, { c: 3; d: string[] }>>;
     });
   });
 

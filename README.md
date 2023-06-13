@@ -17,8 +17,6 @@ with smart type inference.
   </a>
 </p>
 
-
-
 ```ts
 import { match, P } from 'ts-pattern';
 
@@ -44,6 +42,7 @@ const html = match(result)
 Write **better** and **safer conditions**. Pattern matching lets you express complex conditions in a single, compact expression. Your code becomes **shorter** and **more readable**. Exhaustiveness checking ensures you haven’t forgotten **any possible case**.
 
 ![ts-pattern](https://user-images.githubusercontent.com/9265418/231688650-7cd957a9-8edc-4db8-a5fe-61e1c2179d91.gif)
+
 <p align="center"><i>Animation by <a target="_blank" href="https://twitter.com/nicoespeon/status/1644342570389061634?s=20">@nicoespeon</a></i></p>
 
 ## Features
@@ -55,7 +54,7 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 - **Expressive API**, with catch-all and type specific **wildcards**: [`P._`](#P_-wildcard), [`P.string`](#Pstring-wildcard), [`P.number`](#Pnumber-wildcard), etc.
 - Supports [**predicates**](#Pwhen-patterns), [**unions**](#Punion-patterns), [**intersections**](#Pintersection-patterns) and [**exclusion**](#Pnot-patterns) patterns for non-trivial cases.
 - Supports properties selection, via the [`P.select(name?)`](#Pselect-patterns) function.
-- Tiny bundle footprint ([**only 1.7kB**](https://bundlephobia.com/package/ts-pattern)).
+- Tiny bundle footprint ([**only ~2kB**](https://bundlephobia.com/package/ts-pattern)).
 
 ## What is Pattern Matching?
 
@@ -83,14 +82,13 @@ yarn add ts-pattern
 
 Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#strict) is enabled in your `tsconfig.json` file.
 
-| ts-pattern                                                                                                                              | TypeScript v4.5+ | TypeScript v4.2+ | TypeScript v4.1+ |
-| --------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------------- | ---------------- |
-| v4.x [(Docs)](#documentation) [(Migration Guide)](https://github.com/gvergnaud/ts-pattern/tree/master/docs/v3-to-v4-migration-guide.md) | ✅               | ❌               | ❌               |
-| v3.x [(Docs)](https://github.com/gvergnaud/ts-pattern/tree/v3#documentation)                                                            | ✅               | ✅               | ⚠️               |
-| v2.x [(Docs)](https://github.com/gvergnaud/ts-pattern/tree/v2#documentation)                                                            | ✅               | ✅               | ✅               |
+| ts-pattern                                                                                                                                                                              | TypeScript v5+ | TypeScript v4.5+ | TypeScript v4.2+ |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------------- | ---------------- |
+| v5.x [(Docs)](#documentation) [(Migration Guide)](https://github.com/gvergnaud/ts-pattern/tree/master/docs/v4-to-v5-migration-guide.md)                                                 | ✅             | ❌               | ❌               |
+| v4.x [(Docs)](https://github.com/gvergnaud/ts-pattern/tree/v4##documentation) [(Migration Guide)](https://github.com/gvergnaud/ts-pattern/tree/master/docs/v3-to-v4-migration-guide.md) | ✅             | ✅               | ❌               |
+| v3.x [(Docs)](https://github.com/gvergnaud/ts-pattern/tree/v3#documentation)                                                                                                            | ✅             | ✅               | ✅               |
 
 - ✅ Full support
-- ⚠️ Partial support, All features except passing multiple patterns to `.with()`.
 - ❌ Not supported
 
 # Documentation
@@ -566,7 +564,7 @@ type Permission = 'editor' | 'viewer';
 type Plan = 'basic' | 'pro';
 
 const fn = (org: Plan, user: Permission) =>
-  match([org, user] as const)
+  match([org, user])
     .with(['basic', 'viewer'], () => {})
     .with(['basic', 'editor'], () => {})
     .with(['pro', 'viewer'], () => {})
@@ -575,7 +573,7 @@ const fn = (org: Plan, user: Permission) =>
     .exhaustive();
 
 const fn2 = (org: Plan, user: Permission) =>
-  match([org, user] as const)
+  match([org, user])
     .with(['basic', 'viewer'], () => {})
     .with(['basic', 'editor'], () => {})
     .with(['pro', 'viewer'], () => {})
@@ -741,6 +739,61 @@ console.log(output);
 // => 'number: two'
 ```
 
+### Objects
+
+Patterns can be objects containing sub-patterns. An object pattern will match
+If and only if the input value **is an object**, contains **all properties** the pattern defines
+and each property **matches** the corresponding sub-pattern.
+
+```ts
+import { match } from 'ts-pattern';
+
+type Input =
+  | { type: 'user'; name: string }
+  | { type: 'image'; src: string }
+  | { type: 'video'; seconds: number };
+
+let input: Input = { type: 'user', name: 'Gabriel' };
+
+const output = match(input)
+  .with({ type: 'image' }, () => 'image')
+  .with({ type: 'video', seconds: 10 }, () => 'video of 10 seconds.')
+  .with({ type: 'user' }, ({ name }) => `user of name: ${name}`)
+  .otherwise(() => 'something else');
+
+console.log(output);
+// => 'user of name: Gabriel'
+```
+
+### Tuples (arrays)
+
+In TypeScript, [Tuples](https://en.wikipedia.org/wiki/Tuple) are arrays with a fixed
+number of elements which can be of different types. You can pattern-match on tuples
+using a tuple pattern. A tuple pattern will match if the input value **is an array of the same length**,
+and each item match the corresponding sub-pattern.
+
+```ts
+import { match, P } from 'ts-pattern';
+
+type Input =
+  | [number, '+', number]
+  | [number, '-', number]
+  | [number, '*', number]
+  | ['-', number];
+
+const input: Input = [3, '*', 4];
+
+const output = match(input)
+  .with([P._, '+', P._], ([x, , y]) => x + y)
+  .with([P._, '-', P._], ([x, , y]) => x - y)
+  .with([P._, '*', P._], ([x, , y]) => x * y)
+  .with(['-', P._], ([, x]) => -x)
+  .otherwise(() => NaN);
+
+console.log(output);
+// => 12
+```
+
 ### Wildcards
 
 #### `P._` wildcard
@@ -874,61 +927,6 @@ console.log(output);
 // => 'it is a symbol!'
 ```
 
-### Objects
-
-Patterns can be objects containing sub-patterns. An object pattern will match
-If and only if the input value **is an object**, contains **all properties** the pattern defines
-and each property **matches** the corresponding sub-pattern.
-
-```ts
-import { match } from 'ts-pattern';
-
-type Input =
-  | { type: 'user'; name: string }
-  | { type: 'image'; src: string }
-  | { type: 'video'; seconds: number };
-
-let input: Input = { type: 'user', name: 'Gabriel' };
-
-const output = match(input)
-  .with({ type: 'image' }, () => 'image')
-  .with({ type: 'video', seconds: 10 }, () => 'video of 10 seconds.')
-  .with({ type: 'user' }, ({ name }) => `user of name: ${name}`)
-  .otherwise(() => 'something else');
-
-console.log(output);
-// => 'user of name: Gabriel'
-```
-
-### Tuples (arrays)
-
-In TypeScript, [Tuples](https://en.wikipedia.org/wiki/Tuple) are arrays with a fixed
-number of elements which can be of different types. You can pattern-match on tuples
-using a tuple pattern. A tuple pattern will match if the input value **is an array of the same length**,
-and each item match the corresponding sub-pattern.
-
-```ts
-import { match, P } from 'ts-pattern';
-
-type Input =
-  | [number, '+', number]
-  | [number, '-', number]
-  | [number, '*', number]
-  | ['-', number];
-
-const input: Input = [3, '*', 4];
-
-const output = match(input)
-  .with([P._, '+', P._], ([x, , y]) => x + y)
-  .with([P._, '-', P._], ([x, , y]) => x - y)
-  .with([P._, '*', P._], ([x, , y]) => x * y)
-  .with(['-', P._], ([, x]) => -x)
-  .otherwise(() => NaN);
-
-console.log(output);
-// => 12
-```
-
 ### `P.array` patterns
 
 To match on arrays of unknown size, you can use `P.array(subpattern)`.
@@ -956,9 +954,32 @@ console.log(output);
 // => 'a list of posts!'
 ```
 
-### Sets
+### Matching variadic tuples with `P.array`
 
-Patterns can be Sets.
+In TypeScript, [Variadic Tuple Types](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-0.html#variadic-tuple-types) are array types created with the `...` spread operator, like `[string, ...string[]]`, `[number, ...boolean[], string]` etc. You can match against variadic tuple types using array literals containing `...P.array(subpattern)`:
+
+```ts
+import { match, P } from 'ts-pattern';
+
+type Input = (number | string)[];
+
+declare const input: Input;
+
+const output = match(input)
+  // P.array's parameter is optional
+  .with([P.string, ...P.array()], (input) => input) // input: [string, ...(number | string)[]]
+  .with(['print', ...P.array(P.string)], (input) => input) // input: ['print', ...string[]]
+  // you can put patterns on either side of `...P.array()`:
+  .with([...P.array(P.string), 'end'], (input) => input) // input: [...string[], 'end']
+  .with(['start', ...P.array(P.string), 'end'], (input) => input) // input: ['start', ...string[], 'end']
+  .otherwise((input) => input);
+```
+
+### `P.set` patterns
+
+To match a Set, you can use `P.set(subpattern)`.
+It takes a sub-pattern, and will match if **all elements** inside the set
+match this sub-pattern.
 
 ```ts
 import { match, P } from 'ts-pattern';
@@ -968,26 +989,20 @@ type Input = Set<string | number>;
 const input: Input = new Set([1, 2, 3]);
 
 const output = match(input)
-  .with(new Set([1, 'hello']), (set) => `Set contains 1 and 'hello'`)
-  .with(new Set([1, 2]), (set) => `Set contains 1 and 2`)
-  .with(new Set([P.string]), (set) => `Set contains only strings`)
-  .with(new Set([P.number]), (set) => `Set contains only numbers`)
+  .with(P.set(1), (set) => `Set contains only 1`)
+  .with(P.set(P.string), (set) => `Set contains only strings`)
+  .with(P.set(P.number), (set) => `Set contains only numbers`)
   .otherwise(() => '');
 
 console.log(output);
-// => 'Set contains 1 and 2'
+// => "Set contains only numbers"
 ```
 
-If a Set pattern contains one single wildcard pattern, it will match if
-each value in the input set match the wildcard.
+### `P.map` patterns
 
-If a Set pattern contains several values, it will match if the
-input Set contains each of these values.
-
-### Maps
-
-Patterns can be Maps. They match if the input is a Map, and if each
-value match the corresponding sub-pattern.
+To match a Map, you can use `P.map(keyPattern, valuePattern)`.
+It takes a subpattern to match against the key, a subpattern to match agains the value, and will match if **all elements** inside this map
+match these two sub-patterns.
 
 ```ts
 import { match, P } from 'ts-pattern';
@@ -1001,19 +1016,16 @@ const input: Input = new Map([
 ]);
 
 const output = match(input)
-  .with(new Map([['b', 2]]), (map) => `map.get('b') is 2`)
-  .with(new Map([['a', P.string]]), (map) => `map.get('a') is a string`)
+  .with(P.map(P.string, P.number), (map) => `map's type is Map<string, number>`)
+  .with(P.map(P.string, P.string), (map) => `map's type is Map<string, string>`)
   .with(
-    new Map([
-      ['a', P.number],
-      ['c', P.number],
-    ]),
-    (map) => `map.get('a') and map.get('c') are number`
+    P.map(P.union('a', 'c'), P.number),
+    (map) => `map's type is Map<'a' | 'c', number>`
   )
   .otherwise(() => '');
 
 console.log(output);
-// => 'map.get('b') is 2'
+// => "map's type is Map<string, number>"
 ```
 
 ### `P.when` patterns
@@ -1135,13 +1147,13 @@ declare const input: Input;
 const output = match(input)
   .with(
     {
-      author: P.select({ age: P.when((age) => age > 18) }),
+      author: P.select({ age: P.number.gt(18) }),
     },
     (author) => author // author: User
   )
   .with(
     {
-      author: P.select('author', { age: P.when((age) => age > 18) }),
+      author: P.select('author', { age: P.number.gt(18) }),
       content: P.select(),
     },
     ({ author, content }) => author // author: User, content: Post
@@ -1256,6 +1268,209 @@ const output = match(input)
   .otherwise(() => '');
 ```
 
+## `P.string` helper patterns
+
+`P.string` has a number of methods to help you match on specific strings.
+
+### `P.string.startsWith`
+
+`P.string.startsWith(str)` matches strings that start with the provided string.
+
+```ts
+const fn = (input: string) =>
+  match(input)
+    .with(P.string.startsWith('TS'), () => '🎉')
+    .otherwise(() => '❌');
+
+console.log(fn('TS-Pattern')); // logs '🎉'
+```
+
+### `P.string.endsWith`
+
+`P.string.endsWith(str)` matches strings that end with the provided string.
+
+```ts
+const fn = (input: string) =>
+  match(input)
+    .with(P.string.endsWith('!'), () => '🎉')
+    .otherwise(() => '❌');
+
+console.log(fn('Hola!')); // logs '🎉'
+```
+
+### `P.string.minLength`
+
+`P.string.minLength(min)` matches strings with at least `min` characters.
+
+```ts
+const fn = (input: string) =>
+  match(input)
+    .with(P.string.minLength(2), () => '🎉')
+    .otherwise(() => '❌');
+
+console.log(fn('two')); // logs '🎉'
+```
+
+### `P.string.maxLength`
+
+`P.string.maxLength(max)` matches strings with at most `max` characters.
+
+```ts
+const fn = (input: string) =>
+  match(input)
+    .with(P.string.minLength(5), () => '🎉')
+    .otherwise(() => 'too long');
+
+console.log(fn('is this too long?')); // logs 'too long'
+```
+
+### `P.string.includes`
+
+`P.string.includes(str)` matches strings that contain the provided substring.
+
+```ts
+const fn = (input: string) =>
+  match(input)
+    .with(P.string.includes('!'), () => '✅')
+    .otherwise(() => '❌');
+
+console.log(fn('Good job! 🎉')); // logs '✅'
+```
+
+### `P.string.regex`
+
+`P.string.regex(RegExp)` matches strings if they match the provided regular expression.
+
+```ts
+const fn = (input: string) =>
+  match(input)
+    .with(P.string.regex(/^[a-z]$/), () => 'single word')
+    .otherwise(() => 'other strings');
+
+console.log(fn('gabriel')); // logs 'single word'
+```
+
+## `P.number` and `P.bigint` helper patterns
+
+`P.number` and `P.bigint` have several of methods to help you match on specific numbers and bigints.
+
+### `P.number.between`
+
+`P.number.between(min, max)` matches numbers between `min` and `max`.
+
+```ts
+const fn = (input: number) =>
+  match(input)
+    .with(P.number.between(1, 5), () => '✅')
+    .otherwise(() => '❌');
+
+console.log(fn(3), fn(1), fn(5), fn(7)); // logs '✅ ✅ ✅ ❌'
+```
+
+### `P.number.lt`
+
+`P.number.lt(max)` matches numbers smaller than `max`.
+
+```ts
+const fn = (input: number) =>
+  match(input)
+    .with(P.number.lt(7), () => '✅')
+    .otherwise(() => '❌');
+
+console.log(fn(2), fn(7)); // logs '✅ ❌'
+```
+
+### `P.number.gt`
+
+`P.number.gt(min)` matches numbers greater than `min`.
+
+```ts
+const fn = (input: number) =>
+  match(input)
+    .with(P.number.gt(7), () => '✅')
+    .otherwise(() => '❌');
+
+console.log(fn(12), fn(7)); // logs '✅ ❌'
+```
+
+### `P.number.lte`
+
+`P.number.lte(max)` matches numbers smaller than or equal to `max`.
+
+```ts
+const fn = (input: number) =>
+  match(input)
+    .with(P.number.lte(7), () => '✅')
+    .otherwise(() => '❌');
+
+console.log(fn(7), fn(12)); // logs '✅ ❌'
+```
+
+### `P.number.gte`
+
+`P.number.gte(min)` matches numbers greater than or equal to `min`.
+
+```ts
+const fn = (input: number) =>
+  match(input)
+    .with(P.number.gte(7), () => '✅')
+    .otherwise(() => '❌');
+
+console.log(fn(7), fn(2)); // logs '✅ ❌'
+```
+
+### `P.number.int`
+
+`P.number.int()` matches integers.
+
+```ts
+const fn = (input: number) =>
+  match(input)
+    .with(P.number.int(), () => '✅')
+    .otherwise(() => '❌');
+
+console.log(fn(12), fn(-3.141592)); // logs '✅ ❌'
+```
+
+### `P.number.finite`
+
+`P.number.finite()` matches all numbers except `Infinity` and `-Infinity`.
+
+```ts
+const fn = (input: number) =>
+  match(input)
+    .with(P.number.finite(), () => '✅')
+    .otherwise(() => '❌');
+
+console.log(fn(-3.141592), fn(Infinity)); // logs '✅ ❌'
+```
+
+### `P.number.positive`
+
+`P.number.positive()` matches positive numbers.
+
+```ts
+const fn = (input: number) =>
+  match(input)
+    .with(P.number.positive(), () => '✅')
+    .otherwise(() => '❌');
+
+console.log(fn(7), fn(-3.141592)); // logs '✅ ❌'
+```
+
+### `P.number.negative`
+
+`P.number.negative()` matches negative numbers.
+
+```ts
+const fn = (input: number) =>
+  match(input)
+    .with(P.number.negative(), () => '✅')
+    .otherwise(() => '❌');
+
+console.log(fn(-3.141592), fn(7)); // logs '✅ ❌'
+```
+
 ## Types
 
 ### `P.infer`
@@ -1268,9 +1483,11 @@ It's particularly useful when validating an API response.
 const postPattern = {
   title: P.string,
   content: P.string,
-  likeCount: P.number,
+  stars: P.number.between(1, 5).optional(),
   author: {
-    name: P.string,
+    firstName: P.string,
+    lastName: P.string.optional(),
+    followerCount: P.number,
   },
 };
 
@@ -1373,7 +1590,7 @@ type Permission = 'editor' | 'viewer';
 type Plan = 'basic' | 'pro';
 
 const fn = (org: Plan, user: Permission): string =>
-  match([org, user] as const)
+  match([org, user])
     .with(['basic', 'viewer'], () => {})
     .with(['basic', 'editor'], () => {})
     .with(['pro', 'viewer'], () => {})

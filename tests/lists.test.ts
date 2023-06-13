@@ -9,7 +9,7 @@ describe('List ([a])', () => {
       title: 'hellooo',
     };
     const res = match<any, Option<Blog[]>>([httpResult])
-      .with([] as const, (x) => {
+      .with([], (x) => {
         type t = Expect<Equal<typeof x, []>>;
         return { kind: 'some', value: [{ id: 0, title: 'LOlol' }] };
       })
@@ -21,7 +21,7 @@ describe('List ([a])', () => {
         };
       })
       .with(20, (x) => {
-        type t = Expect<Equal<typeof x, number>>;
+        type t = Expect<Equal<typeof x, 20>>;
         return { kind: 'none' };
       })
       .otherwise(() => ({ kind: 'none' }));
@@ -57,5 +57,20 @@ describe('List ([a])', () => {
         (posts) => 'a list of posts!'
       )
       .otherwise(() => 'something else');
+  });
+
+  it('type narrowing should work on nested arrays', () => {
+    const fn = (input: { queries?: { q?: string[]; a: number }[] }) =>
+      match(input).with(
+        {
+          queries: P.array({ q: P.array(P.string) }),
+        },
+        (x) => {
+          type t = Expect<
+            Equal<typeof x, { queries: { a: number; q: string[] }[] }>
+          >;
+          return x.queries[0].q[0];
+        }
+      );
   });
 });

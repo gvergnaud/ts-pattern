@@ -22,7 +22,7 @@ describe('select', () => {
     expect(
       match<string[], string[]>(['you', 'hello'])
         .with([P.select('first')], ({ first }, xs) => {
-          type t = Expect<Equal<typeof xs, string[]>>;
+          type t = Expect<Equal<typeof xs, [string]>>;
           type t2 = Expect<Equal<typeof first, string>>;
           return [first];
         })
@@ -213,10 +213,7 @@ describe('select', () => {
           return 'empty';
         })
         .with(
-          P.typed<Input>().array([
-            { name: P.any },
-            { post: P.array({ title: P.select() }) },
-          ]),
+          P.array([{ name: P.any }, { post: P.array({ title: P.select() }) }]),
           (titles) => {
             type t1 = Expect<Equal<typeof titles, string[][]>>;
             return titles
@@ -436,7 +433,7 @@ describe('select', () => {
   });
 
   it('Issue #95: P.select() on empty arrays should return an empty array', () => {
-    const res = match({ a: [], b: ['text'] })
+    const res = match<{ a: string[]; b: string[] }>({ a: [], b: ['text'] })
       .with(
         { a: P.array(P.select('a')), b: P.array(P.select('b')) },
         ({ a, b }) => {
