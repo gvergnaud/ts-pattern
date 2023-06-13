@@ -4,6 +4,10 @@ This file contains all breaking changes and new features between the version 4 a
 
 # Breaking changes
 
+## TypeScript v5
+
+Because it relies on [const type parameters](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html#const-type-parameters), TS-Pattern v5 requires TypeScript v5+!
+
 ## `.with` is now evaluated eagerly
 
 In the previous version of TS-Pattern, no code would execute until you called `.exhaustive()` or `.otherwise(...)`. For example, in the following code block, nothing would be logged to the console or thrown:
