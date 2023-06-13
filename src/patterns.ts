@@ -1537,7 +1537,7 @@ export function instanceOf<T extends AnyConstructor>(
  *     (state) => 'match the success state, or undefined.'
  *   )
  */
-export function shape<input, p extends Pattern<input>>(
+export function shape<input, const p extends Pattern<input>>(
   pattern: p
 ): Chainable<GuardP<input, InvertPattern<p, input>>>;
 export function shape(pattern: UnknownPattern) {
