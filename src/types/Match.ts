@@ -37,15 +37,17 @@ export type Match<
     value extends MatchedValue<i, InvertPattern<p, i>>,
     excluded = InvertPatternForExclude<p, value>
   >(
-    /**
-     * HACK: Using `IsNever<p>` here is a hack to
-     * make sure the type checker forwards
-     * the input type parameter to pattern
-     * creator functions like `P.when`, `P.not`
-     * `P.union` when they are passed to `.with`
-     * directly.
-     */
-    pattern: IsNever<p> extends true ? Pattern<i> : p,
+    pattern: IsNever<p> extends true
+      ? /**
+         * HACK: Using `IsNever<p>` here is a hack to
+         * make sure the type checker forwards
+         * the input type parameter to pattern
+         * creator functions like `P.when`, `P.not`
+         * `P.union` when they are passed to `.with`
+         * directly.
+         */
+        Pattern<i>
+      : p,
     handler: (
       selections: FindSelected<value, p>,
       value: value
