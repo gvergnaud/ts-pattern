@@ -206,7 +206,7 @@ type ArrayChainable<p, omitted extends string = never> = Variadic<p> &
       >;
       select<input, k extends string>(
         key: k
-      ): Chainable<SelectP<k, input, p>, omitted | 'select'>;
+      ): ArrayChainable<SelectP<k, input, p>, omitted | 'select'>;
     },
     omitted
   >;
