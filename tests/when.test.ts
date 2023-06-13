@@ -213,7 +213,7 @@ describe('when', () => {
               list: P.array({
                 test: 'a',
                 sublist: ['w'],
-                maybe: P.optional(P.string),
+                maybe: P.string.optional(),
                 prop: P.when((x) => {
                   type t = Expect<Equal<typeof x, string>>;
                   return true;

@@ -564,4 +564,62 @@ describe('variadic tuples ([a, ...b[]])', () => {
       expect(res).toBe('branch 1');
     });
   });
+
+  describe('select', () => {
+    it('selection should work on the variadic part', () => {
+      const fn = (input: (number | string)[]) =>
+        match(input)
+          .with([1, 2, ...P.array(P.number).select()], (rest) => {
+            type t = Expect<Equal<typeof rest, number[]>>;
+            return ['branch 1', ...rest];
+          })
+          .with([1, 2, ...P.array(P.number).select(), 'end'], (rest) => {
+            type t = Expect<Equal<typeof rest, number[]>>;
+            return ['branch 2', ...rest];
+          })
+          .with(P.array(P.number.or(P.string)), (rest) => {
+            type t = Expect<Equal<typeof rest, (number | string)[]>>;
+            return 'otherwise';
+          })
+          .exhaustive();
+
+      expect(fn([1, 2, 3])).toEqual(['branch 1', 3]);
+      expect(fn([1, 2, 3, 4])).toEqual(['branch 1', 3, 4]);
+      expect(fn([1, 2, 23, 123, 'end'])).toEqual(['branch 2', 23, 123]);
+      expect(fn(['1', 2, 3, 4])).toEqual('otherwise');
+    });
+
+    it('variadic and array patterns should be threated differently', () => {
+      const fn = (input: (number | number[] | string)[]) =>
+        match(input)
+          .with([1, 2, ...P.array(P.number).select()], (rest) => {
+            type t = Expect<Equal<typeof rest, number[]>>;
+            return ['variadic 1', ...rest];
+          })
+          .with([1, 2, ...P.array(P.number).select(), 'end'], (rest) => {
+            type t = Expect<Equal<typeof rest, number[]>>;
+            return ['variadic 2', ...rest];
+          })
+          .with([1, 2, P.array(P.number).select()], (rest) => {
+            type t = Expect<Equal<typeof rest, number[]>>;
+            return ['array 1', ...rest];
+          })
+          .with([1, 2, P.array(P.number).select(), 'end'], (rest) => {
+            type t = Expect<Equal<typeof rest, number[]>>;
+            return ['array 2', ...rest];
+          })
+          .with(P.array(P.number.or(P.string).or(P.array())), (rest) => {
+            type t = Expect<Equal<typeof rest, (number | number[] | string)[]>>;
+            return 'otherwise';
+          })
+          .exhaustive();
+
+      expect(fn([1, 2, 3])).toEqual(['variadic 1', 3]);
+      expect(fn([1, 2, 3, 4])).toEqual(['variadic 1', 3, 4]);
+      expect(fn([1, 2, 23, 123, 'end'])).toEqual(['variadic 2', 23, 123]);
+      expect(fn([1, 2, [3, 4]])).toEqual(['array 1', 3, 4]);
+      expect(fn([1, 2, [23, 123], 'end'])).toEqual(['array 2', 23, 123]);
+      expect(fn(['1', 2, 3, 4])).toEqual('otherwise');
+    });
+  });
 });

@@ -89,64 +89,56 @@ type Chainable<p, omitted extends string = never> = p &
   Omit<
     {
       /**
-       * `P.optional(subpattern)` takes a sub pattern and returns a pattern which matches if the
-       * key is undefined or if it is defined and the sub pattern matches its value.
+       * `.optional()` returns a pattern which matches if the
+       * key is undefined or if it is defined and the previous pattern matches its value.
        *
        * [Read the documentation for `P.optional` on GitHub](https://github.com/gvergnaud/ts-pattern#Poptional-patterns)
        *
        * @example
        *  match(value)
-       *   .with({ greeting: P.optional('Hello') }, () => 'will match { greeting?: "Hello" }')
+       *   .with({ greeting: P.string.optional() }, () => 'will match { greeting?: string}')
        */
       optional<input>(): Chainable<OptionalP<input, p>, omitted | 'optional'>;
       /**
-       * `P.intersection(...patterns)` returns a pattern which matches
-       * only if **every** patterns provided in parameter match the input.
+       * `pattern.and(pattern)` returns a pattern that matches
+       * if the previous pattern and the next one match the input.
        *
        * [Read the documentation for `P.intersection` on GitHub](https://github.com/gvergnaud/ts-pattern#Pintersection-patterns)
        *
        * @example
        *  match(value)
        *   .with(
-       *     {
-       *       user: P.intersection(
-       *         { firstname: P.string },
-       *         { lastname: P.string },
-       *         { age: P.when(age => age > 21) }
-       *       )
-       *     },
-       *     ({ user }) => 'will match { firstname: string, lastname: string, age: number } if age > 21'
+       *     P.string.and(P.when(isUsername)),
+       *     (username) => '...'
        *   )
        */
       and<input, p2 extends Pattern<input>>(
         pattern: p2
       ): Chainable<AndP<input, [p, p2]>, omitted>;
       /**
-       * `P.union(...patterns)` returns a pattern which matches
-       * if **at least one** of the patterns provided in parameter match the input.
+       * `pattern.or(pattern)` returns a pattern that matches
+       * if **either** the previous pattern or the next one match the input.
        *
        * [Read the documentation for `P.union` on GitHub](https://github.com/gvergnaud/ts-pattern#Punion-patterns)
        *
        * @example
        *  match(value)
        *   .with(
-       *     { type: P.union('a', 'b', 'c') },
-       *     ({ user }) => 'will match { type: "a" | "b" | "c" }'
+       *     { value: P.string.or(P.number) },
+       *     ({ value }) => 'value: number | string'
        *   )
        */
       or<input, p2 extends Pattern<input>>(
         pattern: p2
       ): Chainable<OrP<input, [p, p2]>, omitted>;
       /**
-       * `P.select()` is a pattern which will always match,
-       * and will inject the selected piece of input in the handler function.
+       * `P.select()` will inject this property into the handler function's arguments.
        *
        * [Read the documentation for `P.select` on GitHub](https://github.com/gvergnaud/ts-pattern#Pselect-patterns)
        *
        * @example
        *  match<{ age: number }>(value)
-       *   .with({ age: P.select() }, (age) => 'age: number'
-       *   )
+       *   .with({ age: P.string.select() }, (age) => 'age: number')
        */
       select<input>(): Chainable<
         SelectP<symbols.anonymousSelectKey, input, p>,
@@ -159,17 +151,77 @@ type Chainable<p, omitted extends string = never> = p &
     omitted
   >;
 
-const chainable = <p extends Matcher<any, any, any, any, any>>(
+function chainable<p extends Matcher<any, any, any, any, any>>(
   pattern: p
-): Chainable<p> => {
+): Chainable<p> {
   return Object.assign(pattern, {
-    optional: () => optional(pattern) as any,
-    and: (p2: any) => intersection(pattern, p2) as any,
-    or: (p2: any) => union(pattern, p2) as any,
+    optional: () => optional(pattern),
+    and: (p2: any) => intersection(pattern, p2),
+    or: (p2: any) => union(pattern, p2),
     select: (key: any) =>
       key === undefined ? select(pattern) : select(key, pattern),
+  }) as Chainable<p>;
+}
+
+type Variadic<p> = p & Iterable<p>;
+
+const variadic = <p extends {}>(pattern: p): Variadic<p> =>
+  Object.assign(pattern, {
+    *[Symbol.iterator]() {
+      yield Object.assign(pattern, {
+        [symbols.isVariadic]: true,
+      });
+    },
+  });
+
+type ArrayChainable<p, omitted extends string = never> = Variadic<p> &
+  Omit<
+    {
+      /**
+       * `.optional()` returns a pattern which matches if the
+       * key is undefined or if it is defined and the previous pattern matches its value.
+       *
+       * [Read the documentation for `P.optional` on GitHub](https://github.com/gvergnaud/ts-pattern#Poptional-patterns)
+       *
+       * @example
+       *  match(value)
+       *   .with({ greeting: P.string.optional() }, () => 'will match { greeting?: string}')
+       */
+      optional<input>(): ArrayChainable<
+        OptionalP<input, p>,
+        omitted | 'optional'
+      >;
+      /**
+       * `P.select()` will inject this property into the handler function's arguments.
+       *
+       * [Read the documentation for `P.select` on GitHub](https://github.com/gvergnaud/ts-pattern#Pselect-patterns)
+       *
+       * @example
+       *  match<{ age: number }>(value)
+       *   .with({ age: P.string.select() }, (age) => 'age: number')
+       */
+      select<input>(): ArrayChainable<
+        SelectP<symbols.anonymousSelectKey, input, p>,
+        omitted | 'select'
+      >;
+      select<input, k extends string>(
+        key: k
+      ): Chainable<SelectP<k, input, p>, omitted | 'select'>;
+    },
+    omitted
+  >;
+
+function arrayChainable<p extends Matcher<any, any, any, any, any>>(
+  pattern: p
+): ArrayChainable<p> {
+  return Object.assign(variadic(pattern), {
+    optional: () => arrayChainable(optional(pattern)),
+    select: (key: any) =>
+      arrayChainable(
+        key === undefined ? select(pattern) : select(key, pattern)
+      ),
   }) as any;
-};
+}
 
 /**
  * `P.optional(subpattern)` takes a sub pattern and returns a pattern which matches if the
@@ -229,16 +281,15 @@ type WithDefault<a, b> = [a] extends [never] ? b : a;
  *  match(value)
  *   .with({ users: P.array({ name: P.string }) }, () => 'will match { name: string }[]')
  */
-export function array<input>(): Chainable<ArrayP<input, unknown>> &
-  Iterable<ArrayP<input, unknown>>;
+export function array<input>(): ArrayChainable<ArrayP<input, unknown>>;
 export function array<
   input,
   const p extends Pattern<WithDefault<UnwrapArray<input>, unknown>>
->(pattern: p): Chainable<ArrayP<input, p> & Iterable<ArrayP<input, p>>>;
+>(pattern: p): ArrayChainable<ArrayP<input, p>>;
 export function array(
   ...args: [pattern?: any]
-): Chainable<ArrayP<any, any> & Iterable<ArrayP<any, any>>> {
-  return chainable({
+): ArrayChainable<ArrayP<any, any>> {
+  return arrayChainable({
     [matcher]() {
       return {
         match: (value: any) => {
@@ -269,11 +320,6 @@ export function array(
         getSelectionKeys: () =>
           args.length === 0 ? [] : getSelectionKeys(args[0]),
       };
-    },
-    *[Symbol.iterator]() {
-      yield Object.assign(args.length === 0 ? array() : array(args[0]), {
-        [symbols.isVariadic]: true,
-      });
     },
   });
 }
@@ -465,7 +511,7 @@ export function intersection<
  *  match(value)
  *   .with(
  *     { type: P.union('a', 'b', 'c') },
- *     ({ user }) => 'will match { type: "a" | "b" | "c" }'
+ *     ({ type }) => 'will match { type: "a" | "b" | "c" }'
  *   )
  */
 export function union<
@@ -547,13 +593,13 @@ export function when<input, p extends (value: input) => unknown>(
   input,
   p extends (value: any) => value is infer narrowed ? narrowed : never
 > {
-  return chainable({
+  return {
     [matcher]: () => ({
       match: <UnknownInput>(value: UnknownInput | input) => ({
         matched: Boolean(predicate(value as input)),
       }),
     }),
-  });
+  };
 }
 
 /**
@@ -729,7 +775,7 @@ const endsWith = <input, const end extends string>(
  *  match(value)
  *   .with(P.string.minLength(10), () => 'string with more length >= 10')
  */
-const minLength = <input, const min extends number>(min: min) =>
+const minLength = <const min extends number>(min: min) =>
   when((value) => isString(value) && value.length >= min);
 
 /**
@@ -741,7 +787,7 @@ const minLength = <input, const min extends number>(min: min) =>
  *  match(value)
  *   .with(P.string.maxLength(10), () => 'string with more length <= 10')
  */
-const maxLength = <input, const max extends number>(max: max) =>
+const maxLength = <const max extends number>(max: max) =>
   when((value) => isString(value) && value.length <= max);
 
 /**
@@ -879,7 +925,7 @@ type StringChainable<
 const stringChainable = <p extends Matcher<any, any, any, any, any>>(
   pattern: p
 ): StringChainable<p> =>
-  Object.assign(pattern, {
+  Object.assign(chainable(pattern), {
     startsWith: (str: string) =>
       stringChainable(intersection(pattern, startsWith(str))),
     endsWith: (str: string) =>
@@ -1170,7 +1216,7 @@ type NumberChainable<p, omitted extends string = never> = Chainable<
 const numberChainable = <p extends Matcher<any, any, any, any, any>>(
   pattern: p
 ): NumberChainable<p> =>
-  Object.assign(pattern, {
+  Object.assign(chainable(pattern), {
     between: (min: number, max: number) =>
       numberChainable(intersection(pattern, between(min, max))),
     lt: (max: number) => numberChainable(intersection(pattern, lt(max))),
@@ -1410,7 +1456,7 @@ type BigIntChainable<p, omitted extends string = never> = Chainable<
 const bigintChainable = <p extends Matcher<any, any, any, any, any>>(
   pattern: p
 ): BigIntChainable<p> =>
-  Object.assign(pattern, {
+  Object.assign(chainable(pattern), {
     between: (min: bigint, max: bigint) =>
       bigintChainable(intersection(pattern, betweenBigInt(min, max))),
     lt: (max: bigint) => bigintChainable(intersection(pattern, ltBigInt(max))),
