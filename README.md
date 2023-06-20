@@ -99,6 +99,7 @@ Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#s
   - [`match`](#match)
   - [`.with`](#with)
   - [`.when`](#when)
+  - [`.returnType`](#returntype)
   - [`.exhaustive`](#exhaustive)
   - [`.otherwise`](#otherwise)
   - [`.run`](#run)
@@ -542,6 +543,29 @@ function when(
   - **Required**
   - Function called when the predicate condition is satisfied.
   - All handlers on a single `match` case must return values of the same type, `TOutput`.
+
+### `.returnType`
+
+```ts
+match(...)
+  .returnType<string>()
+  .with(..., () => "has to be a string")
+  .with(..., () => "Oops".length)
+  //               ~~~~~~~~~~~~~ ❌ `number` isn't a string!
+```
+
+The `.returnType<SomeType>()` method allows you to control the return type of all of your branches of code. It accepts a single type parameter that will be used as the return type of your `match` expression. All code branches must return values assignable to this type.
+
+#### Signature
+
+```ts
+function returnType<TOutputOverride>(): Match<TInput, TOutputOverride>;
+```
+
+#### Type arguments
+
+- `TOutputOverride`
+  - The type that your `match` expression will return. All branches must return values assignable to it.
 
 ### `.exhaustive`
 
