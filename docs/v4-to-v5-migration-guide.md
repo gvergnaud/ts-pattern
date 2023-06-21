@@ -57,8 +57,8 @@ const someFunction = (value: Set<number> | Map<string, number>) =>
     .otherwise(() => null);
 ```
 
-- The subpattern we provide in `P.set(subpattern)` should match all values in the set.
-- The value subpattern we provide in `P.map(keyPattern, subpattern)` should only match the values matching `keyPattern` for the whole `P.map(..)` pattern to match the input.
+- The subpattern we provide in `P.set(subpattern)` should match all values in the Set.
+- The key and value subpatterns we provide in `P.map(keyPattern, subpattern)` should match all keys and values in the Map.
 
 # New features
 
