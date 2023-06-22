@@ -47,7 +47,7 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 
 ## Features
 
-- Pattern-match on **any data structure**: nested [Objects](#objects), [Arrays](#tuples-arrays), [Tuples](#tuples-arrays), [Sets](#sets), [Maps](#maps) and all primitive types.
+- Pattern-match on **any data structure**: nested [Objects](#objects), [Arrays](#tuples-arrays), [Tuples](#tuples-arrays), [Sets](#pset-patterns), [Maps](#pmap-patterns) and all primitive types.
 - **Typesafe**, with helpful [type inference](#type-inference).
 - **Exhaustiveness checking** support, enforcing that you are matching every possible case with [`.exhaustive()`](#exhaustive).
 - Use [patterns](#patterns) to **validate** the shape of your data with [`isMatching`](#ismatching).
@@ -109,8 +109,8 @@ Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#s
     - [Wildcards](#wildcards)
     - [Objects](#objects)
     - [Tuples (arrays)](#tuples-arrays)
-    - [Sets](#sets)
-    - [Maps](#maps)
+    - [Sets](#pset-patterns)
+    - [Maps](#pmap-patterns)
     - [`P.array` patterns](#Parray-patterns)
     - [`P.when` patterns](#Pwhen-patterns)
     - [`P.not` patterns](#Pnot-patterns)
