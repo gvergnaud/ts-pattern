@@ -181,7 +181,7 @@ export type Match<
   ): PickReturnValue<o, Union<inferredOutput, c>>;
 
   /**
-   * `.exhaustive()` checks that all cases are handled, and return the result value.
+   * `.exhaustive()` checks that all cases are handled, and returns the result value.
    *
    * If you get a `NonExhaustiveError`, it means that you aren't handling
    * all cases. You should probably add another `.with(...)` clause

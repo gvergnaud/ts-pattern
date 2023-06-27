@@ -14,7 +14,7 @@ import { matchPattern } from './internals/helpers';
  *  declare let input: "A" | "B";
  *
  *  return match(input)
- *    .with("A", () => "It's a A!")
+ *    .with("A", () => "It's an A!")
  *    .with("B", () => "It's a B!")
  *    .exhaustive();
  *
