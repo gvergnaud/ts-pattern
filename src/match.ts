@@ -3,6 +3,15 @@ import { Match } from './types/Match';
 import * as symbols from './internals/symbols';
 import { matchPattern } from './internals/helpers';
 
+type MatchState<output> =
+  | { matched: true; value: output }
+  | { matched: false; value: undefined };
+
+const unmatched: MatchState<never> = {
+  matched: false,
+  value: undefined,
+};
+
 /**
  * `match` creates a **pattern matching expression**.
  *  * Use `.with(pattern, handler)` to pattern match on the input.
@@ -22,17 +31,8 @@ import { matchPattern } from './internals/helpers';
 export function match<const input, output = symbols.unset>(
   value: input
 ): Match<input, output> {
-  return new MatchExpression(value) as any;
+  return new MatchExpression(value, unmatched) as any;
 }
-
-type MatchState<output> =
-  | { matched: true; value: output }
-  | { matched: false; value: undefined };
-
-const unmatched: MatchState<never> = {
-  matched: false,
-  value: undefined,
-};
 
 /**
  * This class represents a match expression. It follows the
@@ -44,10 +44,7 @@ const unmatched: MatchState<never> = {
  * can be found in src/types/Match.ts.
  */
 class MatchExpression<input, output> {
-  constructor(
-    private input: input,
-    private state: MatchState<output> = unmatched
-  ) {}
+  constructor(private input: input, private state: MatchState<output>) {}
 
   with(...args: any[]): MatchExpression<input, output> {
     if (this.state.matched) return this;
@@ -56,38 +53,38 @@ class MatchExpression<input, output> {
       args[args.length - 1];
 
     const patterns: Pattern<input>[] = [args[0]];
-    const predicates: ((value: input) => unknown)[] = [];
+    let predicate: ((value: input) => unknown) | undefined = undefined;
 
-    // case with guard as second argument
     if (args.length === 3 && typeof args[1] === 'function') {
+      // case with guard as second argument
       patterns.push(args[0]);
-      predicates.push(args[1]);
+      predicate = args[1];
     } else if (args.length > 2) {
       // case with several patterns
       patterns.push(...args.slice(1, args.length - 1));
     }
 
+    let hasSelections = false;
     let selected: Record<string, unknown> = {};
+    const select = (key: string, value: unknown) => {
+      hasSelections = true;
+      selected[key] = value;
+    };
 
-    const matched = Boolean(
-      patterns.some((pattern) =>
-        matchPattern(pattern, this.input, (key, value) => {
-          selected[key] = value;
-        })
-      ) && predicates.every((predicate) => predicate(this.input))
-    );
+    const matched =
+      patterns.some((pattern) => matchPattern(pattern, this.input, select)) &&
+      (predicate ? Boolean(predicate(this.input)) : true);
+
+    const selections = hasSelections
+      ? symbols.anonymousSelectKey in selected
+        ? selected[symbols.anonymousSelectKey]
+        : selected
+      : this.input;
 
     const state = matched
       ? {
           matched: true as const,
-          value: handler(
-            Object.keys(selected).length
-              ? symbols.anonymousSelectKey in selected
-                ? selected[symbols.anonymousSelectKey]
-                : selected
-              : this.input,
-            this.input
-          ),
+          value: handler(selections, this.input),
         }
       : unmatched;
 
