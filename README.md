@@ -722,7 +722,7 @@ import { match, Pattern } from 'ts-pattern';
 const toString = (value: unknown): string =>
   match(value)
     .with(Pattern.string, (str) => str)
-    .with(Pattern.number, (num) => num.toFixed())
+    .with(Pattern.number, (num) => num.toFixed(2))
     .with(Pattern.boolean, (bool) => `${bool}`)
     .otherwise(() => 'Unknown');
 ```
@@ -735,7 +735,7 @@ import { match, P } from 'ts-pattern';
 const toString = (value: unknown): string =>
   match(value)
     .with(P.string, (str) => str)
-    .with(P.number, (num) => num.toFixed())
+    .with(P.number, (num) => num.toFixed(2))
     .with(P.boolean, (bool) => `${bool}`)
     .otherwise(() => 'Unknown');
 ```
