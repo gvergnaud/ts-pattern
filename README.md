@@ -1370,7 +1370,7 @@ console.log(fn('Good job! 🎉')); // logs '✅'
 ```ts
 const fn = (input: string) =>
   match(input)
-    .with(P.string.regex(/^[a-z]$/), () => 'single word')
+    .with(P.string.regex(/^[a-z]+$/), () => 'single word')
     .otherwise(() => 'other strings');
 
 console.log(fn('gabriel')); // logs 'single word'
