@@ -47,13 +47,13 @@ describe('instanceOf', () => {
 
   it('issue #63: should work on union of errors', () => {
     class FooError extends Error {
-      constructor(public foo?: string) {
+      constructor(public foo: string) {
         super();
       }
     }
 
     class BazError extends Error {
-      constructor(public baz?: string) {
+      constructor(public baz: string) {
         super();
       }
     }
@@ -68,5 +68,23 @@ describe('instanceOf', () => {
         .with(P.instanceOf(BazError), (err) => err.baz)
         .otherwise(() => 'nothing')
     ).toBe('foo');
+  });
+
+  it('should work with abstract classes', () => {
+    abstract class Abstract {}
+
+    class A extends Abstract {}
+    class B extends Abstract {}
+
+    const get = (x: A | B): string =>
+      match(x)
+        .with(P.instanceOf(Abstract), (x) => {
+          type t = Expect<Equal<typeof x, A | B>>;
+          return 'instance of Abstract';
+        })
+        .exhaustive();
+
+    expect(get(new A())).toEqual('instance of Abstract');
+    expect(get(new B())).toEqual('instance of Abstract');
   });
 });

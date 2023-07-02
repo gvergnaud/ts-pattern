@@ -1,4 +1,4 @@
-export type ValueOf<a> = a extends any[] ? a[number] : a[keyof a];
+export type ValueOf<a> = a extends readonly any[] ? a[number] : a[keyof a];
 
 export type Values<a extends object> = UnionToTuple<ValueOf<a>>;
 
@@ -22,7 +22,7 @@ export type ExcludeIfContainsNever<a, b> = b extends Map<any, any> | Set<any>
   ? a
   : b extends readonly [any, ...any]
   ? ExcludeObjectIfContainsNever<a, keyof b & ('0' | '1' | '2' | '3' | '4')>
-  : b extends any[]
+  : b extends readonly any[]
   ? ExcludeObjectIfContainsNever<a, keyof b & number>
   : ExcludeObjectIfContainsNever<a, keyof b & string>;
 
@@ -57,13 +57,11 @@ export type UnionToTuple<
   ? UnionToTuple<Exclude<union, elem>, [elem, ...output]>
   : output;
 
-export type Cast<a, b> = a extends b ? a : never;
-
 export type Flatten<
-  xs extends any[],
+  xs extends readonly any[],
   output extends any[] = []
 > = xs extends readonly [infer head, ...infer tail]
-  ? Flatten<tail, [...output, ...Cast<head, any[]>]>
+  ? Flatten<tail, [...output, ...Extract<head, readonly any[]>]>
   : output;
 
 export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
@@ -75,6 +73,8 @@ export type Equal<a, b> = (<T>() => T extends a ? 1 : 2) extends <
 export type Expect<a extends true> = a;
 
 export type IsAny<a> = 0 extends 1 & a ? true : false;
+
+export type IsNever<T> = [T] extends [never] ? true : false;
 
 export type Length<it extends readonly any[]> = it['length'];
 
@@ -145,7 +145,7 @@ export type IntersectObjects<a> = (
   a extends any ? keyof a : never
 ) extends infer allKeys
   ? {
-      [k in Cast<allKeys, PropertyKey>]: a extends any
+      [k in Extract<allKeys, PropertyKey>]: a extends any
         ? k extends keyof a
           ? a[k]
           : never
@@ -155,25 +155,27 @@ export type IntersectObjects<a> = (
 
 export type WithDefault<a, def> = [a] extends [never] ? def : a;
 
-export type IsLiteral<a> = a extends null | undefined
+export type ExtractWithDefault<a, b, def> = a extends b ? a : def;
+
+export type IsLiteral<a> = [a] extends [null | undefined]
   ? true
-  : a extends string
+  : [a] extends [string]
   ? string extends a
     ? false
     : true
-  : a extends number
+  : [a] extends [number]
   ? number extends a
     ? false
     : true
-  : a extends boolean
+  : [a] extends [boolean]
   ? boolean extends a
     ? false
     : true
-  : a extends symbol
+  : [a] extends [symbol]
   ? symbol extends a
     ? false
     : true
-  : a extends bigint
+  : [a] extends [bigint]
   ? bigint extends a
     ? false
     : true
@@ -188,7 +190,9 @@ export type Primitives =
   | symbol
   | bigint;
 
-export type TupleKeys = 0 | 1 | 2 | 3 | 4;
+export type NonLiteralPrimitive = Exclude<Primitives, undefined | null>;
+
+export type TupleKeys = '0' | '1' | '2' | '3' | '4';
 
 export type Union<a, b> = [b] extends [a] ? a : [a] extends [b] ? b : a | b;
 
@@ -202,5 +206,84 @@ export type GuardValue<fn> = fn extends (value: any) => value is infer b
   : never;
 
 export type GuardFunction<input, narrowed> =
-  | ((value: input) => value is Cast<narrowed, input>)
+  | ((value: input) => value is Extract<narrowed, input>)
   | ((value: input) => boolean);
+
+export type Some<bools extends boolean[]> = true extends bools[number]
+  ? true
+  : false;
+
+export type All<bools extends boolean[]> = bools[number] extends true
+  ? true
+  : false;
+
+export type Extends<a, b> = [a] extends [b] ? true : false;
+
+export type Not<a extends boolean> = a extends true ? false : true;
+
+type AllKeys<a> = a extends any ? keyof a : never;
+
+// Merge unions of objects into a single object with unions of keys
+export type MergeUnion<a> =
+  | {
+      readonly [k in AllKeys<a>]: a extends any
+        ? k extends keyof a
+          ? a[k]
+          : never
+        : never;
+    }
+  | never;
+
+export type IsFixedSizeTuple<a extends readonly any[]> = IsLiteral<Length<a>>;
+
+// is it a fixed size or a variadic tuple
+export type IsTuple<a> = a extends
+  | readonly []
+  | readonly [any, ...any]
+  | readonly [...any, any]
+  ? true
+  : false;
+
+export type IsStrictArray<a extends readonly any[]> = Not<IsTuple<a>>;
+
+export type IsReadonlyArray<a> = a extends readonly any[]
+  ? a extends any[] // mutable array
+    ? false
+    : true
+  : false;
+
+export type MaybeAddReadonly<
+  a,
+  shouldAdd extends boolean
+> = shouldAdd extends true ? Readonly<a> : a;
+
+export type MapKey<T> = T extends Map<infer K, any> ? K : never;
+
+export type MapValue<T> = T extends Map<any, infer V> ? V : never;
+
+export type SetValue<T> = T extends Set<infer V> ? V : never;
+
+export type ReadonlyArrayValue<T> = T extends ReadonlyArray<infer V>
+  ? V
+  : never;
+
+export type ExtractPlainObject<T> = T extends any
+  ? IsPlainObject<T> extends true
+    ? T
+    : never
+  : never;
+
+export type GetKey<O, K> = O extends any
+  ? K extends keyof O
+    ? O[K]
+    : never
+  : never;
+
+export interface Fn {
+  input: unknown;
+  output: unknown;
+}
+
+export type Call<fn extends Fn, input> = (fn & {
+  input: input;
+})['output'];

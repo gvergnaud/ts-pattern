@@ -1,6 +1,201 @@
 import { Equal, Expect } from '../src/types/helpers';
-import { InvertPatternForExclude } from '../src/types/InvertPattern';
-import { Matcher } from '../src/types/Pattern';
+import {
+  InvertPattern,
+  InvertPatternForExclude,
+} from '../src/types/InvertPattern';
+import { ArrayP, GuardP, Matcher, Pattern } from '../src/types/Pattern';
+
+describe('InvertPattern', () => {
+  describe('variadic tuples', () => {
+    it('[a, ...b[]]', () => {
+      type pattern1 = [
+        'Hello',
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[]
+      ];
+      type inverted1 = InvertPattern<pattern1, unknown>;
+      //    ^?
+      type test1 = Expect<Equal<inverted1, ['Hello', ...number[]]>>;
+
+      type pattern2 = [
+        GuardP<unknown, unknown>,
+        ...Matcher<unknown, unknown, 'array'>[]
+      ];
+      type inverted2 = InvertPattern<pattern2, unknown>;
+      //    ^?
+      type test2 = Expect<Equal<inverted2, [unknown, ...unknown[]]>>;
+
+      type pattern3 = [
+        GuardP<unknown, string>,
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[]
+      ];
+      type inverted3 = InvertPattern<pattern3, unknown>;
+      //    ^?
+      type test3 = Expect<Equal<inverted3, [string, ...number[]]>>;
+
+      type pattern6 = {
+        key: readonly [
+          GuardP<unknown, string>,
+          ...ArrayP<unknown, GuardP<unknown, string>>[]
+        ];
+      };
+      type input6 = unknown;
+      type inverted6 = InvertPattern<pattern6, input6>;
+      //   ^?
+      type test6 = Expect<Equal<inverted6, { key: [string, ...string[]] }>>;
+    });
+
+    it('[a, b, ...c[]]', () => {
+      type pattern1 = [
+        'Hello',
+        7,
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[]
+      ];
+      type inverted1 = InvertPattern<pattern1, unknown>;
+      //    ^?
+      type test1 = Expect<Equal<inverted1, ['Hello', 7, ...number[]]>>;
+
+      type pattern2 = [
+        GuardP<unknown, unknown>,
+        GuardP<unknown, unknown>,
+        ...Matcher<unknown, unknown, 'array'>[]
+      ];
+      type inverted2 = InvertPattern<pattern2, unknown>;
+      //    ^?
+      type test2 = Expect<Equal<inverted2, [unknown, unknown, ...unknown[]]>>;
+
+      type pattern3 = [
+        GuardP<unknown, string>,
+        GuardP<unknown, boolean>,
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[]
+      ];
+      type inverted3 = InvertPattern<pattern3, unknown>;
+      //    ^?
+      type test3 = Expect<Equal<inverted3, [string, boolean, ...number[]]>>;
+    });
+    it('[...a[], b]', () => {
+      type pattern1 = [
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        'Hello'
+      ];
+      type inverted1 = InvertPattern<pattern1, unknown>;
+      //    ^?
+      type test1 = Expect<Equal<inverted1, [...number[], 'Hello']>>;
+
+      type pattern2 = [
+        ...Matcher<unknown, unknown, 'array'>[],
+        GuardP<unknown, unknown>
+      ];
+      type inverted2 = InvertPattern<pattern2, unknown>;
+      //    ^?
+      type test2 = Expect<Equal<inverted2, [...unknown[], unknown]>>;
+
+      type pattern3 = [
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        GuardP<unknown, string>
+      ];
+      type inverted3 = InvertPattern<pattern3, unknown>;
+      //    ^?
+      type test3 = Expect<Equal<inverted3, [...number[], string]>>;
+    });
+    it('[...a[], b, c]', () => {
+      type pattern1 = [
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        'Hello',
+        7
+      ];
+      type inverted1 = InvertPattern<pattern1, unknown>;
+      //    ^?
+      type test1 = Expect<Equal<inverted1, [...number[], 'Hello', 7]>>;
+
+      type pattern2 = [
+        ...Matcher<unknown, unknown, 'array'>[],
+        GuardP<unknown, unknown>,
+        GuardP<unknown, unknown>
+      ];
+      type inverted2 = InvertPattern<pattern2, unknown>;
+      //    ^?
+      type test2 = Expect<Equal<inverted2, [...unknown[], unknown, unknown]>>;
+
+      type pattern3 = [
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        GuardP<unknown, string>,
+        GuardP<unknown, boolean>
+      ];
+      type inverted3 = InvertPattern<pattern3, unknown>;
+      //    ^?
+      type test3 = Expect<Equal<inverted3, [...number[], string, boolean]>>;
+    });
+    it('[a, ...b[], c]', () => {
+      type pattern1 = [
+        7,
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        'Hello'
+      ];
+      type inverted1 = InvertPattern<pattern1, unknown>;
+      //    ^?
+      type test1 = Expect<Equal<inverted1, [7, ...number[], 'Hello']>>;
+
+      type pattern2 = [
+        GuardP<unknown, unknown>,
+        ...Matcher<unknown, unknown, 'array'>[],
+        GuardP<unknown, unknown>
+      ];
+      type inverted2 = InvertPattern<pattern2, unknown>;
+      //    ^?
+      type test2 = Expect<Equal<inverted2, [unknown, ...unknown[], unknown]>>;
+
+      type pattern3 = [
+        GuardP<unknown, string>,
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        GuardP<unknown, boolean>
+      ];
+      type inverted3 = InvertPattern<pattern3, unknown>;
+      //    ^?
+      type test3 = Expect<Equal<inverted3, [string, ...number[], boolean]>>;
+    });
+
+    it('[a, b, ...c[], d, e]', () => {
+      type pattern1 = [
+        7,
+        8,
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        'Hello',
+        'Bonjour'
+      ];
+      type inverted1 = InvertPattern<pattern1, undefined>;
+      //    ^?
+      type test1 = Expect<
+        Equal<inverted1, [7, 8, ...number[], 'Hello', 'Bonjour']>
+      >;
+
+      type pattern2 = [
+        GuardP<unknown, unknown>,
+        GuardP<unknown, unknown>,
+        ...Matcher<unknown, unknown, 'array'>[],
+        GuardP<unknown, unknown>,
+        GuardP<unknown, unknown>
+      ];
+      type inverted2 = InvertPattern<pattern2, undefined>;
+      //    ^?
+      type test2 = Expect<
+        Equal<inverted2, [unknown, unknown, ...unknown[], unknown, unknown]>
+      >;
+
+      type pattern3 = [
+        GuardP<unknown, string>,
+        GuardP<unknown, number>,
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        GuardP<unknown, boolean>,
+        GuardP<unknown, symbol>
+      ];
+      type inverted3 = InvertPattern<pattern3, undefined>;
+      //    ^?
+      type test3 = Expect<
+        Equal<inverted3, [string, number, ...number[], boolean, symbol]>
+      >;
+    });
+  });
+});
 
 describe('InvertPatternForExclude', () => {
   it('should correctly invert type guards', () => {
@@ -31,45 +226,28 @@ describe('InvertPatternForExclude', () => {
   });
 
   it('should work with objects', () => {
-    type t = InvertPatternForExclude<
+    type res1 = InvertPatternForExclude<
       { a: Matcher<unknown, string> },
       { a: string; b: number } | [1, 2]
     >;
-
-    type cases = [
-      Expect<
-        Equal<
-          InvertPatternForExclude<
-            { a: Matcher<unknown, string> },
-            { a: string; b: number } | [1, 2]
-          >,
-          Readonly<{ a: string }>
-        >
-      >
-    ];
+    type test1 = Expect<Equal<res1, Readonly<{ a: string }>>>;
   });
 
   describe('Tuples', () => {
     it('should work with tuples', () => {
-      type cases = [
-        Expect<
-          Equal<
-            InvertPatternForExclude<[1, 2], { a: string; b: number } | [1, 2]>,
-            readonly [1, 2]
-          >
-        >
-      ];
+      type res1 = InvertPatternForExclude<
+        [1, 2],
+        { a: string; b: number } | [1, 2]
+      >;
+      type test1 = Expect<Equal<res1, [1, 2]>>;
     });
 
-    it('should return readonly tuples because both mutable and readonly are assignable to them', () => {
-      type cases = [
-        Expect<
-          Equal<
-            InvertPatternForExclude<[[[1, 2]]], { a: string } | [[[1, 2]]]>,
-            readonly [readonly [readonly [1, 2]]]
-          >
-        >
-      ];
+    it('should return readonly tuples if the input tuple is readonly, not otherwise', () => {
+      type res1 = InvertPatternForExclude<
+        [[[1, 2]]],
+        { a: string } | readonly [[readonly [1, 2]]]
+      >;
+      type test1 = Expect<Equal<res1, readonly [[readonly [1, 2]]]>>;
     });
   });
 
@@ -120,13 +298,104 @@ describe('InvertPatternForExclude', () => {
     });
   });
 
-  describe('issue #44', () => {
-    it('if the pattern contains unknown keys, inverted this pattern should keep them', () => {
-      type input = { sex: 'a' | 'b'; age: 'c' | 'd' };
-      type pattern = Readonly<{ sex: 'a'; unknownKey: 'c' }>;
-      type inverted = InvertPatternForExclude<pattern, input>;
+  describe('variadic tuples', () => {
+    it('[a, ...b[]]', () => {
+      type pattern1 = ['Hello', ...Matcher<any, GuardP<unknown, 2>, 'array'>[]];
+      type input1 = { a: string; b: number } | [string, ...number[]];
+      type inverted1 = InvertPatternForExclude<pattern1, input1>;
+      type test1 = Expect<Equal<inverted1, ['Hello', ...2[]]>>;
 
-      type cases = [Expect<Equal<inverted, pattern>>];
+      type pattern2 = ['Hello', ...Matcher<any, GuardP<unknown, 2>, 'array'>[]];
+      type input2 = [string, ...number[]];
+      type inverted2 = InvertPatternForExclude<pattern2, input2>;
+      type test2 = Expect<Equal<inverted2, ['Hello', ...2[]]>>;
+
+      type pattern3 = [...Matcher<any, GuardP<unknown, 2>, 'array'>[]];
+      type input3 = [...number[]];
+      type inverted3 = InvertPatternForExclude<pattern3, input3>;
+      type test3 = Expect<Equal<inverted3, [...2[]]>>;
+
+      type pattern4 = readonly [
+        GuardP<unknown, unknown>,
+        ...ArrayP<unknown, unknown>[]
+      ];
+      type input4 = [string | number, ...(string | number)[]];
+      type inverted4 = InvertPatternForExclude<pattern4, input4>;
+      //    ^?
+      type test4 = Expect<Equal<inverted4, [unknown, ...(string | number)[]]>>;
+
+      type pattern5 = ArrayP<unknown, unknown>;
+      type input5 = (string | number)[];
+      type inverted5 = InvertPatternForExclude<pattern5, input5>;
+      type test5 = Expect<Equal<inverted5, (string | number)[]>>;
     });
+
+    it('[a, b, ...c[]]', () => {
+      type pattern1 = [
+        'Hello',
+        10,
+        ...Matcher<any, GuardP<unknown, 2>, 'array'>[]
+      ];
+      type input1 = { a: string; b: number } | [string, number, ...number[]];
+      type inverted1 = InvertPatternForExclude<pattern1, input1>;
+      type test1 = Expect<Equal<inverted1, ['Hello', 10, ...2[]]>>;
+    });
+    it('[...a[], b]', () => {
+      type pattern1 = [
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        'Hello'
+      ];
+      type input1 = { a: string; b: number } | [...number[], string];
+      type inverted1 = InvertPatternForExclude<pattern1, input1>;
+      type test1 = Expect<Equal<inverted1, [...number[], 'Hello']>>;
+    });
+    it('[...a[], b, c]', () => {
+      type pattern1 = [
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        'Hello',
+        true
+      ];
+      type input1 = { a: string; b: number } | [...number[], string, boolean];
+      type inverted1 = InvertPatternForExclude<pattern1, input1>;
+      type test1 = Expect<Equal<inverted1, [...number[], 'Hello', true]>>;
+    });
+    it('[a, ...b[], c]', () => {
+      type pattern1 = [
+        'Hello',
+        ...Matcher<any, GuardP<unknown, number>, 'array'>[],
+        true
+      ];
+      type input1 = { a: string; b: number } | [string, ...number[], boolean];
+      type inverted1 = InvertPatternForExclude<pattern1, input1>;
+      type test1 = Expect<Equal<inverted1, ['Hello', ...number[], true]>>;
+    });
+  });
+});
+
+describe('issue #44', () => {
+  it('if the pattern contains unknown keys, inverted this pattern should keep them', () => {
+    type input = { sex: 'a' | 'b'; age: 'c' | 'd' };
+    type pattern = Readonly<{ sex: 'a'; unknownKey: 'c' }>;
+    type inverted = InvertPatternForExclude<pattern, input>;
+
+    type cases = [Expect<Equal<inverted, pattern>>];
+  });
+});
+
+describe('it should return never if the input pattern is Pattern<input>', () => {
+  it('InvertPattern', () => {
+    type input = { sex: 'a' | 'b'; age: 'c' | 'd' };
+    type pattern = Pattern<input>;
+    type inverted = InvertPattern<pattern, input>;
+    //    ^?
+    type test1 = Expect<Equal<inverted, never>>;
+  });
+
+  it('InvertPatternForExclude', () => {
+    type input = { sex: 'a' | 'b'; age: 'c' | 'd' };
+    type pattern = Pattern<input>;
+    type inverted = InvertPatternForExclude<pattern, input>;
+    //    ^?
+    type test1 = Expect<Equal<inverted, never>>;
   });
 });

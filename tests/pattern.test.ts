@@ -15,27 +15,24 @@ describe('Pattern', () => {
   });
 
   it('Should return a single object pattern when the input is a union of objects', () => {
-    type cases = [
-      Expect<
-        Equal<
-          P.Pattern<{ kind: 'some'; value: number } | { kind: 'none' }>,
-          | Matcher<
-              { kind: 'some'; value: number } | { kind: 'none' },
-              unknown,
-              any,
-              any,
-              unknown
-            >
-          | {
-              readonly kind?: P.Pattern<'some'>;
-              readonly value?: P.Pattern<number>;
-            }
-          | {
-              readonly kind?: P.Pattern<'none'>;
-            }
-        >
+    type res1 = P.Pattern<{ kind: 'some'; value: number } | { kind: 'none' }>;
+
+    type test1 = Expect<
+      Equal<
+        res1,
+        | Matcher<
+            { kind: 'some'; value: number } | { kind: 'none' },
+            unknown,
+            any,
+            any,
+            unknown
+          >
+        | {
+            readonly kind?: P.Pattern<'some' | 'none'>;
+            readonly value?: P.Pattern<number>;
+          }
       >
-    ];
+    >;
   });
 
   it('Should return a single object pattern when the input is a union of objects and other types', () => {
@@ -54,11 +51,8 @@ describe('Pattern', () => {
             unknown
           >
         | {
-            readonly kind?: P.Pattern<'some'>;
+            readonly kind?: P.Pattern<'some' | 'none'>;
             readonly value?: P.Pattern<number>;
-          }
-        | {
-            readonly kind?: P.Pattern<'none'>;
           }
         | string
       >
@@ -76,8 +70,6 @@ describe('Pattern', () => {
           >
         | {
             readonly a?: P.Pattern<{ name: string; age: number }>;
-          }
-        | {
             readonly b?: P.Pattern<''>;
           }
       >
@@ -99,9 +91,12 @@ describe('Pattern', () => {
         | undefined
       >
     >;
+
+    type res4 = P.Pattern<{ name: string; age: number } | [type: 'Hello']>;
+
     type t4 = Expect<
       Equal<
-        P.Pattern<{ name: string; age: number } | [type: 'Hello']>,
+        res4,
         | Matcher<
             { name: string; age: number } | [type: 'Hello'],
             unknown,

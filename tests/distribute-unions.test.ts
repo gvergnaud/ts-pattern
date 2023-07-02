@@ -10,269 +10,275 @@ import { Option } from './types-catalog/utils';
 
 describe('FindAllUnions', () => {
   it('should correctly find all unions on an object', () => {
-    type cases = [
-      Expect<
-        Equal<
-          FindUnions<{ a: 1 | 2; b: 3 | 4; c: 6 | 7 }, { a: 1; b: 3 }>,
-          [
-            {
-              cases:
-                | {
-                    value: 1;
-                    subUnions: [];
-                  }
-                | {
-                    value: 2;
-                    subUnions: [];
-                  };
-              path: ['a'];
-            },
-            {
-              cases:
-                | {
-                    value: 4;
-                    subUnions: [];
-                  }
-                | {
-                    value: 3;
-                    subUnions: [];
-                  };
-              path: ['b'];
-            }
-          ]
-        >
-      >,
-      Expect<
-        Equal<
-          FindUnions<
-            {
-              a: 1 | 2;
-              b: 3 | 4;
-              c: 5 | 6;
-              d: 7 | 8; // not matched
-            },
-            { a: 1; b: 3; c: 5 }
-          >,
-          [
-            {
-              cases:
-                | {
-                    value: 1;
-                    subUnions: [];
-                  }
-                | {
-                    value: 2;
-                    subUnions: [];
-                  };
-              path: ['a'];
-            },
-            {
-              cases:
-                | {
-                    value: 3;
-                    subUnions: [];
-                  }
-                | {
-                    value: 4;
-                    subUnions: [];
-                  };
-              path: ['b'];
-            },
-            {
-              cases:
-                | {
-                    value: 5;
-                    subUnions: [];
-                  }
-                | {
-                    value: 6;
-                    subUnions: [];
-                  };
-              path: ['c'];
-            }
-          ]
-        >
-      >,
-      Expect<
-        Equal<
-          FindUnions<
-            {
-              a: 1 | 2;
-              b: 3 | 4;
-              c: 5 | 6;
-              d: { e: 7 | 8; f: 9 | 10 };
-              g: 11 | 12; // not matched by the pattern
-            },
-            {
-              a: 1;
-              b: 3;
-              c: 5;
-              d: { e: 7; f: 9 };
-            }
-          >,
-          [
-            {
-              cases:
-                | {
-                    value: 1;
-                    subUnions: [];
-                  }
-                | {
-                    value: 2;
-                    subUnions: [];
-                  };
-              path: ['a'];
-            },
-            {
-              cases:
-                | {
-                    value: 3;
-                    subUnions: [];
-                  }
-                | {
-                    value: 4;
-                    subUnions: [];
-                  };
-              path: ['b'];
-            },
-            {
-              cases:
-                | {
-                    value: 5;
-                    subUnions: [];
-                  }
-                | {
-                    value: 6;
-                    subUnions: [];
-                  };
-              path: ['c'];
-            },
-            {
-              cases:
-                | {
-                    value: 7;
-                    subUnions: [];
-                  }
-                | {
-                    value: 8;
-                    subUnions: [];
-                  };
-              path: ['d', 'e'];
-            },
-            {
-              cases:
-                | {
-                    value: 9;
-                    subUnions: [];
-                  }
-                | {
-                    value: 10;
-                    subUnions: [];
-                  };
-              path: ['d', 'f'];
-            }
-          ]
-        >
-      >,
-      Expect<
-        Equal<
-          FindUnions<
-            { a: { b: { e: 7 | 8; f: 9 | 10 } } } | { c: 11 | 12 },
-            { a: { b: { e: 7; f: 9 } } }
-          >,
-          [
-            {
-              cases:
-                | {
-                    value: { a: { b: { e: 7 | 8; f: 9 | 10 } } };
-                    subUnions: [
-                      {
-                        cases:
-                          | {
-                              value: 7;
-                              subUnions: [];
-                            }
-                          | {
-                              value: 8;
-                              subUnions: [];
-                            };
-                        path: ['a', 'b', 'e'];
-                      },
-                      {
-                        cases:
-                          | {
-                              value: 9;
-                              subUnions: [];
-                            }
-                          | {
-                              value: 10;
-                              subUnions: [];
-                            };
-                        path: ['a', 'b', 'f'];
-                      }
-                    ];
-                  }
-                | { value: { c: 11 | 12 }; subUnions: [] };
-              path: [];
-            }
-          ]
-        >
-      >,
-      Expect<
-        Equal<
-          FindUnions<
-            {
-              e: 'not a union';
-              a: {
-                e: 7 | 8;
-                f: 9 | 10;
-                g: 11 | 12; // not matched
-              };
-              b: 2 | 3;
-            },
-            { e: 'not a union'; a: { e: 7; f: 9 }; b: 2 }
-          >,
-          [
-            {
-              cases:
-                | {
-                    value: 7;
-                    subUnions: [];
-                  }
-                | {
-                    value: 8;
-                    subUnions: [];
-                  };
-              path: ['a', 'e'];
-            },
-            {
-              cases:
-                | {
-                    value: 9;
-                    subUnions: [];
-                  }
-                | {
-                    value: 10;
-                    subUnions: [];
-                  };
-              path: ['a', 'f'];
-            },
-            {
-              cases:
-                | {
-                    value: 2;
-                    subUnions: [];
-                  }
-                | {
-                    value: 3;
-                    subUnions: [];
-                  };
-              path: ['b'];
-            }
-          ]
-        >
+    type res1 = FindUnions<{ a: 1 | 2; b: 3 | 4; c: 6 | 7 }, { a: 1; b: 3 }>;
+    type test1 = Expect<
+      Equal<
+        res1,
+        [
+          {
+            cases:
+              | {
+                  value: 1;
+                  subUnions: [];
+                }
+              | {
+                  value: 2;
+                  subUnions: [];
+                };
+            path: ['a'];
+          },
+          {
+            cases:
+              | {
+                  value: 4;
+                  subUnions: [];
+                }
+              | {
+                  value: 3;
+                  subUnions: [];
+                };
+            path: ['b'];
+          }
+        ]
       >
-    ];
+    >;
+    type res2 = FindUnions<
+      {
+        a: 1 | 2;
+        b: 3 | 4;
+        c: 5 | 6;
+        d: 7 | 8; // not matched
+      },
+      { a: 1; b: 3; c: 5 }
+    >;
+    type test2 = Expect<
+      Equal<
+        res2,
+        [
+          {
+            cases:
+              | {
+                  value: 1;
+                  subUnions: [];
+                }
+              | {
+                  value: 2;
+                  subUnions: [];
+                };
+            path: ['a'];
+          },
+          {
+            cases:
+              | {
+                  value: 3;
+                  subUnions: [];
+                }
+              | {
+                  value: 4;
+                  subUnions: [];
+                };
+            path: ['b'];
+          },
+          {
+            cases:
+              | {
+                  value: 5;
+                  subUnions: [];
+                }
+              | {
+                  value: 6;
+                  subUnions: [];
+                };
+            path: ['c'];
+          }
+        ]
+      >
+    >;
+    type res3 = FindUnions<
+      {
+        a: 1 | 2;
+        b: 3 | 4;
+        c: 5 | 6;
+        d: { e: 7 | 8; f: 9 | 10 };
+        g: 11 | 12; // not matched by the pattern
+      },
+      {
+        a: 1;
+        b: 3;
+        c: 5;
+        d: { e: 7; f: 9 };
+      }
+    >;
+
+    type test3 = Expect<
+      Equal<
+        res3,
+        [
+          {
+            cases:
+              | {
+                  value: 1;
+                  subUnions: [];
+                }
+              | {
+                  value: 2;
+                  subUnions: [];
+                };
+            path: ['a'];
+          },
+          {
+            cases:
+              | {
+                  value: 3;
+                  subUnions: [];
+                }
+              | {
+                  value: 4;
+                  subUnions: [];
+                };
+            path: ['b'];
+          },
+          {
+            cases:
+              | {
+                  value: 5;
+                  subUnions: [];
+                }
+              | {
+                  value: 6;
+                  subUnions: [];
+                };
+            path: ['c'];
+          },
+          {
+            cases:
+              | {
+                  value: 7;
+                  subUnions: [];
+                }
+              | {
+                  value: 8;
+                  subUnions: [];
+                };
+            path: ['d', 'e'];
+          },
+          {
+            cases:
+              | {
+                  value: 9;
+                  subUnions: [];
+                }
+              | {
+                  value: 10;
+                  subUnions: [];
+                };
+            path: ['d', 'f'];
+          }
+        ]
+      >
+    >;
+
+    type res4 = FindUnions<
+      { a: { b: { e: 7 | 8; f: 9 | 10 } } } | { c: 11 | 12 },
+      { a: { b: { e: 7; f: 9 } } }
+    >;
+    type test4 = Expect<
+      Equal<
+        res4,
+        [
+          {
+            cases:
+              | {
+                  value: { a: { b: { e: 7 | 8; f: 9 | 10 } } };
+                  subUnions: [
+                    {
+                      cases:
+                        | {
+                            value: 7;
+                            subUnions: [];
+                          }
+                        | {
+                            value: 8;
+                            subUnions: [];
+                          };
+                      path: ['a', 'b', 'e'];
+                    },
+                    {
+                      cases:
+                        | {
+                            value: 9;
+                            subUnions: [];
+                          }
+                        | {
+                            value: 10;
+                            subUnions: [];
+                          };
+                      path: ['a', 'b', 'f'];
+                    }
+                  ];
+                }
+              | { value: { c: 11 | 12 }; subUnions: [] };
+            path: [];
+          }
+        ]
+      >
+    >;
+
+    type res5 = FindUnions<
+      {
+        e: 'not a union';
+        a: {
+          e: 7 | 8;
+          f: 9 | 10;
+          g: 11 | 12; // not matched
+        };
+        b: 2 | 3;
+      },
+      { e: 'not a union'; a: { e: 7; f: 9 }; b: 2 }
+    >;
+    type test5 = Expect<
+      Equal<
+        res5,
+        [
+          {
+            cases:
+              | {
+                  value: 7;
+                  subUnions: [];
+                }
+              | {
+                  value: 8;
+                  subUnions: [];
+                };
+            path: ['a', 'e'];
+          },
+          {
+            cases:
+              | {
+                  value: 9;
+                  subUnions: [];
+                }
+              | {
+                  value: 10;
+                  subUnions: [];
+                };
+            path: ['a', 'f'];
+          },
+          {
+            cases:
+              | {
+                  value: 2;
+                  subUnions: [];
+                }
+              | {
+                  value: 3;
+                  subUnions: [];
+                };
+            path: ['b'];
+          }
+        ]
+      >
+    >;
   });
 
   it('should correctly find all unions on a tuple', () => {
@@ -418,6 +424,95 @@ describe('FindAllUnions', () => {
         >
       >
     ];
+  });
+
+  it('when matched against an empty array, the input should be turned into a union of empty array and non-empty array', () => {
+    type res1 = FindUnions<readonly number[], readonly []>;
+    type tes1 = Expect<
+      Equal<
+        res1,
+        [
+          {
+            cases:
+              | {
+                  value: readonly [];
+                  subUnions: [];
+                }
+              | {
+                  value: readonly [number, ...(readonly number[])];
+                  subUnions: [];
+                };
+            path: [];
+          }
+        ]
+      >
+    >;
+
+    type res2 = FindUnions<[number], []>;
+    type tes2 = Expect<Equal<res2, []>>;
+
+    type res3 = FindUnions<[number], [number, ...number[]]>;
+    type tes3 = Expect<Equal<res3, []>>;
+
+    type res4 = FindUnions<[number], [...number[], number]>;
+    type tes4 = Expect<Equal<res4, []>>;
+
+    type res5 = FindUnions<[number], [...number[], number]>;
+    type tes5 = Expect<Equal<res5, []>>;
+
+    type res6 = FindUnions<readonly number[], readonly [number, ...number[]]>;
+    type tes6 = Expect<
+      Equal<
+        res6,
+        [
+          {
+            cases:
+              | {
+                  value: readonly [];
+                  subUnions: [];
+                }
+              | {
+                  value: readonly [number, ...(readonly number[])];
+                  subUnions: [];
+                };
+            path: [];
+          }
+        ]
+      >
+    >;
+
+    type res7 = FindUnions<readonly number[], readonly [...number[], number]>;
+    type tes7 = Expect<
+      Equal<
+        res7,
+        [
+          {
+            cases:
+              | {
+                  value: readonly [];
+                  subUnions: [];
+                }
+              | {
+                  value: readonly [...number[], number];
+                  subUnions: [];
+                };
+            path: [];
+          }
+        ]
+      >
+    >;
+
+    type res8 = FindUnions<
+      readonly [...number[], number],
+      readonly [...number[], number]
+    >;
+    type tes8 = Expect<Equal<res8, []>>;
+
+    type res9 = FindUnions<
+      readonly [number, ...number[]],
+      readonly [number, ...number[]]
+    >;
+    type tes9 = Expect<Equal<res9, []>>;
   });
 
   it('should avoid duplicating the unions, even if the pattern matches the same path twice', () => {
@@ -747,9 +842,11 @@ describe('DistributeMatchingUnions', () => {
   });
 
   it('should work for non unions', () => {
+    type res1 = DistributeMatchingUnions<[], []>;
+    type test1 = Expect<Equal<res1, []>>;
+
     type cases = [
       Expect<Equal<DistributeMatchingUnions<{}, {}>, {}>>,
-      Expect<Equal<DistributeMatchingUnions<[], []>, []>>,
       Expect<
         Equal<
           DistributeMatchingUnions<Map<string, string>, Map<string, string>>,

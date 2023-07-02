@@ -45,11 +45,11 @@ describe('not', () => {
           type t = Expect<Equal<typeof x, 'two'>>;
           return 'not 1';
         })
-        .with(P.not(two), (x) => {
+        .with('one', (x) => {
           type t = Expect<Equal<typeof x, 'one'>>;
           return 'not 2';
         })
-        .run();
+        .exhaustive();
 
     expect(get('two')).toEqual('not 1');
     expect(get('one')).toEqual('not 2');
@@ -88,7 +88,7 @@ describe('not', () => {
           type t = Expect<Equal<typeof x, { type: 'error' }>>;
           return 'error';
         })
-        .with({ type: P.not('error') }, (x) => {
+        .with({ type: 'success' }, (x) => {
           type t = Expect<Equal<typeof x, { type: 'success' }>>;
           return 'success';
         })
@@ -165,7 +165,7 @@ describe('not', () => {
           (x) => {
             type t = Expect<
               Equal<
-                typeof x['value']['coords'],
+                (typeof x)['value']['coords'],
                 {
                   y: 'top' | 'bottom';
                   x: 'right';
@@ -182,7 +182,7 @@ describe('not', () => {
   it('should consider the expression exhaustive if the sub pattern matches something that will never match', () => {
     expect(
       match<{ str: string }>({ str: 'hello' })
-        .with(P.not(2), ({ str }) => str)
+        .with(P.not(P.number), ({ str }) => str)
         .exhaustive()
     ).toBe('hello');
 
@@ -208,18 +208,6 @@ describe('not', () => {
         .with(P.not(P.string), (value) => `value is NOT a string: ${value}`)
         .with(P.not(P.number), (value) => `value is NOT a number: ${value}`)
         .with(P.not(P.boolean), (value) => `value is NOT a boolean: ${value}`)
-        .with(
-          P.not({ key: P.string }),
-          (value) => `value is NOT an object. ${value}`
-        )
-        .with(
-          P.not(P.array(P.string)),
-          (value) => `value is NOT an array of strings: ${value}`
-        )
-        .with(
-          P.not([P.number, P.number]),
-          (value) => `value is NOT tuple of two numbers: ${value}`
-        )
         .exhaustive();
 
     const inputs: { input: Input; expected: string }[] = [
@@ -240,5 +228,60 @@ describe('not', () => {
     inputs.forEach(({ input, expected }) =>
       expect(notMatch(input)).toEqual(expected)
     );
+  });
+
+  it("issue #138 — P.not on literals shouln't exclude the whole primitive type.", () => {
+    type Input =
+      | { type: 'user'; name: string }
+      | { type: 'image'; src: string }
+      | { type: 'video'; seconds: number };
+
+    let input = { type: 'user', name: 'Gabriel' } as unknown as Input;
+
+    match(input)
+      .with(
+        { type: 'video', seconds: P.not(10) },
+        () => 'not video of 10 seconds.'
+      )
+      // This should work
+      .with({ type: 'video', seconds: 10 }, () => 'video of 10 seconds.')
+      .otherwise(() => 'something else');
+  });
+
+  it("shouldn't consider unexhaustive patterns exhaustive", () => {
+    const f = (input: { type: 'video'; seconds: number }) =>
+      match(input)
+        .with(
+          // not 10, but still can be any number.
+          { type: 'video', seconds: P.not(10) },
+          () => 'not video of 10 seconds.'
+        )
+        // @ts-expect-error
+        .exhaustive();
+  });
+
+  it('exhaustive should work when P.not is followed by the anti-pattern', () => {
+    match<number>(1)
+      .with(P.not(P.number), () => 'not 2')
+      .with(P.number, () => '2')
+      .exhaustive();
+
+    match<1 | 2>(1)
+      .with(P.not(2), () => '1')
+      .with(2, () => '2')
+      .exhaustive();
+
+    match<'a' | 'b' | 'c'>('a')
+      .with(P.not('a'), () => '1')
+      .with('a', () => '2')
+      .exhaustive();
+
+    match<number>(1)
+      .with(P.not(2), () => 'not 2')
+      .with(2, () => '2')
+      // FIXME: Technically, this pattern is exhaustive but I don't see a way to make sure it is
+      // without negated types (https://github.com/microsoft/TypeScript/pull/29317).
+      // @ts-expect-error
+      .exhaustive();
   });
 });

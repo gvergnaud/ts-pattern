@@ -39,6 +39,27 @@ describe('and, and or patterns', () => {
       const f = (input: Input) =>
         match(input)
           .with(
+            P.union(
+              { type: 'a', value: [{ type: 'd' }, true] } as const,
+              {
+                type: 'b',
+              } as const
+            ),
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  | B
+                  | {
+                      type: 'a';
+                      value: [{ type: 'd'; value: number }, true];
+                    }
+                >
+              >;
+              return 'branch 3';
+            }
+          )
+          .with(
             {
               type: 'a',
               value: [P.union({ type: 'd' }, { type: 'e' }), true],
@@ -66,27 +87,7 @@ describe('and, and or patterns', () => {
             type t = Expect<Equal<typeof x, A>>;
             return 'branch 2';
           })
-          .with(
-            P.union(
-              { type: 'a', value: [{ type: 'd' }, true] } as const,
-              {
-                type: 'b',
-              } as const
-            ),
-            (x) => {
-              type t = Expect<
-                Equal<
-                  typeof x,
-                  | B
-                  | {
-                      type: 'a';
-                      value: [{ type: 'd'; value: number }, true];
-                    }
-                >
-              >;
-              return 'branch 3';
-            }
-          )
+
           .exhaustive();
     });
 
@@ -158,7 +159,6 @@ describe('and, and or patterns', () => {
             >;
             return 'branch 2';
           })
-          // FIXME: This should work
           .exhaustive();
     });
 
@@ -223,8 +223,8 @@ describe('and, and or patterns', () => {
       const f = (n: Parent) =>
         match(n)
           .with(
-            P.intersection(P.instanceOf(Child1), {
-              a: P.optional(P.instanceOf(Child2)),
+            P.instanceOf(Child1).and({
+              a: P.instanceOf(Child2).optional(),
               b: P.instanceOf(Child2),
             }),
             (x) => {
@@ -235,12 +235,10 @@ describe('and, and or patterns', () => {
             }
           )
           .with(
-            P.intersection(
-              { a: P.instanceOf(Child1) },
-              P.union(
-                { a: { a: P.instanceOf(Child1), b: P.instanceOf(Child1) } },
-                { b: { a: P.instanceOf(Child2), b: P.instanceOf(Child2) } }
-              )
+            P.shape({ a: P.instanceOf(Child1) }).and(
+              P.shape({
+                a: { a: P.instanceOf(Child1), b: P.instanceOf(Child1) },
+              }).or({ b: { a: P.instanceOf(Child2), b: P.instanceOf(Child2) } })
             ),
             (x) => {
               type t = Expect<
@@ -603,50 +601,53 @@ describe('and, and or patterns', () => {
             value: { type: 'c'; b: boolean }[];
           };
 
+      const errorF = (input: Input) =>
+        match(input)
+          .with({ value: P.array({ type: P.union('a', 'b', 'c') }) }, (x) => {})
+          .exhaustive();
+
       const f = (input: Input) => {
-        return (
-          match(input)
-            .with(
-              { value: P.array(P.union({ type: 'a' }, { type: 'b' })) },
-              (x) => {
-                type t = Expect<
-                  Equal<
-                    typeof x,
-                    | {
-                        value: { type: 'a'; n: number }[];
-                      }
-                    | {
-                        value: { type: 'b'; s: string }[];
-                      }
-                  >
-                >;
-                return x.value[0].type;
-              }
-            )
-            // @ts-expect-error FIXME this should work
-            .with({ value: P.array({ type: P.union('a', 'b') }) }, (x) => {})
-            .with(
-              {
-                value: P.array({ type: P.typed<'a' | 'b'>().union('a', 'b') }),
-              },
-              (x) => {
-                type t = Expect<
-                  Equal<
-                    typeof x,
-                    | {
-                        value: { type: 'a'; n: number }[];
-                      }
-                    | {
-                        value: { type: 'b'; s: string }[];
-                      }
-                  >
-                >;
-                return x.value[0].type;
-              }
-            )
-            .with({ value: P.array(P.any) }, () => 'other')
-            .exhaustive()
-        );
+        return match(input)
+          .with(
+            { value: P.array(P.union({ type: 'a' }, { type: 'b' })) },
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  | {
+                      value: {
+                        type: 'a';
+                        n: number;
+                      }[];
+                    }
+                  | {
+                      value: {
+                        type: 'b';
+                        s: string;
+                      }[];
+                    }
+                >
+              >;
+              return x.value[0].type;
+            }
+          )
+          .with(
+            {
+              value: P.array({ type: 'c' }),
+            },
+            (x) => {
+              type t = Expect<
+                Equal<
+                  typeof x,
+                  {
+                    value: { type: 'c'; b: boolean }[];
+                  }
+                >
+              >;
+              return x.value[0].type;
+            }
+          )
+          .exhaustive();
       };
 
       expect(
@@ -724,7 +725,7 @@ describe('and, and or patterns', () => {
       .otherwise(() => 'ko');
   });
 
-  it('Should work with P.typed()', () => {
+  it('Inference should work at the top level', () => {
     class A {
       constructor(public foo: 'bar' | 'baz') {}
     }
@@ -736,7 +737,7 @@ describe('and, and or patterns', () => {
     const f = (input: A | B) =>
       match(input)
         .with(
-          P.typed<A | B>().intersection(P.instanceOf(A), { foo: 'bar' }),
+          P.intersection(P.instanceOf(A), { foo: 'bar' }),
           // prop: A & { foo: 'bar' }
           (prop) => {
             type t = Expect<Equal<typeof prop, A & { foo: 'bar' }>>;
@@ -744,7 +745,7 @@ describe('and, and or patterns', () => {
           }
         )
         .with(
-          P.typed<A | B>().intersection(P.instanceOf(A), { foo: 'baz' }),
+          P.intersection(P.instanceOf(A), { foo: 'baz' }),
           // prop: A & { foo: 'baz' }
           (prop) => {
             type t = Expect<Equal<typeof prop, A & { foo: 'baz' }>>;

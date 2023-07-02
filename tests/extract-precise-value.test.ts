@@ -1,20 +1,19 @@
 import { ExtractPreciseValue } from '../src/types/ExtractPreciseValue';
-import { Expect, Equal, LeastUpperBound } from '../src/types/helpers';
-import { ToExclude } from '../src/types/Pattern';
-import { Event, Option, State } from './types-catalog/utils';
+import { Expect, Equal } from '../src/types/helpers';
+import { AsyncResult, Event, Option, State } from './types-catalog/utils';
 
 describe('ExtractPreciseValue', () => {
   it('should correctly extract the matching value from the input and an inverted pattern', () => {
+    type res1 = ExtractPreciseValue<
+      { type: 'test' } | ['hello', Option<string>] | 'hello'[],
+      ['hello', { kind: 'some' }]
+    >;
+
+    type test1 = Expect<
+      Equal<res1, ['hello', { kind: 'some'; value: string }]>
+    >;
+
     type cases = [
-      Expect<
-        Equal<
-          ExtractPreciseValue<
-            { type: 'test' } | ['hello', Option<string>] | 'hello'[],
-            ['hello', { kind: 'some' }]
-          >,
-          ['hello', { kind: 'some'; value: string }]
-        >
-      >,
       Expect<
         Equal<
           ExtractPreciseValue<
@@ -210,14 +209,17 @@ describe('ExtractPreciseValue', () => {
   });
 
   it('should work with arrays', () => {
-    type cases = [
-      Expect<
-        Equal<
-          ExtractPreciseValue<boolean | { type: string } | string[], string[]>,
-          string[]
-        >
-      >
-    ];
+    type res1 = ExtractPreciseValue<
+      boolean | { type: string } | string[],
+      string[]
+    >;
+    type test1 = Expect<Equal<res1, string[]>>;
+
+    type res2 = ExtractPreciseValue<
+      ({ a: string } | { b?: number | boolean; c: string })[],
+      { b: number }[]
+    >;
+    type test2 = Expect<Equal<res2, { b: number; c: string }[]>>;
   });
 
   describe('Optional properties', () => {
@@ -233,15 +235,6 @@ describe('ExtractPreciseValue', () => {
           Equal<
             ExtractPreciseValue<Input, { type: 'test' }>,
             { type: 'test'; id?: string }
-          >
-        >,
-        Expect<
-          Equal<
-            ExtractPreciseValue<
-              Input,
-              { type: 'test'; id: ToExclude<undefined> }
-            >,
-            { type: 'test'; id: string }
           >
         >,
         Expect<
@@ -385,5 +378,122 @@ describe('ExtractPreciseValue', () => {
         >
       ];
     });
+  });
+
+  describe('variadic patterns', () => {
+    it('[a, ...b[]]', () => {
+      type res1 = ExtractPreciseValue<unknown[], [unknown, ...unknown[]]>;
+      type t1 = Expect<Equal<res1, [unknown, ...unknown[]]>>;
+
+      type res2 = ExtractPreciseValue<unknown[], [number, ...string[]]>;
+      type t2 = Expect<Equal<res2, [number, ...string[]]>>;
+
+      type res3 = ExtractPreciseValue<
+        [string, ...boolean[]],
+        ['a', ...unknown[]]
+      >;
+      type t3 = Expect<Equal<res3, ['a', ...boolean[]]>>;
+
+      type res4 = ExtractPreciseValue<
+        (string | boolean)[],
+        ['a', ...unknown[]]
+      >;
+      type t4 = Expect<Equal<res4, ['a', ...(string | boolean)[]]>>;
+    });
+
+    it('[a, b, ...c[]]', () => {
+      type res1 = ExtractPreciseValue<
+        unknown[],
+        [unknown, unknown, ...unknown[]]
+      >;
+      type t1 = Expect<Equal<res1, [unknown, unknown, ...unknown[]]>>;
+
+      type res2 = ExtractPreciseValue<
+        unknown[],
+        [number, boolean, ...string[]]
+      >;
+      type t2 = Expect<Equal<res2, [number, boolean, ...string[]]>>;
+
+      type res3 = ExtractPreciseValue<
+        [string, number, ...boolean[]],
+        ['a', 2, ...unknown[]]
+      >;
+      type t3 = Expect<Equal<res3, ['a', 2, ...boolean[]]>>;
+    });
+
+    it('[...a[], b]', () => {
+      type res1 = ExtractPreciseValue<unknown[], [...unknown[], unknown]>;
+      type t1 = Expect<Equal<res1, [...unknown[], unknown]>>;
+
+      type res2 = ExtractPreciseValue<unknown[], [...string[], number]>;
+      type t2 = Expect<Equal<res2, [...string[], number]>>;
+
+      type res3 = ExtractPreciseValue<
+        [...boolean[], string],
+        [...unknown[], 'a']
+      >;
+      type t3 = Expect<Equal<res3, [...boolean[], 'a']>>;
+    });
+    it('[...a[], b, c]', () => {
+      type res1 = ExtractPreciseValue<
+        unknown[],
+        [...unknown[], unknown, unknown]
+      >;
+      type t1 = Expect<Equal<res1, [...unknown[], unknown, unknown]>>;
+
+      type res2 = ExtractPreciseValue<
+        unknown[],
+        [...string[], number, boolean]
+      >;
+      type t2 = Expect<Equal<res2, [...string[], number, boolean]>>;
+
+      type res3 = ExtractPreciseValue<
+        [...boolean[], string, boolean],
+        [...unknown[], 'a', true]
+      >;
+      type t3 = Expect<Equal<res3, [...boolean[], 'a', true]>>;
+    });
+    it('[a, ...b[], c]', () => {
+      type res1 = ExtractPreciseValue<
+        unknown[],
+        [unknown, ...unknown[], unknown]
+      >;
+      type t1 = Expect<Equal<res1, [unknown, ...unknown[], unknown]>>;
+
+      type res2 = ExtractPreciseValue<
+        unknown[],
+        [number, ...string[], boolean]
+      >;
+      type t2 = Expect<Equal<res2, [number, ...string[], boolean]>>;
+
+      type res3 = ExtractPreciseValue<
+        [string, ...boolean[], number],
+        ['a', ...unknown[], 2]
+      >;
+      type t3 = Expect<Equal<res3, ['a', ...boolean[], 2]>>;
+    });
+  });
+});
+
+describe('generics', () => {
+  it("shouldn't get stuck on generics in the input structure that aren't matched by the pattern", () => {
+    const fn = <TResult, TError>() => {
+      type res1 = ExtractPreciseValue<
+        // ^?
+        AsyncResult<TResult, TError>,
+        { status: 'loading' }
+      >;
+
+      type test1 = Expect<
+        Equal<
+          res1,
+          {
+            status: 'loading';
+            data?: TResult | undefined;
+            error?: TError | undefined;
+          }
+        >
+      >;
+    };
   });
 });

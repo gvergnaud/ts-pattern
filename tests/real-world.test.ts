@@ -75,7 +75,6 @@ describe('real world example of a complex input type', () => {
         {
           viz: P.union('timeseries', 'query_table'),
           requests: P.array({
-            // @ts-expect-error: FIXME,  P.union  only sees 'timeseries'
             response_format: P.union('timeseries', 'scalar'),
           }),
         },
@@ -108,7 +107,7 @@ describe('real world example of a complex input type', () => {
         (queries) => queries
       )
       .with(
-        { viz: 'sunburst', requests: P.array({ response_format: P.select() }) },
+        { viz: 'geomap', requests: P.array({ response_format: P.select() }) },
         (scalars) => scalars
       )
       .with(
@@ -118,8 +117,6 @@ describe('real world example of a complex input type', () => {
             'timeseries',
             'heatmap',
             'scatterplot',
-            'sunburst',
-            'wildcard',
             'query_table'
           ),
         },

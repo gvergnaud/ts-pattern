@@ -12,7 +12,7 @@ describe('types', () => {
     pattern = [{ status: 'success', data: '' }, P._];
     pattern = [{ status: 'success', data: P.string }, P._];
     pattern = [{ status: 'success', data: P._ }, P._];
-    pattern = [{ status: 'error', error: new Error() }, P._];
+    pattern = [{ status: 'error', error: P.instanceOf(Error) }, P._];
     pattern = [{ status: 'idle' }, P._];
     pattern = [P._, { type: 'fetch' }];
     pattern = [P._, { type: P._ }];
@@ -105,50 +105,53 @@ describe('types', () => {
   it('should infer values correctly in handler', () => {
     type Input = { type: string; hello?: { yo: number } } | string;
 
-    const res = match<Input>({ type: 'hello' })
-      .with(P._, (x) => {
+    match<Input>({ type: 'hello' }).with(P.string, (x) => {
+      type t = Expect<Equal<typeof x, string>>;
+      return 'ok';
+    });
+
+    const res = match<Input>({ type: 'hello' }).with(P.string, (x) => {
+      type t = Expect<Equal<typeof x, string>>;
+      return 'ok';
+    });
+
+    match<Input>({ type: 'hello' }).with(
+      P.when((x) => true),
+      (x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
-      })
-      .with(P.string, (x) => {
-        type t = Expect<Equal<typeof x, string>>;
-        return 'ok';
-      })
-      .with(
-        P.when((x) => true),
-        (x) => {
-          type t = Expect<Equal<typeof x, Input>>;
-          return 'ok';
-        }
-      )
-      .with(
-        P.typed<Input>().when((x) => {
-          type t = Expect<Equal<typeof x, Input>>;
-          return true;
-        }),
-        (x) => {
-          type t = Expect<Equal<typeof x, Input>>;
-          return 'ok';
-        }
-      )
-      .with(P.not('hello' as const), (x) => {
+      }
+    );
+
+    match<Input>({ type: 'hello' }).with(
+      P.when((x) => {
+        type t = Expect<Equal<typeof x, Input>>;
+        return true;
+      }),
+      (x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
-      })
-      .with(P.not(P.string), (x) => {
-        type t = Expect<
-          Equal<
-            typeof x,
-            {
-              type: string;
-              hello?: {
-                yo: number;
-              };
-            }
-          >
-        >;
-        return 'ok';
-      })
+      }
+    );
+    match<Input>({ type: 'hello' }).with(P.not('hello' as const), (x) => {
+      type t = Expect<Equal<typeof x, Input>>;
+      return 'ok';
+    });
+    match<Input>({ type: 'hello' }).with(P.not(P.string), (x) => {
+      type t = Expect<
+        Equal<
+          typeof x,
+          {
+            type: string;
+            hello?: {
+              yo: number;
+            };
+          }
+        >
+      >;
+      return 'ok';
+    });
+    match<Input>({ type: 'hello' })
       .with(P.not(P.when((x) => true)), (x) => {
         type t = Expect<Equal<typeof x, Input>>;
         return 'ok';
@@ -166,54 +169,61 @@ describe('types', () => {
           >
         >;
         return 'ok';
-      })
-      .with({ type: P.string }, (x) => {
-        type t = Expect<
-          Equal<typeof x, { type: string; hello?: { yo: number } | undefined }>
-        >;
-        return 'ok';
-      })
-      .with({ type: P.when((x) => true) }, (x) => {
-        type t = Expect<
-          Equal<typeof x, { type: string; hello?: { yo: number } | undefined }>
-        >;
-        return 'ok';
-      })
-      .with({ type: P.not('hello' as 'hello') }, (x) => {
+      });
+    match<Input>({ type: 'hello' }).with({ type: P.string }, (x) => {
+      type t = Expect<
+        Equal<typeof x, { type: string; hello?: { yo: number } | undefined }>
+      >;
+      return 'ok';
+    });
+    match<Input>({ type: 'hello' }).with({ type: P.when((x) => true) }, (x) => {
+      type t = Expect<
+        Equal<typeof x, { type: string; hello?: { yo: number } | undefined }>
+      >;
+      return 'ok';
+    });
+    match<Input>({ type: 'hello' }).with(
+      { type: P.not('hello' as 'hello') },
+      (x) => {
         type t = Expect<
           Equal<
             typeof x,
             {
               type: string;
-              hello:
-                | {
-                    yo: number;
-                  }
-                | undefined;
+              hello?: { yo: number } | undefined;
             }
           >
         >;
         return 'ok';
-      })
-      .with({ type: P.not(P.string) }, (x) => {
-        type t = Expect<Equal<typeof x, Input>>;
-        return 'ok';
-      })
-      .with({ type: P.not(P.when((x) => true)) }, (x) => {
-        type t = Expect<Equal<typeof x, Input>>;
-        return 'ok';
-      })
-      .with(P.not({ type: P.when((x) => true) }), (x) => {
-        type t = Expect<Equal<typeof x, string>>;
-        return 'ok';
-      })
-      .with(P.not({ type: P.string }), (x) => {
-        type t = Expect<Equal<typeof x, string>>;
-        return 'ok';
-      })
-      .run();
+      }
+    );
 
-    const inferenceCheck: string = res;
+    match<Input>({ type: 'hello' }).with({ type: P.not(P.string) }, (x) => {
+      type t = Expect<Equal<typeof x, Input>>;
+      return 'ok';
+    });
+    match<Input>({ type: 'hello' }).with(
+      { type: P.not(P.when((x) => true)) },
+      (x) => {
+        type t = Expect<Equal<typeof x, Input>>;
+        return 'ok';
+      }
+    );
+    match<Input>({ type: 'hello' }).with(
+      P.not({ type: P.when((x) => true) }),
+      (x) => {
+        type t = Expect<Equal<typeof x, string>>;
+        return 'ok';
+      }
+    );
+    match<Input>({ type: 'hello' }).with(P.not({ type: P.string }), (x) => {
+      type t = Expect<Equal<typeof x, string>>;
+      return 'ok';
+    });
+    match<Input>({ type: 'hello' }).with(P._, (x) => {
+      type t = Expect<Equal<typeof x, Input>>;
+      return 'ok';
+    });
   });
 
   it('a union of object or primitive should be matched with a correct type inference', () => {
@@ -221,15 +231,11 @@ describe('types', () => {
       | string
       | number
       | boolean
-      | { type: string }
+      | { type: string | number }
       | string[]
       | [number, number];
 
     match<Input>({ type: 'hello' })
-      .with({ type: P._ }, (x) => {
-        type t = Expect<Equal<typeof x, { type: string }>>;
-        return 'ok';
-      })
       .with(P.string, (x) => {
         type t = Expect<Equal<typeof x, string>>;
         return 'ok';
@@ -244,6 +250,10 @@ describe('types', () => {
       })
       .with({ type: P.string }, (x) => {
         type t = Expect<Equal<typeof x, { type: string }>>;
+        return 'ok';
+      })
+      .with({ type: P._ }, (x) => {
+        type t = Expect<Equal<typeof x, { type: string | number }>>;
         return 'ok';
       })
       .with([P.string], (x) => {
@@ -294,5 +304,120 @@ describe('types', () => {
         .with(true, (n: string) => '')
         .exhaustive()
     ).toThrow();
+  });
+});
+
+describe('type narrowing inheritence', () => {
+  describe('on a discriminated union type, once a case is handled it should be excluded from the input type', () => {
+    it('union of literals', () => {
+      const f = (input: 'a' | 'b') =>
+        match(input)
+          .with('a', () => 'a handled')
+          // @ts-expect-error duplicates shouldn't be permitted
+          .with('a', () => 'duplicated')
+          .with('b', () => 'b handled')
+          .exhaustive();
+
+      const f2 = (input: 'a' | 'b' | 2 | 1) =>
+        match(input)
+          .with('a', () => 'a handled')
+          .with('b', () => 'b handled')
+          .with(1, () => '1 handled')
+          // @ts-expect-error duplicates shouldn't be permitted
+          .with(1, () => 'duplicated')
+          .with(2, () => '2 handled')
+          .exhaustive();
+    });
+
+    it('union of objects', () => {
+      type Input = { type: 'a'; data: string } | { type: 'b'; data: number };
+
+      const f = (input: Input) =>
+        match(input)
+          .with({ type: 'a' }, () => 'a handled')
+          .with(
+            {
+              // @ts-expect-error duplicates shouldn't be permitted
+              type: 'a',
+            },
+            () => 'duplicated'
+          )
+          .with({ type: 'b' }, () => 'b handled')
+          .exhaustive();
+    });
+
+    it('should error after P.any', () => {
+      type Input = { type: 'a'; data: string } | { type: 'b'; data: number };
+
+      const f = (input: Input) =>
+        match(input)
+          .with(P.any, () => 'a handled')
+          // @ts-expect-error
+          .with({ type: 'a' }, () => 'duplicated')
+          .exhaustive();
+    });
+
+    it("shouldn't exclude in case of primitive type", () => {
+      const width = 100;
+      const height = 200;
+      const size = 10;
+      let canShowInlineLegend = true as boolean;
+
+      match<boolean>(true)
+        .with(size >= 100 && width > height * 2.25, () => 'table')
+        .with(size >= 100 && height > width * 1.5, () => 'table')
+        .with(canShowInlineLegend, () => 'inline')
+        .otherwise(() => 'none');
+    });
+  });
+
+  it('should correctly instantiate the input type on every pattern creator functions', () => {
+    match<'a' | 'b'>('a').with(
+      P.when((x) => {
+        type test = Expect<Equal<typeof x, 'a' | 'b'>>;
+        return true;
+      }),
+      () => 'a'
+    );
+
+    match<'a' | 'b'>('a').with(
+      // @ts-expect-error
+      P.union('somethingwrong'),
+      () => 'a'
+    );
+
+    match<{ type: 'a' } | { type: 'b' }>({ type: 'a' }).with(
+      // @ts-expect-error
+      P.intersection('asd'),
+      () => 'a'
+    );
+
+    match<{ type: 'a' } | { type: 'b' }>({ type: 'a' }).with(
+      // @ts-expect-error
+      P.intersection('asd'),
+      () => 'a'
+    );
+
+    match<{ type: 'a' } | { type: 'b' }>({ type: 'a' }).with(
+      P.intersection({
+        // @ts-expect-error
+        type: P.union('oops'),
+      }),
+      () => 'a'
+    );
+
+    match<{ type: 'a' } | { type: 'b' }>({ type: 'a' }).with(
+      // @ts-expect-error
+      P.optional('asd'),
+      () => 'a'
+    );
+
+    match<{ type: 'a' } | { type: 'b' }>({ type: 'a' }).with(
+      P.optional({
+        // @ts-expect-error
+        type: P.union('oops'),
+      }),
+      () => 'a'
+    );
   });
 });

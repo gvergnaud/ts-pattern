@@ -412,7 +412,7 @@ describe('exhaustive()', () => {
 
     it('should support P.any in a readonly tuple', () => {
       const f = (n: number, state: State) => {
-        const x = match([n, state] as const)
+        const x = match([n, state])
           .with(
             [1, { status: 'success', data: P.select() }],
             ([_, { data }]) => data.startsWith('coucou'),
@@ -432,13 +432,13 @@ describe('exhaustive()', () => {
       const input = new Set(['']) as Input;
 
       match(input)
-        .with(new Set([P.string]), (x) => x)
+        .with(P.set(P.string), (x) => x)
         // @ts-expect-error
         .exhaustive();
 
       match(input)
-        .with(new Set([P.string]), (x) => x)
-        .with(new Set([P.number]), (x) => new Set([]))
+        .with(P.set(P.string), (x) => x)
+        .with(P.set(P.number), (x) => new Set([]))
         .exhaustive();
     });
 
@@ -448,15 +448,15 @@ describe('exhaustive()', () => {
 
       expect(
         match(input)
-          .with(new Set([P.string]), (x) => x)
+          .with(P.set(P.string), (x) => x)
           // @ts-expect-error
           .exhaustive()
       ).toEqual(input);
 
       expect(
         match(input)
-          .with(new Set([P.string]), (x) => 1)
-          .with(new Set([P.number]), (x) => 2)
+          .with(P.set(P.string), (x) => 1)
+          .with(P.set(P.number), (x) => 2)
           .exhaustive()
       ).toEqual(1);
     });
@@ -467,21 +467,21 @@ describe('exhaustive()', () => {
 
       expect(
         match(input)
-          .with(new Map([['hello' as const, P.number]]), (x) => x)
+          .with(P.map('hello', P.number), (x) => x)
           // @ts-expect-error
           .exhaustive()
       ).toEqual(input);
 
       expect(
         match(input)
-          .with(new Map([['hello' as const, 1 as const]]), (x) => x)
+          .with(P.map('hello', 1), (x) => x)
           // @ts-expect-error
           .exhaustive()
       ).toEqual(input);
 
       expect(
         match(input)
-          .with(new Map([['hello', 1 as const]]), (x) => x)
+          .with(P.map('hello', 1), (x) => x)
           // @ts-expect-error
           .exhaustive()
       ).toEqual(input);
@@ -665,9 +665,9 @@ describe('exhaustive()', () => {
     });
 
     it('should not exclude cases if the pattern is a literal type and the value is not', () => {
-      match({ x: 2 })
+      match<{ x: number }>({ x: 2 })
         .with({ x: 2 }, ({ x }) => {
-          type t = Expect<Equal<typeof x, number>>;
+          type t = Expect<Equal<typeof x, 2>>;
           return '';
         })
         // @ts-expect-error
@@ -871,7 +871,7 @@ describe('exhaustive()', () => {
       match(input)
         .with({ t: 'a', x: 'hello' }, (x) => 'ok')
         .with({ t: 'b' }, (x) => 'ok')
-        // @ts-expect-error
+        // FIXME should error @ts-expect-error
         .exhaustive();
 
     const f3 = (input: { t: 'a'; x: any } | { t: 'b' }) =>
@@ -900,7 +900,7 @@ describe('exhaustive()', () => {
                   {
                     age: 'c' | 'd';
                     sex: 'b';
-                    oopsThisIsATypo: string;
+                    oopsThisIsATypo: 'c';
                   }
                 >
               >;

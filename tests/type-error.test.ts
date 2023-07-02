@@ -20,13 +20,14 @@ describe('type errors', () => {
     match<Country>('France')
       // @ts-expect-error: 'Spai' instead of 'Spain'
       .with('France', 'Germany', 'Spai', (x) => 'Europe')
-      .with('USA', () => 'America')
+      // @ts-expect-error
       .exhaustive();
 
     match<Country>('Germany')
       .with('Germany', 'Spain', () => 'Europe')
       // @ts-expect-error: 'US' instead of 'USA'
       .with('US', (x) => 'America')
+      // @ts-expect-error
       .exhaustive();
   });
 
@@ -35,9 +36,10 @@ describe('type errors', () => {
       .with('Germany', 'Spain', () => 'Europe')
       // @ts-expect-error: 'US' instead of 'USA'
       .with('US', (x) => {
-        type t = Expect<Equal<typeof x, Country>>;
+        type t = Expect<Equal<typeof x, 'France' | 'USA'>>;
         return 'America';
       })
+      // @ts-expect-error
       .exhaustive();
   });
 
@@ -47,16 +49,16 @@ describe('type errors', () => {
         .with({ kind: 'some', value: { x: 2 } }, () => '2')
         // @ts-expect-error, value.x should be a number
         .with({ value: { x: '' } }, () => '2')
-        .with({ kind: 'some' }, () => '2')
         .with({ kind: 'none' }, () => '')
-        .with({ kind: 'some', value: P.any }, () => '')
+        .with({ kind: 'some' }, () => '')
         .exhaustive();
 
     const f2 = (input: Option<number>) =>
       match(input)
         // @ts-expect-error: value is a number
         .with({ kind: 'some', value: 'string' }, () => '')
-        .with({ kind: 'none' }, () => 0)
+        .with({ kind: 'none' }, () => '')
+        .with({ kind: 'some' }, () => '')
         .exhaustive();
   });
 
@@ -112,5 +114,49 @@ describe('type errors', () => {
         .with({ kind: 'none' }, () => 'nope')
         // @ts-expect-error
         .exhaustive();
+  });
+
+  it("if a pattern is any, the outer expression shouldn't throw a type error", () => {
+    const anyVar = null as any;
+
+    match({ a: 'a' })
+      .with({ a: anyVar }, (x) => {
+        type t = Expect<Equal<typeof x, { a: never }>>;
+        return 'Ok';
+      })
+      .otherwise(() => 'ko');
+  });
+
+  it('type errors should be well placed', () => {
+    match<{
+      a: 1;
+      b: 'hello' | 'bonjour';
+      c: { d: [number, number, boolean] };
+      e: unknown;
+    } | null>(null)
+      .with(
+        {
+          // @ts-expect-error
+          b: 'oops',
+        },
+        () => 'result'
+      )
+      .with(
+        {
+          c: {
+            d: [
+              1, 2,
+              // @ts-expect-error: number instead of boolean
+              3,
+            ],
+          },
+        },
+        () => 'x'
+      )
+      .with({ e: 1 }, () => 'bas')
+      .with({ b: 'hello' }, ({ a }) => 'result')
+      .with({ b: 'bonjour' }, ({ a }) => 'result')
+      .with(null, () => 'result')
+      .exhaustive();
   });
 });

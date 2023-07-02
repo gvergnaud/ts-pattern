@@ -38,11 +38,22 @@ describe('Unions (a | b)', () => {
       id: 2,
       content: { body: 'yo' },
     })
-      .with({ type: 'post', content: P._ }, (x) => {
-        type t = Expect<Equal<typeof x, Post>>;
+      .with({ type: 'post', id: 7 }, (x) => {
+        type t = Expect<
+          Equal<
+            typeof x,
+            {
+              content: {
+                body: string;
+              };
+              type: 'post';
+              id: 7;
+            }
+          >
+        >;
         return 1;
       })
-      .with({ type: 'post', id: 7 }, (x) => {
+      .with({ type: 'post', content: P._ }, (x) => {
         type t = Expect<Equal<typeof x, Post>>;
         return 1;
       })
@@ -92,7 +103,21 @@ describe('Unions (a | b)', () => {
         return `<img src="${res.data.src}" />`;
       })
       .with({ type: 'ok', data: { type: 'story', likes: 10 } }, (res) => {
-        type t = Expect<Equal<typeof res, Ok<Story>>>;
+        type t = Expect<
+          Equal<
+            typeof res,
+            {
+              type: 'ok';
+              data: {
+                author: string;
+                src: string;
+                views: number;
+                type: 'story';
+                likes: 10;
+              };
+            }
+          >
+        >;
         return `<div>story with ${res.data.likes} likes</div>`;
       })
       .with({ type: 'error' }, (res) => {
