@@ -16,13 +16,15 @@ describe('Variants', () => {
   it('should work with exhaustive matching', () => {
     const area = (x: Shape) =>
       match(x)
-        .with(Circle({ radius: P.select() }), (radius) => Math.PI * radius ** 2)
+        .with(Circle(P._), (circle) => Math.PI * circle.value.radius ** 2)
         .with(Square(P.select()), ({ sideLength }) => sideLength ** 2)
         .with(Rectangle(P.select()), ({ x, y }) => x * y)
         .with(Blob(P._), ({ value }) => value)
         .exhaustive();
 
-    expect(area(Circle({ radius: 1 }))).toEqual(Math.PI);
+    const x = Circle({ radius: 1 });
+
+    expect(area(x)).toEqual(Math.PI);
     expect(area(Square({ sideLength: 10 }))).toEqual(100);
     expect(area(Blob(0))).toEqual(0);
 
@@ -35,8 +37,8 @@ describe('Variants', () => {
       match({ a, b })
         .with(
           {
-            a: Circle({ radius: P.select('a') }),
-            b: Circle({ radius: P.select('b') }),
+            a: Circle(P.shape({ radius: P.select('a') })),
+            b: Circle(P.shape({ radius: P.select('b') })),
           },
           ({ a, b }) => a === b
         )
@@ -49,8 +51,8 @@ describe('Variants', () => {
         )
         .with(
           {
-            a: Square({ sideLength: P.select('a') }),
-            b: Square({ sideLength: P.select('b') }),
+            a: Square(P.shape({ sideLength: P.select('a') })),
+            b: Square(P.shape({ sideLength: P.select('b') })),
           },
           ({ a, b }) => a === b
         )
@@ -79,7 +81,7 @@ describe('Variants', () => {
       match(maybeShape)
         .with(Nothing(), () => 'Nothing')
         .with(
-          Just(Circle({ radius: P.select() })),
+          Just(Circle(P.shape({ radius: P.select() }))),
           (radius) => `Just Circle { radius: ${radius} }`
         )
         .with(
@@ -93,9 +95,9 @@ describe('Variants', () => {
         .with(Just(Blob(P.select())), (area) => `Just Blob { area: ${area} }`)
         .exhaustive();
 
-    expect(toString(Just(Circle({ radius: 20 })))).toEqual(
-      `Just Circle { radius: 20 }`
-    );
+    const x = Just(Circle({ radius: 20 }));
+
+    expect(toString(x)).toEqual(`Just Circle { radius: 20 }`);
     expect(toString(Nothing())).toEqual(`Nothing`);
   });
 
@@ -107,14 +109,8 @@ describe('Variants', () => {
     ) =>
       match(x)
         .with(Nothing(), () => 'Non')
-        .with(
-          Just({ type: 't' as const, value: P.select() }),
-          (x) => 'typeof x: string'
-        )
-        .with(
-          Just({ type: 'u' as const, value: P.select() }),
-          (x) => 'typeof x: number'
-        )
+        .with(Just({ type: 't', value: P.select() }), (x) => 'typeof x: string')
+        .with(Just({ type: 'u', value: P.select() }), (x) => 'typeof x: number')
         .exhaustive();
 
     expect(maybeAndUnion(Nothing())).toEqual('Non');
@@ -160,7 +156,7 @@ describe('Variants', () => {
     expect(complexMatch(Success({ shape: Circle({ radius: 20 }) }))).toEqual(
       'Circle 20'
     );
-    expect(complexMatch(Success({ shape: Blob(20) }))).toEqual('Blob 20');
+    expect(complexMatch(Success({ shape: Blob(0) }))).toEqual('Blob 20');
     expect(complexMatch(Err('Failed'))).toEqual('Error: Failed');
   });
 });

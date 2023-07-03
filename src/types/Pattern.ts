@@ -67,7 +67,7 @@ export interface Matcher<
   [symbols.isVariadic]?: boolean;
 }
 
-type PatternMatcher<input> = Matcher<input, unknown, any, any>;
+export type PatternMatcher<input> = Matcher<input, unknown, any, any>;
 
 // We fall back to `a` if we weren't able to extract anything more precise
 export type MatchedValue<a, invpattern> = WithDefault<

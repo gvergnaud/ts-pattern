@@ -1,40 +1,51 @@
-import { Compute } from './types/helpers';
-import { Pattern } from './types/Pattern';
+import * as P from './patterns';
+import { PatternMatcher } from './types/Pattern';
+import { Equal } from './types/helpers';
 
-export type Variant<k, d = never> = Compute<{ tag: k; value: d }>;
+const tagKey = '_tag';
+type tagKey = typeof tagKey;
+
+export type Variant<k, d = undefined> = { [tagKey]: k; value: d };
 
 /**
  * VariantPatterns can be used to match a Variant in a
  * `match` expression.
  */
-type VariantPattern<k, p> = { tag: k; value: p };
+type VariantPattern<input, k, p> = { [tagKey]: k; value: p };
 
 type AnyVariant = Variant<string, unknown>;
 
-type Narrow<variant extends AnyVariant, k extends variant['tag']> = Extract<
+type Narrow<variant extends AnyVariant, k extends variant[tagKey]> = Extract<
   variant,
-  Variant<k, unknown>
+  Variant<k, {}>
 >;
 
-type Constructor<k, v> = [v] extends [never]
-  ? () => Variant<k>
-  : unknown extends v
-  ? <t>(value: t) => Variant<k, t>
-  : {
-      (value: v): Variant<k, v>;
-      <p extends Pattern<v>>(pattern: p): VariantPattern<k, p>;
-    };
+type Constructor<variant extends AnyVariant> = variant extends {
+  [tagKey]: infer tag;
+  value: infer value;
+}
+  ? Equal<value, undefined> extends true
+    ? () => Variant<tag>
+    : Equal<value, unknown> extends true
+    ? <t extends value>(value: t) => Variant<tag, t>
+    : {
+        (value: value): variant;
+        <input, const p extends PatternMatcher<input>>(
+          pattern: p
+        ): VariantPattern<input, tag, p>;
+      }
+  : never;
 
-type Impl<variant extends AnyVariant> = {
-  [k in variant['tag']]: Constructor<k, Narrow<variant, k>['value']>;
+type Impl<variants extends AnyVariant> = {
+  [variant in variants as variant[tagKey]]: Constructor<variant>;
 };
 
 export function implementVariants<variant extends AnyVariant>(): Impl<variant> {
   return new Proxy({} as Impl<variant>, {
     get: <k extends keyof Impl<variant>>(_: Impl<variant>, tag: k) => {
-      return (...args: [value?: Narrow<variant, k>['value']]) => ({
-        tag,
-        ...(args.length === 0 ? {} : { value: args[0] }),
+      return (...args: [value?: Narrow<variant, k>]) => ({
+        [tagKey]: tag,
+        ...(args.length === 0 ? {} : args[0]),
       });
     },
   });
