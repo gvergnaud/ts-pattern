@@ -78,11 +78,14 @@ export type unstable_Matcher<
  * const userPattern = { name: P.string }
  * type User = P.infer<typeof userPattern>
  */
-export type infer<p extends Pattern<any>> = InvertPattern<p, unknown>;
+export type infer<pattern extends Pattern<any>> = InvertPattern<
+  pattern,
+  unknown
+>;
 
-export type narrow<i, p extends Pattern<any>> = ExtractPreciseValue<
-  i,
-  InvertPattern<p, i>
+export type narrow<input, pattern extends Pattern<any>> = ExtractPreciseValue<
+  input,
+  InvertPattern<pattern, input>
 >;
 
 type Chainable<p, omitted extends string = never> = p &
