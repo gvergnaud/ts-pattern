@@ -678,7 +678,7 @@ With two arguments:
 const blogPostPattern = {
   title: P.string,
   description: P.string,
-};
+} as const;
 
 if (isMatching(blogPostPattern, value)) {
   // value: { title: string, description: string }
@@ -1515,7 +1515,7 @@ const postPattern = {
     lastName: P.string.optional(),
     followerCount: P.number,
   },
-};
+} as const;
 
 type Post = P.infer<typeof postPattern>;
 
@@ -1526,6 +1526,8 @@ const posts = await fetch(someUrl)
     isMatching({ data: P.array(postPattern) }, res) ? res.data : []
   );
 ```
+
+Although not strictly necessary, using `as const` after the pattern definition ensures that TS-Pattern infers the most precise types possible in handler functions.
 
 ### `P.Pattern`
 
