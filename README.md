@@ -1344,7 +1344,7 @@ console.log(fn('two')); // logs '🎉'
 ```ts
 const fn = (input: string) =>
   match(input)
-    .with(P.string.minLength(5), () => '🎉')
+    .with(P.string.maxLength(5), () => '🎉')
     .otherwise(() => 'too long');
 
 console.log(fn('is this too long?')); // logs 'too long'
