@@ -226,7 +226,7 @@ type AllKeys<a> = a extends any ? keyof a : never;
 // Merge unions of objects into a single object with unions of keys
 export type MergeUnion<a> =
   | {
-      readonly [k in AllKeys<a>]: a extends any
+      [k in AllKeys<a>]: a extends any
         ? k extends keyof a
           ? a[k]
           : never

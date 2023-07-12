@@ -1,6 +1,12 @@
 import type * as symbols from '../internals/symbols';
 import type { AnyMatcher, Matcher, Pattern } from './Pattern';
-import type { Equal, Primitives, ValueOf, UnionToTuple } from './helpers';
+import type {
+  Equal,
+  Primitives,
+  ValueOf,
+  MergeUnion,
+  IsUnion,
+} from './helpers';
 
 type SelectionsRecord = Record<string, [unknown, unknown[]]>;
 
@@ -39,7 +45,7 @@ type FindSelectionUnionInArray<
   p,
   path extends any[] = [],
   output = never
-> = i extends readonly (infer ii)[]
+> = i extends readonly (infer iItem)[]
   ? p extends readonly []
     ? output
     : p extends readonly [infer p1, ...infer pRest]
@@ -51,10 +57,10 @@ type FindSelectionUnionInArray<
           output | FindSelectionUnion<i1, p1, [...path, p['length']]>
         >
       : FindSelectionUnionInArray<
-          ii[],
+          iItem[],
           pRest,
           [...path, p['length']],
-          output | FindSelectionUnion<ii, p1, [...path, p['length']]>
+          output | FindSelectionUnion<iItem, p1, [...path, p['length']]>
         >
     : p extends readonly [...infer pInit, infer p1]
     ? i extends readonly [...infer iInit, infer i1]
@@ -65,10 +71,10 @@ type FindSelectionUnionInArray<
           output | FindSelectionUnion<i1, p1, [...path, p['length']]>
         >
       : FindSelectionUnionInArray<
-          ii[],
+          iItem[],
           pInit,
           [...path, p['length']],
-          output | FindSelectionUnion<ii, p1, [...path, p['length']]>
+          output | FindSelectionUnion<iItem, p1, [...path, p['length']]>
         >
     : // If P is a matcher, in this case, it's likely an array matcher
     p extends readonly [...(readonly (infer pRest & AnyMatcher)[])]
@@ -76,7 +82,7 @@ type FindSelectionUnionInArray<
     :
         | output
         | FindSelectionUnion<
-            ii,
+            iItem,
             ValueOf<p>,
             [...path, Extract<p, readonly any[]>['length']]
           >
@@ -100,8 +106,8 @@ export type FindSelectionUnion<
       select: sel extends Some<infer k>
         ? { [kk in k]: [i, path] } | FindSelectionUnion<i, pattern, path>
         : never;
-      array: i extends readonly (infer ii)[]
-        ? MapList<FindSelectionUnion<ii, pattern>>
+      array: i extends readonly (infer iItem)[]
+        ? MapList<FindSelectionUnion<iItem, pattern>>
         : never;
       // FIXME: selection for map and set is supported at the value level
       map: never;
@@ -141,42 +147,19 @@ export type MixedNamedAndAnonymousSelectError<
 
 export type SelectionToArgs<selections extends SelectionsRecord> =
   symbols.anonymousSelectKey extends keyof selections
-    ? // If the path is never, it means several anonymous patterns were `&` together
-      [selections[symbols.anonymousSelectKey][1]] extends [never]
+    ? // if there are several different paths for anonymous selections
+      // it means that P.select() has been used more than once.
+      IsUnion<selections[symbols.anonymousSelectKey][1]> extends true
       ? SeveralAnonymousSelectError
       : keyof selections extends symbols.anonymousSelectKey
       ? selections[symbols.anonymousSelectKey][0]
       : MixedNamedAndAnonymousSelectError
     : { [k in keyof selections]: selections[k][0] };
 
-type ConcatSelections<
-  a extends SelectionsRecord,
-  b extends SelectionsRecord
-> = {
-  // keys both on output and sel
-  [k in keyof a & keyof b]: [a[k][0] | b[k][0], a[k][1] & b[k][1]]; // the path has to be the same
-} & {
-  // keys of a
-  [k in Exclude<keyof a, keyof b>]: a[k];
-} & {
-  // keyso of b
-  [k in Exclude<keyof b, keyof a>]: b[k];
-};
-
-type ReduceToRecord<
-  selections extends any[],
-  output extends SelectionsRecord = {}
-> = selections extends [infer sel, ...infer rest]
-  ? ReduceToRecord<
-      rest,
-      ConcatSelections<Extract<sel, SelectionsRecord>, output>
-    >
-  : output;
-
 export type Selections<i, p> = FindSelectionUnion<i, p> extends infer u
   ? [u] extends [never]
     ? i
-    : SelectionToArgs<ReduceToRecord<UnionToTuple<u>>>
+    : SelectionToArgs<Extract<MergeUnion<u>, SelectionsRecord>>
   : i;
 
 export type FindSelected<i, p> =

@@ -157,7 +157,7 @@ type KnownPatternInternal<
 > =
   | primitives
   | PatternMatcher<a>
-  | ([objs] extends [never] ? never : ObjectPattern<MergeUnion<objs>>)
+  | ([objs] extends [never] ? never : ObjectPattern<Readonly<MergeUnion<objs>>>)
   | ([arrays] extends [never] ? never : ArrayPattern<arrays>);
 
 type ObjectPattern<a> =
