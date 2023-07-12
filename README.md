@@ -1527,7 +1527,7 @@ const posts = await fetch(someUrl)
   );
 ```
 
-Although not strictly necessary, using `as const` after the pattern definition ensures that TS-Pattern infers the most precise types possible in handler functions.
+Although not strictly necessary, using `as const` after the pattern definition ensures that TS-Pattern infers the most precise types possible.
 
 ### `P.Pattern`
 
