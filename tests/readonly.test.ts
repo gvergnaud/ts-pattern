@@ -1,16 +1,5 @@
 import { match } from '../src';
-import { DeepExclude } from '../src/types/DeepExclude';
-import {
-  InvertPattern,
-  InvertPatternForExclude,
-} from '../src/types/InvertPattern';
-import { MatchedValue } from '../src/types/Pattern';
-import {
-  Equal,
-  Expect,
-  ExtractWithDefault,
-  IsReadonlyArray,
-} from '../src/types/helpers';
+import { Equal, Expect } from '../src/types/helpers';
 
 describe('readonly', () => {
   describe('exhaustive', () => {

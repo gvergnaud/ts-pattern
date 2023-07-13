@@ -20,7 +20,6 @@ import {
   Call,
   Fn,
   ReadonlyArrayValue,
-  ExtractWithDefault,
   WithDefault,
 } from './helpers';
 import type { Matcher, Pattern, Override, AnyMatcher } from './Pattern';
@@ -141,7 +140,10 @@ type InvertPatternInternal<p, input> = 0 extends 1 & p
   : p extends Primitives
   ? p
   : p extends readonly any[]
-  ? InvertArrayPattern<p, ExtractWithDefault<input, readonly any[], unknown[]>>
+  ? InvertArrayPattern<
+      p,
+      WithDefault<Extract<input, readonly any[]>, unknown[]>
+    >
   : IsPlainObject<p> extends true
   ? OptionalKeys<p> extends infer optKeys
     ? [optKeys] extends [never]
