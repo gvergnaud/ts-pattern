@@ -1531,6 +1531,20 @@ const posts = await fetch(someUrl)
 
 Although not strictly necessary, using `as const` after the pattern definition ensures that TS-Pattern infers the most precise types possible.
 
+### `P.narrow`
+
+`P.narrow<Input, typeof Pattern>` will narrow the input type to only keep the set of values that are compatible with the provided pattern type.
+
+```ts
+type Input = ['a' | 'b' | 'c', 'a' | 'b' | 'c'];
+const Pattern = ['a', P.union('a', 'b')] as const;
+
+type Narrowed = P.narrow<Input, typeof Pattern>;
+//     ^? ['a', 'a' | 'b']
+```
+
+Note that most of the time, the `match` and `isMatching` functions perform narrowing for you, and you do not need to narrow types yourself.
+
 ### `P.Pattern`
 
 `P.Pattern<T>` is the type of all possible pattern for a generic type `T`.

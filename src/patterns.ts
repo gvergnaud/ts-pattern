@@ -94,6 +94,19 @@ export type infer<pattern extends Pattern<any>> = InvertPattern<
   unknown
 >;
 
+/**
+ * `P.narrow<Input, Pattern>` will narrow the input type to only keep
+ * the set of values that are compatible with the provided pattern type.
+ *
+ * [Read the documentation for `P.narrow` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnarrow)
+ *
+ * @example
+ * type Input = ['a' | 'b' | 'c', 'a' | 'b' | 'c']
+ * const Pattern = ['a', P.union('a', 'b')] as const
+ *
+ * type Narrowed = P.narrow<Input, typeof Pattern>
+ * //     ^? ['a', 'a' | 'b']
+ */
 export type narrow<input, pattern extends Pattern<any>> = ExtractPreciseValue<
   input,
   InvertPattern<pattern, input>
