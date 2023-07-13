@@ -663,12 +663,13 @@ With a single argument:
 import { isMatching, P } from 'ts-pattern';
 
 const isBlogPost = isMatching({
+  type: 'blogpost',
   title: P.string,
   description: P.string,
 });
 
 if (isBlogPost(value)) {
-  // value: { title: string, description: string }
+  // value: { type: 'blogpost', title: string, description: string }
 }
 ```
 
@@ -676,12 +677,13 @@ With two arguments:
 
 ```ts
 const blogPostPattern = {
+  type: 'blogpost',
   title: P.string,
   description: P.string,
 } as const;
 
 if (isMatching(blogPostPattern, value)) {
-  // value: { title: string, description: string }
+  // value: { type: 'blogpost', title: string, description: string }
 }
 ```
 
