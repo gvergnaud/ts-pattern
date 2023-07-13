@@ -706,13 +706,16 @@ function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
 }
 
 // These aliases could be inferred, but lead to nicer display names in IDEs.
-type AnyPattern = Chainable<GuardP<unknown, unknown>, never>;
-type StringPattern = StringChainable<GuardP<unknown, string>, never>;
-type NumberPattern = NumberChainable<GuardP<unknown, number>, never>;
-type BooleanPattern = Chainable<GuardP<unknown, boolean>, never>;
-type BigIntPattern = BigIntChainable<GuardP<unknown, bigint>, never>;
-type SymbolPattern = Chainable<GuardP<unknown, symbol>, never>;
-type NullishPattern = Chainable<GuardP<unknown, null | undefined>, never>;
+export type AnyPattern = Chainable<GuardP<unknown, unknown>, never>;
+export type StringPattern = StringChainable<GuardP<unknown, string>, never>;
+export type NumberPattern = NumberChainable<GuardP<unknown, number>, never>;
+export type BooleanPattern = Chainable<GuardP<unknown, boolean>, never>;
+export type BigIntPattern = BigIntChainable<GuardP<unknown, bigint>, never>;
+export type SymbolPattern = Chainable<GuardP<unknown, symbol>, never>;
+export type NullishPattern = Chainable<
+  GuardP<unknown, null | undefined>,
+  never
+>;
 
 /**
  * `P.any` is a wildcard pattern, matching **any value**.
