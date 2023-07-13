@@ -608,3 +608,45 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
     },
     omitted
   >;
+
+export type Variadic<pattern> = pattern & Iterable<pattern>;
+
+export type ArrayChainable<
+  pattern,
+  omitted extends string = never
+> = Variadic<pattern> &
+  Omit<
+    {
+      /**
+       * `.optional()` returns a pattern which matches if the
+       * key is undefined or if it is defined and the previous pattern matches its value.
+       *
+       * [Read the documentation for `P.optional` on GitHub](https://github.com/gvergnaud/ts-pattern#Poptional-patterns)
+       *
+       * @example
+       *  match(value)
+       *   .with({ greeting: P.string.optional() }, () => 'will match { greeting?: string}')
+       */
+      optional<input>(): ArrayChainable<
+        OptionalP<input, pattern>,
+        omitted | 'optional'
+      >;
+      /**
+       * `P.select()` will inject this property into the handler function's arguments.
+       *
+       * [Read the documentation for `P.select` on GitHub](https://github.com/gvergnaud/ts-pattern#Pselect-patterns)
+       *
+       * @example
+       *  match<{ age: number }>(value)
+       *   .with({ age: P.string.select() }, (age) => 'age: number')
+       */
+      select<input>(): ArrayChainable<
+        SelectP<symbols.anonymousSelectKey, input, pattern>,
+        omitted | 'select'
+      >;
+      select<input, k extends string>(
+        key: k
+      ): ArrayChainable<SelectP<k, input, pattern>, omitted | 'select'>;
+    },
+    omitted
+  >;
