@@ -89,28 +89,31 @@ export type unstable_Matcher<
  * const userPattern = { name: P.string }
  * type User = P.infer<typeof userPattern>
  */
-export type infer<p extends Pattern<any>> = InvertPattern<p, unknown>;
-
-export type narrow<i, p extends Pattern<any>> = ExtractPreciseValue<
-  i,
-  InvertPattern<p, i>
+export type infer<pattern extends Pattern<any>> = InvertPattern<
+  pattern,
+  unknown
 >;
 
-function chainable<p extends Matcher<any, any, any, any, any>>(
-  pattern: p
-): Chainable<p> {
+export type narrow<input, pattern extends Pattern<any>> = ExtractPreciseValue<
+  input,
+  InvertPattern<pattern, input>
+>;
+
+function chainable<pattern extends Matcher<any, any, any, any, any>>(
+  pattern: pattern
+): Chainable<pattern> {
   return Object.assign(pattern, {
     optional: () => optional(pattern),
     and: (p2: any) => intersection(pattern, p2),
     or: (p2: any) => union(pattern, p2),
     select: (key: any) =>
       key === undefined ? select(pattern) : select(key, pattern),
-  }) as Chainable<p>;
+  }) as Chainable<pattern>;
 }
 
-type Variadic<p> = p & Iterable<p>;
+type Variadic<pattern> = pattern & Iterable<pattern>;
 
-const variadic = <p extends {}>(pattern: p): Variadic<p> =>
+const variadic = <pattern extends {}>(pattern: pattern): Variadic<pattern> =>
   Object.assign(pattern, {
     *[Symbol.iterator]() {
       yield Object.assign(pattern, {
@@ -119,7 +122,10 @@ const variadic = <p extends {}>(pattern: p): Variadic<p> =>
     },
   });
 
-type ArrayChainable<p, omitted extends string = never> = Variadic<p> &
+type ArrayChainable<
+  pattern,
+  omitted extends string = never
+> = Variadic<pattern> &
   Omit<
     {
       /**
@@ -133,7 +139,7 @@ type ArrayChainable<p, omitted extends string = never> = Variadic<p> &
        *   .with({ greeting: P.string.optional() }, () => 'will match { greeting?: string}')
        */
       optional<input>(): ArrayChainable<
-        OptionalP<input, p>,
+        OptionalP<input, pattern>,
         omitted | 'optional'
       >;
       /**
@@ -146,19 +152,19 @@ type ArrayChainable<p, omitted extends string = never> = Variadic<p> &
        *   .with({ age: P.string.select() }, (age) => 'age: number')
        */
       select<input>(): ArrayChainable<
-        SelectP<symbols.anonymousSelectKey, input, p>,
+        SelectP<symbols.anonymousSelectKey, input, pattern>,
         omitted | 'select'
       >;
       select<input, k extends string>(
         key: k
-      ): ArrayChainable<SelectP<k, input, p>, omitted | 'select'>;
+      ): ArrayChainable<SelectP<k, input, pattern>, omitted | 'select'>;
     },
     omitted
   >;
 
-function arrayChainable<p extends Matcher<any, any, any, any, any>>(
-  pattern: p
-): ArrayChainable<p> {
+function arrayChainable<pattern extends Matcher<any, any, any, any, any>>(
+  pattern: pattern
+): ArrayChainable<pattern> {
   return Object.assign(variadic(pattern), {
     optional: () => arrayChainable(optional(pattern)),
     select: (key: any) =>
@@ -180,8 +186,8 @@ function arrayChainable<p extends Matcher<any, any, any, any, any>>(
  */
 export function optional<
   input,
-  const p extends unknown extends input ? UnknownPattern : Pattern<input>
->(pattern: p): Chainable<OptionalP<input, p>, 'optional'> {
+  const pattern extends unknown extends input ? UnknownPattern : Pattern<input>
+>(pattern: pattern): Chainable<OptionalP<input, pattern>, 'optional'> {
   return chainable({
     [matcher]() {
       return {
@@ -229,8 +235,8 @@ type WithDefault<a, b> = [a] extends [never] ? b : a;
 export function array<input>(): ArrayChainable<ArrayP<input, unknown>>;
 export function array<
   input,
-  const p extends Pattern<WithDefault<UnwrapArray<input>, unknown>>
->(pattern: p): ArrayChainable<ArrayP<input, p>>;
+  const pattern extends Pattern<WithDefault<UnwrapArray<input>, unknown>>
+>(pattern: pattern): ArrayChainable<ArrayP<input, pattern>>;
 export function array(
   ...args: [pattern?: any]
 ): ArrayChainable<ArrayP<any, any>> {
@@ -282,12 +288,12 @@ export function array(
 export function set<input>(): Chainable<SetP<input, unknown>>;
 export function set<
   input,
-  const p extends Pattern<WithDefault<UnwrapSet<input>, unknown>>
->(pattern: p): Chainable<SetP<input, p>>;
+  const pattern extends Pattern<WithDefault<UnwrapSet<input>, unknown>>
+>(pattern: pattern): Chainable<SetP<input, pattern>>;
 export function set<
   input,
-  const p extends Pattern<WithDefault<UnwrapSet<input>, unknown>>
->(...args: [pattern?: p]): Chainable<SetP<input, p>> {
+  const pattern extends Pattern<WithDefault<UnwrapSet<input>, unknown>>
+>(...args: [pattern?: pattern]): Chainable<SetP<input, pattern>> {
   return chainable({
     [matcher]() {
       return {
@@ -425,8 +431,8 @@ const mapEvery = <K, T>(
  */
 export function intersection<
   input,
-  const ps extends readonly [Pattern<input>, ...Pattern<input>[]]
->(...patterns: ps): Chainable<AndP<input, ps>> {
+  const patterns extends readonly [Pattern<input>, ...Pattern<input>[]]
+>(...patterns: patterns): Chainable<AndP<input, patterns>> {
   return chainable({
     [matcher]: () => ({
       match: (value) => {
@@ -461,8 +467,8 @@ export function intersection<
  */
 export function union<
   input,
-  const ps extends readonly [Pattern<input>, ...Pattern<input>[]]
->(...patterns: ps): Chainable<OrP<input, ps>> {
+  const patterns extends readonly [Pattern<input>, ...Pattern<input>[]]
+>(...patterns: patterns): Chainable<OrP<input, patterns>> {
   return chainable({
     [matcher]: () => ({
       match: <UnknownInput>(value: UnknownInput | input) => {
@@ -498,9 +504,10 @@ export function union<
  *   )
  */
 
-export function not<input, const p extends Pattern<input> | UnknownPattern>(
-  pattern: p
-): Chainable<NotP<input, p>> {
+export function not<
+  input,
+  const pattern extends Pattern<input> | UnknownPattern
+>(pattern: pattern): Chainable<NotP<input, pattern>> {
   return chainable({
     [matcher]: () => ({
       match: <UnknownInput>(value: UnknownInput | input) => ({
@@ -523,20 +530,20 @@ export function not<input, const p extends Pattern<input> | UnknownPattern>(
  *   .with({ age: P.when(age => age > 21) }, (x) => 'will match if value.age > 21'
  *   )
  */
-export function when<input, p extends (value: input) => unknown>(
-  predicate: p
+export function when<input, predicate extends (value: input) => unknown>(
+  predicate: predicate
 ): GuardP<
   input,
-  p extends (value: any) => value is infer narrowed ? narrowed : never
+  predicate extends (value: any) => value is infer narrowed ? narrowed : never
 >;
 export function when<input, narrowed extends input, excluded>(
   predicate: (input: input) => input is narrowed
 ): GuardExcludeP<input, narrowed, excluded>;
-export function when<input, p extends (value: input) => unknown>(
-  predicate: p
+export function when<input, predicate extends (value: input) => unknown>(
+  predicate: predicate
 ): GuardP<
   input,
-  p extends (value: any) => value is infer narrowed ? narrowed : never
+  predicate extends (value: any) => value is infer narrowed ? narrowed : never
 > {
   return {
     [matcher]: () => ({
@@ -574,9 +581,12 @@ export function select<
     >;
 export function select<
   input,
-  const p extends unknown extends input ? UnknownPattern : Pattern<input>,
+  const pattern extends unknown extends input ? UnknownPattern : Pattern<input>,
   const k extends string
->(key: k, pattern: p): Chainable<SelectP<k, input, p>, 'select' | 'or' | 'and'>;
+>(
+  key: k,
+  pattern: pattern
+): Chainable<SelectP<k, input, pattern>, 'select' | 'or' | 'and'>;
 export function select(
   ...args: [keyOrPattern?: unknown | string, pattern?: unknown]
 ): Chainable<SelectP<string>, 'select' | 'or' | 'and'> {
@@ -754,9 +764,9 @@ const regex = <input, const expr extends string | RegExp>(
 ): GuardExcludeP<input, string, never> =>
   when((value) => isString(value) && Boolean(value.match(expr)));
 
-const stringChainable = <p extends Matcher<any, any, any, any, any>>(
-  pattern: p
-): StringChainable<p> =>
+const stringChainable = <pattern extends Matcher<any, any, any, any, any>>(
+  pattern: pattern
+): StringChainable<pattern> =>
   Object.assign(chainable(pattern), {
     startsWith: (str: string) =>
       stringChainable(intersection(pattern, startsWith(str))),
@@ -906,9 +916,9 @@ export const positive = <input>(): GuardExcludeP<input, number, never> =>
 export const negative = <input>(): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && value < 0);
 
-const numberChainable = <p extends Matcher<any, any, any, any, any>>(
-  pattern: p
-): NumberChainable<p> =>
+const numberChainable = <pattern extends Matcher<any, any, any, any, any>>(
+  pattern: pattern
+): NumberChainable<pattern> =>
   Object.assign(chainable(pattern), {
     between: (min: number, max: number) =>
       numberChainable(intersection(pattern, between(min, max))),
@@ -1033,9 +1043,9 @@ export const positiveBigInt = <input>(): GuardExcludeP<input, bigint, never> =>
 export const negativeBigInt = <input>(): GuardExcludeP<input, bigint, never> =>
   when((value) => isBigInt(value) && value < 0);
 
-const bigintChainable = <p extends Matcher<any, any, any, any, any>>(
-  pattern: p
-): BigIntChainable<p> =>
+const bigintChainable = <pattern extends Matcher<any, any, any, any, any>>(
+  pattern: pattern
+): BigIntChainable<pattern> =>
   Object.assign(chainable(pattern), {
     between: (min: bigint, max: bigint) =>
       bigintChainable(intersection(pattern, betweenBigInt(min, max))),
@@ -1117,9 +1127,9 @@ export function instanceOf<T extends AnyConstructor>(
  *     (state) => 'match the success state, or undefined.'
  *   )
  */
-export function shape<input, const p extends Pattern<input>>(
-  pattern: p
-): Chainable<GuardP<input, InvertPattern<p, input>>>;
+export function shape<input, const pattern extends Pattern<input>>(
+  pattern: pattern
+): Chainable<GuardP<input, InvertPattern<pattern, input>>>;
 export function shape(pattern: UnknownPattern) {
   return chainable(when(isMatching(pattern)));
 }
