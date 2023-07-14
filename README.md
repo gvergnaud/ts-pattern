@@ -58,9 +58,9 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 
 ## What is Pattern Matching?
 
-[Pattern Matching](https://stackoverflow.com/questions/2502354/what-is-pattern-matching-in-functional-languages) is a code-branching technique coming from functional programming languages, which lets you scrutinize the structure of values in a declarative way. It has proven itself to be less verbose and more powerful than imperative alternatives (if/else/switch statements), especially when branching on complex data structures or on several values.
+[Pattern Matching](https://stackoverflow.com/questions/2502354/what-is-pattern-matching-in-functional-languages) is a code-branching technique coming from functional programming languages that's more powerful and often less verbose than imperative alternatives (if/else/switch statements), especially for complex conditions.
 
-Pattern Matching is implemented in Haskell, Rust, Swift, Elixir and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to the EcmaScript specification, but it is still in stage 1 and isn't likely to land before several years. Luckily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
+Pattern Matching is implemented in Haskell, Rust, Swift, Elixir, and many other languages. There is [a tc39 proposal](https://github.com/tc39/proposal-pattern-matching) to add Pattern Matching to EcmaScript, but it is still in stage 1 and isn't likely to land before several years. Luckily, pattern matching can be implemented in userland. `ts-pattern` Provides a typesafe pattern matching implementation that you can start using today.
 
 Read the introduction blog post: [Bringing Pattern Matching to TypeScript 🎨 Introducing TS-Pattern](https://dev.to/gvergnaud/bringing-pattern-matching-to-typescript-introducing-ts-pattern-v3-0-o1k)
 
@@ -140,8 +140,7 @@ Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#s
 
 ## Getting Started
 
-As an example, we are going to create a state reducer for a
-frontend application fetching some data using an HTTP request.
+As an example, let's create a state reducer for a frontend application that fetches some data.
 
 ### Example: a state reducer with ts-pattern
 
@@ -170,39 +169,28 @@ type Event =
 Even though our application can handle 4 events, **only a subset** of these
 events **make sense for each given state**. For instance we can only `cancel`
 a request if we are currently in the `loading` state.
-To avoid unwanted state changes that could lead to bugs, we want to create
-a reducer function that **matches on both the state and the event**
-and return a new state.
+To avoid unwanted state changes that could lead to bugs, we want our state reducer function to branch on **both the state and the event**, and return a new state.
 
-This is a case where `match` really shines. Instead of writing nested
-switch statements, we can do that in a very expressive way:
+This is a case where `match` really shines. Instead of writing nested switch statements, we can use pattern matching to simultaneously check the state and the event object:
 
 <!-- prettier-ignore -->
 ```ts
 import { match, P } from 'ts-pattern';
 
-const reducer = (state: State, event: Event): State =>
-  match<[State, Event], State>([state, event])
+const reducer = (state: State, event: Event) =>
+  match([state, event])
+    .returnType<State>()
     .with(
       [{ status: 'loading' }, { type: 'success' }],
-      ([, event]) => ({
-        status: 'success',
-        data: event.data,
-      })
+      ([_, event]) => ({ status: 'success', data: event.data })
     )
     .with(
       [{ status: 'loading' }, { type: 'error', error: P.select() }],
-      (error) => ({
-        status: 'error',
-        error,
-      })
+      (error) => ({ status: 'error', error })
     )
     .with(
       [{ status: P.not('loading') }, { type: 'fetch' }],
-      () => ({
-        status: 'loading',
-        startTime: Date.now(),
-      })
+      () => ({ status: 'loading', startTime: Date.now() })
     )
     .with(
       [
@@ -212,32 +200,34 @@ const reducer = (state: State, event: Event): State =>
         },
         { type: 'cancel' },
       ],
-      () => ({
-        status: 'idle',
-      })
+      () => ({ status: 'idle' })
     )
     .with(P._, () => state)
     .exhaustive();
 ```
 
-**Let's go through this bit by bit:**
+There's a lot going on, so **let's go through this code bit by bit:**
 
 ### match(value)
 
 `match` takes a value and returns a [_builder_](https://en.wikipedia.org/wiki/Builder_pattern) on which you can add your pattern matching cases.
 
+<!-- prettier-ignore -->
 ```ts
-match<[State, Event], State>([state, event]);
+match([state, event])
 ```
 
-Here we wrap the state and the event objects in an array and we explicitly
-specify the type `[State, Event]` to make sure it is interpreted as
-a [Tuple](#tuples-arrays) by TypeScript, so we
-can match on each value separately.
+It's also possible to specify the input and output type explicitly with `match<Input, Output>(...)`, but this is usually unnecessary, as TS-Pattern is able to infer them.
 
-Most of the time, you don't need to specify the type of input
-and output with `match<Input, Output>(...)` because `match` is able to
-infer both of these types.
+### .returnType\<OutputType\>()
+
+`.returnType` is an optional method that you can call if you want to force all following code-branches to return a value of a specific type. It takes a single type parameter, provided between `<AngleBrackets>`.
+
+```ts
+  .returnType<State>()
+```
+
+Here, we use this method to make sure all branches return a valid `State` object.
 
 ### .with(pattern, handler)
 
@@ -255,11 +245,9 @@ Then we add a first `with` clause:
   )
 ```
 
-The first argument is the **pattern**: the **shape of value**
-you expect for this branch.
+The first argument is the **pattern**: the **shape of value** you expect for this branch.
 
-The second argument is the **handler function**: the code **branch** that will be called if
-the input value matches the pattern.
+The second argument is the **handler function**: the code **branch** that will be called if the input value matches the pattern.
 
 The handler function takes the input value as first parameter with its type **narrowed down** to what the pattern matches.
 
@@ -273,10 +261,7 @@ In the second `with` clause, we use the `P.select` function:
       { status: 'loading' },
       { type: 'error', error: P.select() }
     ],
-    (error) => ({
-      status: 'error',
-      error,
-    })
+    (error) => ({ status: 'error', error })
   )
 ```
 
@@ -320,19 +305,17 @@ If you need to match on everything **but** a specific value, you can use a `P.no
 ```ts
   .with(
     [{ status: P.not('loading') }, { type: 'fetch' }],
-    () => ({
-      status: 'loading',
-    })
+    () => ({ status: 'loading' })
   )
 ```
 
 ### `P.when()` and guard functions
 
-Sometimes, we need to make sure our input value respects a condition that can't be expressed by a pattern. For example, imagine you need to check if a number is positive. In these cases, we can use **guard functions**: functions taking a value and returning a `boolean`.
+Sometimes, we need to make sure our input value respects a condition that can't be expressed by a pattern. For example, imagine you need to check that a number is positive. In these cases, we can use **guard functions**: functions taking a value and returning a `boolean`.
 
-With `ts-pattern` there are two options to use a guard function:
+With TS-Pattern, there are two ways to use a guard function:
 
-- use `P.when(<guard function>)` inside your pattern
+- use `P.when(<guard function>)` inside one of your patterns
 - pass it as second parameter to `.with(...)`
 
 #### using P.when(predicate)
@@ -346,9 +329,7 @@ With `ts-pattern` there are two options to use a guard function:
       },
       { type: 'cancel' },
     ],
-    () => ({
-      status: 'idle',
-    })
+    () => ({ status: 'idle' })
   )
 ```
 
@@ -361,9 +342,7 @@ the `pattern` and the `handler` callback:
   .with(
     [{ status: 'loading' }, { type: 'cancel' }],
     ([state, event]) => state.startTime + 2000 < Date.now(),
-    () => ({
-      status: 'idle'
-    })
+    () => ({ status: 'idle' })
   )
 ```
 
@@ -392,21 +371,13 @@ This pattern will only match if the guard function returns `true`.
 
 `.exhaustive()` **executes** the pattern matching expression, and **returns the result**. It also enables **exhaustiveness checking**, making sure we don't forget any possible case in our input value. This extra type safety is very nice because forgetting a case is an easy mistake to make, especially in an evolving code-base.
 
-Note that exhaustive pattern matching is **optional**. It comes with the trade-off of having **longer compilation times** because the type checker has more work to do.
+Note that exhaustive pattern matching is **optional**. It comes with the trade-off of having slightly **longer compilation times** because the type checker has more work to do.
 
-Alternatively you can use `.otherwise()`, which takes an handler function returning a default value. `.otherwise(handler)` is equivalent to `.with(P._, handler).exhaustive()`.
+Alternatively, you can use `.otherwise()`, which takes an handler function returning a default value. `.otherwise(handler)` is equivalent to `.with(P._, handler).exhaustive()`.
 
 ```ts
   .otherwise(() => state);
 ```
-
-If you don't want to use `.exhaustive()` and also don't want to provide a default value with `.otherwise()`, you can use `.run()` instead:
-
-```ts
-  .run();
-```
-
-It's just like `.exhaustive()`, but it's **unsafe** and might throw runtime error if no branch matches your input value.
 
 ### Matching several patterns
 
@@ -580,7 +551,7 @@ Runs the pattern-matching expression and returns its result. It also enables exh
 #### Signature
 
 ```ts
-function exhaustive(): IOutput;
+function exhaustive(): TOutput;
 ```
 
 #### Example
@@ -639,7 +610,7 @@ match(...)
   .run()
 ```
 
-Runs the pattern-matching expression and returns its result. It throws an error at run time if no match was found, same as `exhaustive()`. However, unlike `.exhaustive()`, exhaustiveness is not checked at compile time, meaning the type checker will not verify that all possible cases are covered.
+returns the result of the pattern-matching expression, or **throws** if no pattern matched the input. `.run()` is similar to `.exhaustive()`, but is **unsafe** because exhaustiveness is not checked at compile time, so you have no guarantees that all cases are indeed covered. Use at your own risks.
 
 #### Signature
 
