@@ -22,6 +22,7 @@ export type unset = typeof unset;
 export const isVariadic = Symbol.for('@ts-pattern/isVariadic');
 export type isVariadic = typeof isVariadic;
 
+// can't be a symbol because this key has to be enumerable.
 export const anonymousSelectKey = '@ts-pattern/anonymous-select-key';
 export type anonymousSelectKey = typeof anonymousSelectKey;
 
