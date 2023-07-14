@@ -99,38 +99,53 @@ const example4 = (position: { x: number; y: number }) =>
  * Use case 4: Validation an API response *
  ******************************************/
 
-const userPattern = {
+const User = {
   name: P.string,
   // 1. optional properties
-  age: P.optional(P.number),
+  age: P.number.optional(),
   socialLinks: P.optional({
     twitter: P.string,
     instagram: P.string,
   }),
 };
 
-const postPattern = {
+type User = P.infer<typeof User>;
+/*    ^? {
+    name: string;
+    age?: number | undefined;
+    socialLinks?: {
+        twitter: string;
+        instagram: string;
+    } | undefined;
+} */
+
+const Post = {
   title: P.string.minLength(2).maxLength(255),
   stars: P.number.int().between(0, 5),
   content: P.string,
-  author: userPattern,
+  author: User,
   // 2. arrays
-  comments: P.array({
-    author: userPattern,
-    content: P.string,
-  }),
+  comments: P.array({ author: User, content: P.string }),
   // 3. tuples (a non-empty array in this case)
   tags: [P.string, ...P.array(P.string)],
-};
+} as const;
 
-type Post = P.infer<typeof postPattern>;
+type Post = P.infer<typeof Post>;
+/*    ^? {
+    author: User;
+    content: string;
+    title: string;
+    stars: number;
+    comments: { author: User; content: string }[];
+    tags: [string, ...string[]];
+} */
 
 // Elsewhere in the code:
 // `fetch(...).then(validateResponse)`
 
 const validateResponse = (response: unknown): Post | null => {
   // 3. validating unknown input with isMatching
-  if (isMatching(postPattern, response)) {
+  if (isMatching(Post, response)) {
     //  response is inferred as  `Post`.
 
     // Uncomment these lines if you want to try using `response`:
