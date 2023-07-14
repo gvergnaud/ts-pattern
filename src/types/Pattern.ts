@@ -1,7 +1,12 @@
 import type * as symbols from '../internals/symbols';
-import { MergeUnion, Primitives, WithDefault } from './helpers';
+import {
+  LeastUpperBound,
+  MergeUnion,
+  Primitives,
+  WithDefault,
+} from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
-import { matcher } from '../patterns';
+import { matcher, narrow } from '../patterns';
 import { ExtractPreciseValue } from './ExtractPreciseValue';
 
 export type MatcherType =
@@ -187,9 +192,12 @@ export type NullishPattern = Chainable<
   never
 >;
 
-type MaybeAnd<omitted, input, p1, p2> = [omitted] extends [never]
-  ? p2
-  : AndP<input, [p1, p2]>;
+type MergeGuards<input, guard1, guard2> = [guard1, guard2] extends [
+  GuardExcludeP<any, infer narrowed1, infer excluded1>,
+  GuardExcludeP<any, infer narrowed2, infer excluded2>
+]
+  ? GuardExcludeP<input, narrowed1 & narrowed2, excluded1 & excluded2>
+  : never;
 
 export type Chainable<p, omitted extends string = never> = p &
   Omit<
@@ -275,7 +283,7 @@ export type StringChainable<
       startsWith<input, const start extends string>(
         start: start
       ): StringChainable<
-        MaybeAnd<omitted, input, p, GuardP<input, `${start}${string}`>>,
+        MergeGuards<input, p, GuardP<unknown, `${start}${string}`>>,
         omitted | 'startsWith'
       >;
       /**
@@ -290,7 +298,7 @@ export type StringChainable<
       endsWith<input, const end extends string>(
         end: end
       ): StringChainable<
-        MaybeAnd<omitted, input, p, GuardP<input, `${string}${end}`>>,
+        MergeGuards<input, p, GuardP<unknown, `${string}${end}`>>,
         omitted | 'endsWith'
       >;
       /**
@@ -305,7 +313,7 @@ export type StringChainable<
       minLength<input, const min extends number>(
         min: min
       ): StringChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, string, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, string, never>>,
         omitted | 'minLength'
       >;
       /**
@@ -320,7 +328,7 @@ export type StringChainable<
       maxLength<input, const max extends number>(
         max: max
       ): StringChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, string, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, string, never>>,
         omitted | 'maxLength'
       >;
       /**
@@ -335,7 +343,7 @@ export type StringChainable<
       includes<input, const substr extends string>(
         substr: substr
       ): StringChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, string, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, string, never>>,
         omitted
       >;
       /**
@@ -350,7 +358,7 @@ export type StringChainable<
       regex<input, const expr extends string | RegExp>(
         expr: expr
       ): StringChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, string, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, string, never>>,
         omitted
       >;
     },
@@ -377,7 +385,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
         min: min,
         max: max
       ): NumberChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted
       >;
       /**
@@ -392,7 +400,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
       lt<input, const max extends number>(
         max: max
       ): NumberChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted
       >;
       /**
@@ -407,7 +415,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
       gt<input, const min extends number>(
         min: min
       ): NumberChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted
       >;
       /**
@@ -422,7 +430,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
       lte<input, const max extends number>(
         max: max
       ): NumberChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted
       >;
       /**
@@ -437,7 +445,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
       gte<input, const min extends number>(
         min: min
       ): NumberChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted
       >;
       /**
@@ -450,7 +458,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.number.int, () => 'an integer')
        */
       int<input>(): NumberChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted | 'int'
       >;
       /**
@@ -463,7 +471,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.number.finite, () => 'not Infinity')
        */
       finite<input>(): NumberChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted | 'finite'
       >;
       /**
@@ -476,7 +484,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.number.positive, () => 'number > 0')
        */
       positive<input>(): NumberChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted | 'positive' | 'negative'
       >;
       /**
@@ -489,7 +497,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.number.negative, () => 'number < 0')
        */
       negative<input>(): NumberChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, number, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted | 'positive' | 'negative' | 'negative'
       >;
     },
@@ -516,7 +524,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
         min: min,
         max: max
       ): BigIntChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
         omitted
       >;
       /**
@@ -531,7 +539,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
       lt<input, const max extends bigint>(
         max: max
       ): BigIntChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
         omitted
       >;
       /**
@@ -546,7 +554,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
       gt<input, const min extends bigint>(
         min: min
       ): BigIntChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
         omitted
       >;
       /**
@@ -561,7 +569,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
       lte<input, const max extends bigint>(
         max: max
       ): BigIntChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
         omitted
       >;
       /**
@@ -576,7 +584,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
       gte<input, const min extends bigint>(
         min: min
       ): BigIntChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
         omitted
       >;
       /**
@@ -589,7 +597,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.bigint.positive, () => 'bigint > 0')
        */
       positive<input>(): BigIntChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
         omitted | 'positive' | 'negative'
       >;
       /**
@@ -602,7 +610,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.bigint.negative, () => 'bigint < 0')
        */
       negative<input>(): BigIntChainable<
-        MaybeAnd<omitted, input, p, GuardExcludeP<input, bigint, never>>,
+        MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
         omitted | 'positive' | 'negative' | 'negative'
       >;
     },
