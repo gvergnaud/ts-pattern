@@ -158,7 +158,7 @@ type KnownPatternInternal<
   a,
   objs = Exclude<a, Primitives | Map<any, any> | Set<any> | readonly any[]>,
   arrays = Extract<a, readonly any[]>,
-  primitives = Exclude<a, object>
+  primitives = Extract<a, Primitives>
 > =
   | primitives
   | PatternMatcher<a>
