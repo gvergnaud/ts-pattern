@@ -80,7 +80,7 @@ yarn add ts-pattern
 
 ### Compatibility with different TypeScript versions
 
-Note: TS-Pattern assumes [Strict Mode](https://www.typescriptlang.org/tsconfig#strict) is enabled in your `tsconfig.json` file.
+TS-Pattern assumes that [Strict Mode](https://www.typescriptlang.org/tsconfig#strict) is enabled in your `tsconfig.json` file.
 
 | ts-pattern                                                                                                                                                                              | TypeScript v5+ | TypeScript v4.5+ | TypeScript v4.2+ |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------------- | ---------------- |
