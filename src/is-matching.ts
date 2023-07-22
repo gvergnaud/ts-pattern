@@ -33,12 +33,12 @@ export function isMatching<p extends Pattern<unknown>>(
  *    return input.name
  *  }
  */
-export function isMatching<p extends Pattern<unknown>>(
+export function isMatching<const p extends Pattern<unknown>>(
   pattern: p,
   value: unknown
 ): value is P.infer<p>;
 
-export function isMatching<p extends Pattern<any>>(
+export function isMatching<const p extends Pattern<any>>(
   ...args: [pattern: p, value?: any]
 ): boolean | ((vale: any) => boolean) {
   if (args.length === 1) {
