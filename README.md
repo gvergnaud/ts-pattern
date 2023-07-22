@@ -767,9 +767,9 @@ console.log(output);
 ### Tuples (arrays)
 
 In TypeScript, [Tuples](https://en.wikipedia.org/wiki/Tuple) are arrays with a fixed
-number of elements which can be of different types. You can pattern-match on tuples
+number of elements that can be of different types. You can pattern-match on tuples
 using a tuple pattern. A tuple pattern will match if the input value **is an array of the same length**,
-and each item match the corresponding sub-pattern.
+and each item matches the corresponding sub-pattern.
 
 ```ts
 import { match, P } from 'ts-pattern';
