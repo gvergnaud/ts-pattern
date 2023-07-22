@@ -766,7 +766,7 @@ const stringChainable = <pattern extends Matcher<any, any, any, any, any>>(
 export const string: StringPattern = stringChainable(when(isString));
 
 /**
- * `P.number.between(min, max)` matches **number** between `min` and `max`,
+ * `P.number.between(min, max)` matches **numbers** between `min` and `max`,
  * equal to min or equal to max.
  *
  * [Read the documentation for `P.number.between` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberbetween)
@@ -786,7 +786,7 @@ export const between = <
   when((value) => isNumber(value) && min <= value && max >= value);
 
 /**
- * `P.number.lt(max)` matches **number** smaller than `max`.
+ * `P.number.lt(max)` matches **numbers** smaller than `max`.
  *
  * [Read the documentation for `P.number.lt` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberlt)
  *
@@ -800,7 +800,7 @@ export const lt = <input, const max extends number>(
   when((value) => isNumber(value) && value < max);
 
 /**
- * `P.number.gt(min)` matches **number** greater than `min`.
+ * `P.number.gt(min)` matches **numbers** greater than `min`.
  *
  * [Read the documentation for `P.number.gt` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbergt)
  *
@@ -814,7 +814,7 @@ export const gt = <input, const min extends number>(
   when((value) => isNumber(value) && value > min);
 
 /**
- * `P.number.lte(max)` matches **number** smaller than or equal to `max`.
+ * `P.number.lte(max)` matches **numbers** smaller than or equal to `max`.
  *
  * [Read the documentation for `P.number.lte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberlte)
  *
@@ -828,7 +828,7 @@ export const lte = <input, const max extends number>(
   when((value) => isNumber(value) && value <= max);
 
 /**
- * `P.number.gte(min)` matches **number** greater than or equal to `min`.
+ * `P.number.gte(min)` matches **numbers** greater than or equal to `min`.
  *
  * [Read the documentation for `P.number.gte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbergte)
  *
