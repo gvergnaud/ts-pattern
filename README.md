@@ -51,9 +51,9 @@ Write **better** and **safer conditions**. Pattern matching lets you express com
 - **Typesafe**, with helpful [type inference](#type-inference).
 - **Exhaustiveness checking** support, enforcing that you are matching every possible case with [`.exhaustive()`](#exhaustive).
 - Use [patterns](#patterns) to **validate** the shape of your data with [`isMatching`](#ismatching).
-- **Expressive API**, with catch-all and type specific **wildcards**: [`P._`](#P_-wildcard), [`P.string`](#Pstring-wildcard), [`P.number`](#Pnumber-wildcard), etc.
-- Supports [**predicates**](#Pwhen-patterns), [**unions**](#Punion-patterns), [**intersections**](#Pintersection-patterns) and [**exclusion**](#Pnot-patterns) patterns for non-trivial cases.
-- Supports properties selection, via the [`P.select(name?)`](#Pselect-patterns) function.
+- **Expressive API**, with catch-all and type specific **wildcards**: [`P._`](#p_-wildcard), [`P.string`](#pstring-wildcard), [`P.number`](#pnumber-wildcard), etc.
+- Supports [**predicates**](#pwhen-patterns), [**unions**](#punion-patterns), [**intersections**](#pintersection-patterns) and [**exclusion**](#pnot-patterns) patterns for non-trivial cases.
+- Supports properties selection, via the [`P.select(name?)`](#pselect-patterns) function.
 - Tiny bundle footprint ([**only ~2kB**](https://bundlephobia.com/package/ts-pattern)).
 
 ## What is Pattern Matching?
@@ -111,19 +111,19 @@ TS-Pattern assumes that [Strict Mode](https://www.typescriptlang.org/tsconfig#st
     - [Tuples (arrays)](#tuples-arrays)
     - [Sets](#pset-patterns)
     - [Maps](#pmap-patterns)
-    - [`P.array` patterns](#Parray-patterns)
-    - [`P.when` patterns](#Pwhen-patterns)
-    - [`P.not` patterns](#Pnot-patterns)
-    - [`P.select` patterns](#Pselect-patterns)
-    - [`P.optional` patterns](#Poptional-patterns)
-    - [`P.instanceOf` patterns](#Pinstanceof-patterns)
-    - [`P.union` patterns](#Punion-patterns)
-    - [`P.intersection` patterns](#Pintersection-patterns)
+    - [`P.array` patterns](#parray-patterns)
+    - [`P.when` patterns](#pwhen-patterns)
+    - [`P.not` patterns](#pnot-patterns)
+    - [`P.select` patterns](#pselect-patterns)
+    - [`P.optional` patterns](#poptional-patterns)
+    - [`P.instanceOf` patterns](#pinstanceof-patterns)
+    - [`P.union` patterns](#punion-patterns)
+    - [`P.intersection` patterns](#pintersection-patterns)
     - [`P.string` predicates](#pstring-predicates)
     - [`P.number` and `P.bigint` predicates](#pnumber-and-pbigint-predicates)
   - [Types](#types)
-    - [`P.infer`](#Pinfer)
-    - [`P.Pattern`](#PPattern)
+    - [`P.infer`](#pinfer)
+    - [`P.Pattern`](#pPattern)
     - [Type inference](#type-inference)
 - [Inspirations](#inspirations)
 
@@ -684,7 +684,7 @@ export function isMatching<p extends Pattern<any>>(
 
 A pattern is a description of the expected shape of your input value.
 
-Patterns can be regular JavaScript values (`"some string"`, `10`, `true`, ...), data structures ([objects](#objects), [arrays](#tuples-arrays), ...), wildcards ([`P._`](#P_-wildcard), [`P.string`](#pstring-wildcard), [`P.number`](#pnumber-wildcard), ...), or special matcher functions ([`P.not`](#pnot-patterns),
+Patterns can be regular JavaScript values (`"some string"`, `10`, `true`, ...), data structures ([objects](#objects), [arrays](#tuples-arrays), ...), wildcards ([`P._`](#p_-wildcard), [`P.string`](#pstring-wildcard), [`P.number`](#pnumber-wildcard), ...), or special matcher functions ([`P.not`](#pnot-patterns),
 [`P.when`](#pwhen-patterns), [`P.select`](#pselect-patterns), ...).
 
 All wildcards and matcher functions can be imported either as `Pattern` or as `P` from the `ts-pattern` module.

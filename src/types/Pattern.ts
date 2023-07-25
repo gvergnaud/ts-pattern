@@ -206,7 +206,7 @@ export type Chainable<p, omitted extends string = never> = p &
        * `.optional()` returns a pattern which matches if the
        * key is undefined or if it is defined and the previous pattern matches its value.
        *
-       * [Read the documentation for `P.optional` on GitHub](https://github.com/gvergnaud/ts-pattern#Poptional-patterns)
+       * [Read the documentation for `P.optional` on GitHub](https://github.com/gvergnaud/ts-pattern#poptional-patterns)
        *
        * @example
        *  match(value)
@@ -217,7 +217,7 @@ export type Chainable<p, omitted extends string = never> = p &
        * `pattern.and(pattern)` returns a pattern that matches
        * if the previous pattern and the next one match the input.
        *
-       * [Read the documentation for `P.intersection` on GitHub](https://github.com/gvergnaud/ts-pattern#Pintersection-patterns)
+       * [Read the documentation for `P.intersection` on GitHub](https://github.com/gvergnaud/ts-pattern#pintersection-patterns)
        *
        * @example
        *  match(value)
@@ -233,7 +233,7 @@ export type Chainable<p, omitted extends string = never> = p &
        * `pattern.or(pattern)` returns a pattern that matches
        * if **either** the previous pattern or the next one match the input.
        *
-       * [Read the documentation for `P.union` on GitHub](https://github.com/gvergnaud/ts-pattern#Punion-patterns)
+       * [Read the documentation for `P.union` on GitHub](https://github.com/gvergnaud/ts-pattern#punion-patterns)
        *
        * @example
        *  match(value)
@@ -248,7 +248,7 @@ export type Chainable<p, omitted extends string = never> = p &
       /**
        * `P.select()` will inject this property into the handler function's arguments.
        *
-       * [Read the documentation for `P.select` on GitHub](https://github.com/gvergnaud/ts-pattern#Pselect-patterns)
+       * [Read the documentation for `P.select` on GitHub](https://github.com/gvergnaud/ts-pattern#pselect-patterns)
        *
        * @example
        *  match<{ age: number }>(value)
@@ -274,7 +274,7 @@ export type StringChainable<
       /**
        * `P.string.startsWith(start)` is a pattern, matching **strings** starting with `start`.
        *
-       * [Read the documentation for `P.string.startsWith` on GitHub](https://github.com/gvergnaud/ts-pattern#PstringstartsWith)
+       * [Read the documentation for `P.string.startsWith` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringstartsWith)
        *
        * @example
        *  match(value)
@@ -289,7 +289,7 @@ export type StringChainable<
       /**
        * `P.string.endsWith(end)` is a pattern, matching **strings** ending with `end`.
        *
-       * [Read the documentation for `P.string.endsWith` on GitHub](https://github.com/gvergnaud/ts-pattern#PstringendsWith)
+       * [Read the documentation for `P.string.endsWith` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringendsWith)
        *
        * @example
        *  match(value)
@@ -304,7 +304,7 @@ export type StringChainable<
       /**
        * `P.string.minLength(min)` is a pattern, matching **strings** with at least `min` characters.
        *
-       * [Read the documentation for `P.string.minLength` on GitHub](https://github.com/gvergnaud/ts-pattern#PstringminLength)
+       * [Read the documentation for `P.string.minLength` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringminLength)
        *
        * @example
        *  match(value)
@@ -319,7 +319,7 @@ export type StringChainable<
       /**
        * `P.string.maxLength(max)` is a pattern, matching **strings** with at most `max` characters.
        *
-       * [Read the documentation for `P.string.maxLength` on GitHub](https://github.com/gvergnaud/ts-pattern#PstringmaxLength)
+       * [Read the documentation for `P.string.maxLength` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringmaxLength)
        *
        * @example
        *  match(value)
@@ -334,7 +334,7 @@ export type StringChainable<
       /**
        * `P.string.includes(substr)` is a pattern, matching **strings** containing `substr`.
        *
-       * [Read the documentation for `P.string.includes` on GitHub](https://github.com/gvergnaud/ts-pattern#Pstringincludes)
+       * [Read the documentation for `P.string.includes` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringincludes)
        *
        * @example
        *  match(value)
@@ -349,7 +349,7 @@ export type StringChainable<
       /**
        * `P.string.regex(expr)` is a pattern, matching **strings** that `expr` regular expression.
        *
-       * [Read the documentation for `P.string.regex` on GitHub](https://github.com/gvergnaud/ts-pattern#Pstringregex)
+       * [Read the documentation for `P.string.regex` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringregex)
        *
        * @example
        *  match(value)
@@ -375,7 +375,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        * `P.number.between(min, max)` matches **number** between `min` and `max`,
        * equal to min or equal to max.
        *
-       * [Read the documentation for `P.number.between` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberbetween)
+       * [Read the documentation for `P.number.between` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberbetween)
        *
        * @example
        *  match(value)
@@ -391,7 +391,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.number.lt(max)` matches **number** smaller than `max`.
        *
-       * [Read the documentation for `P.number.lt` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberlt)
+       * [Read the documentation for `P.number.lt` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberlt)
        *
        * @example
        *  match(value)
@@ -406,7 +406,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.number.gt(min)` matches **number** greater than `min`.
        *
-       * [Read the documentation for `P.number.gt` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbergt)
+       * [Read the documentation for `P.number.gt` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumbergt)
        *
        * @example
        *  match(value)
@@ -421,7 +421,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.number.lte(max)` matches **number** smaller than or equal to `max`.
        *
-       * [Read the documentation for `P.number.lte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberlte)
+       * [Read the documentation for `P.number.lte` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberlte)
        *
        * @example
        *  match(value)
@@ -436,7 +436,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.number.gte(min)` matches **number** greater than or equal to `min`.
        *
-       * [Read the documentation for `P.number.gte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbergte)
+       * [Read the documentation for `P.number.gte` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumbergte)
        *
        * @example
        *  match(value)
@@ -451,7 +451,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.number.int` matches **integer** numbers.
        *
-       * [Read the documentation for `P.number.int` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberint)
+       * [Read the documentation for `P.number.int` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberint)
        *
        * @example
        *  match(value)
@@ -464,7 +464,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.number.finite` matches **finite numbers**.
        *
-       * [Read the documentation for `P.number.finite` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberfinite)
+       * [Read the documentation for `P.number.finite` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberfinite)
        *
        * @example
        *  match(value)
@@ -477,7 +477,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.number.positive` matches **positive** numbers.
        *
-       * [Read the documentation for `P.number.positive` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberpositive)
+       * [Read the documentation for `P.number.positive` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberpositive)
        *
        * @example
        *  match(value)
@@ -490,7 +490,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.number.negative` matches **negative** numbers.
        *
-       * [Read the documentation for `P.number.negative` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbernegative)
+       * [Read the documentation for `P.number.negative` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumbernegative)
        *
        * @example
        *  match(value)
@@ -514,7 +514,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
        * `P.bigint.between(min, max)` matches **bigint** between `min` and `max`,
        * equal to min or equal to max.
        *
-       * [Read the documentation for `P.bigint.between` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberbetween)
+       * [Read the documentation for `P.bigint.between` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberbetween)
        *
        * @example
        *  match(value)
@@ -530,7 +530,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.bigint.lt(max)` matches **bigint** smaller than `max`.
        *
-       * [Read the documentation for `P.bigint.lt` on GitHub](https://github.com/gvergnaud/ts-pattern#bigintlt)
+       * [Read the documentation for `P.bigint.lt` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberlt)
        *
        * @example
        *  match(value)
@@ -545,7 +545,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.bigint.gt(min)` matches **bigint** greater than `min`.
        *
-       * [Read the documentation for `P.bigint.gt` on GitHub](https://github.com/gvergnaud/ts-pattern#bigintgt)
+       * [Read the documentation for `P.bigint.gt` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumbergt)
        *
        * @example
        *  match(value)
@@ -560,7 +560,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.bigint.lte(max)` matches **bigint** smaller than or equal to `max`.
        *
-       * [Read the documentation for `P.bigint.lte` on GitHub](https://github.com/gvergnaud/ts-pattern#bigintlte)
+       * [Read the documentation for `P.bigint.lte` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberlte)
        *
        * @example
        *  match(value)
@@ -575,7 +575,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.bigint.gte(min)` matches **bigint** greater than or equal to `min`.
        *
-       * [Read the documentation for `P.bigint.gte` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbergte)
+       * [Read the documentation for `P.bigint.gte` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumbergte)
        *
        * @example
        *  match(value)
@@ -590,7 +590,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.bigint.positive` matches **positive** bigints.
        *
-       * [Read the documentation for `P.bigint.positive` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumberpositive)
+       * [Read the documentation for `P.bigint.positive` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberpositive)
        *
        * @example
        *  match(value)
@@ -603,7 +603,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
       /**
        * `P.bigint.negative` matches **negative** bigints.
        *
-       * [Read the documentation for `P.bigint.negative` on GitHub](https://github.com/gvergnaud/ts-pattern#Pnumbernegative)
+       * [Read the documentation for `P.bigint.negative` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumbernegative)
        *
        * @example
        *  match(value)
@@ -629,7 +629,7 @@ export type ArrayChainable<
        * `.optional()` returns a pattern which matches if the
        * key is undefined or if it is defined and the previous pattern matches its value.
        *
-       * [Read the documentation for `P.optional` on GitHub](https://github.com/gvergnaud/ts-pattern#Poptional-patterns)
+       * [Read the documentation for `P.optional` on GitHub](https://github.com/gvergnaud/ts-pattern#poptional-patterns)
        *
        * @example
        *  match(value)
@@ -642,7 +642,7 @@ export type ArrayChainable<
       /**
        * `P.select()` will inject this property into the handler function's arguments.
        *
-       * [Read the documentation for `P.select` on GitHub](https://github.com/gvergnaud/ts-pattern#Pselect-patterns)
+       * [Read the documentation for `P.select` on GitHub](https://github.com/gvergnaud/ts-pattern#pselect-patterns)
        *
        * @example
        *  match<{ age: number }>(value)
