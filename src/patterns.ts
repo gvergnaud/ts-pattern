@@ -775,11 +775,7 @@ export const string: StringPattern = stringChainable(when(isString));
  *  match(value)
  *   .with(P.number.between(0, 10), () => '0 <= numbers <= 10')
  */
-export const between = <
-  input,
-  const min extends number,
-  const max extends number
->(
+const between = <input, const min extends number, const max extends number>(
   min: min,
   max: max
 ): GuardExcludeP<input, number, never> =>
@@ -794,7 +790,7 @@ export const between = <
  *  match(value)
  *   .with(P.number.lt(10), () => 'numbers < 10')
  */
-export const lt = <input, const max extends number>(
+const lt = <input, const max extends number>(
   max: max
 ): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && value < max);
@@ -808,7 +804,7 @@ export const lt = <input, const max extends number>(
  *  match(value)
  *   .with(P.number.gt(10), () => 'numbers > 10')
  */
-export const gt = <input, const min extends number>(
+const gt = <input, const min extends number>(
   min: min
 ): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && value > min);
@@ -822,7 +818,7 @@ export const gt = <input, const min extends number>(
  *  match(value)
  *   .with(P.number.lte(10), () => 'numbers <= 10')
  */
-export const lte = <input, const max extends number>(
+const lte = <input, const max extends number>(
   max: max
 ): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && value <= max);
@@ -836,7 +832,7 @@ export const lte = <input, const max extends number>(
  *  match(value)
  *   .with(P.number.gte(10), () => 'numbers >= 10')
  */
-export const gte = <input, const min extends number>(
+const gte = <input, const min extends number>(
   min: min
 ): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && value >= min);
@@ -850,7 +846,7 @@ export const gte = <input, const min extends number>(
  *  match(value)
  *   .with(P.number.int, () => 'an integer')
  */
-export const int = <input>(): GuardExcludeP<input, number, never> =>
+const int = <input>(): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && Number.isInteger(value));
 
 /**
@@ -862,7 +858,7 @@ export const int = <input>(): GuardExcludeP<input, number, never> =>
  *  match(value)
  *   .with(P.number.finite, () => 'not Infinity')
  */
-export const finite = <input>(): GuardExcludeP<input, number, never> =>
+const finite = <input>(): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && Number.isFinite(value));
 
 /**
@@ -874,7 +870,7 @@ export const finite = <input>(): GuardExcludeP<input, number, never> =>
  *  match(value)
  *   .with(P.number.positive, () => 'number > 0')
  */
-export const positive = <input>(): GuardExcludeP<input, number, never> =>
+const positive = <input>(): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && value > 0);
 
 /**
@@ -886,7 +882,7 @@ export const positive = <input>(): GuardExcludeP<input, number, never> =>
  *  match(value)
  *   .with(P.number.negative, () => 'number < 0')
  */
-export const negative = <input>(): GuardExcludeP<input, number, never> =>
+const negative = <input>(): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && value < 0);
 
 const numberChainable = <pattern extends Matcher<any, any, any, any, any>>(
@@ -926,7 +922,7 @@ export const number: NumberPattern = numberChainable(when(isNumber));
  *  match(value)
  *   .with(P.bigint.between(0, 10), () => '0 <= numbers <= 10')
  */
-export const betweenBigInt = <
+const betweenBigInt = <
   input,
   const min extends bigint,
   const max extends bigint
@@ -945,7 +941,7 @@ export const betweenBigInt = <
  *  match(value)
  *   .with(P.bigint.lt(10), () => 'numbers < 10')
  */
-export const ltBigInt = <input, const max extends bigint>(
+const ltBigInt = <input, const max extends bigint>(
   max: max
 ): GuardExcludeP<input, bigint, never> =>
   when((value) => isBigInt(value) && value < max);
@@ -959,7 +955,7 @@ export const ltBigInt = <input, const max extends bigint>(
  *  match(value)
  *   .with(P.bigint.gt(10), () => 'numbers > 10')
  */
-export const gtBigInt = <input, const min extends bigint>(
+const gtBigInt = <input, const min extends bigint>(
   min: min
 ): GuardExcludeP<input, bigint, never> =>
   when((value) => isBigInt(value) && value > min);
@@ -973,7 +969,7 @@ export const gtBigInt = <input, const min extends bigint>(
  *  match(value)
  *   .with(P.bigint.lte(10), () => 'bigints <= 10')
  */
-export const lteBigInt = <input, const max extends bigint>(
+const lteBigInt = <input, const max extends bigint>(
   max: max
 ): GuardExcludeP<input, bigint, never> =>
   when((value) => isBigInt(value) && value <= max);
@@ -987,7 +983,7 @@ export const lteBigInt = <input, const max extends bigint>(
  *  match(value)
  *   .with(P.bigint.gte(10), () => 'bigints >= 10')
  */
-export const gteBigInt = <input, const min extends bigint>(
+const gteBigInt = <input, const min extends bigint>(
   min: min
 ): GuardExcludeP<input, bigint, never> =>
   when((value) => isBigInt(value) && value >= min);
@@ -1001,7 +997,7 @@ export const gteBigInt = <input, const min extends bigint>(
  *  match(value)
  *   .with(P.bigint.positive, () => 'bigint > 0')
  */
-export const positiveBigInt = <input>(): GuardExcludeP<input, bigint, never> =>
+const positiveBigInt = <input>(): GuardExcludeP<input, bigint, never> =>
   when((value) => isBigInt(value) && value > 0);
 
 /**
@@ -1013,7 +1009,7 @@ export const positiveBigInt = <input>(): GuardExcludeP<input, bigint, never> =>
  *  match(value)
  *   .with(P.bigint.negative, () => 'bigint < 0')
  */
-export const negativeBigInt = <input>(): GuardExcludeP<input, bigint, never> =>
+const negativeBigInt = <input>(): GuardExcludeP<input, bigint, never> =>
   when((value) => isBigInt(value) && value < 0);
 
 const bigintChainable = <pattern extends Matcher<any, any, any, any, any>>(
