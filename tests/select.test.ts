@@ -466,4 +466,24 @@ describe('select', () => {
 
     expect(res3).toEqual({ a: [] });
   });
+
+  it('should work with variadic tuples', () => {
+    const fn = (input: string[]) =>
+      match(input)
+        .with(
+          [P.string, 'some', 'cli', 'cmd', P.select(), ...P.array()],
+          (arg) => {
+            type t = Expect<Equal<typeof arg, string>>;
+            return arg;
+          }
+        )
+        .otherwise(() => '2');
+
+    expect(fn(['some cli cmd param', 'some', 'cli', 'cmd', 'param'])).toEqual(
+      'param'
+    );
+    expect(
+      fn(['some cli cmd param --flag', 'some', 'cli', 'cmd', 'param', '--flag'])
+    ).toEqual('param');
+  });
 });
