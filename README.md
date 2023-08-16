@@ -482,12 +482,12 @@ function with(
   - Additional condition the input must satisfy for the handler to be called.
   - The input will match if your guard function returns a truthy value.
   - `TInput` might be narrowed to a more precise type using the `pattern`.
-- `handler: (value: TInput, selections: Selections<TInput>) => TOutput`
+- `handler: (selections: Selections<TInput>, value: TInput) => TOutput`
   - **Required**
   - Function called when the match conditions are satisfied.
   - All handlers on a single `match` case must return values of the same type, `TOutput`.
-  - `TInput` might be narrowed to a more precise type using the `pattern`.
   - `selections` is an object of properties selected from the input with the [`select` function](#select-patterns).
+  - `TInput` might be narrowed to a more precise type using the `pattern`.
 
 ### `.when`
 
