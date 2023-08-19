@@ -1,0 +1,142 @@
+name: ci
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  test_node:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: [ '20' ]
+        os: [ macos-latest ]
+    name: Test with Node v${{ matrix.node }} on ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node }}
+    - uses: bahmutov/npm-install@v1
+    - run: |
+        npm run build
+        npm test
+  test_deno:
+    runs-on: ubuntu-latest
+    name: test with Deno
+    steps: 
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+    - uses: actions/cache@v3
+      with:
+        path: ~/.cache/deno
+        key: deno-${{ runner.os }}-${{ hashFiles('deno-lock.json') }}
+        restore-keys: |
+           deno-${{ runner.os }}-${{ hashFiles('deno-lock.json') }}
+           deno-${{ runner.os }}-
+           deno-
+    - uses: denoland/setup-deno@v1
+      with:
+        deno-version: v1.x
+    - run: deno --version
+    # We don't actually execute any runtime check but at least we make sure that, typewise, everything's fine.
+    - uses: bahmutov/npm-install@v1
+    - run: npx denoify
+    - run: deno run --reload --unstable --no-check deno_dist/mod.ts
+
+  check_if_version_upgraded:
+    name: Check if version upgrade
+    # When someone forks the repo and opens a PR we want to enables the tests to be run (the previous jobs)
+    # but obviously only us should be allowed to release.
+    # The following check is to make sure that we own the branch this CI workflow is running on before continuing.
+    # If it wasn't the case, trying to release would fail anyway, only us have the correct secret.NPM_TOKEN, but
+    # it's cleaner to stop the execution instead of letting the CI crash.
+    if: |
+      github.event_name == 'push' || 
+      github.event.pull_request.head.repo.owner.login == github.event.pull_request.base.repo.owner.login 
+    runs-on: ubuntu-latest
+    needs: 
+      - test_node
+      - test_deno
+    outputs:
+      from_version: ${{ steps.step1.outputs.from_version }}
+      to_version: ${{ steps.step1.outputs.to_version }}
+      is_upgraded_version: ${{ steps.step1.outputs.is_upgraded_version }}
+      is_pre_release: ${{steps.step1.outputs.is_pre_release }}
+    steps:
+    - uses: garronej/ts-ci@v2.0.2
+      id: step1
+      with: 
+        action_name: is_package_json_version_upgraded
+        branch: ${{ github.head_ref || github.ref }}
+
+  publish:
+    runs-on: macos-latest
+    needs: 
+      - check_if_version_upgraded
+    # We create release only if the version in the package.json have been upgraded and this CI is running against the main branch.
+    # We allow branches with a PR open on main to publish pre-release (x.y.z-rc.u) but not actual releases.
+    if: |
+      needs.check_if_version_upgraded.outputs.is_upgraded_version == 'true' &&
+      (
+        github.event_name == 'push' ||
+        needs.check_if_version_upgraded.outputs.is_pre_release == 'true'
+      )
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ github.ref }}
+    - run: rm -r .github/workflows
+    - name: Remove tmp_branch if it exists
+      run: git push origin :tmp_branch || true
+    - run: git checkout -b tmp_branch
+    - uses: actions/setup-node@v3
+      with:
+        registry-url: https://registry.npmjs.org/
+    - uses: bahmutov/npm-install@v1
+    - run: npm run build
+    - run: npx -y -p denoify@1.2.4 remove_deno_dist_from_gitignore
+      env:
+        DRY_RUN: "0"
+    - run: |
+        if [ "$(npm show . version)" = "$VERSION" ]; then
+          echo "This version is already published"
+          exit 0
+        fi
+        if [ "$NODE_AUTH_TOKEN" = "" ]; then
+          echo "Can't publish on NPM, You need a NPM_TOKEN secret."
+          false
+        fi
+        EXTRA_ARGS=""
+        if [ "$IS_PRE_RELEASE" = "true" ]; then
+            EXTRA_ARGS="--tag next"
+        fi
+        npm publish $EXTRA_ARGS
+      env:
+        NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        VERSION: ${{ needs.check_if_version_upgraded.outputs.to_version }}
+        IS_PRE_RELEASE: ${{ needs.check_if_version_upgraded.outputs.is_pre_release }}
+    - run: |
+        git config --global user.name "actions"
+        git config --global user.email actions@github.com
+        git add -A
+        git commit -am "Remove deno dist from gitignore"
+        git push origin tmp_branch
+    - uses: softprops/action-gh-release@v1
+      with:
+        name: Release v${{ needs.check_if_version_upgraded.outputs.to_version }}
+        tag_name: v${{ needs.check_if_version_upgraded.outputs.to_version }}
+        target_commitish: tmp_branch
+        generate_release_notes: false
+        draft: false
+        prerelease: ${{ needs.check_if_version_upgraded.outputs.is_pre_release == 'true' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+    - name: Remove tmp_branch
+      run: git push origin :tmp_branch
+

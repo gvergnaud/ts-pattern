@@ -6,12 +6,18 @@ with smart type inference.
 </p>
 
 <p align="center">
+  <a href="https://github.com/gvergnaud/ts-pattern/actions">
+    <img src="https://github.com/gvergnaud/ts-pattern/workflows/ci/badge.svg?branch=main" alt="CI Workflow" height="18">
+  </a>
   <a href="https://www.npmjs.com/package/ts-pattern">
     <img src="https://img.shields.io/npm/dm/ts-pattern.svg" alt="downloads" height="18">
   </a>
   <a href="https://www.npmjs.com/package/ts-pattern">
-    <img src="https://img.shields.io/npm/v/ts-pattern.svg" alt="npm version" height="18">
+    <img src="https://img.shields.io/npm/v/ts-pattern?logo=npm" alt="npm version" height="18">
   </a>
+  <a href="https://deno.land/x/ts_pattern">
+    <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Flatest-version%2Fx%2Fts_pattern%2Fmod.ts" alt="deno module" height="18">
+  </a>  
   <a href="https://github.com/gvergnaud/ts-pattern">
     <img src="https://img.shields.io/npm/l/ts-pattern.svg" alt="MIT license" height="18">
   </a>
@@ -77,6 +83,13 @@ Via yarn
 ```
 yarn add ts-pattern
 ```
+
+The Deno distribution of the module is published as [ts_pattern](https://deno.land/x/ts_pattern) on `deno.land/x`  
+
+```typescript
+import { match, P } from 'https://deno.land/x/ts_pattern@v<X.Y.Z>/mod.ts';
+```
+Replace `<X.Y.Z>` by [the latest version](https://github.com/gvergnaud/ts-pattern/tags).  
 
 ### Compatibility with different TypeScript versions
 
