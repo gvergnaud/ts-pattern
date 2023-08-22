@@ -78,6 +78,18 @@ Via yarn
 yarn add ts-pattern
 ```
 
+Via pnpm
+
+```
+pnpm add ts-pattern
+```
+
+Via Bun
+
+```
+bun add ts-pattern
+```
+
 ### Compatibility with different TypeScript versions
 
 TS-Pattern assumes that [Strict Mode](https://www.typescriptlang.org/tsconfig#strict) is enabled in your `tsconfig.json` file.
