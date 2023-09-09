@@ -267,7 +267,7 @@ describe('types', () => {
       .run();
   });
 
-  describe('Unknown Input', () => {
+  it('Unknown Input', () => {
     const users: unknown = [{ name: 'Gabriel', postCount: 20 }];
 
     const typedUsers = match(users)

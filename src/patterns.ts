@@ -36,9 +36,9 @@ import {
   Variadic,
 } from './types/Pattern';
 
-export { Pattern, Fn as unstable_Fn };
-
 export { matcher };
+
+export type { Pattern, Fn as unstable_Fn };
 
 /**
  * @experimental

@@ -27,7 +27,7 @@
     "build": "rimraf dist && microbundle --format modern,cjs,umd && sh ./scripts/generate-cts.sh",
     "dev": "microbundle watch",
     "prepublishOnly": "npm run test && npm run build",
-    "test": "jest",
+    "test": "bun test",
     "clear-test": "jest --clearCache",
     "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics",
     "fmt": "prettier ./src/** ./tests/** -w",
