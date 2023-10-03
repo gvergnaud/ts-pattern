@@ -838,13 +838,13 @@ const gte = <input, const min extends number>(
   when((value) => isNumber(value) && value >= min);
 
 /**
- * `P.number.int` matches **integer** numbers.
+ * `P.number.int()` matches **integer** numbers.
  *
- * [Read the documentation for `P.number.int` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberint)
+ * [Read the documentation for `P.number.int()` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberint)
  *
  * @example
  *  match(value)
- *   .with(P.number.int, () => 'an integer')
+ *   .with(P.number.int(), () => 'an integer')
  */
 const int = <input>(): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && Number.isInteger(value));
@@ -862,25 +862,25 @@ const finite = <input>(): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && Number.isFinite(value));
 
 /**
- * `P.number.positive` matches **positive** numbers.
+ * `P.number.positive()` matches **positive** numbers.
  *
- * [Read the documentation for `P.number.positive` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberpositive)
+ * [Read the documentation for `P.number.positive()` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumberpositive)
  *
  * @example
  *  match(value)
- *   .with(P.number.positive, () => 'number > 0')
+ *   .with(P.number.positive(), () => 'number > 0')
  */
 const positive = <input>(): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && value > 0);
 
 /**
- * `P.number.negative` matches **negative** numbers.
+ * `P.number.negative()` matches **negative** numbers.
  *
- * [Read the documentation for `P.number.negative` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumbernegative)
+ * [Read the documentation for `P.number.negative()` on GitHub](https://github.com/gvergnaud/ts-pattern#pnumbernegative)
  *
  * @example
  *  match(value)
- *   .with(P.number.negative, () => 'number < 0')
+ *   .with(P.number.negative(), () => 'number < 0')
  */
 const negative = <input>(): GuardExcludeP<input, number, never> =>
   when((value) => isNumber(value) && value < 0);
@@ -989,25 +989,25 @@ const gteBigInt = <input, const min extends bigint>(
   when((value) => isBigInt(value) && value >= min);
 
 /**
- * `P.bigint.positive` matches **positive** bigints.
+ * `P.bigint.positive()` matches **positive** bigints.
  *
- * [Read the documentation for `P.bigint.positive` on GitHub](https://github.com/gvergnaud/ts-pattern#pbigintpositive)
+ * [Read the documentation for `P.bigint.positive()` on GitHub](https://github.com/gvergnaud/ts-pattern#pbigintpositive)
  *
  * @example
  *  match(value)
- *   .with(P.bigint.positive, () => 'bigint > 0')
+ *   .with(P.bigint.positive(), () => 'bigint > 0')
  */
 const positiveBigInt = <input>(): GuardExcludeP<input, bigint, never> =>
   when((value) => isBigInt(value) && value > 0);
 
 /**
- * `P.bigint.negative` matches **negative** bigints.
+ * `P.bigint.negative()` matches **negative** bigints.
  *
- * [Read the documentation for `P.bigint.negative` on GitHub](https://github.com/gvergnaud/ts-pattern#pbigintnegative)
+ * [Read the documentation for `P.bigint.negative()` on GitHub](https://github.com/gvergnaud/ts-pattern#pbigintnegative)
  *
  * @example
  *  match(value)
- *   .with(P.bigint.negative, () => 'bigint < 0')
+ *   .with(P.bigint.negative(), () => 'bigint < 0')
  */
 const negativeBigInt = <input>(): GuardExcludeP<input, bigint, never> =>
   when((value) => isBigInt(value) && value < 0);
