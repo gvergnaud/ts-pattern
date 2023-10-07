@@ -113,10 +113,6 @@ class MatchExpression<input, output> {
   }
 
   exhaustive(): output {
-    return this.run();
-  }
-
-  run(): output {
     if (this.state.matched) return this.state.value;
 
     let displayedValue;
@@ -129,6 +125,10 @@ class MatchExpression<input, output> {
     throw new Error(
       `Pattern matching error: no pattern matches value ${displayedValue}`
     );
+  }
+
+  run(): output {
+    return this.exhaustive();
   }
 
   returnType() {
