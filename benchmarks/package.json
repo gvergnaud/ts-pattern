@@ -1,0 +1,19 @@
+{
+  "name": "ts-pattern-benchmarks",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run always-last-digit && npm run random-digit && npm run nested-objects",
+    "always-last-digit": "bun run ./always-last-digit.ts",
+    "random-digit": "bun run ./random-digit.ts",
+    "nested-objects": "bun run ./nested-objects.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "benny": "^3.7.1",
+    "bun": "^1.0.4",
+    "ts-pattern": "^5.0.5"
+  }
+}
