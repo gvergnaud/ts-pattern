@@ -57,7 +57,6 @@ class MatchExpression<input, output> {
 
     if (args.length === 3 && typeof args[1] === 'function') {
       // case with guard as second argument
-      patterns.push(args[0]);
       predicate = args[1];
     } else if (args.length > 2) {
       // case with several patterns
