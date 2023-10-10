@@ -204,7 +204,7 @@ export type Match<
   run(): PickReturnValue<o, inferredOutput>;
 
   /**
-   * `.returnType<T>()` Lets you specific the return type of all of your branches.
+   * `.returnType<T>()` Lets you specify the return type for all of your branches.
    *
    * [Read the documentation for `.returnType()` on GitHub](https://github.com/gvergnaud/ts-pattern#returnType)
    * */
