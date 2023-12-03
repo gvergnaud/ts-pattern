@@ -20,8 +20,6 @@ export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
   : // inlining IsAny for perf
   0 extends 1 & a
   ? b
-  : b extends readonly []
-  ? []
   : b extends readonly any[]
   ? ExtractPreciseArrayValue<a, b, IsReadonlyArray<a>>
   : b extends Map<infer bk, infer bv>

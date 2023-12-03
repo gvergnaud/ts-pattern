@@ -1,4 +1,4 @@
-import { match } from '../src';
+import { P, match } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('readonly', () => {
@@ -69,6 +69,17 @@ describe('readonly', () => {
             type t = Expect<Equal<typeof x, Readonly<{ t: 'b'; x: string }>>>;
             return 'ok';
           })
+          .exhaustive();
+    });
+
+    it('must support exhaustive matching on readonly arrays', () => {
+      const sum = (xs: readonly number[]): number =>
+        match(xs)
+          .with([], (x) => {
+            type t = Expect<Equal<typeof x, readonly []>>;
+            return 0;
+          })
+          .with([P._, ...P.array()], ([x, ...xs]) => x + sum(xs))
           .exhaustive();
     });
   });
