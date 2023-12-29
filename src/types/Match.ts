@@ -181,8 +181,6 @@ export type Match<
     handler: (value: i) => PickReturnValue<o, c>
   ): PickReturnValue<o, Union<inferredOutput, c>>;
 
-  _handleCases: handledCases;
-
   /**
    * `.exhaustive()` checks that all cases are handled, and returns the result value.
    *
@@ -233,7 +231,7 @@ export type Match<
  *   of the returned tuple.
  * - For the second part though I'm not aware a cheap way of sorting a tuple.
  */
-export type DeepExcludeAll<a, tupleList extends any[]> = [a] extends [never]
+type DeepExcludeAll<a, tupleList extends any[]> = [a] extends [never]
   ? never
   : tupleList extends [infer excluded, ...infer tail]
   ? DeepExcludeAll<DeepExclude<a, excluded>, tail>

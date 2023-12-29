@@ -151,4 +151,70 @@ describe('large exhaustive', () => {
         .exhaustive()
     ).toBe('Null');
   });
+
+  it('Input with a large distributed cardinality', () => {
+    type States = 'idle' | 'loading' | 'success' | 'error' | 'partial_result';
+
+    const eventStatus = 'success' as States;
+    const dataStatus = 'loading' as States;
+    const backgroundStatus = 'loading' as States;
+    const replaySelectorsStatus = 'idle' as States;
+
+    const input = {
+      eventStatus,
+      dataStatus,
+      backgroundStatus,
+      replaySelectorsStatus,
+    } as const;
+
+    type input = typeof input;
+
+    const res = match(input)
+      .returnType<
+        | { status: 'idle' }
+        | { status: 'loading' }
+        | { status: 'success' }
+        | { status: 'error'; error: unknown }
+      >()
+      .with(
+        { eventStatus: P.union('loading', 'partial_result') },
+        { dataStatus: P.union('loading', 'partial_result') },
+        { backgroundStatus: P.union('loading', 'partial_result') },
+        { replaySelectorsStatus: P.union('loading', 'partial_result') },
+        () => ({ status: 'loading' })
+      )
+      .with(
+        {
+          eventStatus: 'success',
+          dataStatus: 'success',
+          backgroundStatus: 'success',
+          replaySelectorsStatus: 'success',
+        },
+        () => ({ status: 'success' })
+      )
+      .with(
+        { eventStatus: 'idle' },
+        { dataStatus: 'idle' },
+        { backgroundStatus: 'idle' },
+        { replaySelectorsStatus: 'idle' },
+        () => ({ status: 'idle' as const })
+      )
+      .with({ replaySelectorsStatus: 'error' }, () => ({
+        status: 'error',
+        error: new Error('Oops 0'),
+      }))
+      .with({ eventStatus: 'error' }, () => ({
+        status: 'error',
+        error: new Error('Oops 1'),
+      }))
+      .with({ dataStatus: 'error' }, () => ({
+        status: 'error',
+        error: new Error('Oops 2'),
+      }))
+      .with({ backgroundStatus: 'error' }, () => ({
+        status: 'error',
+        error: new Error('Oops 3'),
+      }))
+      .exhaustive();
+  });
 });
