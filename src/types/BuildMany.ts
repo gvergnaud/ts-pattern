@@ -15,37 +15,26 @@ type BuildOne<data, xs extends readonly any[]> = xs extends [
   ? BuildOne<Update<data, value, Extract<path, readonly PropertyKey[]>>, tail>
   : data;
 
-type SafeGet<data, k extends PropertyKey, def> = k extends keyof data
-  ? data[k]
-  : def;
-
 // Update :: a -> b -> PropertyKey[] -> a
-type Update<
-  data,
-  value,
-  path extends readonly PropertyKey[]
-> = path extends readonly [infer head, ...infer tail]
+type Update<data, value, path> = path extends readonly [
+  infer head,
+  ...infer tail
+]
   ? data extends readonly [any, ...any]
     ? head extends number
-      ? UpdateAt<
-          data,
-          Iterator<head>,
-          Update<data[head], value, Extract<tail, readonly PropertyKey[]>>
-        >
+      ? UpdateAt<data, Iterator<head>, Update<data[head], value, tail>>
       : never
     : data extends readonly (infer a)[]
-    ? Update<a, value, Extract<tail, readonly PropertyKey[]>>[]
+    ? Update<a, value, tail>[]
     : data extends Set<infer a>
-    ? Set<Update<a, value, Extract<tail, readonly PropertyKey[]>>>
+    ? Set<Update<a, value, tail>>
     : data extends Map<infer k, infer v>
-    ? Map<k, Update<v, value, Extract<tail, readonly PropertyKey[]>>>
-    : Compute<
-        Omit<data, Extract<head, PropertyKey>> & {
-          [k in Extract<head, PropertyKey>]: Update<
-            SafeGet<data, k, {}>,
-            value,
-            Extract<tail, readonly PropertyKey[]>
-          >;
+    ? Map<k, Update<v, value, tail>>
+    : head extends keyof data
+    ? Compute<
+        { [k in Exclude<keyof data, head>]: data[k] } & {
+          [k in head]: Update<data[k], value, tail>;
         }
       >
+    : data
   : value;
