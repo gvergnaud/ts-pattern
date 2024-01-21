@@ -5,8 +5,9 @@
     "target": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
-    "outDir": "dist/"
+    "outDir": "dist/",
+    "skipLibCheck": true
   },
   "include": ["src/"],
-  "exclude": ["tests/", "dist/", "examples/"]
+  "exclude": ["tests/", "dist/", "examples/", "node_modules/"]
 }

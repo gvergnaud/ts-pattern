@@ -6,4 +6,5 @@ dist
 notes.md
 .vscode/
 tracing_output_folder/
+trace/
 *.tgz

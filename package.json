@@ -29,9 +29,11 @@
     "prepublishOnly": "npm run test && npm run build",
     "test": "jest",
     "clear-test": "jest --clearCache",
-    "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics",
     "fmt": "prettier ./src/** ./tests/** -w",
-    "check": "tsc --strict --noEmit --extendedDiagnostics"
+    "check": "tsc --strict --noEmit --extendedDiagnostics",
+    "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics",
+    "trace": "tsc --project tests/tsconfig.json --generateTrace trace --incremental false  --noEmit",
+    "analyzeTrace": "npx @typescript/analyze-trace trace"
   },
   "files": [
     "dist/**/*",

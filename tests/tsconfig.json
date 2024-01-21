@@ -4,7 +4,9 @@
     "downlevelIteration": true,
     "noEmit": true,
     "target": "ES2020",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "skipLibCheck": true
   },
-  "exclude": ["src/", "dist/", "example/"]
+  "include": ["."],
+  "exclude": ["../src/", "../dist/", "../example/", "../node_modules"]
 }
