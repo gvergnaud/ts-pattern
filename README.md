@@ -141,14 +141,14 @@ TS-Pattern assumes that [Strict Mode](https://www.typescriptlang.org/tsconfig#st
 
 ## Code Sandbox Examples
 
-- [Basic Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/basic.tsx)
+- [Basic Demo](https://codesandbox.io/p/devbox/ts-pattern-api-examples-bdy5p2?file=%2Fsrc%2Fexamples%2Fbasic.tsx)
 - [React gif fetcher app Demo](https://codesandbox.io/s/ts-pattern-gif-search-demo-v4-bkumdw?file=/src/App.tsx)
-- [React.useReducer Demo](https://codesandbox.io/s/ts-pattern-reducer-example-v4-fx2yqu?file=/src/App.tsx)
-- [Handling untyped API response Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/api.tsx)
-- [`P.when` Guard Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/when.tsx)
-- [`P.not` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/not.tsx)
-- [`P.select` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/select.tsx)
-- [`P.union` Pattern Demo](https://codesandbox.io/s/ts-pattern-examples-v4-bdy5p2?file=/src/examples/union.tsx)
+- [React.useReducer Demo](https://codesandbox.io/p/devbox/ts-pattern-v4-reducer-example-fx2yqu?file=%2Fsrc%2FApp.tsx)
+- [Handling untyped API response Demo](https://codesandbox.io/p/devbox/ts-pattern-api-examples-bdy5p2?file=%2Fsrc%2Fexamples%2Fapi.tsx)
+- [`P.when` Guard Demo](https://codesandbox.io/p/devbox/ts-pattern-api-examples-bdy5p2?file=%2Fsrc%2Fexamples%2Fwhen.tsx)
+- [`P.not` Pattern Demo](https://codesandbox.io/p/devbox/ts-pattern-api-examples-bdy5p2?file=%2Fsrc%2Fexamples%2Fnot.tsx)
+- [`P.select` Pattern Demo](https://codesandbox.io/p/devbox/ts-pattern-api-examples-bdy5p2?file=%2Fsrc%2Fexamples%2Fselect.tsx)
+- [`P.union` Pattern Demo](https://codesandbox.io/p/devbox/ts-pattern-api-examples-bdy5p2?file=%2Fsrc%2Fexamples%2Funion.tsx)
 
 ## Getting Started
 
