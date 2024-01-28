@@ -1542,13 +1542,13 @@ const userPattern: Pattern<User> = {
 
 ### Type inference
 
-TS-Pattern takes advantage of some of the most advanced features of the type system to narrow the input type using the current pattern. It is also able to accurately know if you have handled all cases, even when matching on complex data-structures.
+TS-Pattern takes advantage the most advanced features of TypeScript to perform type narrowing and accurate exhaustive matching, even when matching on complex data-structures.
 
-Here are some examples of TS-Pattern's inference features.
+Here are some examples of TS-Pattern's type inference features.
 
 #### Type narrowing
 
-If you pattern-match on a union type with a discriminant property, TS-Pattern will use this discriminant to narrow the type of input.
+When pattern-matching on a input containing union types, TS-Pattern will infer the most precise type possible for the argument of your handler function using the pattern you provide.
 
 ```ts
 type Text = { type: 'text'; data: string };
@@ -1573,7 +1573,7 @@ const formatContent = (content: Content): string =>
     .exhaustive();
 ```
 
-If you use `P.select`, TS-Pattern will pick up the type of the property you selected, and will inferyour handler's type accordingly.
+When using `P.select` in a pattern, TS-Pattern will find and inject the selected value in your handler. The type of your handler's argument is inferred accordingly.
 
 ```ts
 const formatContent = (content: Content): string =>
@@ -1593,7 +1593,9 @@ const formatContent = (content: Content): string =>
     .exhaustive();
 ```
 
-If the function given to `P.when` is a [Type Guard](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates), TS-Pattern will use the type guard's return type to narrow the input.
+#### Type guard function
+
+If you pass a [type guard](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) function to `P.when`, TS-Pattern will use its return type to narrow the input.
 
 ```ts
 const isString = (x: unknown): x is string => typeof x === 'string';
@@ -1609,8 +1611,7 @@ const fn = (input: { id: number | string }) =>
 
 #### Exhaustiveness checking
 
-If your data structure contains several union types, you can pattern-match on several of them with a **single pattern**. TS-Pattern will keep track of the cases which have been handled and those which
-haven't, so you never forget to handle a case.
+TS-Pattern will keep track of handled and unhandled cases of your input type. Even when pattern-matching on several union types at once, you only need to call `.exhaustive()` to make sure that all possible cases are correctly handled.
 
 ```ts
 type Permission = 'editor' | 'viewer';
