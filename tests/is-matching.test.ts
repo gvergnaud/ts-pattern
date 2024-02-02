@@ -55,4 +55,26 @@ describe('isMatching', () => {
       );
     }
   });
+
+  it('type inference should be precise without `as const`', () => {
+    type Pizza = { type: 'pizza'; topping: string };
+    type Sandwich = { type: 'sandwich'; condiments: string[] };
+    type Food = Pizza | Sandwich;
+
+    const food = { type: 'pizza', topping: 'cheese' } as Food;
+
+    const isPizza = isMatching({ type: 'pizza' });
+
+    if (isPizza(food)) {
+      type t = Expect<Equal<typeof food, Pizza>>;
+    } else {
+      throw new Error('Expected food to match the pizza pattern!');
+    }
+
+    if (isMatching({ type: 'pizza' }, food)) {
+      type t = Expect<Equal<typeof food, Pizza>>;
+    } else {
+      throw new Error('Expected food to match the pizza pattern!');
+    }
+  });
 });
