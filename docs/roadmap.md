@@ -1,28 +1,28 @@
 ### Roadmap
 
-- [ ] chainable methods
-  - [ ] string
+- [x] chainable methods
+  - [x] string
     - [x] `P.string.includes('str')`
     - [x] `P.string.startsWith('str')`
     - [x] `P.string.endsWith('str')`
-    - [ ] `P.string.regex('[a-z]+')`
-  - [ ] numbers
-    - [ ] `P.number.between(1, 10)`
-    - [ ] `P.number.lt(12)`
-    - [ ] `P.number.gt(12)`
-    - [ ] `P.number.gte(12)`
-    - [ ] `P.number.lte(12)`
-    - [ ] `P.number.int(12)`
-    - [ ] `P.number.finite`
-    - [ ] `P.number.positive`
-    - [ ] `P.number.negative`
-  - [ ] all
-    - [ ] `P.number.optional`
-    - [ ] `P.string.optional`
-    - [ ] `P.number.select()`
-    - [ ] `P.string.select()`
-    - [ ] `P.number.optional.select()`
-    - [ ] `P.string.optional.select()`
+    - [x] `P.string.regex('[a-z]+')`
+  - [x] numbers
+    - [x] `P.number.between(1, 10)`
+    - [x] `P.number.lt(12)`
+    - [x] `P.number.gt(12)`
+    - [x] `P.number.gte(12)`
+    - [x] `P.number.lte(12)`
+    - [x] `P.number.int(12)`
+    - [x] `P.number.finite`
+    - [x] `P.number.positive`
+    - [x] `P.number.negative`
+  - [x] all
+    - [x] `P.number.optional`
+    - [x] `P.string.optional`
+    - [x] `P.number.select()`
+    - [x] `P.string.select()`
+    - [x] `P.number.optional.select()`
+    - [x] `P.string.optional.select()`
 - [x] Add a custom matcher protocol data structures could implement to make them matchable.
 - [x] (Maybe) add an iterator protocol to `P.array` to be usable as a variadic tuple pattern. Example of using `P.array`:
 
