@@ -17,7 +17,7 @@ import { matchPattern } from './internals/helpers';
  *    return input.name
  *  }
  */
-export function isMatching<p extends Pattern<unknown>>(
+export function isMatching<const p extends Pattern<unknown>>(
   pattern: p
 ): (value: unknown) => value is P.infer<p>;
 /**
