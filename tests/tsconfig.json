@@ -5,8 +5,9 @@
     "noEmit": true,
     "target": "ES2020",
     "moduleResolution": "node",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "esModuleInterop": true
   },
   "include": ["."],
-  "exclude": ["../src/", "../dist/", "../example/", "../node_modules"]
+  "exclude": ["../src", "../dist", "../example", "../node_modules"]
 }

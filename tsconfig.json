@@ -6,7 +6,8 @@
     "moduleResolution": "bundler",
     "strict": true,
     "outDir": "dist/",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "esModuleInterop": true
   },
   "include": ["src/"],
   "exclude": ["tests/", "dist/", "examples/", "node_modules/"]
