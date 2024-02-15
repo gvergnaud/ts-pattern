@@ -128,10 +128,18 @@ function chainable<pattern extends Matcher<any, any, any, any, any>>(
 
 const variadic = <pattern extends {}>(pattern: pattern): Variadic<pattern> =>
   Object.assign(pattern, {
-    *[Symbol.iterator]() {
-      yield Object.assign(pattern, {
+    [Symbol.iterator](): Iterator<pattern, void, undefined> {
+      let i = 0;
+      const variadicPattern = Object.assign(pattern, {
         [symbols.isVariadic]: true,
       });
+      const values: IteratorResult<pattern, void>[] = [
+        { value: variadicPattern, done: false },
+        { done: true, value: undefined },
+      ];
+      return {
+        next: () => values[i++] ?? values.at(-1)!,
+      };
     },
   });
 
