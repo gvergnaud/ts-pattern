@@ -896,9 +896,24 @@ const input = null;
 const output = match<number | null | undefined>(input)
   .with(P.number, () => 'it is a number!')
   .with(P.nullish, () => 'it is either null or undefined!')
-  .with(null, () => 'it is null!')
-  .with(undefined, () => 'it is undefined!')
   .exhaustive();
+
+console.log(output);
+// => 'it is either null or undefined!'
+```
+
+#### `P.nonNullable` wildcard
+
+The `P.nonNullable` pattern will match any value except `null` or `undefined`.
+
+```ts
+import { match, P } from 'ts-pattern';
+
+const input = null;
+
+const output = match<number | null | undefined>(input)
+  .with(P.nonNullable, () => 'it is a number!')
+  .otherwise(() => 'it is either null or undefined!');
 
 console.log(output);
 // => 'it is either null or undefined!'

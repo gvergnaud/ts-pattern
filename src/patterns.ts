@@ -34,6 +34,7 @@ import {
   StringChainable,
   ArrayChainable,
   Variadic,
+  NonNullablePattern,
 } from './types/Pattern';
 
 export type { Pattern, Fn as unstable_Fn };
@@ -634,6 +635,10 @@ function isNullish<T>(x: T | null | undefined): x is null | undefined {
   return x === null || x === undefined;
 }
 
+function doesExists(x: unknown): x is {} {
+  return x !== null && x !== undefined;
+}
+
 type AnyConstructor = abstract new (...args: any[]) => any;
 
 function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
@@ -1075,6 +1080,16 @@ export const symbol: SymbolPattern = chainable(when(isSymbol));
  *   .with(P.nullish, () => 'will match on null or undefined')
  */
 export const nullish: NullishPattern = chainable(when(isNullish));
+
+/**
+ * `P.nonNullable` is a wildcard pattern, matching everything except **null** or **undefined**.
+ *
+ * [Read the documentation for `P.nonNullable` on GitHub](https://github.com/gvergnaud/ts-pattern#nonNullable-wildcard)
+ *
+ * @example
+ *   .with(P.nonNullable, () => 'will match on null or undefined')
+ */
+export const nonNullable: NonNullablePattern = chainable(when(doesExists));
 
 /**
  * `P.instanceOf(SomeClass)` is a pattern matching instances of a given class.
