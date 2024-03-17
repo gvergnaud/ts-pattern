@@ -1,5 +1,8 @@
 ### Roadmap
 
+- [ ] `P.array.includes(x)`
+- [ ] `P.record({Pkey}, {Pvalue})`
+- [x] `P.nonNullable`
 - [x] chainable methods
   - [x] string
     - [x] `P.string.includes('str')`

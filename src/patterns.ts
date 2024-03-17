@@ -635,7 +635,7 @@ function isNullish<T>(x: T | null | undefined): x is null | undefined {
   return x === null || x === undefined;
 }
 
-function doesExists(x: unknown): x is {} {
+function isNonNullable(x: unknown): x is {} {
   return x !== null && x !== undefined;
 }
 
@@ -1089,7 +1089,7 @@ export const nullish: NullishPattern = chainable(when(isNullish));
  * @example
  *   .with(P.nonNullable, () => 'will match on null or undefined')
  */
-export const nonNullable: NonNullablePattern = chainable(when(doesExists));
+export const nonNullable: NonNullablePattern = chainable(when(isNonNullable));
 
 /**
  * `P.instanceOf(SomeClass)` is a pattern matching instances of a given class.
