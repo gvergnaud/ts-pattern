@@ -792,14 +792,14 @@ type Input =
   | [number, '*', number]
   | ['-', number];
 
-const input: Input = [3, '*', 4];
+const input = [3, '*', 4] as Input;
 
 const output = match(input)
   .with([P._, '+', P._], ([x, , y]) => x + y)
   .with([P._, '-', P._], ([x, , y]) => x - y)
   .with([P._, '*', P._], ([x, , y]) => x * y)
   .with(['-', P._], ([, x]) => -x)
-  .otherwise(() => NaN);
+  .exhaustive();
 
 console.log(output);
 // => 12
