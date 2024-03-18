@@ -792,14 +792,14 @@ type Input =
   | [number, '*', number]
   | ['-', number];
 
-const input: Input = [3, '*', 4];
+const input = [3, '*', 4] as Input;
 
 const output = match(input)
   .with([P._, '+', P._], ([x, , y]) => x + y)
   .with([P._, '-', P._], ([x, , y]) => x - y)
   .with([P._, '*', P._], ([x, , y]) => x * y)
   .with(['-', P._], ([, x]) => -x)
-  .otherwise(() => NaN);
+  .exhaustive();
 
 console.log(output);
 // => 12
@@ -896,9 +896,24 @@ const input = null;
 const output = match<number | null | undefined>(input)
   .with(P.number, () => 'it is a number!')
   .with(P.nullish, () => 'it is either null or undefined!')
-  .with(null, () => 'it is null!')
-  .with(undefined, () => 'it is undefined!')
   .exhaustive();
+
+console.log(output);
+// => 'it is either null or undefined!'
+```
+
+#### `P.nonNullable` wildcard
+
+The `P.nonNullable` pattern will match any value except `null` or `undefined`.
+
+```ts
+import { match, P } from 'ts-pattern';
+
+const input = null;
+
+const output = match<number | null | undefined>(input)
+  .with(P.nonNullable, () => 'it is a number!')
+  .otherwise(() => 'it is either null or undefined!');
 
 console.log(output);
 // => 'it is either null or undefined!'
