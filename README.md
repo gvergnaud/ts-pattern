@@ -133,6 +133,7 @@ TS-Pattern assumes that [Strict Mode](https://www.typescriptlang.org/tsconfig#st
     - [`P.intersection` patterns](#pintersection-patterns)
     - [`P.string` predicates](#pstring-predicates)
     - [`P.number` and `P.bigint` predicates](#pnumber-and-pbigint-predicates)
+    - [`P.object` predicates](#pobject-predicates)
   - [Types](#types)
     - [`P.infer`](#pinfer)
     - [`P.Pattern`](#pPattern)
@@ -1495,6 +1496,23 @@ const fn = (input: number) =>
     .otherwise(() => '❌');
 
 console.log(fn(-3.141592), fn(7)); // logs '✅ ❌'
+```
+
+## `P.object` predicates
+
+`P.object` has a number of methods to help you match on specific object.
+
+### `P.object.empty`
+
+`P.object.empty` matches empty object
+
+```ts
+const fn = (input: string) =>
+  match(input)
+    .with(P.object.empty(), () => 'Empty!')
+    .otherwise(() => 'Full!');
+
+console.log(fn('{}')); // Empty
 ```
 
 ## Types
