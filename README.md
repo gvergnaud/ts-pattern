@@ -1497,7 +1497,7 @@ const fn = (input: string) =>
     .with(P.object.empty(), () => 'Empty!')
     .otherwise(() => 'Full!');
 
-console.log(fn('{}')); // Empty
+console.log(fn({})); // Empty!
 ```
 
 ## Types
