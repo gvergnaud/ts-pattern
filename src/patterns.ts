@@ -35,6 +35,7 @@ import {
   ArrayChainable,
   Variadic,
   NonNullablePattern,
+  ObjectChainable,
 } from './types/Pattern';
 
 export type { Pattern, Fn as unstable_Fn };
@@ -639,6 +640,10 @@ function isNonNullable(x: unknown): x is {} {
   return x !== null && x !== undefined;
 }
 
+function isObject<T>(x: T | object): x is object {
+  return typeof x === 'object' && !Array.isArray(x) && x !== null;
+}
+
 type AnyConstructor = abstract new (...args: any[]) => any;
 
 function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
@@ -1125,3 +1130,37 @@ export function shape<input, const pattern extends Pattern<input>>(
 export function shape(pattern: UnknownPattern) {
   return chainable(when(isMatching(pattern)));
 }
+
+/**
+ * `P.object.empty()` is a pattern, matching **objects** with no keys.
+ *
+ * [Read the documentation for `P.object.empty` on GitHub](https://github.com/gvergnaud/ts-pattern#pobjectempty)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.object.empty(), () => 'will match on empty objects')
+ */
+const emptyObject = <input>(): GuardExcludeP<input, object, never> =>
+  when(
+    (value) =>
+      value && typeof value === 'object' && Object.keys(value).length === 0
+  );
+
+const objectChainable = <pattern extends Matcher<any, any, any, any, any>>(
+  pattern: pattern
+): ObjectChainable<pattern> =>
+  Object.assign(chainable(pattern), {
+    empty: () => objectChainable(intersection(pattern, emptyObject())),
+  }) as any;
+
+/**
+ * `P.object` is a wildcard pattern, matching any **object**.
+ * It lets you call methods like `.empty()`, `.and`, `.or` and `.select()`
+ * On structural patterns, like objects and arrays.
+ * [Read the documentation for `P.object` on GitHub](https://github.com/gvergnaud/ts-pattern#pobject-predicates)
+ *
+ * @example
+ * match(value)
+ *  .with(P.object.empty(), () => 'will match on empty objects')
+ **/
+export const object: ObjectChainable<any> = objectChainable(when(isObject));

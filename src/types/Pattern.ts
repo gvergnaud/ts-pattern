@@ -10,6 +10,7 @@ export type MatcherType =
   | 'or'
   | 'and'
   | 'array'
+  | 'object'
   | 'map'
   | 'set'
   | 'select'
@@ -91,6 +92,8 @@ export type CustomP<input, pattern, narrowedOrFn> = Matcher<
 >;
 
 export type ArrayP<input, p> = Matcher<input, p, 'array'>;
+
+export type ObjectP<input, p> = Matcher<input, p, 'object'>;
 
 export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
@@ -652,6 +655,29 @@ export type ArrayChainable<
       select<input, k extends string>(
         key: k
       ): ArrayChainable<SelectP<k, input, pattern>, omitted | 'select'>;
+    },
+    omitted
+  >;
+
+export type ObjectChainable<
+  pattern,
+  omitted extends string = never
+> = Chainable<pattern, omitted> &
+  Omit<
+    {
+      /**
+       * `.empty()` matches an empty object.
+       *
+       * [Read the documentation for `P.object.empty` on GitHub](https://github.com/gvergnaud/ts-pattern#pobjectempty)
+       *
+       * @example
+       * match(value)
+       *  .with(P.object.empty(), () => 'empty object')
+       */
+      empty<input>(): ObjectChainable<
+        ObjectP<input, Record<string, never>>,
+        omitted | 'empty'
+      >;
     },
     omitted
   >;
