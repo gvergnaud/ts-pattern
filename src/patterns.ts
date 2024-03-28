@@ -1141,16 +1141,18 @@ export function shape(pattern: UnknownPattern) {
  *   .with(P.object.empty(), () => 'will match on empty objects')
  */
 const emptyObject = <input>(): GuardExcludeP<input, object, never> =>
-  when(
-    (value) =>
-      value && typeof value === 'object' && Object.keys(value).length === 0
-  );
+  when((value) => {
+    if (!isObject(value)) return false;
+
+    for (var prop in value) return false;
+    return true;
+  });
 
 const objectChainable = <pattern extends Matcher<any, any, any, any, any>>(
   pattern: pattern
 ): ObjectChainable<pattern> =>
   Object.assign(chainable(pattern), {
-    empty: () => objectChainable(intersection(pattern, emptyObject())),
+    empty: () => chainable(intersection(pattern, emptyObject())),
   }) as any;
 
 /**
