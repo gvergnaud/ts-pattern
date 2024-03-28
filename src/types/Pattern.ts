@@ -15,7 +15,6 @@ export type MatcherType =
   | 'or'
   | 'and'
   | 'array'
-  | 'object'
   | 'map'
   | 'set'
   | 'select'
@@ -98,7 +97,7 @@ export type CustomP<input, pattern, narrowedOrFn> = Matcher<
 
 export type ArrayP<input, p> = Matcher<input, p, 'array'>;
 
-export type ObjectP<input, p> = Matcher<input, p, 'object'>;
+export type ObjectP<input, p> = Matcher<input, p>;
 
 export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
@@ -194,6 +193,7 @@ export type NullishPattern = Chainable<
   GuardP<unknown, null | undefined>,
   never
 >;
+
 type MergeGuards<input, guard1, guard2> = [guard1, guard2] extends [
   GuardExcludeP<any, infer narrowed1, infer excluded1>,
   GuardExcludeP<any, infer narrowed2, infer excluded2>
@@ -676,7 +676,7 @@ export type ObjectChainable<
        * match(value)
        *  .with(P.object.empty(), () => 'empty object')
        */
-      empty<input>(): ObjectChainable<
+      empty<input>(): Chainable<
         ObjectP<input, Record<string, never>>,
         omitted | 'empty'
       >;

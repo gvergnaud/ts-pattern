@@ -20,6 +20,66 @@ describe('Object', () => {
     expect(res).toEqual('not found');
   });
 
+  it('when input is a Function, it should not match as an exact object', () => {
+    const fn = () => () => {};
+
+    const res = match(fn())
+      .with(P.object, (obj) => {
+        type t = Expect<Equal<typeof obj, () => void>>;
+        return 'not found';
+      })
+      .otherwise(() => 'not found');
+    expect(res).toEqual('not found');
+  })
+
+  it('when input is a Number (a primitive value), it should not be matched as an exact object', () => {
+    const fn = () => 1_000_000;
+
+    const res = match(fn())
+      .with(P.object, (obj) => {
+        type t = Expect<Equal<typeof obj, number>>;
+        return 'not found';
+      })
+      .otherwise(() => 'not found');
+    expect(res).toEqual('not found');
+  })
+
+  it('when input is a String (a primitive value), it should not be matched as an exact object', () => {
+    const fn = () => 'hello';
+
+    const res = match(fn())
+      .with(P.object, (obj) => {
+        type t = Expect<Equal<typeof obj, string>>;
+        return 'not found';
+      })
+      .otherwise(() => 'not found');
+    expect(res).toEqual('not found');
+  })
+
+  it('when input is a Boolean (a primitive value), it should not be matched as an exact object', () => {
+    const fn = () => true;
+
+    const res = match(fn())
+      .with(P.object, (obj) => {
+        type t = Expect<Equal<typeof obj, boolean>>;
+        return 'not found';
+      })
+      .otherwise(() => 'not found');
+    expect(res).toEqual('not found');
+  })
+
+  it('when input is Null, it should not be matched as an exact object', () => {
+    const fn = () => null;
+
+    const res = match(fn())
+      .with(P.object, (obj) => {
+        type t = Expect<Equal<typeof obj, null>>;
+        return 'not found';
+      })
+      .otherwise(() => 'not found');
+    expect(res).toEqual('not found');
+  })
+
   it('should match object with nested objects', () => {
     const res = match({ x: { y: 1 } })
       .with({ x: { y: 1 } }, (obj) => {
@@ -45,6 +105,7 @@ describe('Object', () => {
         return 'no';
       })
       .exhaustive();
+
     expect(res).toEqual('yes');
   });
 
@@ -64,7 +125,7 @@ describe('Object', () => {
     expect(res).toEqual('yes');
   });
 
-  it('should match object with optional properties', () => {
+  it('should properly match an object against the P.object pattern, even with optional properties', () => {
     const res = match({ x: 1 })
       .with(P.object.empty(), (obj) => {
         type t = Expect<Equal<typeof obj, { readonly x: 1; }>>;
