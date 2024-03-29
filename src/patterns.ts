@@ -1138,7 +1138,7 @@ const emptyObject = <input>(): GuardExcludeP<input, object, never> => when(
 
 const objectChainable = <pattern extends Matcher<any, any, any, any, any>>(
   pattern: pattern
-): ObjectChainable<pattern> =>
+): ObjectChainable<pattern> => 
   Object.assign(chainable(pattern), {
     empty: () => chainable(intersection(pattern, emptyObject())),
   }) as any;
@@ -1153,4 +1153,4 @@ const objectChainable = <pattern extends Matcher<any, any, any, any, any>>(
  * match(value)
  *  .with(P.object.empty(), () => 'will match on empty objects')
  **/
-export const object: ObjectChainable<any> = objectChainable(when(isObject));
+export const object: ObjectChainable<GuardP<unknown, object>> = objectChainable(when(isObject));

@@ -117,7 +117,7 @@ describe('Object', () => {
         return 'yes';
       })
       .with(P.object, (obj) => {
-        type t = Expect<Equal<typeof obj, never>>;
+        type t = Expect<Equal<typeof obj, {}>>;
 
         return 'no';
       })
@@ -132,7 +132,9 @@ describe('Object', () => {
         return 'no';
       })
       .with(P.object, (obj) => {
-        type t = Expect<Equal<typeof obj, never>>;
+        type t = Expect<Equal<typeof obj, {
+          readonly x: 1;
+      }>>;
         return 'yes';
       })
       .exhaustive();
