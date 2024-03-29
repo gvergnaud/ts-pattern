@@ -674,9 +674,9 @@ export type ObjectChainable<
        *  .with(P.object.empty(), () => 'empty object')
        */
       empty<input>(): Chainable<
-        ObjectP<input, Record<string, never>>,
+        GuardExcludeP<input, {}, never>,
         omitted | 'empty'
-      >;
+    >;
     },
     omitted
   >;
