@@ -34,6 +34,7 @@ import {
   StringChainable,
   ArrayChainable,
   Variadic,
+  NonNullablePattern,
 } from './types/Pattern';
 
 export type { Pattern, Fn as unstable_Fn };
@@ -634,6 +635,10 @@ function isNullish<T>(x: T | null | undefined): x is null | undefined {
   return x === null || x === undefined;
 }
 
+function isNonNullable(x: unknown): x is {} {
+  return x !== null && x !== undefined;
+}
+
 type AnyConstructor = abstract new (...args: any[]) => any;
 
 function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
@@ -928,7 +933,7 @@ export const number: NumberPattern = numberChainable(when(isNumber));
  *
  * @example
  *  match(value)
- *   .with(P.bigint.between(0, 10), () => '0 <= numbers <= 10')
+ *   .with(P.bigint.between(0, 10), () => '0 <= bigints <= 10')
  */
 const betweenBigInt = <
   input,
@@ -947,7 +952,7 @@ const betweenBigInt = <
  *
  * @example
  *  match(value)
- *   .with(P.bigint.lt(10), () => 'numbers < 10')
+ *   .with(P.bigint.lt(10), () => 'bigints < 10')
  */
 const ltBigInt = <input, const max extends bigint>(
   max: max
@@ -961,7 +966,7 @@ const ltBigInt = <input, const max extends bigint>(
  *
  * @example
  *  match(value)
- *   .with(P.bigint.gt(10), () => 'numbers > 10')
+ *   .with(P.bigint.gt(10), () => 'bigints > 10')
  */
 const gtBigInt = <input, const min extends bigint>(
   min: min
@@ -1072,9 +1077,19 @@ export const symbol: SymbolPattern = chainable(when(isSymbol));
  * [Read the documentation for `P.nullish` on GitHub](https://github.com/gvergnaud/ts-pattern#nullish-wildcard)
  *
  * @example
- *   .with(P.nullish, () => 'will match on null or undefined')
+ *   .with(P.nullish, (x) => `${x} is null or undefined`)
  */
 export const nullish: NullishPattern = chainable(when(isNullish));
+
+/**
+ * `P.nonNullable` is a wildcard pattern, matching everything except **null** or **undefined**.
+ *
+ * [Read the documentation for `P.nonNullable` on GitHub](https://github.com/gvergnaud/ts-pattern#nonNullable-wildcard)
+ *
+ * @example
+ *   .with(P.nonNullable, (x) => `${x} isn't null nor undefined`)
+ */
+export const nonNullable: NonNullablePattern = chainable(when(isNonNullable));
 
 /**
  * `P.instanceOf(SomeClass)` is a pattern matching instances of a given class.

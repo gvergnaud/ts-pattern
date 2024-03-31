@@ -56,6 +56,27 @@ describe('wildcards', () => {
     expect(res2).toEqual(true);
   });
 
+  it('should match nonNullable wildcard', () => {
+    type Input = string | number | boolean | null | undefined;
+    const res = match<Input>(false)
+      .with(P.nonNullable, (x) => {
+        type t = Expect<Equal<typeof x, string | number | boolean>>;
+        return true;
+      })
+      .otherwise(() => false);
+
+    const res2 = match<0 | 1 | 2 | null>(0)
+      .with(P.nonNullable, (x) => {
+        type t = Expect<Equal<typeof x, 0 | 1 | 2>>;
+        return true;
+      })
+      .with(null, () => false)
+      .exhaustive();
+
+    expect(res).toEqual(true);
+    expect(res2).toEqual(true);
+  });
+
   it('should match String, Number and Boolean wildcards', () => {
     // Will be { id: number, title: string } | { errorMessage: string }
     let httpResult = {

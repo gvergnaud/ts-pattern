@@ -1,12 +1,7 @@
 import type * as symbols from '../internals/symbols';
-import {
-  LeastUpperBound,
-  MergeUnion,
-  Primitives,
-  WithDefault,
-} from './helpers';
+import { MergeUnion, Primitives, WithDefault } from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
-import { matcher, narrow } from '../patterns';
+import { matcher } from '../patterns';
 import { ExtractPreciseValue } from './ExtractPreciseValue';
 
 export type MatcherType =
@@ -191,6 +186,8 @@ export type NullishPattern = Chainable<
   GuardP<unknown, null | undefined>,
   never
 >;
+
+export type NonNullablePattern = Chainable<GuardP<unknown, {}>, never>;
 
 type MergeGuards<input, guard1, guard2> = [guard1, guard2] extends [
   GuardExcludeP<any, infer narrowed1, infer excluded1>,
