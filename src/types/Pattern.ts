@@ -159,10 +159,12 @@ type KnownPatternInternal<
 > =
   | primitives
   | PatternMatcher<a>
-  | ([objs] extends [never] ? never : ObjectPattern<Readonly<MergeUnion<objs>>>)
+  | ([objs] extends [never]
+      ? never
+      : ObjectLiteralPattern<Readonly<MergeUnion<objs>>>)
   | ([arrays] extends [never] ? never : ArrayPattern<arrays>);
 
-type ObjectPattern<a> =
+type ObjectLiteralPattern<a> =
   | {
       readonly [k in keyof a]?: Pattern<a[k]>;
     }
@@ -186,6 +188,11 @@ export type BigIntPattern = BigIntChainable<GuardP<unknown, bigint>, never>;
 export type SymbolPattern = Chainable<GuardP<unknown, symbol>, never>;
 export type NullishPattern = Chainable<
   GuardP<unknown, null | undefined>,
+  never
+>;
+export type ObjectPattern = ObjectChainable<GuardP<unknown, object>, never>;
+export type EmptyObjectPattern = Chainable<
+  GuardExcludeP<unknown, object, never>,
   never
 >;
 
@@ -665,18 +672,15 @@ export type ObjectChainable<
   Omit<
     {
       /**
-       * `.empty()` matches an empty object.
+       * `P.object.empty()` is a pattern, matching **objects** with no keys.
        *
-       * [Read the documentation for `P.object.empty` on GitHub](https://github.com/gvergnaud/ts-pattern#pobjectempty)
+       * [Read the documentation for `P.object.empty()` on GitHub](https://github.com/gvergnaud/ts-pattern#pobjectempty)
        *
        * @example
-       * match(value)
-       *  .with(P.object.empty(), () => 'empty object')
+       *  match(value)
+       *   .with(P.object.empty(), () => 'will match on empty objects')
        */
-      empty<input>(): Chainable<
-        GuardExcludeP<input, {}, never>,
-        omitted | 'empty'
-    >;
+      empty: () => EmptyObjectPattern;
     },
     omitted
   >;

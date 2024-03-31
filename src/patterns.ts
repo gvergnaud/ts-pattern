@@ -36,6 +36,8 @@ import {
   Variadic,
   NonNullablePattern,
   ObjectChainable,
+  ObjectPattern,
+  EmptyObjectPattern,
 } from './types/Pattern';
 
 export type { Pattern, Fn as unstable_Fn };
@@ -154,6 +156,14 @@ function arrayChainable<pattern extends Matcher<any, any, any, any, any>>(
       arrayChainable(
         key === undefined ? select(pattern) : select(key, pattern)
       ),
+  }) as any;
+}
+
+function objectChainable<pattern extends Matcher<any, any, any, any, any>>(
+  pattern: pattern
+): ObjectChainable<pattern> {
+  return Object.assign(chainable(pattern), {
+    empty: () => emptyObject,
   }) as any;
 }
 
@@ -640,8 +650,15 @@ function isNonNullable(x: unknown): x is {} {
   return x !== null && x !== undefined;
 }
 
-function isObject<T>(x: T | object): x is object {
-  return typeof x === 'object' && !Array.isArray(x) && x !== null;
+function isObject(x: unknown): x is object {
+  return !!x && (typeof x === 'object' || typeof x === 'function');
+}
+
+function isEmptyObject(x: unknown) {
+  if (!x || typeof x !== 'object') return false;
+  if (Array.isArray(x)) return false;
+  for (const _key in x) return false;
+  return true;
 }
 
 type AnyConstructor = abstract new (...args: any[]) => any;
@@ -1097,6 +1114,28 @@ export const nullish: NullishPattern = chainable(when(isNullish));
 export const nonNullable: NonNullablePattern = chainable(when(isNonNullable));
 
 /**
+ * `P.object.empty()` is a pattern, matching **objects** with no keys.
+ *
+ * [Read the documentation for `P.object.empty()` on GitHub](https://github.com/gvergnaud/ts-pattern#pobjectempty)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.object.empty(), () => 'will match on empty objects')
+ */
+const emptyObject: EmptyObjectPattern = chainable(when(isEmptyObject));
+
+/**
+ * `P.object` is a wildcard pattern, matching any **object**.
+ *
+ * [Read the documentation for `P.object` on GitHub](https://github.com/gvergnaud/ts-pattern#pobject-predicates)
+ *
+ * @example
+ * match(value)
+ *  .with(P.object, () => 'will match on objects')
+ **/
+export const object: ObjectPattern = objectChainable(when(isObject));
+
+/**
  * `P.instanceOf(SomeClass)` is a pattern matching instances of a given class.
  *
  * [Read the documentation for `P.instanceOf` on GitHub](https://github.com/gvergnaud/ts-pattern#pinstanceof-patterns)
@@ -1130,39 +1169,3 @@ export function shape<input, const pattern extends Pattern<input>>(
 export function shape(pattern: UnknownPattern) {
   return chainable(when(isMatching(pattern)));
 }
-
-/**
- * `P.object.empty()` is a pattern, matching **objects** with no keys.
- *
- * [Read the documentation for `P.object.empty` on GitHub](https://github.com/gvergnaud/ts-pattern#pobjectempty)
- *
- * @example
- *  match(value)
- *   .with(P.object.empty(), () => 'will match on empty objects')
- */
-const emptyObject = <input>(): GuardExcludeP<input, object, never> =>
-  when((value) => {
-    if (!isObject(value)) return false;
-
-    for (var prop in value) return false;
-    return true;
-  });
-
-const objectChainable = <pattern extends Matcher<any, any, any, any, any>>(
-  pattern: pattern
-): ObjectChainable<pattern> => 
-  Object.assign(chainable(pattern), {
-    empty: () => chainable(intersection(pattern, emptyObject())),
-  }) as any;
-
-/**
- * `P.object` is a wildcard pattern, matching any **object**.
- * It lets you call methods like `.empty()`, `.and`, `.or` and `.select()`
- * On structural patterns, like objects and arrays.
- * [Read the documentation for `P.object` on GitHub](https://github.com/gvergnaud/ts-pattern#pobject-predicates)
- *
- * @example
- * match(value)
- *  .with(P.object.empty(), () => 'will match on empty objects')
- **/
-export const object: ObjectChainable<GuardP<unknown, object>> = objectChainable(when(isObject));

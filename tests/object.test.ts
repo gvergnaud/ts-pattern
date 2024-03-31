@@ -1,143 +1,109 @@
-import { Expect, Equal } from '../src/types/helpers';
+import { Expect, Equal, Primitives } from '../src/types/helpers';
 import { P, match } from '../src';
 
 describe('Object', () => {
-  it('should match exact object', () => {
-    const fn = () => 'hello';
+  describe('P.object', () => {
+    describe('exhaustiveness checking', () => {
+      it("shouldn't match primitive types", () => {
+        const fn = (input: Primitives | object) =>
+          match(input)
+            .with(P.object, (obj) => {
+              type t = Expect<Equal<typeof obj, object>>;
+              return 'object';
+            })
+            // @ts-expect-error primitive types aren't assignable to `object`
+            .exhaustive();
 
-    const res = match({ str: fn() })
-      .with({ str: 'world' }, (obj) => {
-        type t = Expect<Equal<typeof obj, { str: 'world' }>>;
-        return obj.str;
-      })
-      .with(P.object, (obj) => {
-        type t = Expect<Equal<typeof obj, {
-          readonly str: string;
-        }>>;
-        return 'not found';
-      })
-      .exhaustive();
-    expect(res).toEqual('not found');
+        expect(fn({ k: 'hello' })).toEqual('object');
+        expect(() => fn('hello')).toThrow();
+      });
+
+      it('should match functions', () => {
+        const fn = (input: () => void) =>
+          match(input)
+            .with(P.object, (obj) => {
+              type t = Expect<Equal<typeof obj, () => void>>;
+              return 'object';
+            })
+            // `() => void` is assignable to `object`
+            .exhaustive();
+        expect(fn(() => {})).toEqual('object');
+      });
+
+      it('should match object literals', () => {
+        const fn = (input: { hello: 'world' }) =>
+          match(input)
+            .with(P.object, (obj) => {
+              type t = Expect<Equal<typeof obj, { hello: 'world' }>>;
+              return 'object';
+            })
+            // `{ hello: 'world' }` is assignable to `object`
+            .exhaustive();
+        expect(fn({ hello: 'world' })).toEqual('object');
+      });
+
+      it('should match arrays', () => {
+        const fn = (input: string[] | [1, 2] | [] | readonly ['a', 'b']) =>
+          match(input)
+            .with(P.object, (obj) => {
+              type t = Expect<
+                Equal<typeof obj, string[] | [1, 2] | [] | readonly ['a', 'b']>
+              >;
+              return 'object';
+            })
+            // all arrays are assignable to `object`
+            .exhaustive();
+        expect(fn(['a', 'b'])).toEqual('object');
+        expect(fn(['aasdasd'])).toEqual('object');
+        expect(fn([])).toEqual('object');
+        expect(fn([1, 2])).toEqual('object');
+      });
+
+      it('should match records', () => {
+        const fn = (input: Record<string, string>) => {
+          match(input)
+            .with(P.object, (obj) => {
+              type t = Expect<Equal<typeof obj, Record<string, string>>>;
+              return 'object';
+            })
+            // records are assignable to `object`.
+            .exhaustive();
+          expect(fn({ a: 'b' })).toEqual('object');
+        };
+      });
+    });
   });
 
-  it('when input is a Function, it should not match as an exact object', () => {
-    const fn = () => () => {};
+  describe('P.object.empty()', () => {
+    it('should only catch the literal `{}`.', () => {
+      const fn = (input: object) =>
+        match(input)
+          .with(P.object.empty(), (obj) => {
+            type t = Expect<Equal<typeof obj, object>>;
+            return 'yes';
+          })
+          // @ts-expect-error: non empty object aren't caught
+          .exhaustive();
+      expect(fn({})).toEqual('yes');
+      expect(() => fn({ hello: 'world' })).toThrow();
+      expect(() => fn(() => {})).toThrow();
+      expect(() => fn([1, 2, 3])).toThrow();
+      expect(() => fn([])).toThrow();
+    });
 
-    const res = match(fn())
-      .with(P.object, (obj) => {
-        type t = Expect<Equal<typeof obj, () => void>>;
-        return 'not found';
-      })
-      .otherwise(() => 'not found');
-    expect(res).toEqual('not found');
-  })
+    it('should not catch the primitive types', () => {
+      const fn = (input: unknown) =>
+        match(input)
+          .with(P.object.empty(), (obj) => {
+            type t = Expect<Equal<typeof obj, object>>;
+            return 'yes';
+          })
+          .otherwise(() => 'no');
 
-  it('when input is a Number (a primitive value), it should not be matched as an exact object', () => {
-    const fn = () => 1_000_000;
-
-    const res = match(fn())
-      .with(P.object, (obj) => {
-        type t = Expect<Equal<typeof obj, number>>;
-        return 'not found';
-      })
-      .otherwise(() => 'not found');
-    expect(res).toEqual('not found');
-  })
-
-  it('when input is a String (a primitive value), it should not be matched as an exact object', () => {
-    const fn = () => 'hello';
-
-    const res = match(fn())
-      .with(P.object, (obj) => {
-        type t = Expect<Equal<typeof obj, string>>;
-        return 'not found';
-      })
-      .otherwise(() => 'not found');
-    expect(res).toEqual('not found');
-  })
-
-  it('when input is a Boolean (a primitive value), it should not be matched as an exact object', () => {
-    const fn = () => true;
-
-    const res = match(fn())
-      .with(P.object, (obj) => {
-        type t = Expect<Equal<typeof obj, boolean>>;
-        return 'not found';
-      })
-      .otherwise(() => 'not found');
-    expect(res).toEqual('not found');
-  })
-
-  it('when input is Null, it should not be matched as an exact object', () => {
-    const fn = () => null;
-
-    const res = match(fn())
-      .with(P.object, (obj) => {
-        type t = Expect<Equal<typeof obj, null>>;
-        return 'not found';
-      })
-      .otherwise(() => 'not found');
-    expect(res).toEqual('not found');
-  })
-
-  it('should match object with nested objects', () => {
-    const res = match({ x: { y: 1 } })
-      .with({ x: { y: 1 } }, (obj) => {
-        type t = Expect<Equal<typeof obj, { readonly x: { readonly y: 1 } }>>;
-        return 'yes';
-      })
-      .with(P.object, (obj) => {
-        type t = Expect<Equal<typeof obj, never>>;
-        return 'no';
-      })
-      .exhaustive();
-    expect(res).toEqual('yes');
-  });
-
-  it('should match object with nested objects and arrays', () => {
-    const res = match({ x: { y: [1] } })
-      .with({ x: { y: [1] } }, (obj) => {
-        type t = Expect<Equal<typeof obj, { x: { y: [1] } }>>;
-        return 'yes';
-      })
-      .with(P.object, (obj) => {
-        type t = Expect<Equal<typeof obj, { readonly x: { readonly y: readonly [1]}}>>;
-        return 'no';
-      })
-      .exhaustive();
-
-    expect(res).toEqual('yes');
-  });
-
-  it('should match empty object', () => {
-    const res = match({})
-      .with(P.object.empty(), (obj) => {
-        type t = Expect<Equal<typeof obj, {}>>;
-
-        return 'yes';
-      })
-      .with(P.object, (obj) => {
-        type t = Expect<Equal<typeof obj, {}>>;
-
-        return 'no';
-      })
-      .exhaustive();
-    expect(res).toEqual('yes');
-  });
-
-  it('should properly match an object against the P.object pattern, even with optional properties', () => {
-    const res = match({ x: 1 })
-      .with(P.object.empty(), (obj) => {
-        type t = Expect<Equal<typeof obj, { readonly x: 1; }>>;
-        return 'no';
-      })
-      .with(P.object, (obj) => {
-        type t = Expect<Equal<typeof obj, {
-          readonly x: 1;
-      }>>;
-        return 'yes';
-      })
-      .exhaustive();
-    expect(res).toEqual('yes');
+      expect(fn({})).toEqual('yes');
+      expect(fn(0)).toEqual('no');
+      expect(fn(0n)).toEqual('no');
+      expect(fn(null)).toEqual('no');
+    });
   });
 });
