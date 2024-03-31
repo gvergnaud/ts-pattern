@@ -3,6 +3,7 @@ import { MergeUnion, Primitives, WithDefault } from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
 import { matcher } from '../patterns';
 import { ExtractPreciseValue } from './ExtractPreciseValue';
+import { InvertPattern } from './InvertPattern';
 
 export type MatcherType =
   | 'not'
@@ -164,7 +165,7 @@ type KnownPatternInternal<
       : ObjectLiteralPattern<Readonly<MergeUnion<objs>>>)
   | ([arrays] extends [never] ? never : ArrayPattern<arrays>);
 
-type ObjectLiteralPattern<a> =
+export type ObjectLiteralPattern<a> =
   | {
       readonly [k in keyof a]?: Pattern<a[k]>;
     }
@@ -681,6 +682,22 @@ export type ObjectChainable<
        *   .with(P.object.empty(), () => 'will match on empty objects')
        */
       empty: () => EmptyObjectPattern;
+
+      /**
+       * `P.object.exact({...})` matching objects that contain exactly the set of defined in the pattern. Objects with additional keys won't match this pattern, even if keys defined in both the pattern and the object match.
+       *
+       * [Read the documentation for `P.object.exact()` on GitHub](https://github.com/gvergnaud/ts-pattern#pobjectexact)
+       *
+       * @example
+       *  match(value)
+       *   .with(
+       *     P.object.exact({ a: P.any }),
+       *     () => 'Objects with a single `a` key that contains anything.'
+       *   )
+       */
+      <input, const pattern extends ObjectLiteralPattern<input>>(
+        pattern: pattern
+      ): Chainable<GuardExcludeP<input, InvertPattern<pattern, input>, never>>;
     },
     omitted
   >;

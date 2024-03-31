@@ -38,6 +38,7 @@ import {
   ObjectChainable,
   ObjectPattern,
   EmptyObjectPattern,
+  ObjectLiteralPattern,
 } from './types/Pattern';
 
 export type { Pattern, Fn as unstable_Fn };
@@ -164,6 +165,7 @@ function objectChainable<pattern extends Matcher<any, any, any, any, any>>(
 ): ObjectChainable<pattern> {
   return Object.assign(chainable(pattern), {
     empty: () => emptyObject,
+    exact: exactObject,
   }) as any;
 }
 
@@ -654,11 +656,15 @@ function isObject(x: unknown): x is object {
   return !!x && (typeof x === 'object' || typeof x === 'function');
 }
 
-function isEmptyObject(x: unknown) {
+function hasExactKeys(keys: Set<PropertyKey>, x: unknown) {
   if (!x || typeof x !== 'object') return false;
   if (Array.isArray(x)) return false;
-  for (const _key in x) return false;
+  for (const key in x) if (!keys.has(key)) return false;
   return true;
+}
+
+function isEmptyObject(x: unknown) {
+  return hasExactKeys(new Set(), x);
 }
 
 type AnyConstructor = abstract new (...args: any[]) => any;
@@ -1123,6 +1129,31 @@ export const nonNullable: NonNullablePattern = chainable(when(isNonNullable));
  *   .with(P.object.empty(), () => 'will match on empty objects')
  */
 const emptyObject: EmptyObjectPattern = chainable(when(isEmptyObject));
+
+/**
+ * `P.object.exact({...})` matching objects that contain exactly the set of defined in the pattern. Objects with additional keys won't match this pattern, even if keys defined in both the pattern and the object match.
+ *
+ * [Read the documentation for `P.object.exact()` on GitHub](https://github.com/gvergnaud/ts-pattern#pobjectexact)
+ *
+ * @example
+ *  match(value)
+ *   .with(
+ *     P.object.exact({ a: P.any }),
+ *     () => 'Objects with a single `a` key that contains anything.'
+ *   )
+ */
+export function exactObject<
+  input,
+  const pattern extends ObjectLiteralPattern<input>
+>(
+  pattern: pattern
+): Chainable<GuardExcludeP<input, InvertPattern<pattern, input>, never>>;
+export function exactObject(pattern: ObjectLiteralPattern<{}>) {
+  const patternKeys = new Set(Object.keys(pattern));
+  return chainable(
+    when((input) => isMatching(pattern) && hasExactKeys(patternKeys, input))
+  );
+}
 
 /**
  * `P.object` is a wildcard pattern, matching any **object**.
