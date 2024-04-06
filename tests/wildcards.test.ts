@@ -84,11 +84,7 @@ describe('wildcards', () => {
       type Input =
         | {
             __typename: 'ValidationRejection';
-            fields: {
-              __typename: 'ValidationFieldError';
-              path: string[];
-              message: string;
-            }[];
+            fields: string[];
           }
         | {
             __typename: 'ValidationRejection';
@@ -106,38 +102,16 @@ describe('wildcards', () => {
           .with(
             { __typename: 'ValidationRejection', fields: P.nonNullable },
             ({ fields }) => {
-              type t = Expect<
-                Equal<
-                  typeof fields,
-                  {
-                    __typename: 'ValidationFieldError';
-                    path: string[];
-                    message: string;
-                  }[]
-                >
-              >;
+              type t = Expect<Equal<typeof fields, string[]>>;
+              return 'matched';
             }
           )
-          .otherwise(() => {});
+          .otherwise(() => 'did not match');
 
-      const fn2 = (data: Input) =>
-        match(data)
-          .with(
-            { __typename: 'ValidationRejection', fields: P.not(P.nullish) },
-            ({ fields }) => {
-              type t = Expect<
-                Equal<
-                  typeof fields,
-                  {
-                    __typename: 'ValidationFieldError';
-                    path: string[];
-                    message: string;
-                  }[]
-                >
-              >;
-            }
-          )
-          .otherwise(() => {});
+      expect(fn({ __typename: 'ValidationRejection' })).toBe('did not match');
+      expect(fn({ __typename: 'ValidationRejection', fields: [] })).toBe(
+        'matched'
+      );
     });
   });
 

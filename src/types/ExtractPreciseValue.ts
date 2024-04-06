@@ -41,7 +41,7 @@ export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
         ? never
         : // An empty object `{}` in a pattern means
         // that this key must be non-nullable.
-        // If find a key in `b` that doesn't exist in `a`
+        // If we find a key in `b` that doesn't exist in `a`
         // and that contains `{}`, then the pattern does not match.
         Contains<Omit<b, keyof a>, {}> extends true
         ? never

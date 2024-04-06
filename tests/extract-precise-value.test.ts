@@ -1,4 +1,6 @@
 import { ExtractPreciseValue } from '../src/types/ExtractPreciseValue';
+import { InvertPattern } from '../src/types/InvertPattern';
+import { NonNullablePattern } from '../src/types/Pattern';
 import { Expect, Equal } from '../src/types/helpers';
 import { AsyncResult, Event, Option, State } from './types-catalog/utils';
 
@@ -289,6 +291,55 @@ describe('ExtractPreciseValue', () => {
           >
         >
       ];
+    });
+  });
+
+  describe('non-nullable patterns', () => {
+    type nonNullable = InvertPattern<NonNullablePattern, unknown>;
+
+    it('should exclude objects if the absent', () => {
+      type res1 = ExtractPreciseValue<{ a: string }, { b: nonNullable }>;
+      type test1 = Expect<Equal<res1, never>>;
+
+      type res2 = ExtractPreciseValue<
+        { a: string } | { b: number },
+        { b: nonNullable }
+      >;
+      type test2 = Expect<Equal<res2, { b: number }>>;
+
+      type res3 = ExtractPreciseValue<
+        { a: string } | { b: number } | { b: string; c: boolean },
+        { b: nonNullable }
+      >;
+      type test3 = Expect<
+        Equal<res3, { b: number } | { b: string; c: boolean }>
+      >;
+    });
+
+    it('should keep empty objects if they come from the input type', () => {
+      type res1 = ExtractPreciseValue<
+        { a: string } | { b: {} },
+        { b: nonNullable }
+      >;
+      type test1 = Expect<Equal<res1, { b: {} }>>;
+    });
+
+    it('should exclude objects even if the non-nullable key is deeply nested', () => {
+      type res1 = ExtractPreciseValue<{ a: number }, { b: { c: nonNullable } }>;
+      type test1 = Expect<Equal<res1, never>>;
+
+      type res2 = ExtractPreciseValue<
+        | { nested: { a: string } }
+        | { nested: { b: number } }
+        | { nested: { b: string; c: boolean } },
+        { nested: { b: nonNullable } }
+      >;
+      type test2 = Expect<
+        Equal<
+          res2,
+          { nested: { b: number } } | { nested: { b: string; c: boolean } }
+        >
+      >;
     });
   });
 
