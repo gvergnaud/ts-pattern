@@ -1,0 +1,37 @@
+body {
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.App {
+  margin: 10px;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+input {
+  display: block;
+  padding: 10px 15px;
+  width: 100%;
+}
+
+img {
+  max-width: 100%;
+}
+
+.img-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.img-grid > *:not(:first-child) {
+  padding-top: 10px;
+}
+
+.img-grid > *:not(:first-child) {
+  padding-left: 10px;
+}
