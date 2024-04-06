@@ -59,7 +59,9 @@ export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
       : Compute<
           // Keep other properties of `a`
           {
-            [k in Exclude<keyof a, keyof b>]: a[k];
+            // `in keyof a as ...` preserves property modifiers,
+            // unlike `in keyof Exclude<keyof a, keyof b>`.
+            [k in keyof a as k extends keyof b ? never : k]: a[k];
           } & {
             // use `b` to extract precise values on `a`.
             // This has the effect of preserving the optional
