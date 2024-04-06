@@ -2,7 +2,7 @@ import type { Override } from './Pattern';
 import type {
   BuiltInObjects,
   Compute,
-  ExcludeObjectIfContainsNever,
+  Contains,
   IsPlainObject,
   IsReadonlyArray,
   LeastUpperBound,
@@ -37,27 +37,44 @@ export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
     ? a extends b
       ? a
       : b extends a
-      ? [Exclude<keyof a, keyof b>] extends [never]
+      ? Contains<b, never> extends true
+        ? never
+        : // An empty object `{}` in a pattern means
+        // that this key must be non-nullable.
+        // If we find a key in `b` that doesn't exist in `a`
+        // and that contains `{}`, then the pattern does not match.
+        Contains<Omit<b, keyof a>, {}> extends true
+        ? never
+        : // If values have no keys in common, return `b`
+        [Exclude<keyof a, keyof b>] extends [never]
         ? b
-        : Compute<ExcludeObjectIfContainsNever<b> & Omit<a, keyof b>>
+        : // Otherwise return `b` with keys of `a`
+          // that do not exist on `b`.
+          // It can only be optional properties,
+          // otherwise `b extends a` wouldn't
+          // not have passed.
+          Compute<b & Omit<a, keyof b>>
       : [keyof a & keyof b] extends [never]
       ? never
-      : ExcludeObjectIfContainsNever<
-          Compute<
-            // Keep other properties of `a`
-            {
-              [k in Exclude<keyof a, keyof b>]: a[k];
-            } & {
-              // use `b` to extract precise values on `a`.
-              // This has the effect of preserving the optional
-              // property modifier (?:) of b in the output type.
-              [k in keyof b]: k extends keyof a
-                ? ExtractPreciseValue<a[k], b[k]>
-                : b[k];
-            }
-          >,
-          keyof b & string
-        >
+      : Compute<
+          // Keep other properties of `a`
+          {
+            // `in keyof a as ...` preserves property modifiers,
+            // unlike `in keyof Exclude<keyof a, keyof b>`.
+            [k in keyof a as k extends keyof b ? never : k]: a[k];
+          } & {
+            // use `b` to extract precise values on `a`.
+            // This has the effect of preserving the optional
+            // property modifier (?:) of b in the output type.
+            [k in keyof b]: k extends keyof a
+              ? ExtractPreciseValue<a[k], b[k]>
+              : b[k];
+          }
+        > extends infer result
+      ? Contains<Pick<result, keyof result & keyof b>, never> extends true
+        ? never
+        : result
+      : never
     : LeastUpperBound<a, b>
   : LeastUpperBound<a, b>;
 
