@@ -1,7 +1,6 @@
 import {
   Drop,
   Equal,
-  ExcludeIfContainsNever,
   Expect,
   Iterator,
   LeastUpperBound,
@@ -72,40 +71,6 @@ describe('helpers', () => {
       Expect<Equal<UpdateAt<readonly [1, 2, 3], Iterator<3>, true>, [1, 2, 3]>>,
       Expect<Equal<UpdateAt<readonly [1, 2, 3], Iterator<4>, true>, [1, 2, 3]>>
     ];
-  });
-
-  describe('ExcludeIfContainsNever', () => {
-    it('should work with objects and tuples', () => {
-      type cases = [
-        Expect<
-          Equal<
-            ExcludeIfContainsNever<
-              { kind: 'some'; value: string } | { kind: never },
-              { kind: 'some' }
-            >,
-            { kind: 'some'; value: string }
-          >
-        >,
-        Expect<
-          Equal<
-            ExcludeIfContainsNever<
-              [{ kind: 'some'; value: string } | never],
-              [{ kind: 'some' }]
-            >,
-            [{ kind: 'some'; value: string }]
-          >
-        >,
-        Expect<
-          Equal<
-            ExcludeIfContainsNever<
-              [{ kind: 'some'; value: string }, never],
-              [{ kind: 'some' }, unknown]
-            >,
-            never
-          >
-        >
-      ];
-    });
   });
 
   describe('LeastUpperBound', () => {

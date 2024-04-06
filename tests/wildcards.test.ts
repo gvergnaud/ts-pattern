@@ -1,6 +1,8 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, P } from '../src';
 import { Blog } from './types-catalog/utils';
+import { InvertPattern } from '../src/types/InvertPattern';
+import { ExtractPreciseValue } from '../src/types/ExtractPreciseValue';
 
 describe('wildcards', () => {
   it('should match String wildcards', () => {
@@ -56,25 +58,87 @@ describe('wildcards', () => {
     expect(res2).toEqual(true);
   });
 
-  it('should match nonNullable wildcard', () => {
-    type Input = string | number | boolean | null | undefined;
-    const res = match<Input>(false)
-      .with(P.nonNullable, (x) => {
-        type t = Expect<Equal<typeof x, string | number | boolean>>;
-        return true;
-      })
-      .otherwise(() => false);
+  describe('P.nonNullable', () => {
+    it('should narrow primitive types correctly', () => {
+      type Input = string | number | boolean | null | undefined;
+      const res = match<Input>(false)
+        .with(P.nonNullable, (x) => {
+          type t = Expect<Equal<typeof x, string | number | boolean>>;
+          return true;
+        })
+        .otherwise(() => false);
 
-    const res2 = match<0 | 1 | 2 | null>(0)
-      .with(P.nonNullable, (x) => {
-        type t = Expect<Equal<typeof x, 0 | 1 | 2>>;
-        return true;
-      })
-      .with(null, () => false)
-      .exhaustive();
+      const res2 = match<0 | 1 | 2 | null>(0)
+        .with(P.nonNullable, (x) => {
+          type t = Expect<Equal<typeof x, 0 | 1 | 2>>;
+          return true;
+        })
+        .with(null, () => false)
+        .exhaustive();
 
-    expect(res).toEqual(true);
-    expect(res2).toEqual(true);
+      expect(res).toEqual(true);
+      expect(res2).toEqual(true);
+    });
+
+    it('should narrow object types correctly', () => {
+      type Input =
+        | {
+            __typename: 'ValidationRejection';
+            fields: {
+              __typename: 'ValidationFieldError';
+              path: string[];
+              message: string;
+            }[];
+          }
+        | {
+            __typename: 'ValidationRejection';
+          };
+
+      const pattern = {
+        __typename: 'ValidationRejection',
+        fields: P.nonNullable,
+      } as const;
+      type X = InvertPattern<typeof pattern, Input>;
+      type Y = ExtractPreciseValue<Input, X>;
+
+      const fn = (data: Input) =>
+        match(data)
+          .with(
+            { __typename: 'ValidationRejection', fields: P.nonNullable },
+            ({ fields }) => {
+              type t = Expect<
+                Equal<
+                  typeof fields,
+                  {
+                    __typename: 'ValidationFieldError';
+                    path: string[];
+                    message: string;
+                  }[]
+                >
+              >;
+            }
+          )
+          .otherwise(() => {});
+
+      const fn2 = (data: Input) =>
+        match(data)
+          .with(
+            { __typename: 'ValidationRejection', fields: P.not(P.nullish) },
+            ({ fields }) => {
+              type t = Expect<
+                Equal<
+                  typeof fields,
+                  {
+                    __typename: 'ValidationFieldError';
+                    path: string[];
+                    message: string;
+                  }[]
+                >
+              >;
+            }
+          )
+          .otherwise(() => {});
+    });
   });
 
   it('should match String, Number and Boolean wildcards', () => {

@@ -119,9 +119,11 @@ describe('type errors', () => {
   it("if a pattern is any, the outer expression shouldn't throw a type error", () => {
     const anyVar = null as any;
 
-    match({ a: 'a' })
+    const input = { a: 'a' };
+
+    match(input)
       .with({ a: anyVar }, (x) => {
-        type t = Expect<Equal<typeof x, { a: never }>>;
+        type t = Expect<Equal<typeof x, typeof input>>;
         return 'Ok';
       })
       .otherwise(() => 'ko');
