@@ -1547,7 +1547,7 @@ console.log(isMatching(P.object.empty(), undefined)); // false
 
 ### `P.object.exact({...})`
 
-`P.object.exact({...})` matches objects that contain exactly the set of defined in the pattern.
+`P.object.exact({...})` matches objects that contain exactly the set of properties defined in the pattern.
 
 ```ts
 import { match, P } from 'ts-pattern';
