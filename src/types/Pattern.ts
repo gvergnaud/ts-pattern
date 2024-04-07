@@ -171,6 +171,10 @@ export type ObjectLiteralPattern<a> =
     }
   | never;
 
+export type ObjectExactPattern<a> = {
+  readonly [k in keyof a]: Pattern<a[k]>;
+};
+
 type ArrayPattern<a> = a extends readonly (infer i)[]
   ? a extends readonly [any, ...any]
     ? { readonly [index in keyof a]: Pattern<a[index]> }
@@ -695,7 +699,7 @@ export type ObjectChainable<
        *     () => 'Objects with a single `a` key that contains anything.'
        *   )
        */
-      <input, const pattern extends ObjectLiteralPattern<input>>(
+      exact<input, const pattern extends ObjectExactPattern<input>>(
         pattern: pattern
       ): Chainable<GuardExcludeP<input, InvertPattern<pattern, input>, never>>;
     },

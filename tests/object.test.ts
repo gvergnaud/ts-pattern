@@ -106,4 +106,49 @@ describe('Object', () => {
       expect(fn(null)).toEqual('no');
     });
   });
+
+  describe('P.object.exact({...})', () => {
+    it('should only catch exact match.', () => {
+      const fn = (input: object) =>
+        match(input)
+          .with(P.object.exact({ a: P.any }), (obj) => {
+            type t = Expect<Equal<typeof obj, { a: unknown }>>;
+            return 'yes';
+          })
+          .otherwise(() => 'no');
+
+      expect(fn({ a: [] })).toEqual('yes');
+      expect(fn({ a: null })).toEqual('yes');
+      expect(fn({ a: undefined })).toEqual('yes');
+      expect(fn({ a: 5 })).toEqual('yes');
+      expect(fn({ a: undefined, b: undefined })).toEqual('no');
+      expect(fn({})).toEqual('no');
+      expect(fn({ hello: 'world' })).toEqual('no');
+      expect(fn(() => {})).toEqual('no');
+      expect(fn([1, 2, 3])).toEqual('no');
+      expect(fn([])).toEqual('no');
+
+      const fn2 = (input: object) =>
+        match(input)
+          .with(P.object.exact({ a: { b: P.any } }), (obj) => {
+            type t = Expect<Equal<typeof obj, { a: { b: unknown } }>>;
+            return 'yes';
+          })
+          .otherwise(() => 'no');
+
+      expect(fn2({ a: { b: [] } })).toEqual('yes');
+      expect(fn2({ a: null })).toEqual('no');
+      expect(fn2({ a: { b: null } })).toEqual('yes');
+      expect(fn2({ a: undefined })).toEqual('no');
+      expect(fn2({ a: { b: undefined } })).toEqual('yes');
+      expect(fn2({ a: 5 })).toEqual('no');
+      expect(fn2({ a: { b: 5 } })).toEqual('yes');
+      expect(fn2({ a: undefined, b: undefined })).toEqual('no');
+      expect(fn2({})).toEqual('no');
+      expect(fn2({ hello: 'world' })).toEqual('no');
+      expect(fn2(() => {})).toEqual('no');
+      expect(fn2([1, 2, 3])).toEqual('no');
+      expect(fn2([])).toEqual('no');
+    });
+  });
 });

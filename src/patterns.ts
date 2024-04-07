@@ -656,10 +656,13 @@ function isObject(x: unknown): x is object {
   return !!x && (typeof x === 'object' || typeof x === 'function');
 }
 
-function hasExactKeys(keys: Set<PropertyKey>, x: unknown) {
+function hasExactKeys(keys: Set<string>, x: unknown) {  
   if (!x || typeof x !== 'object') return false;
+  const xKeys = new Set(Object.keys(x));
   if (Array.isArray(x)) return false;
+  if(xKeys.size !== keys.size) return false;
   for (const key in x) if (!keys.has(key)) return false;
+  for (const key in keys) if (!xKeys.has(key)) return false;
   return true;
 }
 
