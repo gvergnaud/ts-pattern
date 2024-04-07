@@ -1545,6 +1545,23 @@ console.log(isMatching(P.object.empty(), null)); // false
 console.log(isMatching(P.object.empty(), undefined)); // false
 ```
 
+### `P.object.exact({...})`
+
+`P.object.exact({...})` matches objects that contain exactly the set of defined in the pattern.
+
+```ts
+import { match, P } from 'ts-pattern';
+
+const fn = (input: unknown) =>
+  match(input)
+    .with(P.object.exact({ a: P.any }), () => 'Objects with a single `a` key that contains anything.')
+    .otherwise(() => '❌');
+
+console.log(fn({})); // ❌
+console.log(fn({ a: 1 })); // ✅
+console.log(fn({ a: 1, b: 2 })); // ❌
+```
+
 ## Types
 
 ### `P.infer`

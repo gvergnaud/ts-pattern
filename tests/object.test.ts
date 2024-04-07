@@ -106,4 +106,22 @@ describe('Object', () => {
       expect(fn(null)).toEqual('no');
     });
   });
+  
+  describe('P.object.exact({...})', () => {
+    it('should only catch the literal `{}`.', () => {
+      const fn = (input: object) =>
+        match(input)
+          .with(P.object.exact({ a: P.any }), (obj) => {
+            type t = Expect<Equal<typeof obj, { a: unknown }>>;
+            return 'yes';
+          })
+          // @ts-expect-error: non empty object aren't caught
+          .exhaustive();
+      expect(fn({})).toEqual('yes');
+      expect(() => fn({ hello: 'world' })).toThrow();
+      expect(() => fn(() => {})).toThrow();
+      expect(() => fn([1, 2, 3])).toThrow();
+      expect(() => fn([])).toThrow();
+    });
+  });
 });

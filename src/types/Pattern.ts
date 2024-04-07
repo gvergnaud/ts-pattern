@@ -695,7 +695,7 @@ export type ObjectChainable<
        *     () => 'Objects with a single `a` key that contains anything.'
        *   )
        */
-      <input, const pattern extends ObjectLiteralPattern<input>>(
+      exact<input, const pattern extends ObjectLiteralPattern<input>>(
         pattern: pattern
       ): Chainable<GuardExcludeP<input, InvertPattern<pattern, input>, never>>;
     },
