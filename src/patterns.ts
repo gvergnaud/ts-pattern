@@ -318,14 +318,16 @@ const setEvery = <T>(set: Set<T>, predicate: (value: T) => boolean) => {
 };
 
 /**
- * `P.set(subpattern)` takes a sub pattern and returns a pattern that matches
- * sets if all their elements match the sub pattern.
+ * `P.map(keyPattern, valuePattern)` takes a subpattern to match against the
+ * key, a subpattern to match against the value and returns a pattern that
+ * matches on maps where all elements inside the map match those two
+ * subpatterns.
  *
- * [Read `P.set` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#pset-patterns)
+ * [Read `P.map` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#pmap-patterns)
  *
  * @example
  *  match(value)
- *   .with({ users: P.set(P.string) }, () => 'will match Set<string>')
+ *   .with({ users: P.map(P.map(P.string, P.number)) }, (map) => `map's type is Map<string, number>`)
  */
 export function map<input>(): Chainable<MapP<input, unknown, unknown>>;
 export function map<
