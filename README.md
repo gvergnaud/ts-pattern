@@ -114,7 +114,6 @@ TS-Pattern assumes that [Strict Mode](https://www.typescriptlang.org/tsconfig#st
   - [`.returnType`](#returntype)
   - [`.exhaustive`](#exhaustive)
   - [`.otherwise`](#otherwise)
-  - [`.run`](#run)
   - [`isMatching`](#ismatching)
   - [Patterns](#patterns)
     - [Literals](#literals)
@@ -1076,8 +1075,7 @@ const output = match({ score: 10 })
     (input) => '😐' // input is inferred as { score: 5 }
   )
   .with({ score: P.when((score) => score < 5) }, () => '😞')
-  .with({ score: P.when((score) => score > 5) }, () => '🙂')
-  .run();
+  .otherwise(() => '🙂');
 
 console.log(output);
 // => '🙂'
@@ -1098,7 +1096,7 @@ const toNumber = (input: Input) =>
     .with(P.not(P.boolean), (n) => n) // n: number
     .with(true, () => 1)
     .with(false, () => 0)
-    .run();
+    .exhaustive();
 
 console.log(toNumber(2));
 // => 2
@@ -1642,9 +1640,9 @@ const fn = (org: Plan, user: Permission): string =>
     .exhaustive();
 ```
 
-## Want to learn how TS-Pattern is built?
+## Want to learn how to build awesome, strongly-typed libraries?
 
-Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), an online course to learn how to take full advantage of the most advanced features of TypeScript!
+Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), my online course teaching how to take full advantage of the most advanced features of TypeScript. You will learn everything there is to know to build awesome libraries with great developer experiences and become a real TypeScript expert in the process!
 
 ## Inspirations
 
