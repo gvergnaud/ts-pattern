@@ -103,6 +103,10 @@ TS-Pattern assumes that [Strict Mode](https://www.typescriptlang.org/tsconfig#st
 - ✅ Full support
 - ❌ Not supported
 
+## Want to learn how to build awesome, strongly-typed libraries?
+
+Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), my online course teaching how to take full advantage of the most advanced features of TypeScript. You will learn everything there is to know to build awesome libraries with great developer experiences and become a real TypeScript expert in the process!
+
 # Documentation
 
 - [Code Sandbox Examples](#code-sandbox-examples)
@@ -1639,10 +1643,6 @@ const fn = (org: Plan, user: Permission): string =>
     // because the `['pro', 'editor']` case isn't handled.
     .exhaustive();
 ```
-
-## Want to learn how to build awesome, strongly-typed libraries?
-
-Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), my online course teaching how to take full advantage of the most advanced features of TypeScript. You will learn everything there is to know to build awesome libraries with great developer experiences and become a real TypeScript expert in the process!
 
 ## Inspirations
 
