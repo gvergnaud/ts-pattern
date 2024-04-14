@@ -139,7 +139,7 @@ export type FindUnions<
     ? FindUnions<a1, p1, [...path, 0]>
     : /**
      * Special case when matching with a variadic tuple on a regular array.
-     * in this case we turne the input array `A[]` into `[] | [A, ...A[]]`
+     * in this case we turn the input array `A[]` into `[] | [A, ...A[]]`
      * to remove one of these cases during DeepExclude.
      */
     p extends readonly [] | readonly [any, ...any] | readonly [...any, any]
