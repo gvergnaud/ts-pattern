@@ -10,8 +10,9 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
-**Code Sandbox with a minimal reproduction case**
-https://codesandbox.io/s/<your-sandbox-id>
+**TypeScript playground with a minimal reproduction case**
+
+Exameple: [Playground](https://www.typescriptlang.org/play/?#code/JYWwDg9gTgLgBAbziAhjAxgCwDRwApwC+cAZlBCHAOQwDOAtGGjAKZQB2VAUFwPS9wA6lGCs4ATwgBXKHCgsw5OOhS0WAOi5A)
 
 **Versions**
 - TypeScript version: x.x.x
