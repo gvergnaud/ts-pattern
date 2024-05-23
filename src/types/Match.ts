@@ -193,7 +193,7 @@ export type Match<
    * */
   exhaustive: DeepExcludeAll<i, handledCases> extends infer remainingCases
     ? [remainingCases] extends [never]
-      ? () => PickReturnValue<o, inferredOutput>
+      ? Exhaustive<o, inferredOutput>
       : NonExhaustiveError<remainingCases>
     : never;
 
@@ -239,4 +239,15 @@ type DeepExcludeAll<a, tupleList extends any[]> = [a] extends [never]
 
 type MakeTuples<ps extends readonly any[], value> = {
   -readonly [index in keyof ps]: InvertPatternForExclude<ps[index], value>;
+};
+
+/**
+ * The type of an overloaded function for `.exhaustive`,
+ * permitting calling it with out without a catchall function.
+ */
+type Exhaustive<output, inferredOutput> = {
+  (): PickReturnValue<output, inferredOutput>;
+  <otherOutput>(
+    handler: (unmatchedValue: unknown) => PickReturnValue<output, otherOutput>
+  ): PickReturnValue<output, Union<inferredOutput, otherOutput>>;
 };
