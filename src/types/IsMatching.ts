@@ -65,6 +65,11 @@ export type IsMatching<a, b> = true extends IsUnion<a> | IsUnion<b>
   // match everything.
   unknown extends b
   ? true
+  : // Special case for `{}`, because this is the type
+  // of the inverted `P.nonNullable` wildcard pattern,
+  // which should match all objects.
+  {} extends b
+  ? true
   : b extends Primitives
   ? // if the pattern is a primitive, we want to check if there is
     // an overlap between a and b!
