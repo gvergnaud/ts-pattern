@@ -243,7 +243,9 @@ type MakeTuples<ps extends readonly any[], value> = {
 
 /**
  * The type of an overloaded function for `.exhaustive`,
- * permitting calling it with out without a catchall function.
+ * permitting calling it with or without a catch-all handler function.
+ *
+ * By default, TS-Pattern will throw an error if a runtime value isn't handled.
  */
 type Exhaustive<output, inferredOutput> = {
   (): PickReturnValue<output, inferredOutput>;
