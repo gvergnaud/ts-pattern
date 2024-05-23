@@ -113,6 +113,28 @@ describe('wildcards', () => {
         'matched'
       );
     });
+
+    it('combined with exhaustive, it should consider all values except null and undefined to be handled', () => {
+      const fn1 = (input: string | number | null | undefined) =>
+        match(input)
+          .with(P.nonNullable, (x) => {
+            type t = Expect<Equal<typeof x, string | number>>;
+          })
+          .with(P.nullish, () => {})
+          // should type-check
+          .exhaustive();
+
+      const fn2 = (input: { nested: string | number | null | undefined }) =>
+        match(input)
+          .with({ nested: P.nonNullable }, (x) => {
+            type t = Expect<Equal<typeof x, { nested: string | number }>>;
+          })
+          .with({ nested: P.nullish }, (x) => {
+            type t = Expect<Equal<typeof x, { nested: null | undefined }>>;
+          })
+          // should type-check
+          .exhaustive();
+    });
   });
 
   it('should match String, Number and Boolean wildcards', () => {
@@ -202,7 +224,7 @@ describe('wildcards', () => {
         expect(
           match(value)
             .with(P._, () => 'yes')
-            .run()
+            .exhaustive()
         ).toEqual('yes');
       });
     });

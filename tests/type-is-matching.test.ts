@@ -201,7 +201,9 @@ describe('IsMatching', () => {
             false
           >
         >,
-        Expect<Equal<IsMatching<{ type: 'a' }, {}>, false>>,
+        // the empty object matches everything except null | undefined
+        // just like the `{}` type.
+        Expect<Equal<IsMatching<{ type: 'a' }, {}>, true>>,
         Expect<Equal<IsMatching<{}, { type: 'a' }>, false>>
       ];
     });
