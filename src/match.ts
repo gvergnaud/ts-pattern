@@ -112,10 +112,9 @@ class MatchExpression<input, output> {
     return handler(this.input);
   }
 
-  exhaustive(): output {
+  exhaustive(catcher = defaultCatcher): output {
     if (this.state.matched) return this.state.value;
-
-    throw new NonExhaustiveError(this.input);
+    return catcher(this.input);
   }
 
   run(): output {
@@ -125,4 +124,8 @@ class MatchExpression<input, output> {
   returnType() {
     return this;
   }
+}
+
+function defaultCatcher(input: unknown): never {
+  throw new NonExhaustiveError(input);
 }
