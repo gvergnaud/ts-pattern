@@ -713,13 +713,13 @@ const minLength = <const min extends number>(min: min) =>
   when((value) => isString(value) && value.length >= min);
 
 /**
- * `P.string.length(len)` is a pattern, matching **strings** with at exact `len` characters.
+ * `P.string.length(len)` is a pattern, matching **strings** with exact `len` characters.
  *
  * [Read the documentation for `P.string.length` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringlength)
  *
  * @example
  *  match(value)
- *   .with(P.string.minLength(10), () => 'string with more length >= 10')
+ *   .with(P.string.length(10), () => 'strings with length === 10')
  */
 const length = <const len extends number>(len: len) =>
   when((value) => isString(value) && value.length === len);

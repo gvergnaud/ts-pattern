@@ -121,6 +121,7 @@ describe('Strings', () => {
         });
 
     expect(f('aa')).toBe('yes');
+    expect(f('bb')).toBe('yes');
     expect(f('aaa')).toBe('no');
     expect(f('a')).toBe('no');
   });
