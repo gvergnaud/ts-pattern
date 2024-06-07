@@ -314,7 +314,7 @@ export type StringChainable<
         omitted | 'minLength'
       >;
       /**
-       * `P.string.length(len)` is a pattern, matching **strings** with exact `len` characters.
+       * `P.string.length(len)` is a pattern, matching **strings** with exactly `len` characters.
        *
        * [Read the documentation for `P.string.length` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringlength)
        *
