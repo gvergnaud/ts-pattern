@@ -326,7 +326,7 @@ export type StringChainable<
         len: len
       ): StringChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, string, never>>,
-        omitted | 'length'
+        omitted | 'length' | 'minLength' | 'maxLength'
       >;
       /**
        * `P.string.maxLength(max)` is a pattern, matching **strings** with at most `max` characters.
