@@ -4,17 +4,17 @@
  * @internal
  */
 
-import * as symbols from './symbols';
-import { SelectionType } from '../types/FindSelected';
-import { Pattern, Matcher, MatcherType, AnyMatcher } from '../types/Pattern';
+import * as symbols from "./symbols.ts";
+import type { SelectionType } from "../types/FindSelected.ts";
+import type { AnyMatcher, Matcher, MatcherType } from "../types/Pattern.ts";
 
 // @internal
 export const isObject = (value: unknown): value is Object =>
-  Boolean(value && typeof value === 'object');
+  Boolean(value && typeof value === "object");
 
 //   @internal
 export const isMatcher = (
-  x: unknown
+  x: unknown,
 ): x is Matcher<unknown, unknown, MatcherType, SelectionType> => {
   const pattern = x as Matcher<unknown, unknown, MatcherType, SelectionType>;
   return pattern && !!pattern[symbols.matcher];
@@ -22,9 +22,9 @@ export const isMatcher = (
 
 // @internal
 const isOptionalPattern = (
-  x: unknown
-): x is Matcher<unknown, unknown, 'optional', SelectionType> => {
-  return isMatcher(x) && x[symbols.matcher]().matcherType === 'optional';
+  x: unknown,
+): x is Matcher<unknown, unknown, "optional", SelectionType> => {
+  return isMatcher(x) && x[symbols.matcher]().matcherType === "optional";
 };
 
 // tells us if the value matches a given pattern.
@@ -32,7 +32,7 @@ const isOptionalPattern = (
 export const matchPattern = (
   pattern: any,
   value: any,
-  select: (key: string, value: unknown) => void
+  select: (key: string, value: unknown) => void,
 ): boolean => {
   if (isMatcher(pattern)) {
     const matcher = pattern[symbols.matcher]();
@@ -67,7 +67,7 @@ export const matchPattern = (
       if (variadicPatterns.length) {
         if (variadicPatterns.length > 1) {
           throw new Error(
-            `Pattern error: Using \`...P.array(...)\` several times in a single pattern is not allowed.`
+            `Pattern error: Using \`...P.array(...)\` several times in a single pattern is not allowed.`,
           );
         }
 
@@ -76,11 +76,12 @@ export const matchPattern = (
         }
 
         const startValues = value.slice(0, startPatterns.length);
-        const endValues =
-          endPatterns.length === 0 ? [] : value.slice(-endPatterns.length);
+        const endValues = endPatterns.length === 0
+          ? []
+          : value.slice(-endPatterns.length);
         const middleValues = value.slice(
           startPatterns.length,
-          endPatterns.length === 0 ? Infinity : -endPatterns.length
+          endPatterns.length === 0 ? Infinity : -endPatterns.length,
         );
 
         return (
@@ -98,8 +99,8 @@ export const matchPattern = (
 
       return pattern.length === value.length
         ? pattern.every((subPattern, i) =>
-            matchPattern(subPattern, value[i], select)
-          )
+          matchPattern(subPattern, value[i], select)
+        )
         : false;
     }
 
@@ -113,7 +114,7 @@ export const matchPattern = (
           subPattern,
           // @ts-ignore
           value[k],
-          select
+          select,
         )
       );
     });
@@ -137,5 +138,5 @@ export const getSelectionKeys = (pattern: any): string[] => {
 // @internal
 export const flatMap = <a, b>(
   xs: readonly a[],
-  f: (v: a) => readonly b[]
+  f: (v: a) => readonly b[],
 ): b[] => xs.reduce<b[]>((acc, x) => acc.concat(f(x)), []);

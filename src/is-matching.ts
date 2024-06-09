@@ -1,6 +1,6 @@
-import { MatchedValue, Pattern } from './types/Pattern';
-import * as P from './patterns';
-import { matchPattern } from './internals/helpers';
+import type { MatchedValue, Pattern } from "./types/Pattern.ts";
+import type * as P from "./patterns.ts";
+import { matchPattern } from "./internals/helpers.ts";
 
 /**
  * `isMatching` takes pattern and returns a **type guard** function, cheching if a value matches this pattern.
@@ -18,7 +18,7 @@ import { matchPattern } from './internals/helpers';
  *  }
  */
 export function isMatching<const p extends Pattern<unknown>>(
-  pattern: p
+  pattern: p,
 ): (value: unknown) => value is P.infer<p>;
 /**
  * `isMatching` takes pattern and a value and checks if the value matches this pattern.
@@ -35,7 +35,7 @@ export function isMatching<const p extends Pattern<unknown>>(
  */
 export function isMatching<const p extends Pattern<unknown>>(
   pattern: p,
-  value: unknown
+  value: unknown,
 ): value is P.infer<p>;
 
 export function isMatching<const p extends Pattern<any>>(
@@ -52,6 +52,6 @@ export function isMatching<const p extends Pattern<any>>(
   }
 
   throw new Error(
-    `isMatching wasn't given the right number of arguments: expected 1 or 2, received ${args.length}.`
+    `isMatching wasn't given the right number of arguments: expected 1 or 2, received ${args.length}.`,
   );
 }
