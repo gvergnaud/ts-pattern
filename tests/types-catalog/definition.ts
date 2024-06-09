@@ -3,11 +3,11 @@ interface RequestStyle {
 }
 
 type AxisBound = string | number;
-type Aggregator = 'sum' | 'avg';
+type Aggregator = "sum" | "avg";
 
 interface Axis {
   label?: string;
-  scale?: 'linear' | 'log';
+  scale?: "linear" | "log";
   min?: AxisBound;
   max?: AxisBound;
   include_zero?: boolean;
@@ -15,7 +15,7 @@ interface Axis {
 }
 
 interface DistributionXAxis {
-  scale?: 'linear' | 'log';
+  scale?: "linear" | "log";
   min?: AxisBound;
   max?: AxisBound;
   include_zero?: boolean;
@@ -23,7 +23,7 @@ interface DistributionXAxis {
 
 interface DistributionYAxis {
   label?: string;
-  scale?: 'linear' | 'log';
+  scale?: "linear" | "log";
   min?: AxisBound;
   max?: AxisBound;
   include_zero?: boolean;
@@ -48,13 +48,13 @@ interface Marker {
 
 interface Event {
   q: string;
-  tags_execution?: 'TagsExecution';
+  tags_execution?: "TagsExecution";
 }
 
 type Markers = Marker[];
 
 interface ConditionalFormat {
-  comparator: 'Comparator';
+  comparator: "Comparator";
   value?: number | string;
   palette: string;
   custom_bg_color?: string;
@@ -76,7 +76,7 @@ interface UserDefinedLink {
 
 type CustomLink = ContextMenuLink | UserDefinedLink;
 
-type OrderDir = 'a' | 'b';
+type OrderDir = "a" | "b";
 
 type EventCompute = {
   aggregation: string;
@@ -166,25 +166,25 @@ interface AuditRequest {
 }
 
 type FormulaEventsDataSource =
-  | 'logs'
-  | 'spans'
-  | 'rum'
-  | 'network'
-  | 'security_signals'
-  | 'profiles'
-  | 'events'
-  | 'ci_pipelines'
-  | 'ci_tests'
-  | 'compliance_findings'
-  | 'database_queries'
-  | 'synthetics_batches'
-  | 'app_sec_events'
-  | 'app_sec_spans'
-  | 'audit';
+  | "logs"
+  | "spans"
+  | "rum"
+  | "network"
+  | "security_signals"
+  | "profiles"
+  | "events"
+  | "ci_pipelines"
+  | "ci_tests"
+  | "compliance_findings"
+  | "database_queries"
+  | "synthetics_batches"
+  | "app_sec_events"
+  | "app_sec_spans"
+  | "audit";
 
 type FormulaMetricsQuery = {
   name: string;
-  data_source: 'metrics' | 'cloud_cost';
+  data_source: "metrics" | "cloud_cost";
   query: string;
   aggregator?: Aggregator;
 };
@@ -196,18 +196,18 @@ type EventsCompute = {
 };
 
 type EventsAggregator =
-  | 'count'
-  | 'cardinality'
-  | 'median'
-  | 'pc75'
-  | 'pc90'
-  | 'pc95'
-  | 'pc98'
-  | 'pc99'
-  | 'sum'
-  | 'min'
-  | 'max'
-  | 'avg';
+  | "count"
+  | "cardinality"
+  | "median"
+  | "pc75"
+  | "pc90"
+  | "pc95"
+  | "pc98"
+  | "pc99"
+  | "sum"
+  | "min"
+  | "max"
+  | "avg";
 
 type EventsGroupBy = {
   facet: string;
@@ -233,7 +233,7 @@ type FormulaEventsQuery = {
 
 type FormulaProcessQuery = {
   name: string;
-  data_source: 'process' | 'container';
+  data_source: "process" | "container";
   metric: string;
   text_filter?: string;
   tag_filters?: string[];
@@ -246,7 +246,7 @@ type FormulaProcessQuery = {
 
 interface FormulaApmDependencyStatsQuery {
   name: string;
-  data_source: 'apm_dependency_stats';
+  data_source: "apm_dependency_stats";
   env: string;
   is_upstream?: boolean;
   operation_name: string;
@@ -258,7 +258,7 @@ interface FormulaApmDependencyStatsQuery {
 
 interface FormulaApmResourceStatsQuery {
   name: string;
-  data_source: 'apm_resource_stats';
+  data_source: "apm_resource_stats";
   env: string;
   group_by?: string[];
   operation_name: string;
@@ -274,7 +274,7 @@ type FormulaApmStatsQuery =
 
 type FormulaIncidentsQuery = {
   name: string;
-  data_source: 'incident_analytics';
+  data_source: "incident_analytics";
   compute: EventsCompute;
   search?: {
     query: string;
@@ -302,26 +302,26 @@ type Formula = {
 };
 
 interface TimeseriesFormulaRequest extends TimeseriesRequest {
-  response_format: 'timeseries';
+  response_format: "timeseries";
   formulas?: Formula[];
   queries: FormulaQueries;
 }
 
 type ScalarFormulaRequest = {
-  response_format: 'scalar';
+  response_format: "scalar";
   formulas?: Formula[];
   queries: FormulaQueries;
 };
 
 type SQLTimeseriesRequest = {
-  request_type: 'sql';
-  response_format: 'timeseries';
+  request_type: "sql";
+  response_format: "timeseries";
   sql_query: string;
 };
 
 type SQLTableRequest = {
-  request_type: 'sql';
-  response_format: 'scalar';
+  request_type: "sql";
+  response_format: "scalar";
   sql_query: string;
 };
 
@@ -350,7 +350,7 @@ interface Metadata {
   [key: string]: { alias: string };
 }
 
-type DisplayType = 'line' | 'bar' | 'area';
+type DisplayType = "line" | "bar" | "area";
 
 interface TimeseriesRequest {
   type?: DisplayType;
@@ -359,11 +359,12 @@ interface TimeseriesRequest {
   on_right_yaxis?: boolean;
 }
 
-type TimeseriesDefinitionRequest = TimeseriesDataSourceRequest &
-  TimeseriesRequest;
+type TimeseriesDefinitionRequest =
+  & TimeseriesDataSourceRequest
+  & TimeseriesRequest;
 
 interface TimeseriesDefinition {
-  viz: 'timeseries';
+  viz: "timeseries";
   requests: TimeseriesDefinitionRequest[];
   yaxis?: Axis;
   right_yaxis?: Axis;
@@ -378,7 +379,7 @@ type TableFormula = Formula & {
 
 type TableFormulaRequest = {
   formulas?: TableFormula[];
-  response_format: 'scalar';
+  response_format: "scalar";
   queries: FormulaQueries;
 };
 
@@ -397,13 +398,14 @@ interface QueryTableRequest {
   conditional_formats?: ConditionalFormat[];
 }
 
-type QueryTableDefinitionRequest = QueryTableDataSourceRequest &
-  QueryTableRequest;
+type QueryTableDefinitionRequest =
+  & QueryTableDataSourceRequest
+  & QueryTableRequest;
 
-type HasSearchBar = 'always' | 'never' | 'auto';
+type HasSearchBar = "always" | "never" | "auto";
 
 interface QueryTableDefinition {
-  viz: 'query_table';
+  viz: "query_table";
   requests: QueryTableDefinitionRequest[];
   has_search_bar?: HasSearchBar;
   custom_links?: CustomLink[];
@@ -416,7 +418,7 @@ interface HeatmapRequest {
 interface HeatmapDefinitionRequest extends MetricRequest, HeatmapRequest {}
 
 interface HeatmapDefinition {
-  viz: 'heatmap';
+  viz: "heatmap";
   requests: HeatmapDefinitionRequest[];
   yaxis?: Axis;
   events?: Event[];
@@ -424,7 +426,7 @@ interface HeatmapDefinition {
 }
 
 interface ServiceMapDefinition {
-  viz: 'servicemap';
+  viz: "servicemap";
   requests?: undefined;
   custom_links?: CustomLink[];
 }
@@ -435,14 +437,14 @@ type TreemapDataSourceRequest =
   | ScalarFormulaRequest
   | TreemapProcessMemoryRequest;
 
-type TreemapSizeBy = 'pct_cpu' | 'pct_mem';
+type TreemapSizeBy = "pct_cpu" | "pct_mem";
 
-type TreemapColorBy = 'user';
+type TreemapColorBy = "user";
 
-type TreemapGroupBy = 'family' | 'process' | 'user';
+type TreemapGroupBy = "family" | "process" | "user";
 
 interface TreemapDefinition {
-  viz: 'treemap';
+  viz: "treemap";
   requests: TreemapDataSourceRequest[];
   size_by?: TreemapSizeBy;
   color_by?: TreemapColorBy;
@@ -463,7 +465,7 @@ type TopListDataSourceRequest =
 type TopListDefinitionRequest = TopListDataSourceRequest & TopListRequest;
 
 interface TopListDefinition {
-  viz: 'toplist';
+  viz: "toplist";
   requests: TopListDefinitionRequest[];
   custom_links?: CustomLink[];
 }
@@ -478,11 +480,12 @@ interface DistributionRequest {
   style?: RequestStyle;
 }
 
-type DistributionDefinitionRequest = DistributionDataSourceRequest &
-  DistributionRequest;
+type DistributionDefinitionRequest =
+  & DistributionDataSourceRequest
+  & DistributionRequest;
 
 interface DistributionDefinition {
-  viz: 'distribution';
+  viz: "distribution";
   requests: DistributionDefinitionRequest[];
   xaxis?: DistributionXAxis;
   yaxis?: DistributionYAxis;
@@ -490,7 +493,7 @@ interface DistributionDefinition {
   custom_links?: CustomLink[];
 }
 
-type ScatterPlotDimension = 'x' | 'y' | 'radius' | 'color';
+type ScatterPlotDimension = "x" | "y" | "radius" | "color";
 
 type ScatterplotFormula = Formula & {
   dimension: ScatterPlotDimension;
@@ -509,11 +512,12 @@ interface ScatterplotRequest {
   aggregator?: Aggregator;
 }
 
-type ScatterplotDefinitionRequest = ScatterplotDataSourceRequest &
-  ScatterplotRequest;
+type ScatterplotDefinitionRequest =
+  & ScatterplotDataSourceRequest
+  & ScatterplotRequest;
 
 interface ScatterplotDefinition {
-  viz: 'scatterplot';
+  viz: "scatterplot";
   requests: ScatterplotDefinitionRequest[];
   custom_links?: CustomLink[];
   xaxis?: Axis;
@@ -536,14 +540,14 @@ type GeomapDefinitionRequest =
   | SQLTableRequest;
 
 interface GeomapDefinition {
-  viz: 'geomap';
+  viz: "geomap";
   requests: GeomapDefinitionRequest[];
   custom_links?: CustomLink[];
   style: GeomapStyle;
   view: GeomapView;
 }
 
-type PlotPaletteName = 'red' | 'blue' | 'orange';
+type PlotPaletteName = "red" | "blue" | "orange";
 
 type SunburstRequest = {
   style?: {
@@ -552,20 +556,19 @@ type SunburstRequest = {
 };
 
 interface SunburstDefinitionRequest
-  extends ScalarFormulaRequest,
-    SunburstRequest {}
+  extends ScalarFormulaRequest, SunburstRequest {}
 
 type SunburstKnownLegend =
-  | { type: 'table' }
-  | { type: 'inline'; hide_value?: boolean; hide_percent?: boolean }
-  | { type: 'none' };
+  | { type: "table" }
+  | { type: "inline"; hide_value?: boolean; hide_percent?: boolean }
+  | { type: "none" };
 
 type SunburstLegend =
-  | { type: 'automatic'; hide_value?: boolean; hide_percent?: boolean }
+  | { type: "automatic"; hide_value?: boolean; hide_percent?: boolean }
   | SunburstKnownLegend;
 
 type SunburstDefinition = {
-  viz: 'sunburst';
+  viz: "sunburst";
   requests: SunburstDefinitionRequest[];
   hide_total?: boolean;
   legend?: SunburstLegend;
@@ -574,10 +577,10 @@ type SunburstDefinition = {
 type WildcardDefinitionRequest = SQLTableRequest | ScalarFormulaRequest;
 
 type WildcardDefinition = {
-  viz: 'wildcard';
+  viz: "wildcard";
   requests: WildcardDefinitionRequest[];
   specification: {
-    type: 'vega' | 'vega-lite';
+    type: "vega" | "vega-lite";
     contents: object;
   };
 };

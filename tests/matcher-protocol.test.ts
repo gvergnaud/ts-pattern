@@ -1,11 +1,11 @@
-import { isMatching, match, P } from '../src';
-import { Equal, Expect } from '../src/types/helpers';
+import { expect } from "@std/expect";
+import { isMatching, match, P } from "../mod.ts";
+import type { Equal, Expect } from "../src/types/helpers.ts";
 
-describe('matcher protocol', () => {
   type SomeValue<T> = T extends Some<infer V> ? V : never;
 
   interface SomeNarrowFn extends P.unstable_Fn {
-    output: Some<SomeValue<this['input']>>;
+    output: Some<SomeValue<this["input"]>>;
   }
 
   class Some<const T> {
@@ -25,8 +25,8 @@ describe('matcher protocol', () => {
       return {
         match: (input) => {
           return {
-            matched:
-              input instanceof Some && isMatching<any>(this.value, input.value),
+            matched: input instanceof Some &&
+              isMatching<any>(this.value, input.value),
           };
         },
       };
@@ -48,7 +48,7 @@ describe('matcher protocol', () => {
   }
   type Option<T> = Some<T> | None;
 
-  it('should support taking a sub pattern', () => {
+  Deno.test("should support taking a sub pattern", () => {
     const res = match<{ option: Option<number | string> }>({
       option: new Some(12),
     })
@@ -60,8 +60,8 @@ describe('matcher protocol', () => {
         type t = Expect<Equal<typeof value, { option: Some<12> }>>;
         return value.option.value;
       })
-      .with({ option: None }, () => '')
-      .with({ option: Some }, () => '')
+      .with({ option: None }, () => "")
+      .with({ option: Some }, () => "")
       .exhaustive();
 
     expect(res).toBe(12);
@@ -70,11 +70,11 @@ describe('matcher protocol', () => {
       new Some(P.number),
       (some) => {
         type t = Expect<Equal<typeof some, Some<number>>>;
-      }
+      },
     );
   });
 
-  it('should support nesting', () => {
+  Deno.test("should support nesting", () => {
     const res = match<{ option: Option<number | string> }>({
       option: new Some(12),
     })
@@ -84,14 +84,14 @@ describe('matcher protocol', () => {
       })
       .with({ option: None }, (x) => {
         type t = Expect<Equal<typeof x, { option: None }>>;
-        return 'None';
+        return "None";
       })
       .exhaustive();
 
     expect(res).toBe(`Some 12`);
   });
 
-  it('it should work without nesting too', () => {
+  Deno.test("it should work without nesting too", () => {
     expect(
       match<Option<number | string>>(new Some(12))
         .with(new Some(10), (some) => {
@@ -101,14 +101,14 @@ describe('matcher protocol', () => {
         .with(new Some(12), (some) => `12`)
         .with(new Some(P.any), (some) => `any`)
         .with(None, () => 0)
-        .exhaustive()
-    ).toBe('12');
+        .exhaustive(),
+    ).toBe("12");
 
     match<Option<number | string>>(new Some(12)).with(
       new Some(P.number),
       (some) => {
         type t = Expect<Equal<typeof some, Some<number>>>;
-      }
+      },
     );
 
     match<Option<number | string>>(new Some(12))
@@ -120,4 +120,3 @@ describe('matcher protocol', () => {
       })
       .exhaustive();
   });
-});

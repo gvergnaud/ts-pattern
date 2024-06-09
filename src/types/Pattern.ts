@@ -1,20 +1,20 @@
-import type * as symbols from '../internals/symbols';
-import { MergeUnion, Primitives, WithDefault } from './helpers';
-import { None, Some, SelectionType } from './FindSelected';
-import { matcher } from '../patterns';
-import { ExtractPreciseValue } from './ExtractPreciseValue';
+import type * as symbols from "../internals/symbols.ts";
+import type { MergeUnion, Primitives, WithDefault } from "./helpers.ts";
+import type { None, SelectionType, Some } from "./FindSelected.ts";
+import type { matcher } from "../patterns.ts";
+import type { ExtractPreciseValue } from "./ExtractPreciseValue.ts";
 
 export type MatcherType =
-  | 'not'
-  | 'optional'
-  | 'or'
-  | 'and'
-  | 'array'
-  | 'map'
-  | 'set'
-  | 'select'
-  | 'default'
-  | 'custom';
+  | "not"
+  | "optional"
+  | "or"
+  | "and"
+  | "array"
+  | "map"
+  | "set"
+  | "select"
+  | "default"
+  | "custom";
 
 // We use a separate MatcherProtocol type to preserves
 // the type level information (selections and excluded) used
@@ -27,7 +27,7 @@ export type MatcherProtocol<
   selections extends SelectionType,
   // Type to exclude from the input union because
   // it has been fully matched by this pattern
-  excluded
+  excluded,
 > = {
   match: <I>(value: I | input) => MatchResult;
   getSelectionKeys?: () => string[];
@@ -50,11 +50,11 @@ export interface Matcher<
   input,
   narrowed,
   // Type of what this pattern selected from the input
-  matcherType extends MatcherType = 'default',
+  matcherType extends MatcherType = "default",
   selections extends SelectionType = None,
   // Type to exclude from the input union because
   // it has been fully matched by this pattern
-  excluded = narrowed
+  excluded = narrowed,
 > {
   [matcher](): MatcherProtocol<
     input,
@@ -85,31 +85,31 @@ export type CustomP<input, pattern, narrowedOrFn> = Matcher<
   //  👆
   // for the input type to be instantiated correctly
   // on subpatterns, it has to be passed through.
-  'custom',
+  "custom",
   None,
   narrowedOrFn
 >;
 
-export type ArrayP<input, p> = Matcher<input, p, 'array'>;
+export type ArrayP<input, p> = Matcher<input, p, "array">;
 
-export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
+export type OptionalP<input, p> = Matcher<input, p, "optional">;
 
-export type MapP<input, pkey, pvalue> = Matcher<input, [pkey, pvalue], 'map'>;
+export type MapP<input, pkey, pvalue> = Matcher<input, [pkey, pvalue], "map">;
 
-export type SetP<input, p> = Matcher<input, p, 'set'>;
+export type SetP<input, p> = Matcher<input, p, "set">;
 
-export type AndP<input, ps> = Matcher<input, ps, 'and'>;
+export type AndP<input, ps> = Matcher<input, ps, "and">;
 
-export type OrP<input, ps> = Matcher<input, ps, 'or'>;
+export type OrP<input, ps> = Matcher<input, ps, "or">;
 
-export type NotP<input, p> = Matcher<input, p, 'not'>;
+export type NotP<input, p> = Matcher<input, p, "not">;
 
 export type GuardP<input, narrowed> = Matcher<input, narrowed>;
 
 export type GuardExcludeP<input, narrowed, excluded> = Matcher<
   input,
   narrowed,
-  'default',
+  "default",
   None,
   excluded
 >;
@@ -117,8 +117,8 @@ export type GuardExcludeP<input, narrowed, excluded> = Matcher<
 export type SelectP<
   key extends string,
   input = unknown,
-  p = Matcher<unknown, unknown>
-> = Matcher<input, p, 'select', Some<key>>;
+  p = Matcher<unknown, unknown>,
+> = Matcher<input, p, "select", Some<key>>;
 
 export type AnonymousSelectP = SelectP<symbols.anonymousSelectKey>;
 
@@ -153,7 +153,7 @@ type KnownPatternInternal<
   a,
   objs = Exclude<a, Primitives | Map<any, any> | Set<any> | readonly any[]>,
   arrays = Extract<a, readonly any[]>,
-  primitives = Extract<a, Primitives>
+  primitives = Extract<a, Primitives>,
 > =
   | primitives
   | PatternMatcher<a>
@@ -162,17 +162,17 @@ type KnownPatternInternal<
 
 type ObjectPattern<a> =
   | {
-      readonly [k in keyof a]?: Pattern<a[k]>;
-    }
+    readonly [k in keyof a]?: Pattern<a[k]>;
+  }
   | never;
 
 type ArrayPattern<a> = a extends readonly (infer i)[]
   ? a extends readonly [any, ...any]
     ? { readonly [index in keyof a]: Pattern<a[index]> }
-    :
-        | readonly []
-        | readonly [Pattern<i>, ...Pattern<i>[]]
-        | readonly [...Pattern<i>[], Pattern<i>]
+  :
+    | readonly []
+    | readonly [Pattern<i>, ...Pattern<i>[]]
+    | readonly [...Pattern<i>[], Pattern<i>]
   : never;
 
 // These aliases could be inferred, but lead to nicer display names in IDEs.
@@ -191,13 +191,13 @@ export type NonNullablePattern = Chainable<GuardP<unknown, {}>, never>;
 
 type MergeGuards<input, guard1, guard2> = [guard1, guard2] extends [
   GuardExcludeP<any, infer narrowed1, infer excluded1>,
-  GuardExcludeP<any, infer narrowed2, infer excluded2>
-]
-  ? GuardExcludeP<input, narrowed1 & narrowed2, excluded1 & excluded2>
+  GuardExcludeP<any, infer narrowed2, infer excluded2>,
+] ? GuardExcludeP<input, narrowed1 & narrowed2, excluded1 & excluded2>
   : never;
 
-export type Chainable<p, omitted extends string = never> = p &
-  Omit<
+export type Chainable<p, omitted extends string = never> =
+  & p
+  & Omit<
     {
       /**
        * `.optional()` returns a pattern which matches if the
@@ -209,7 +209,7 @@ export type Chainable<p, omitted extends string = never> = p &
        *  match(value)
        *   .with({ greeting: P.string.optional() }, () => 'will match { greeting?: string}')
        */
-      optional<input>(): Chainable<OptionalP<input, p>, omitted | 'optional'>;
+      optional<input>(): Chainable<OptionalP<input, p>, omitted | "optional">;
       /**
        * `pattern.and(pattern)` returns a pattern that matches
        * if the previous pattern and the next one match the input.
@@ -224,7 +224,7 @@ export type Chainable<p, omitted extends string = never> = p &
        *   )
        */
       and<input, p2 extends Pattern<input>>(
-        pattern: p2
+        pattern: p2,
       ): Chainable<AndP<input, [p, p2]>, omitted>;
       /**
        * `pattern.or(pattern)` returns a pattern that matches
@@ -240,7 +240,7 @@ export type Chainable<p, omitted extends string = never> = p &
        *   )
        */
       or<input, p2 extends Pattern<input>>(
-        pattern: p2
+        pattern: p2,
       ): Chainable<OrP<input, [p, p2]>, omitted>;
       /**
        * `P.select()` will inject this property into the handler function's arguments.
@@ -253,20 +253,21 @@ export type Chainable<p, omitted extends string = never> = p &
        */
       select<input>(): Chainable<
         SelectP<symbols.anonymousSelectKey, input, p>,
-        omitted | 'select' | 'or' | 'and'
+        omitted | "select" | "or" | "and"
       >;
       select<input, k extends string>(
-        key: k
-      ): Chainable<SelectP<k, input, p>, omitted | 'select' | 'or' | 'and'>;
+        key: k,
+      ): Chainable<SelectP<k, input, p>, omitted | "select" | "or" | "and">;
     },
     omitted
   >;
 
 export type StringChainable<
   p extends Matcher<any, any, any, any, any>,
-  omitted extends string = never
-> = Chainable<p, omitted> &
-  Omit<
+  omitted extends string = never,
+> =
+  & Chainable<p, omitted>
+  & Omit<
     {
       /**
        * `P.string.startsWith(start)` is a pattern, matching **strings** starting with `start`.
@@ -278,10 +279,10 @@ export type StringChainable<
        *   .with(P.string.startsWith('A'), () => 'value starts with an A')
        */
       startsWith<input, const start extends string>(
-        start: start
+        start: start,
       ): StringChainable<
         MergeGuards<input, p, GuardP<unknown, `${start}${string}`>>,
-        omitted | 'startsWith'
+        omitted | "startsWith"
       >;
       /**
        * `P.string.endsWith(end)` is a pattern, matching **strings** ending with `end`.
@@ -293,10 +294,10 @@ export type StringChainable<
        *   .with(P.string.endsWith('!'), () => 'value ends with an !')
        */
       endsWith<input, const end extends string>(
-        end: end
+        end: end,
       ): StringChainable<
         MergeGuards<input, p, GuardP<unknown, `${string}${end}`>>,
-        omitted | 'endsWith'
+        omitted | "endsWith"
       >;
       /**
        * `P.string.minLength(min)` is a pattern, matching **strings** with at least `min` characters.
@@ -308,10 +309,10 @@ export type StringChainable<
        *   .with(P.string.minLength(10), () => 'string with more length <= 10')
        */
       minLength<input, const min extends number>(
-        min: min
+        min: min,
       ): StringChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, string, never>>,
-        omitted | 'minLength'
+        omitted | "minLength"
       >;
       /**
        * `P.string.maxLength(max)` is a pattern, matching **strings** with at most `max` characters.
@@ -323,10 +324,10 @@ export type StringChainable<
        *   .with(P.string.maxLength(10), () => 'string with more length >= 10')
        */
       maxLength<input, const max extends number>(
-        max: max
+        max: max,
       ): StringChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, string, never>>,
-        omitted | 'maxLength'
+        omitted | "maxLength"
       >;
       /**
        * `P.string.includes(substr)` is a pattern, matching **strings** containing `substr`.
@@ -338,7 +339,7 @@ export type StringChainable<
        *   .with(P.string.includes('http'), () => 'value contains http')
        */
       includes<input, const substr extends string>(
-        substr: substr
+        substr: substr,
       ): StringChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, string, never>>,
         omitted
@@ -353,7 +354,7 @@ export type StringChainable<
        *   .with(P.string.regex(/^https?:\/\//), () => 'url')
        */
       regex<input, const expr extends string | RegExp>(
-        expr: expr
+        expr: expr,
       ): StringChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, string, never>>,
         omitted
@@ -362,11 +363,12 @@ export type StringChainable<
     omitted
   >;
 
-export type NumberChainable<p, omitted extends string = never> = Chainable<
-  p,
-  omitted
-> &
-  Omit<
+export type NumberChainable<p, omitted extends string = never> =
+  & Chainable<
+    p,
+    omitted
+  >
+  & Omit<
     {
       /**
        * `P.number.between(min, max)` matches **number** between `min` and `max`,
@@ -380,7 +382,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        */
       between<input, const min extends number, const max extends number>(
         min: min,
-        max: max
+        max: max,
       ): NumberChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted
@@ -395,7 +397,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.number.lt(10), () => 'numbers < 10')
        */
       lt<input, const max extends number>(
-        max: max
+        max: max,
       ): NumberChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted
@@ -410,7 +412,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.number.gt(10), () => 'numbers > 10')
        */
       gt<input, const min extends number>(
-        min: min
+        min: min,
       ): NumberChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted
@@ -425,7 +427,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.number.lte(10), () => 'numbers <= 10')
        */
       lte<input, const max extends number>(
-        max: max
+        max: max,
       ): NumberChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted
@@ -440,7 +442,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.number.gte(10), () => 'numbers >= 10')
        */
       gte<input, const min extends number>(
-        min: min
+        min: min,
       ): NumberChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
         omitted
@@ -456,7 +458,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        */
       int<input>(): NumberChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
-        omitted | 'int'
+        omitted | "int"
       >;
       /**
        * `P.number.finite` matches **finite numbers**.
@@ -469,7 +471,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        */
       finite<input>(): NumberChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
-        omitted | 'finite'
+        omitted | "finite"
       >;
       /**
        * `P.number.positive` matches **positive** numbers.
@@ -482,7 +484,7 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        */
       positive<input>(): NumberChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
-        omitted | 'positive' | 'negative'
+        omitted | "positive" | "negative"
       >;
       /**
        * `P.number.negative` matches **negative** numbers.
@@ -495,17 +497,18 @@ export type NumberChainable<p, omitted extends string = never> = Chainable<
        */
       negative<input>(): NumberChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, number, never>>,
-        omitted | 'positive' | 'negative' | 'negative'
+        omitted | "positive" | "negative" | "negative"
       >;
     },
     omitted
   >;
 
-export type BigIntChainable<p, omitted extends string = never> = Chainable<
-  p,
-  omitted
-> &
-  Omit<
+export type BigIntChainable<p, omitted extends string = never> =
+  & Chainable<
+    p,
+    omitted
+  >
+  & Omit<
     {
       /**
        * `P.bigint.between(min, max)` matches **bigint** between `min` and `max`,
@@ -519,7 +522,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
        */
       between<input, const min extends bigint, const max extends bigint>(
         min: min,
-        max: max
+        max: max,
       ): BigIntChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
         omitted
@@ -534,7 +537,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.bigint.lt(10), () => 'numbers < 10')
        */
       lt<input, const max extends bigint>(
-        max: max
+        max: max,
       ): BigIntChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
         omitted
@@ -549,7 +552,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.bigint.gt(10), () => 'numbers > 10')
        */
       gt<input, const min extends bigint>(
-        min: min
+        min: min,
       ): BigIntChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
         omitted
@@ -564,7 +567,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.bigint.lte(10), () => 'bigints <= 10')
        */
       lte<input, const max extends bigint>(
-        max: max
+        max: max,
       ): BigIntChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
         omitted
@@ -579,7 +582,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
        *   .with(P.bigint.gte(10), () => 'bigints >= 10')
        */
       gte<input, const min extends bigint>(
-        min: min
+        min: min,
       ): BigIntChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
         omitted
@@ -595,7 +598,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
        */
       positive<input>(): BigIntChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
-        omitted | 'positive' | 'negative'
+        omitted | "positive" | "negative"
       >;
       /**
        * `P.bigint.negative` matches **negative** bigints.
@@ -608,7 +611,7 @@ export type BigIntChainable<p, omitted extends string = never> = Chainable<
        */
       negative<input>(): BigIntChainable<
         MergeGuards<input, p, GuardExcludeP<unknown, bigint, never>>,
-        omitted | 'positive' | 'negative' | 'negative'
+        omitted | "positive" | "negative" | "negative"
       >;
     },
     omitted
@@ -618,9 +621,10 @@ export type Variadic<pattern> = pattern & Iterable<pattern>;
 
 export type ArrayChainable<
   pattern,
-  omitted extends string = never
-> = Variadic<pattern> &
-  Omit<
+  omitted extends string = never,
+> =
+  & Variadic<pattern>
+  & Omit<
     {
       /**
        * `.optional()` returns a pattern which matches if the
@@ -634,7 +638,7 @@ export type ArrayChainable<
        */
       optional<input>(): ArrayChainable<
         OptionalP<input, pattern>,
-        omitted | 'optional'
+        omitted | "optional"
       >;
       /**
        * `P.select()` will inject this property into the handler function's arguments.
@@ -647,11 +651,11 @@ export type ArrayChainable<
        */
       select<input>(): ArrayChainable<
         SelectP<symbols.anonymousSelectKey, input, pattern>,
-        omitted | 'select'
+        omitted | "select"
       >;
       select<input, k extends string>(
-        key: k
-      ): ArrayChainable<SelectP<k, input, pattern>, omitted | 'select'>;
+        key: k,
+      ): ArrayChainable<SelectP<k, input, pattern>, omitted | "select">;
     },
     omitted
   >;

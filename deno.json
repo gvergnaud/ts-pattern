@@ -1,0 +1,31 @@
+{
+  "name": "@gvergnaud/ts-pattern",
+  "version": "5.1.2",
+  "description": "The exhaustive Pattern Matching library for TypeScript.",
+  "exports": {
+    ".": "./mod.ts"
+  },
+  "imports": {
+    "@std/expect": "jsr:@std/expect@^0.224.2"
+  },
+  "publish": {
+    "exclude": [
+      ".github",
+      ".vscode",
+      "tests",
+      "benchmark",
+      "docs",
+      "examples"
+    ]
+  },
+  "test": {
+    "include": [
+      "tests/*.test.ts"
+    ]
+  },
+  "bench": {
+    "include": [
+      "bench/*.bench.ts"
+    ]
+  }
+}

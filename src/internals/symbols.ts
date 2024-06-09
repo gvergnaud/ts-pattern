@@ -13,18 +13,18 @@
  * @internal
  */
 
-export const matcher = Symbol.for('@ts-pattern/matcher');
+export const matcher = Symbol.for("@ts-pattern/matcher");
 export type matcher = typeof matcher;
 
-export const unset = Symbol.for('@ts-pattern/unset');
+export const unset = Symbol.for("@ts-pattern/unset");
 export type unset = typeof unset;
 
-export const isVariadic = Symbol.for('@ts-pattern/isVariadic');
+export const isVariadic = Symbol.for("@ts-pattern/isVariadic");
 export type isVariadic = typeof isVariadic;
 
 // can't be a symbol because this key has to be enumerable.
-export const anonymousSelectKey = '@ts-pattern/anonymous-select-key';
+export const anonymousSelectKey = "@ts-pattern/anonymous-select-key";
 export type anonymousSelectKey = typeof anonymousSelectKey;
 
-export const override = Symbol.for('@ts-pattern/override');
+export const override = Symbol.for("@ts-pattern/override");
 export type override = typeof override;

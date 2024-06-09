@@ -1,10 +1,9 @@
-import { match } from '../src';
+import { expect } from "@std/expect";
+import { match } from "../mod.ts";
 
-describe('otherwise', () => {
-  it('should pass matched value to otherwise', () => {
-    const result = match<number>(42)
-      .with(51, (d) => d)
-      .otherwise((d) => d);
-    expect(result).toBe(42);
-  });
+Deno.test("should pass matched value to otherwise", () => {
+  const result = match<number>(42)
+    .with(51, (d) => d)
+    .otherwise((d) => d);
+  expect(result).toBe(42);
 });

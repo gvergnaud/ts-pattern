@@ -1,7 +1,7 @@
-import { Pattern } from './types/Pattern';
-import { Match } from './types/Match';
-import * as symbols from './internals/symbols';
-import { matchPattern } from './internals/helpers';
+import type { Pattern } from "./types/Pattern.ts";
+import type { Match } from "./types/Match.ts";
+import * as symbols from "./internals/symbols.ts";
+import { matchPattern } from "./internals/helpers.ts";
 
 type MatchState<output> =
   | { matched: true; value: output }
@@ -26,10 +26,9 @@ const unmatched: MatchState<never> = {
  *    .with("A", () => "It's an A!")
  *    .with("B", () => "It's a B!")
  *    .exhaustive();
- *
  */
 export function match<const input, output = symbols.unset>(
-  value: input
+  value: input,
 ): Match<input, output> {
   return new MatchExpression(value, unmatched) as any;
 }
@@ -55,7 +54,7 @@ class MatchExpression<input, output> {
     const patterns: Pattern<input>[] = [args[0]];
     let predicate: ((value: input) => unknown) | undefined = undefined;
 
-    if (args.length === 3 && typeof args[1] === 'function') {
+    if (args.length === 3 && typeof args[1] === "function") {
       // case with guard as second argument
       predicate = args[1];
     } else if (args.length > 2) {
@@ -82,9 +81,9 @@ class MatchExpression<input, output> {
 
     const state = matched
       ? {
-          matched: true as const,
-          value: handler(selections, this.input),
-        }
+        matched: true as const,
+        value: handler(selections, this.input),
+      }
       : unmatched;
 
     return new MatchExpression(this.input, state);
@@ -92,7 +91,7 @@ class MatchExpression<input, output> {
 
   when(
     predicate: (value: input) => unknown,
-    handler: (selection: input, value: input) => output
+    handler: (selection: input, value: input) => output,
   ): MatchExpression<input, output> {
     if (this.state.matched) return this;
 
@@ -102,7 +101,7 @@ class MatchExpression<input, output> {
       this.input,
       matched
         ? { matched: true, value: handler(this.input, this.input) }
-        : unmatched
+        : unmatched,
     );
   }
 
@@ -122,7 +121,7 @@ class MatchExpression<input, output> {
     }
 
     throw new Error(
-      `Pattern matching error: no pattern matches value ${displayedValue}`
+      `Pattern matching error: no pattern matches value ${displayedValue}`,
     );
   }
 
