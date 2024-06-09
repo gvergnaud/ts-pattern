@@ -1,0 +1,9 @@
+{
+  "version": "3",
+  "remote": {},
+  "workspace": {
+    "dependencies": [
+      "jsr:@std/expect@^0.224.2"
+    ]
+  }
+}
