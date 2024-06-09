@@ -14,7 +14,8 @@
       ".vscode",
       "tests",
       "benchmark",
-      "docs"
+      "docs",
+      "examples"
     ]
   },
   "test": {
