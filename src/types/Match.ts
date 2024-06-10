@@ -250,6 +250,6 @@ type MakeTuples<ps extends readonly any[], value> = {
 type Exhaustive<output, inferredOutput> = {
   (): PickReturnValue<output, inferredOutput>;
   <otherOutput>(
-    handler: (unmatchedValue: unknown) => PickReturnValue<output, otherOutput>
+    handler: (unexpectedValue: unknown) => PickReturnValue<output, otherOutput>
   ): PickReturnValue<output, Union<inferredOutput, otherOutput>>;
 };

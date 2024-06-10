@@ -9,7 +9,6 @@ describe('Exhaustive fallback function', () => {
       .with('b', (x) => x)
       .exhaustive((v) => ({ unexpectedValue: v }));
 
-    // check return type
     type t = Expect<
       Equal<typeof result, { unexpectedValue: unknown } | 'a' | 'b'>
     >;
@@ -33,7 +32,10 @@ describe('Exhaustive fallback function', () => {
       .with('a', (x) => x)
       .with('b', (x) => x)
       // @ts-expect-error 'c' isn't assignable to a|b
-      .exhaustive(() => 'c');
+      .exhaustive(() => {
+        // Note: ideally the error message should be here.
+        return 'c';
+      });
   });
 
   it('should return a value assignable .returnType<T>()', () => {
