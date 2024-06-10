@@ -190,7 +190,7 @@ export type Match<
    *
    * [Read the documentation for `.exhaustive()` on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
    *
-   * */
+   **/
   exhaustive: DeepExcludeAll<i, handledCases> extends infer remainingCases
     ? [remainingCases] extends [never]
       ? () => PickReturnValue<o, inferredOutput>
@@ -201,17 +201,28 @@ export type Match<
    * `.run()` return the resulting value.
    *
    * ⚠️ calling this function is unsafe, and may throw if no pattern matches your input.
-   * */
+   **/
   run(): PickReturnValue<o, inferredOutput>;
 
   /**
    * `.returnType<T>()` Lets you specify the return type for all of your branches.
    *
    * [Read the documentation for `.returnType()` on GitHub](https://github.com/gvergnaud/ts-pattern#returnType)
-   * */
+   **/
   returnType: [inferredOutput] extends [never]
     ? <output>() => Match<i, output, handledCases>
     : TSPatternError<'calling `.returnType<T>()` is only allowed directly after `match(...)`.'>;
+
+  /**
+   * `.narrow()` narrows the input type to exclude all cases that have previously been handled.
+   *
+   * `.narrow()` is only useful if you want to excluded cases from union types or nullable
+   * properties that are deeply nested. Handled cases from top level union types are excluded
+   * by default.
+   *
+   * [Read the documentation for `.narrow() on GitHub](https://github.com/gvergnaud/ts-pattern#narrow)
+   **/
+  narrow(): Match<DeepExcludeAll<i, handledCases>, o, [], inferredOutput>;
 };
 
 /**

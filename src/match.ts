@@ -133,4 +133,8 @@ class MatchExpression<input, output> {
   returnType() {
     return this;
   }
+
+  narrow() {
+    return this;
+  }
 }

@@ -1,4 +1,4 @@
-import { P } from '../src';
+import { P, match } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('P.narrow', () => {
@@ -9,5 +9,18 @@ describe('P.narrow', () => {
     type Narrowed = P.narrow<Input, typeof Pattern>;
     //     ^?
     type test = Expect<Equal<Narrowed, ['a', 'a' | 'b']>>;
+  });
+});
+
+describe('.narrow() method', () => {
+  it('should excluded values from deeply nested union types.', () => {
+    const fn = (input: { prop?: string }) =>
+      match(input)
+        .with({ prop: P.nullish }, () => false)
+        .narrow()
+        .otherwise(({ prop }) => {
+          type test = Expect<Equal<typeof prop, string>>;
+          return true;
+        });
   });
 });
