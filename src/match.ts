@@ -124,6 +124,10 @@ class MatchExpression<input, output> {
   returnType() {
     return this;
   }
+
+  narrow() {
+    return this;
+  }
 }
 
 function defaultCatcher(input: unknown): never {
