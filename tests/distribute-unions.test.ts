@@ -560,6 +560,59 @@ describe('FindAllUnions', () => {
       >
     ];
   });
+
+  it('should find whole tree structures when a pattern matches several unions on its way to the deepest value', () => {
+    type input1 = { b: { a: 'a' | 'b' } | { a: 'a' | 'd' } };
+    type match1 = { b: { a: 'a' } };
+    type res1 = FindUnionsMany<input1, match1>;
+
+    type expected1 = [
+      {
+        cases:
+          | {
+              value: {
+                a: 'a' | 'b';
+              };
+              subUnions: [
+                {
+                  cases:
+                    | {
+                        value: 'a';
+                        subUnions: [];
+                      }
+                    | {
+                        value: 'b';
+                        subUnions: [];
+                      };
+                  path: ['b', 'a'];
+                }
+              ];
+            }
+          | {
+              value: {
+                a: 'a' | 'd';
+              };
+              subUnions: [
+                {
+                  cases:
+                    | {
+                        value: 'a';
+                        subUnions: [];
+                      }
+                    | {
+                        value: 'd';
+                        subUnions: [];
+                      };
+                  path: ['b', 'a'];
+                }
+              ];
+            };
+        path: ['b'];
+      }
+    ];
+
+    type test1 = Expect<Equal<res1, expected1>>;
+  });
 });
 
 describe('Distribute', () => {

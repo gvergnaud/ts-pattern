@@ -340,18 +340,16 @@ describe('FindSelected', () => {
     });
 
     it('should return an error when trying to use several anonymous select', () => {
+      type res1 = FindSelected<
+        //  ^?
+        { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
+        {
+          a: [{ c: AnonymousSelectP }, { e: AnonymousSelectP }];
+        }
+      >;
+
       type cases = [
-        Expect<
-          Equal<
-            FindSelected<
-              { a: [{ c: 3 }, { e: 7 }]; b: { d: string }[] },
-              {
-                a: [{ c: AnonymousSelectP }, { e: AnonymousSelectP }];
-              }
-            >,
-            SeveralAnonymousSelectError
-          >
-        >,
+        Expect<Equal<res1, SeveralAnonymousSelectError>>,
         Expect<
           Equal<
             FindSelected<

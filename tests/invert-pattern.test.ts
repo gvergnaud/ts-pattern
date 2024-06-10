@@ -1,3 +1,4 @@
+import { P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import {
   InvertPattern,

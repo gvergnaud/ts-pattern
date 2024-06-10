@@ -12,28 +12,48 @@ type BuildOne<data, xs extends readonly any[]> = xs extends [
   [infer value, infer path],
   ...infer tail
 ]
-  ? BuildOne<Update<data, value, Extract<path, readonly PropertyKey[]>>, tail>
+  ? BuildOne<UpdateDeep<data, value, path>, tail>
   : data;
 
-// Update :: a -> b -> PropertyKey[] -> a
-type Update<data, value, path> = path extends readonly [
+// Update :: a -> PropertyKey[] -> b
+export type GetDeep<data, path> = path extends readonly [
   infer head,
   ...infer tail
 ]
   ? data extends readonly [any, ...any]
     ? head extends number
-      ? UpdateAt<data, Iterator<head>, Update<data[head], value, tail>>
+      ? GetDeep<data[head], tail>
       : never
     : data extends readonly (infer a)[]
-    ? Update<a, value, tail>[]
+    ? GetDeep<a, tail>
     : data extends Set<infer a>
-    ? Set<Update<a, value, tail>>
+    ? GetDeep<a, tail>
     : data extends Map<infer k, infer v>
-    ? Map<k, Update<v, value, tail>>
+    ? GetDeep<v, tail>
+    : head extends keyof data
+    ? GetDeep<data[head], tail>
+    : data
+  : data;
+
+// UpdateDeep :: a -> b -> PropertyKey[] -> a
+export type UpdateDeep<data, value, path> = path extends readonly [
+  infer head,
+  ...infer tail
+]
+  ? data extends readonly [any, ...any]
+    ? head extends number
+      ? UpdateAt<data, Iterator<head>, UpdateDeep<data[head], value, tail>>
+      : never
+    : data extends readonly (infer a)[]
+    ? UpdateDeep<a, value, tail>[]
+    : data extends Set<infer a>
+    ? Set<UpdateDeep<a, value, tail>>
+    : data extends Map<infer k, infer v>
+    ? Map<k, UpdateDeep<v, value, tail>>
     : head extends keyof data
     ? Compute<
         { [k in Exclude<keyof data, head>]: data[k] } & {
-          [k in head]: Update<data[k], value, tail>;
+          [k in head]: UpdateDeep<data[k], value, tail>;
         }
       >
     : data

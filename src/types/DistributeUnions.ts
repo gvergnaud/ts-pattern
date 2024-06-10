@@ -11,6 +11,7 @@ import type {
   ValueOf,
   MaybeAddReadonly,
   IsStrictArray,
+  IsTuple,
 } from './helpers';
 import { IsMatching } from './IsMatching';
 
@@ -38,9 +39,10 @@ import { IsMatching } from './IsMatching';
  * type t2 = DistributeMatchingUnions<['a' | 'b', 1 | 2], ['a', unknown]>;
  * // => ['a', 1 | 2] | ['b', 1 | 2]
  */
-export type DistributeMatchingUnions<a, p> = IsAny<a> extends true
-  ? any
-  : BuildMany<a, Distribute<FindUnionsMany<a, p>>>;
+export type DistributeMatchingUnions<a, p> = BuildMany<
+  a,
+  Distribute<FindUnionsMany<a, p>>
+>;
 
 // FindUnionsMany :: a -> Union<a> -> PropertyKey[] -> UnionConfig[]
 export type FindUnionsMany<
@@ -142,19 +144,11 @@ export type FindUnions<
      * in this case we turn the input array `A[]` into `[] | [A, ...A[]]`
      * to remove one of these cases during DeepExclude.
      */
-    p extends readonly [] | readonly [any, ...any] | readonly [...any, any]
+    IsTuple<p> extends true
     ? IsStrictArray<Extract<a, readonly any[]>> extends false
       ? []
       : [
-          MaybeAddReadonly<
-            | (a extends readonly [any, ...any] | readonly [...any, any]
-                ? never
-                : [])
-            | (p extends readonly [...any, any]
-                ? [...Extract<a, readonly any[]>, ValueOf<a>]
-                : [ValueOf<a>, ...Extract<a, readonly any[]>]),
-            IsReadonlyArray<a>
-          > extends infer aUnion
+          ArrayToVariadicUnion<a, p> extends infer aUnion
             ? {
                 cases: aUnion extends any
                   ? {
@@ -179,17 +173,24 @@ export type FindUnions<
     >
   : [];
 
+export type ArrayToVariadicUnion<input, excluded> = MaybeAddReadonly<
+  | []
+  | (excluded extends readonly [...any, any]
+      ? [...Extract<input, readonly any[]>, ValueOf<input>]
+      : [ValueOf<input>, ...Extract<input, readonly any[]>]),
+  IsReadonlyArray<input>
+>;
+
 // Distribute :: UnionConfig[] -> Union<[a, path][]>
-export type Distribute<unions extends readonly any[]> =
-  unions extends readonly [
-    { cases: infer cases; path: infer path },
-    ...infer tail
-  ]
-    ? cases extends { value: infer value; subUnions: infer subUnions }
-      ? [
-          [value, path],
-          ...Distribute<Extract<subUnions, readonly any[]>>,
-          ...Distribute<tail>
-        ]
-      : never
-    : [];
+export type Distribute<unions> = unions extends readonly [
+  { cases: infer cases; path: infer path },
+  ...infer tail
+]
+  ? cases extends { value: infer value; subUnions: infer subUnions }
+    ? [
+        [value, path],
+        ...Distribute<Extract<subUnions, readonly any[]>>,
+        ...Distribute<tail>
+      ]
+    : never
+  : [];
