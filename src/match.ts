@@ -112,9 +112,9 @@ class MatchExpression<input, output> {
     return handler(this.input);
   }
 
-  exhaustive(catcher = defaultCatcher): output {
+  exhaustive(unexpectedValueHandler = defaultCatcher): output {
     if (this.state.matched) return this.state.value;
-    return catcher(this.input);
+    return unexpectedValueHandler(this.input);
   }
 
   run(): output {
