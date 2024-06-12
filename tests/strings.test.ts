@@ -124,6 +124,15 @@ describe('Strings', () => {
     expect(f('bb')).toBe('yes');
     expect(f('aaa')).toBe('no');
     expect(f('a')).toBe('no');
+
+    const f2 = (input: string | number) =>
+      match(input)
+        .with(P.string.length(2), (value) => {
+          type t = Expect<Equal<typeof value, string>>;
+          return 'yes';
+        })
+        // @ts-expect-error matching on specific length isn't exhaustive.
+        .exhaustive();
   });
 
   it(`P.string.maxLength(..)`, () => {
