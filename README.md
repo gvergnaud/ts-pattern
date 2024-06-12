@@ -1341,7 +1341,7 @@ console.log(fn('two')); // logs '🎉'
 
 ### `P.string.length`
 
-`P.string.length(min)` matches strings with exactly `len` characters.
+`P.string.length(len)` matches strings with exactly `len` characters.
 
 ```ts
 const fn = (input: string) =>
