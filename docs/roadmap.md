@@ -1,10 +1,9 @@
 ### Roadmap
 
 - [ ] better variant attempt.
-- [ ] `.narrow()` as an opt-in option.
-  - Can we avoid generating a distributed when pattern-matching on a single union type?
-    - In BuildMany/Distribute, we could probably check the number of unions that have been touched, and if it's one we don't distribute?
-    - => this creates performance issue. TODO: run trace analyzer.
+- [x] `.narrow()` as an opt-in option.
+  - [ ] maybe add a `.narrowDeep()`
+  - [ ] Try making this behavior the default
 - [ ] `P.array.includes(x)`
 - [ ] `P.record({Pkey}, {Pvalue})`
 - [x] `P.nonNullable`

@@ -22,5 +22,15 @@ describe('.narrow() method', () => {
           type test = Expect<Equal<typeof prop, string>>;
           return true;
         });
+
+    const fn2 = (input: { prop?: 1 | 2 | 3 }) =>
+      match(input)
+        .with({ prop: P.nullish }, () => false)
+        .with({ prop: 2 }, () => false)
+        .narrow()
+        .otherwise(({ prop }) => {
+          type test = Expect<Equal<typeof prop, 1 | 3>>;
+          return true;
+        });
   });
 });

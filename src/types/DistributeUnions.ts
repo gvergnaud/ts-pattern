@@ -187,10 +187,6 @@ export type Distribute<unions> = unions extends readonly [
   ...infer tail
 ]
   ? cases extends { value: infer value; subUnions: infer subUnions }
-    ? [
-        [value, path],
-        ...Distribute<Extract<subUnions, readonly any[]>>,
-        ...Distribute<tail>
-      ]
+    ? [[value, path], ...Distribute<subUnions>, ...Distribute<tail>]
     : never
   : [];
