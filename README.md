@@ -1071,7 +1071,7 @@ import { match, P } from 'ts-pattern';
 
 type Input = { score: number };
 
-const output = match({ score: 10 })
+const output = match<Input>({ score: 10 })
   .with(
     {
       score: P.when((score): score is 5 => score === 5),
