@@ -108,6 +108,24 @@ describe('Strings', () => {
     expect(f('a')).toBe('no');
   });
 
+  it(`P.string.length(..)`, () => {
+    const f = (input: string | number) =>
+      match(input)
+        .with(P.string.length(2), (value) => {
+          type t = Expect<Equal<typeof value, string>>;
+          return 'yes';
+        })
+        .otherwise((value) => {
+          type t = Expect<Equal<typeof value, string | number>>;
+          return 'no';
+        });
+
+    expect(f('aa')).toBe('yes');
+    expect(f('bb')).toBe('yes');
+    expect(f('aaa')).toBe('no');
+    expect(f('a')).toBe('no');
+  });
+
   it(`P.string.maxLength(..)`, () => {
     const f = (input: string | number) =>
       match(input)

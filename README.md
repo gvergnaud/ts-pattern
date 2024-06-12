@@ -1339,6 +1339,19 @@ const fn = (input: string) =>
 console.log(fn('two')); // logs '🎉'
 ```
 
+### `P.string.length`
+
+`P.string.length(min)` matches strings with exactly `len` characters.
+
+```ts
+const fn = (input: string) =>
+  match(input)
+    .with(P.string.length(2), () => '🎉')
+    .otherwise(() => '❌');
+
+console.log(fn('ok')); // logs '🎉'
+```
+
 ### `P.string.maxLength`
 
 `P.string.maxLength(max)` matches strings with at most `max` characters.

@@ -314,6 +314,21 @@ export type StringChainable<
         omitted | 'minLength'
       >;
       /**
+       * `P.string.length(len)` is a pattern, matching **strings** with exactly `len` characters.
+       *
+       * [Read the documentation for `P.string.length` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringlength)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.string.length(10), () => 'strings with length === 10')
+       */
+      length<input, const len extends number>(
+        len: len
+      ): StringChainable<
+        MergeGuards<input, p, GuardExcludeP<unknown, string, never>>,
+        omitted | 'length' | 'minLength' | 'maxLength'
+      >;
+      /**
        * `P.string.maxLength(max)` is a pattern, matching **strings** with at most `max` characters.
        *
        * [Read the documentation for `P.string.maxLength` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringmaxLength)

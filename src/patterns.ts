@@ -713,6 +713,18 @@ const minLength = <const min extends number>(min: min) =>
   when((value) => isString(value) && value.length >= min);
 
 /**
+ * `P.string.length(len)` is a pattern, matching **strings** with exactly `len` characters.
+ *
+ * [Read the documentation for `P.string.length` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringlength)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.string.length(10), () => 'strings with length === 10')
+ */
+const length = <const len extends number>(len: len) =>
+  when((value) => isString(value) && value.length === len);
+
+/**
  * `P.string.maxLength(max)` is a pattern, matching **strings** with at most `max` characters.
  *
  * [Read the documentation for `P.string.maxLength` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringmaxLength)
@@ -762,6 +774,8 @@ const stringChainable = <pattern extends Matcher<any, any, any, any, any>>(
       stringChainable(intersection(pattern, endsWith(str))),
     minLength: (min: number) =>
       stringChainable(intersection(pattern, minLength(min))),
+    length: (len: number) =>
+      stringChainable(intersection(pattern, length(len))),
     maxLength: (max: number) =>
       stringChainable(intersection(pattern, maxLength(max))),
     includes: (str: string) =>
