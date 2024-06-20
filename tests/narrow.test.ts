@@ -16,8 +16,7 @@ describe('.narrow() method', () => {
   it('should excluded values from deeply nested union types.', () => {
     const fn = (input: { prop?: string }) =>
       match(input)
-        .with({ prop: P.nullish }, () => false)
-        .narrow()
+        .with({ prop: P.nullish.optional() }, () => false)
         .otherwise(({ prop }) => {
           type test = Expect<Equal<typeof prop, string>>;
           return true;
@@ -25,9 +24,8 @@ describe('.narrow() method', () => {
 
     const fn2 = (input: { prop?: 1 | 2 | 3 }) =>
       match(input)
-        .with({ prop: P.nullish }, () => false)
+        .with({ prop: P.nullish.optional() }, () => false)
         .with({ prop: 2 }, () => false)
-        .narrow()
         .otherwise(({ prop }) => {
           type test = Expect<Equal<typeof prop, 1 | 3>>;
           return true;

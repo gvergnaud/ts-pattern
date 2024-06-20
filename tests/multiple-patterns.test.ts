@@ -1,6 +1,7 @@
 import { match, P } from '../src';
 import { Option } from './types-catalog/utils';
 import { Expect, Equal } from '../src/types/helpers';
+import { TryDeepExcludeOne } from '../src/types/DeepExclude';
 
 describe('Multiple patterns', () => {
   it('should match if one of the patterns matches', () => {
@@ -189,9 +190,13 @@ describe('Multiple patterns', () => {
           (x) => 'Object'
         )
         .with([false, 2], (x) => '[false, 2]')
+        // TODO fix
         .with([false, P.number], (x) => '[false, number]')
         .with([true, P.number], (x) => '[true, number]')
         .exhaustive();
+
+    type T = TryDeepExcludeOne<[boolean, number], readonly [false, 2]>;
+    //   ^?
 
     const cases: { input: Input; expected: string }[] = [
       { input: null, expected: 'Nullable' },

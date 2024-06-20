@@ -52,7 +52,7 @@ export type SetDeep<data, value, path> = path extends readonly [
     ? Map<k, SetDeep<v, value, tail>>
     : head extends keyof data
     ? {
-        [k in keyof data]-?: k extends head
+        [k in keyof data]: k extends head
           ? SetDeep<data[head], value, tail>
           : data[k];
       }

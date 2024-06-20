@@ -1,7 +1,7 @@
 import type * as symbols from '../internals/symbols';
 import type { Pattern, MatchedValue } from './Pattern';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
-import type { DeepExclude } from './DeepExclude';
+import type { DeepExclude, TryDeepExcludeOne } from './DeepExclude';
 import type { Union, GuardValue, IsNever } from './helpers';
 import type { FindSelected } from './FindSelected';
 
@@ -53,7 +53,7 @@ export type Match<
     ) => PickReturnValue<o, c>
   ): InvertPatternForExclude<p, value> extends infer excluded
     ? Match<
-        Exclude<i, excluded>,
+        TryDeepExcludeOne<i, excluded>,
         o,
         [...handledCases, excluded],
         Union<inferredOutput, c>
@@ -75,7 +75,7 @@ export type Match<
     InvertPatternForExclude<p2, value>
   ] extends [infer excluded1, infer excluded2]
     ? Match<
-        Exclude<i, excluded1 | excluded2>,
+        TryDeepExcludeOne<i, excluded1 | excluded2>,
         o,
         [...handledCases, excluded1, excluded2],
         Union<inferredOutput, c>
@@ -110,7 +110,7 @@ export type Match<
     infer excludedRest
   ]
     ? Match<
-        Exclude<
+        TryDeepExcludeOne<
           i,
           | excluded1
           | excluded2
@@ -143,7 +143,7 @@ export type Match<
     ) => PickReturnValue<o, c>
   ): pred extends (value: any) => value is infer narrowed
     ? Match<
-        Exclude<i, narrowed>,
+        TryDeepExcludeOne<i, narrowed>,
         o,
         [...handledCases, narrowed],
         Union<inferredOutput, c>
@@ -161,7 +161,7 @@ export type Match<
     handler: (value: value) => PickReturnValue<o, c>
   ): pred extends (value: any) => value is infer narrowed
     ? Match<
-        Exclude<i, narrowed>,
+        TryDeepExcludeOne<i, narrowed>,
         o,
         [...handledCases, narrowed],
         Union<inferredOutput, c>

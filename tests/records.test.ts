@@ -1,5 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
-import { match, P } from '../src';
+import { match } from '../src';
 
 describe('Records ({})', () => {
   it('Should match records', () => {

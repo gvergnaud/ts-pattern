@@ -95,14 +95,16 @@ export type IsMatching<a, b> = true extends IsUnion<a> | IsUnion<b>
       a extends any // loop over the `a` union
         ? [keyof b & keyof a] extends [never] // if no common keys
           ? false
-          : /**
-           * Intentionally not using ValueOf, to avoid reaching the
-           * 'type instanciation is too deep error'.
-           */
-          { [k in keyof b & keyof a]: IsMatching<a[k], b[k]> }[keyof b &
+          : keyof b extends keyof a
+          ? /**
+             * Intentionally not using ValueOf, to avoid reaching the
+             * 'type instanciation is too deep error'.
+             */
+            { [k in keyof b & keyof a]: IsMatching<a[k], b[k]> }[keyof b &
               keyof a] extends true
-          ? true // all values are matching
-          : false
+            ? true // all values are matching
+            : false
+          : false // If keyof b is larger than keyof a, then the pattern does not match.
         : never
     )
     ? true

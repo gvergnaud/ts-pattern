@@ -61,7 +61,7 @@ describe('IsMatching', () => {
       });
     });
 
-    it('Object', () => {
+    describe('Object', () => {
       type cases = [
         Expect<Equal<IsMatching<{}, {}>, true>>,
         Expect<
@@ -206,6 +206,17 @@ describe('IsMatching', () => {
         Expect<Equal<IsMatching<{ type: 'a' }, {}>, true>>,
         Expect<Equal<IsMatching<{}, { type: 'a' }>, false>>
       ];
+
+      it("shouldn't match if the pattern contains more keys than the object", () => {
+        type res1 = IsMatching<{ type: 'a' }, { type: 'a' }>; // =>
+        type test1 = Expect<Equal<res1, true>>;
+
+        type res2 = IsMatching<{ a: 'a' }, { a: 'a'; b: 'b' }>; // =>
+        type test2 = Expect<Equal<res2, false>>;
+
+        type res3 = IsMatching<{ a: 'a'; b: 'b' }, { a: 'a' }>; // =>
+        type test3 = Expect<Equal<res3, true>>;
+      });
     });
 
     it('Tuples', () => {

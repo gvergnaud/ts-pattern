@@ -1,5 +1,6 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, P } from '../src';
+import { TryDeepExcludeOne } from '../src/types/DeepExclude';
 
 describe('optional properties', () => {
   it('matching on optional properties should work', () => {
@@ -25,12 +26,14 @@ describe('optional properties', () => {
         return 10;
       })
       .with({ type: 'post' }, (x) => {
-        type t = Expect<Equal<typeof x, Post>>;
+        type t = Expect<
+          Equal<typeof x, { type: 'post'; id?: undefined; body: string }>
+        >;
         // id is still nullable
         x.id = undefined;
         return 1;
       })
-      .run();
+      .exhaustive();
 
     expect(res).toEqual(100);
   });
@@ -101,7 +104,7 @@ describe('optional properties', () => {
         return `Foo: ${value.b}`;
       })
       .with({ a: SomeEnum.Bar }, (value) => `Bar: ${value.b}`)
-      .with({ a: undefined }, (value) => `<undefined>: ${value.b}`)
+      .with({ a: P.optional(undefined) }, (value) => `<undefined>: ${value.b}`)
       .exhaustive();
 
     expect(result).toEqual(`Foo: not important`);

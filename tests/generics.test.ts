@@ -39,8 +39,8 @@ describe('generics', () => {
       match<a[], Option<a>>(xs)
         .with([], () => none)
         .with(P._, (x, y) => {
-          type t = Expect<Equal<typeof x, a[]>>;
-          type t2 = Expect<Equal<typeof y, a[]>>;
+          type t = Expect<Equal<typeof x, [a, ...a[]]>>;
+          type t2 = Expect<Equal<typeof y, [a, ...a[]]>>;
           return some(xs[xs.length - 1]);
         })
         .exhaustive();
@@ -84,20 +84,20 @@ describe('generics', () => {
 
     const f = <T>(input: State<[number, number] | number>) => {
       return match({ input })
-        .with({ input: P.when(isSuccess) }, (x) => {
-          type t = Expect<
-            Equal<
-              typeof x,
-              { input: { t: 'success'; value: number | [number, number] } }
-            >
-          >;
-          return 'ok';
-        })
         .with({ input: P.when(isDoubleSuccess) }, (x) => {
           type t = Expect<
             Equal<
               typeof x,
               { input: { t: 'success'; value: [number, number] } }
+            >
+          >;
+          return 'ok';
+        })
+        .with({ input: P.when(isSuccess) }, (x) => {
+          type t = Expect<
+            Equal<
+              typeof x,
+              { input: { t: 'success'; value: number | [number, number] } }
             >
           >;
           return 'ok';

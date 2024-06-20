@@ -383,17 +383,19 @@ describe('and, and or patterns', () => {
     it('unions containing selects should consider all selections optional', () => {
       type Input = {
         value:
-          | { type: 'a'; n: number }
-          | { type: 'b'; s: string }
-          | { type: 'c'; b: boolean };
+          | { type: 'a'; num: number }
+          | { type: 'b'; str: string }
+          | { type: 'c'; bool: boolean }
+          | { type: 'd'; sym: symbol }
+          | { type: 'e'; undefined: undefined };
       };
       const f = (input: Input) => {
         return match(input)
           .with(
             {
               value: P.union(
-                { type: 'a', n: P.select('n') },
-                { type: 'b', s: P.select('s') }
+                { type: 'a', num: P.select('num') },
+                { type: 'b', str: P.select('str') }
               ),
             },
             (x) => {
@@ -401,8 +403,8 @@ describe('and, and or patterns', () => {
                 Equal<
                   typeof x,
                   {
-                    n: number | undefined;
-                    s: string | undefined;
+                    num: number | undefined;
+                    str: string | undefined;
                   }
                 >
               >;
@@ -411,10 +413,10 @@ describe('and, and or patterns', () => {
           )
           .with(
             {
-              value: P.union({ type: 'a', n: P.select() }, { type: 'b' }),
+              value: P.union({ type: 'd', sym: P.select() }, { type: 'e' }),
             },
             (x) => {
-              type t = Expect<Equal<typeof x, number | undefined>>;
+              type t = Expect<Equal<typeof x, symbol | undefined>>;
               return x;
             }
           )
@@ -423,15 +425,15 @@ describe('and, and or patterns', () => {
           .exhaustive();
       };
 
-      expect(f({ value: { type: 'a', n: 20 } })).toEqual({
+      expect(f({ value: { type: 'a', num: 20 } })).toEqual({
         n: 20,
         s: undefined,
       });
-      expect(f({ value: { type: 'b', s: 'str' } })).toEqual({
+      expect(f({ value: { type: 'b', str: 'str' } })).toEqual({
         a: undefined,
         s: 'str',
       });
-      expect(f({ value: { type: 'c', b: true } })).toEqual('other');
+      expect(f({ value: { type: 'c', bool: true } })).toEqual('other');
     });
 
     it('P.not should work with unions and intersections', () => {
@@ -533,7 +535,9 @@ describe('and, and or patterns', () => {
         value:
           | { type: 'a'; n: number }[]
           | { type: 'b'; s: string }[]
-          | { type: 'c'; b: boolean }[];
+          | { type: 'c'; b: boolean }[]
+          | { type: 'd'; sym: symbol }[]
+          | { type: 'e'; undefined: undefined }[];
       };
 
       const f = (input: Input) => {
@@ -552,15 +556,15 @@ describe('and, and or patterns', () => {
             return x.value[0].type;
           })
           .with(
-            { value: P.array(P.union({ type: 'a' }, { type: 'b' })) },
+            { value: P.array(P.union({ type: 'd' }, { type: 'e' })) },
             (x) => {
               type t = Expect<
                 Equal<
                   typeof x,
                   {
                     value:
-                      | { type: 'a'; n: number }[]
-                      | { type: 'b'; s: string }[];
+                      | { type: 'd'; sym: symbol }[]
+                      | { type: 'e'; undefined: undefined }[];
                   }
                 >
               >;

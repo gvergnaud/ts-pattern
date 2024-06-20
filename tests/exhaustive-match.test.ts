@@ -1,4 +1,6 @@
 import { match, P } from '../src';
+import { TryDeepExcludeOne } from '../src/types/DeepExclude';
+import { IsMatching } from '../src/types/IsMatching';
 import { Equal, Expect } from '../src/types/helpers';
 import {
   Option,
@@ -545,6 +547,18 @@ describe('exhaustive()', () => {
           .exhaustive();
 
       expect(last([1, 2, 3])).toEqual(some(3));
+
+      const map = <A, B>(
+        option: Option<A>,
+        mapper: (value: A) => B
+      ): Option<B> =>
+        match<Option<A>, Option<B>>(option)
+          .with({ kind: 'some' }, ({ value }) => ({
+            kind: 'some',
+            value: mapper(value),
+          }))
+          .with({ kind: 'none' }, (x) => x)
+          .exhaustive();
     });
 
     it('should work with generics in type guards', () => {
@@ -887,6 +901,23 @@ describe('exhaustive()', () => {
         sex: 'a' | 'b';
         age: 'c' | 'd';
       };
+
+      type p = {
+        readonly sex: 'b';
+        readonly oopsThisIsATypo: 'c';
+      };
+
+      type T = TryDeepExcludeOne<
+        // ^?
+        Person,
+        p
+      >;
+
+      type Mutable<T> = { -readonly [k in keyof T]: T[k] };
+      type x2 = Person extends { sex: 'a' | 'b'; y: 'x' } ? true : false;
+      //   ^?
+      type x = IsMatching<Person, p>;
+      //   ^?
 
       function withTypo(person: Person) {
         return (
