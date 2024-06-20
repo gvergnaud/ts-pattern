@@ -32,7 +32,7 @@ export type GetDeep<data, path> = path extends readonly [
     ? GetDeep<v, tail>
     : head extends keyof data
     ? GetDeep<data[head], tail>
-    : data
+    : never
   : data;
 
 // SetDeep :: a -> b -> PropertyKey[] -> a
