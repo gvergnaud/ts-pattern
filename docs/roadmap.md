@@ -1,5 +1,10 @@
 ### Roadmap
 
+- [ ] better variant attempt.
+- [x] `.narrow()` as an opt-in option.
+  - [ ] Try making single union deep narrowing the default
+  - [ ] maybe add a `.narrowDeep()`
+  - [x] Try making this behavior the default: too slow
 - [ ] `P.array.includes(x)`
 - [ ] `P.record({Pkey}, {Pvalue})`
 - [x] `P.nonNullable`
