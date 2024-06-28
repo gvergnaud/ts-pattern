@@ -111,19 +111,9 @@ class MatchExpression<input, output> {
     return handler(this.input);
   }
 
-  exhaustive(): output {
+  exhaustive(catcher = defaultCatcher): output {
     if (this.state.matched) return this.state.value;
-
-    let displayedValue;
-    try {
-      displayedValue = JSON.stringify(this.input);
-    } catch (e) {
-      displayedValue = this.input;
-    }
-
-    throw new Error(
-      `Pattern matching error: no pattern matches value ${displayedValue}`
-    );
+    return catcher(this.input);
   }
 
   run(): output {
@@ -133,4 +123,18 @@ class MatchExpression<input, output> {
   returnType() {
     return this;
   }
+}
+
+function defaultCatcher(input: unknown): never {
+  let displayedValue;
+
+  try {
+    displayedValue = JSON.stringify(input);
+  } catch (e) {
+    displayedValue = input;
+  }
+
+  throw new Error(
+    `Pattern matching error: no pattern matches value ${displayedValue}`
+  );
 }
