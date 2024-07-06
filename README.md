@@ -145,8 +145,8 @@ Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), my o
 ## Sandbox examples
 
 - [Basic Demo](https://stackblitz.com/edit/vitejs-vite-qrk8po?file=src%2Fexamples%2Fbasic.tsx)
-- [React gif fetcher app Demo](https://codesandbox.io/s/ts-pattern-gif-search-demo-v4-bkumdw?file=/src/App.tsx)
-- [React.useReducer Demo](https://codesandbox.io/p/devbox/ts-pattern-v4-reducer-example-fx2yqu?file=%2Fsrc%2FApp.tsx)
+- [React gif fetcher app Demo](https://stackblitz.com/edit/ts-pattern-gifs?file=src%2FApp.tsx)
+- [React.useReducer Demo](https://stackblitz.com/edit/ts-pattern-reducer?file=src%2FApp.tsx)
 - [Handling untyped API response Demo](https://stackblitz.com/edit/vitejs-vite-qrk8po?file=src%2Fexamples%2Fapi.tsx)
 - [`P.when` Guard Demo](https://stackblitz.com/edit/vitejs-vite-qrk8po?file=src%2Fexamples%2Fwhen.tsx)
 - [`P.not` Pattern Demo](https://stackblitz.com/edit/vitejs-vite-qrk8po?file=src%2Fexamples%2Fnot.tsx)
