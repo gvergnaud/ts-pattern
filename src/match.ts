@@ -2,6 +2,7 @@ import { Pattern } from './types/Pattern';
 import { Match } from './types/Match';
 import * as symbols from './internals/symbols';
 import { matchPattern } from './internals/helpers';
+import { ExhaustiveError } from './errors';
 
 type MatchState<output> =
   | { matched: true; value: output }
@@ -114,16 +115,7 @@ class MatchExpression<input, output> {
   exhaustive(): output {
     if (this.state.matched) return this.state.value;
 
-    let displayedValue;
-    try {
-      displayedValue = JSON.stringify(this.input);
-    } catch (e) {
-      displayedValue = this.input;
-    }
-
-    throw new Error(
-      `Pattern matching error: no pattern matches value ${displayedValue}`
-    );
+    throw new ExhaustiveError(this.input);
   }
 
   run(): output {

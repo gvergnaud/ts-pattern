@@ -1,4 +1,4 @@
-import { match, P } from '../src';
+import { ExhaustiveError, match, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import {
   Option,
@@ -789,6 +789,53 @@ describe('exhaustive()', () => {
       })
       .with(2, () => 2)
       .exhaustive();
+  });
+
+  describe('Exhaustive match with runtime error', () => {
+    type FlagComponent = { color: 'red' | 'white' | 'blue' };
+
+    function checkFlagComponent(component: FlagComponent) {
+      return match(component)
+        .with({ color: 'red' }, () => {
+          throw new Error('Red error');
+        })
+        .with({ color: 'white' }, () => {
+          throw new Error('White error');
+        })
+        .with({ color: 'blue' }, () => {
+          throw new Error('Blue error');
+        })
+        .exhaustive();
+    }
+
+    it('Unmatched pattern results in ExhaustiveError', () => {
+      expect.assertions(3);
+      const input = { color: 'orange' } as unknown as FlagComponent;
+
+      try {
+        checkFlagComponent(input);
+      } catch (e) {
+        const err = e as ExhaustiveError;
+        expect(err).toBeInstanceOf(ExhaustiveError);
+        expect(err.message).toEqual(
+          'Pattern matching error: no pattern matches value {"color":"orange"}'
+        );
+        expect(err.input).toStrictEqual(input);
+      }
+    });
+
+    it('Matched pattern with callback error does not result in ExhaustiveError', () => {
+      expect.assertions(3);
+
+      try {
+        checkFlagComponent({ color: 'blue' });
+      } catch (e) {
+        const err = e as Error;
+        expect(err).toBeInstanceOf(Error);
+        expect(err).not.toBeInstanceOf(ExhaustiveError);
+        expect(err.message).toEqual('Blue error');
+      }
+    });
   });
 
   describe('Exhaustive match and `not` patterns', () => {
