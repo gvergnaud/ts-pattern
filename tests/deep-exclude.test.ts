@@ -1,11 +1,5 @@
 import { DeepExclude } from '../src/types/DeepExclude';
-import {
-  DistributeMatchingUnions,
-  FindUnions,
-  FindUnionsMany,
-} from '../src/types/DistributeUnions';
 import { Primitives, Equal, Expect } from '../src/types/helpers';
-import { IsMatching } from '../src/types/IsMatching';
 import { BigUnion, Option, State } from './types-catalog/utils';
 
 type Colors = 'pink' | 'purple' | 'red' | 'yellow' | 'blue';
@@ -61,106 +55,91 @@ describe('DeepExclude', () => {
     });
 
     it('should work with nested object and only distribute what is necessary', () => {
-      type x = DeepExclude<{ str: string | null | undefined }, { str: string }>;
-      type xx = DistributeMatchingUnions<
+      type res1 = DeepExclude<
         { str: string | null | undefined },
         { str: string }
       >;
-      type xxx = FindUnionsMany<
-        { str: string | null | undefined },
-        { str: string }
-      >;
-      type xxxx = IsMatching<
-        { str: string | null | undefined },
-        { str: string }
-      >;
-      type xxxxx = FindUnions<
-        { str: string | null | undefined },
-        { str: string },
-        []
-      >;
-      type y = DeepExclude<
+      type test1 = Expect<Equal<res1, { str: null | undefined }>>;
+
+      type res2 = DeepExclude<
         { str: string | null | undefined },
         { str: null | undefined }
       >;
+      type test2 = Expect<Equal<res2, { str: string }>>;
 
-      type cases = [
-        Expect<Equal<x, { str: null } | { str: undefined }>>,
-        Expect<Equal<y, { str: string }>>,
-        Expect<
-          Equal<
-            DeepExclude<{ a: { b: 'x' | 'y' } }, { a: { b: 'x' } }>,
-            { a: { b: 'y' } }
-          >
-        >,
-        Expect<
-          Equal<
-            DeepExclude<{ a: { b: 'x' | 'y' | 'z' } }, { a: { b: 'x' } }>,
-            { a: { b: 'y' } } | { a: { b: 'z' } }
-          >
-        >,
-        Expect<
-          Equal<
-            DeepExclude<
-              { a: { b: 'x' | 'y' | 'z' }; c: 'u' | 'v' },
-              { a: { b: 'x' } }
-            >,
-            { a: { b: 'y' }; c: 'u' | 'v' } | { a: { b: 'z' }; c: 'u' | 'v' }
-          >
-        >,
-        Expect<
-          Equal<
-            DeepExclude<
-              { a: { b: 'x' | 'y' | 'z' }; c: 'u' | 'v' },
-              { c: 'u' }
-            >,
-            { a: { b: 'x' | 'y' | 'z' }; c: 'v' }
-          >
-        >,
-        Expect<
-          Equal<
-            DeepExclude<
-              { a: { b: 'x' | 'y' | 'z' }; c: 'u' | 'v' },
-              { c: 'u' }
-            >,
-            { a: { b: 'x' | 'y' | 'z' }; c: 'v' }
-          >
+      type test3 = Expect<
+        Equal<
+          DeepExclude<{ a: { b: 'x' | 'y' } }, { a: { b: 'x' } }>,
+          { a: { b: 'y' } }
         >
-      ];
+      >;
+
+      type res4 = DeepExclude<{ a: { b: 'x' | 'y' | 'z' } }, { a: { b: 'x' } }>;
+      type test4 = Expect<Equal<res4, { a: { b: 'y' | 'z' } }>>;
+
+      type res5 = DeepExclude<
+        { a: { b: 'x' | 'y' | 'z' }; c: 'u' | 'v' },
+        { a: { b: 'x' } }
+      >;
+      type test5 = Expect<Equal<res5, { c: 'u' | 'v'; a: { b: 'y' | 'z' } }>>;
+
+      type test6 = Expect<
+        Equal<
+          DeepExclude<{ a: { b: 'x' | 'y' | 'z' }; c: 'u' | 'v' }, { c: 'u' }>,
+          { a: { b: 'x' | 'y' | 'z' }; c: 'v' }
+        >
+      >;
+
+      type test7 = Expect<
+        Equal<
+          DeepExclude<{ a: { b: 'x' | 'y' | 'z' }; c: 'u' | 'v' }, { c: 'u' }>,
+          { a: { b: 'x' | 'y' | 'z' }; c: 'v' }
+        >
+      >;
     });
   });
 
   describe('Tuples', () => {
     it('should correctly exclude when it matches', () => {
-      type cases = [
-        Expect<Equal<DeepExclude<['x' | 'y'], [string]>, never>>,
-        Expect<Equal<DeepExclude<['x' | 'y'], ['x']>, ['y']>>,
-        Expect<
-          Equal<
-            DeepExclude<[string, string], readonly [unknown, unknown]>,
-            never
-          >
-        >,
-        Expect<
-          Equal<
-            DeepExclude<[number, State], [unknown, { status: 'error' }]>,
-            | [number, { status: 'idle' }]
-            | [number, { status: 'loading' }]
-            | [number, { status: 'success'; data: string }]
-          >
-        >,
-        Expect<
-          Equal<
-            DeepExclude<
-              readonly [number, State],
-              [unknown, { status: 'error' }]
-            >,
-            | [number, { status: 'idle' }]
-            | [number, { status: 'loading' }]
-            | [number, { status: 'success'; data: string }]
-          >
+      type res1 = DeepExclude<['x' | 'y'], [string]>;
+      type test1 = Expect<Equal<res1, never>>;
+      type test2 = Expect<Equal<DeepExclude<['x' | 'y'], ['x']>, ['y']>>;
+      type test3 = Expect<
+        Equal<DeepExclude<[string, string], readonly [unknown, unknown]>, never>
+      >;
+
+      type res4 = DeepExclude<[number, State], [unknown, { status: 'error' }]>;
+      type type4 = Expect<
+        Equal<
+          res4,
+          [
+            number,
+            (
+              | { status: 'idle' }
+              | { status: 'loading' }
+              | { status: 'success'; data: string }
+            )
+          ]
         >
-      ];
+      >;
+
+      type res5 = DeepExclude<
+        readonly [number, State],
+        [unknown, { status: 'error' }]
+      >;
+      type test5 = Expect<
+        Equal<
+          res5,
+          [
+            number,
+            (
+              | { status: 'idle' }
+              | { status: 'loading' }
+              | { status: 'success'; data: string }
+            )
+          ]
+        >
+      >;
     });
 
     it("if it doesn't match, it should leave the data structure untouched", () => {
@@ -172,24 +151,16 @@ describe('DeepExclude', () => {
     });
 
     it('should work with nested tuples and only distribute what is necessary', () => {
-      type cases = [
-        Expect<Equal<DeepExclude<[['x' | 'y']], [['x']]>, [['y']]>>,
-        Expect<
-          Equal<DeepExclude<[['x' | 'y' | 'z']], [['x']]>, [['y']] | [['z']]>
-        >,
-        Expect<
-          Equal<
-            DeepExclude<[['x' | 'y' | 'z'], 'u' | 'v'], [['x'], unknown]>,
-            [['y'], 'u' | 'v'] | [['z'], 'u' | 'v']
-          >
-        >,
-        Expect<
-          Equal<
-            DeepExclude<[['x' | 'y' | 'z'], 'u' | 'v'], [unknown, 'v']>,
-            [['x' | 'y' | 'z'], 'u']
-          >
-        >
-      ];
+      type test1 = Expect<Equal<DeepExclude<[['x' | 'y']], [['x']]>, [['y']]>>;
+
+      type res2 = DeepExclude<[['x' | 'y' | 'z']], [['x']]>;
+      type test2 = Expect<Equal<res2, [['y' | 'z']]>>;
+
+      type res3 = DeepExclude<[['x' | 'y' | 'z'], 'u' | 'v'], [['x'], unknown]>;
+      type test3 = Expect<Equal<res3, [['y' | 'z'], 'u' | 'v']>>;
+
+      type res4 = DeepExclude<[['x' | 'y' | 'z'], 'u' | 'v'], [unknown, 'v']>;
+      type test4 = Expect<Equal<res4, [['x' | 'y' | 'z'], 'u']>>;
     });
 
     it('should work with nested unary tuples', () => {
@@ -271,21 +242,14 @@ describe('DeepExclude', () => {
         Equal<res1, { values: [1 | 2 | 3, ...(1 | 2 | 3)[]] }>
       >;
 
-      type cases = [
-        Expect<Equal<DeepExclude<[] | [1, 2, 3], []>, [1, 2, 3]>>,
-        Expect<
-          Equal<
-            DeepExclude<{ values: [] | [1, 2, 3] }, { values: [] }>,
-            { values: [1, 2, 3] }
-          >
-        >,
-        Expect<
-          Equal<
-            DeepExclude<{ values: [1, 2, 3] }, { values: [] }>,
-            { values: [1, 2, 3] }
-          >
-        >
-      ];
+      type res2 = DeepExclude<[] | [1, 2, 3], []>;
+      type test2 = Expect<Equal<res2, [1, 2, 3]>>;
+
+      type res3 = DeepExclude<{ values: [] | [1, 2, 3] }, { values: [] }>;
+      type test3 = Expect<Equal<res3, { values: [1, 2, 3] }>>;
+
+      type res4 = DeepExclude<{ values: [1, 2, 3] }, { values: [] }>;
+      type test4 = Expect<Equal<res4, { values: [1, 2, 3] }>>;
     });
   });
 
@@ -579,5 +543,16 @@ describe('DeepExclude', () => {
         { type: 'c'; value: { type: 'f'; value: number[] } }
       >
     >;
+  });
+
+  describe('should not distribute when a single union is matched', () => {
+    type res1 = DeepExclude<readonly [1 | 2 | 3, 'c' | 'd'], [1, unknown]>;
+    type test1 = Expect<Equal<res1, [2 | 3, 'c' | 'd']>>;
+
+    type res2 = DeepExclude<
+      readonly [1 | 2 | 3, 'c' | 'd'] | [2 | 3, 'c' | 'e'],
+      [1, 'c']
+    >;
+    type test2 = Expect<Equal<res1, [2 | 3, 'c' | 'd']>>;
   });
 });
