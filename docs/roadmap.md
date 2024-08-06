@@ -1,5 +1,12 @@
 ### Roadmap
 
+- [ ] `P.ExactPattern<Type>` to infer the exact pattern you must write to fully cover all possible properties of `Type`.
+- [ ] Allow calling `isMatching` with a type parameter to restrain the pattern type: `isMatching<Type>(pattern)`.
+- [ ] better variant attempt.
+- [x] `.narrow()` as an opt-in option.
+  - [ ] Try making single union deep narrowing the default
+  - [ ] maybe add a `.narrowDeep()`
+  - [x] Try making this behavior the default: too slow
 - [ ] `P.array.includes(x)`
 - [ ] `P.record({Pkey}, {Pvalue})`
 - [x] `P.nonNullable`
