@@ -198,6 +198,23 @@ export type Match<
     : never;
 
   /**
+   * `.safeExhaustive()` checks that all cases are handled, and returns the result value, but does not throw an error.
+   *  instead you can supply a default value like you can with `.otherwise()` and also can provide an `error message handler` optionally
+   *  as a second argument
+   *
+   * [Read the documentation for `.exhaustive()` on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
+   *
+   * */
+  safeExhaustive: DeepExcludeAll<i, handledCases> extends infer remainingCases
+    ? [remainingCases] extends [never]
+      ? (
+          handler: (input: i) => inferredOutput,
+          errorMessageHandler?: (input: string) => unknown
+        ) => PickReturnValue<o, inferredOutput>
+      : NonExhaustiveError<remainingCases>
+    : never;
+
+  /**
    * `.run()` return the resulting value.
    *
    * ⚠️ calling this function is unsafe, and may throw if no pattern matches your input.
