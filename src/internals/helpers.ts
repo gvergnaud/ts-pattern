@@ -103,7 +103,10 @@ export const matchPattern = (
         : false;
     }
 
-    return Object.keys(pattern).every((k: string): boolean => {
+    return [
+      ...Object.getOwnPropertySymbols(pattern),
+      ...Object.keys(pattern),
+    ].every((k: string | symbol): boolean => {
       // @ts-ignore
       const subPattern = pattern[k];
 
