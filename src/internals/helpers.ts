@@ -103,18 +103,12 @@ export const matchPattern = (
         : false;
     }
 
-    return Reflect.ownKeys(pattern).every((k: string | symbol): boolean => {
-      // @ts-ignore
+    return Reflect.ownKeys(pattern).every((k): boolean => {
       const subPattern = pattern[k];
 
       return (
         (k in value || isOptionalPattern(subPattern)) &&
-        matchPattern(
-          subPattern,
-          // @ts-ignore
-          value[k],
-          select
-        )
+        matchPattern(subPattern, value[k], select)
       );
     });
   }
