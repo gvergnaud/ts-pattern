@@ -1,4 +1,4 @@
-import { ExhaustiveError, match, P } from '../src';
+import { NonExhaustiveError, match, P } from '../src';
 import { Equal, Expect } from '../src/types/helpers';
 import {
   Option,
@@ -808,15 +808,15 @@ describe('exhaustive()', () => {
         .exhaustive();
     }
 
-    it('Unmatched pattern results in ExhaustiveError', () => {
+    it('Unmatched pattern results in NonExhaustiveError', () => {
       expect.assertions(3);
       const input = { color: 'orange' } as unknown as FlagComponent;
 
       try {
         checkFlagComponent(input);
       } catch (e) {
-        const err = e as ExhaustiveError;
-        expect(err).toBeInstanceOf(ExhaustiveError);
+        const err = e as NonExhaustiveError;
+        expect(err).toBeInstanceOf(NonExhaustiveError);
         expect(err.message).toEqual(
           'Pattern matching error: no pattern matches value {"color":"orange"}'
         );
@@ -824,7 +824,7 @@ describe('exhaustive()', () => {
       }
     });
 
-    it('Matched pattern with callback error does not result in ExhaustiveError', () => {
+    it('Matched pattern with callback error does not result in NonExhaustiveError', () => {
       expect.assertions(3);
 
       try {
@@ -832,7 +832,7 @@ describe('exhaustive()', () => {
       } catch (e) {
         const err = e as Error;
         expect(err).toBeInstanceOf(Error);
-        expect(err).not.toBeInstanceOf(ExhaustiveError);
+        expect(err).not.toBeInstanceOf(NonExhaustiveError);
         expect(err.message).toEqual('Blue error');
       }
     });

@@ -2,7 +2,7 @@ import { Pattern } from './types/Pattern';
 import { Match } from './types/Match';
 import * as symbols from './internals/symbols';
 import { matchPattern } from './internals/helpers';
-import { ExhaustiveError } from './errors';
+import { NonExhaustiveError } from './errors';
 
 type MatchState<output> =
   | { matched: true; value: output }
@@ -115,7 +115,7 @@ class MatchExpression<input, output> {
   exhaustive(): output {
     if (this.state.matched) return this.state.value;
 
-    throw new ExhaustiveError(this.input);
+    throw new NonExhaustiveError(this.input);
   }
 
   run(): output {
