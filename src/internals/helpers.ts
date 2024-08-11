@@ -103,22 +103,20 @@ export const matchPattern = (
         : false;
     }
 
-    return (Object.keys(pattern) as Array<string | symbol>)
-      .concat(Object.getOwnPropertySymbols(pattern))
-      .every((k: string | symbol): boolean => {
-        // @ts-ignore
-        const subPattern = pattern[k];
+    return Reflect.ownKeys(pattern).every((k: string | symbol): boolean => {
+      // @ts-ignore
+      const subPattern = pattern[k];
 
-        return (
-          (k in value || isOptionalPattern(subPattern)) &&
-          matchPattern(
-            subPattern,
-            // @ts-ignore
-            value[k],
-            select
-          )
-        );
-      });
+      return (
+        (k in value || isOptionalPattern(subPattern)) &&
+        matchPattern(
+          subPattern,
+          // @ts-ignore
+          value[k],
+          select
+        )
+      );
+    });
   }
 
   return Object.is(value, pattern);
