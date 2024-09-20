@@ -59,6 +59,17 @@ describe('List ([a])', () => {
       .otherwise(() => 'something else');
   });
 
+  it('issue #271: P.array should support readonly arrays as its input', () => {
+    type Input = string | Date | readonly string[];
+    const input = ['a', 'b', 'c'] as Input;
+
+    const output = match(input)
+      .with(P.array(P.string), (value) => 2)
+      .with(P.string, (value) => 1)
+      .with(P.instanceOf(Date), (value) => 3)
+      .exhaustive();
+  });
+
   it('type narrowing should work on nested arrays', () => {
     const fn = (input: { queries?: { q?: string[]; a: number }[] }) =>
       match(input).with(
