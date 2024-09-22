@@ -1,4 +1,4 @@
-import { Compute, Iterator, UpdateAt } from './helpers';
+import { Iterator, UpdateAt, ValueOf } from './helpers';
 
 // BuildMany :: DataStructure -> Union<[value, path][]> -> Union<DataStructure>
 export type BuildMany<data, xs extends readonly any[]> = xs extends any
@@ -12,29 +12,49 @@ type BuildOne<data, xs extends readonly any[]> = xs extends [
   [infer value, infer path],
   ...infer tail
 ]
-  ? BuildOne<Update<data, value, Extract<path, readonly PropertyKey[]>>, tail>
+  ? BuildOne<SetDeep<data, value, path>, tail>
   : data;
 
-// Update :: a -> b -> PropertyKey[] -> a
-type Update<data, value, path> = path extends readonly [
+// GetDeep :: a -> PropertyKey[] -> b
+export type GetDeep<data, path> = path extends readonly [
   infer head,
   ...infer tail
 ]
-  ? data extends readonly [any, ...any]
-    ? head extends number
-      ? UpdateAt<data, Iterator<head>, Update<data[head], value, tail>>
-      : never
-    : data extends readonly (infer a)[]
-    ? Update<a, value, tail>[]
+  ? data extends readonly any[]
+    ? data extends readonly [any, ...any]
+      ? head extends number
+        ? GetDeep<data[head], tail>
+        : never
+      : GetDeep<ValueOf<data>, tail>
     : data extends Set<infer a>
-    ? Set<Update<a, value, tail>>
-    : data extends Map<infer k, infer v>
-    ? Map<k, Update<v, value, tail>>
+    ? GetDeep<a, tail>
+    : data extends Map<any, infer v>
+    ? GetDeep<v, tail>
     : head extends keyof data
-    ? Compute<
-        { [k in Exclude<keyof data, head>]: data[k] } & {
-          [k in head]: Update<data[k], value, tail>;
-        }
-      >
+    ? GetDeep<data[head], tail>
+    : never
+  : data;
+
+// SetDeep :: a -> b -> PropertyKey[] -> a
+export type SetDeep<data, value, path> = path extends readonly [
+  infer head,
+  ...infer tail
+]
+  ? data extends readonly any[]
+    ? data extends readonly [any, ...any]
+      ? head extends number
+        ? UpdateAt<data, Iterator<head>, SetDeep<data[head], value, tail>>
+        : never
+      : SetDeep<ValueOf<data>, value, tail>[]
+    : data extends Set<infer a>
+    ? Set<SetDeep<a, value, tail>>
+    : data extends Map<infer k, infer v>
+    ? Map<k, SetDeep<v, value, tail>>
+    : head extends keyof data
+    ? {
+        [k in keyof data]-?: k extends head
+          ? SetDeep<data[head], value, tail>
+          : data[k];
+      }
     : data
   : value;
