@@ -15,26 +15,6 @@ type BuildOne<data, xs extends readonly any[]> = xs extends [
   ? BuildOne<SetDeep<data, value, path>, tail>
   : data;
 
-// GetDeep :: a -> PropertyKey[] -> b
-export type GetDeep<data, path> = path extends readonly [
-  infer head,
-  ...infer tail
-]
-  ? data extends readonly any[]
-    ? data extends readonly [any, ...any]
-      ? head extends number
-        ? GetDeep<data[head], tail>
-        : never
-      : GetDeep<ValueOf<data>, tail>
-    : data extends Set<infer a>
-    ? GetDeep<a, tail>
-    : data extends Map<any, infer v>
-    ? GetDeep<v, tail>
-    : head extends keyof data
-    ? GetDeep<data[head], tail>
-    : never
-  : data;
-
 // SetDeep :: a -> b -> PropertyKey[] -> a
 export type SetDeep<data, value, path> = path extends readonly [
   infer head,
