@@ -146,15 +146,7 @@ export type FindUnions<
     ? IsStrictArray<Extract<a, readonly any[]>> extends false
       ? []
       : [
-          MaybeAddReadonly<
-            | (a extends readonly [any, ...any] | readonly [...any, any]
-                ? never
-                : [])
-            | (p extends readonly [...any, any]
-                ? [...Extract<a, readonly any[]>, ValueOf<a>]
-                : [ValueOf<a>, ...Extract<a, readonly any[]>]),
-            IsReadonlyArray<a>
-          > extends infer aUnion
+          ArrayToVariadicUnion<a, p> extends infer aUnion
             ? {
                 cases: aUnion extends any
                   ? {
@@ -178,6 +170,14 @@ export type FindUnions<
       }>
     >
   : [];
+
+export type ArrayToVariadicUnion<input, excluded> = MaybeAddReadonly<
+  | (input extends readonly [any, ...any] | readonly [...any, any] ? never : [])
+  | (excluded extends readonly [...any, any]
+      ? [...Extract<input, readonly any[]>, ValueOf<input>]
+      : [ValueOf<input>, ...Extract<input, readonly any[]>]),
+  IsReadonlyArray<input>
+>;
 
 // Distribute :: UnionConfig[] -> Union<[a, path][]>
 export type Distribute<unions extends readonly any[]> =
