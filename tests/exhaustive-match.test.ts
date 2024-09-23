@@ -979,4 +979,15 @@ describe('exhaustive()', () => {
       expect(withoutTypo({ sex: 'b', age: 'c' })).toBe(1);
     });
   });
+
+  it('issue #271: P.array should exhaustively match readonly arrays', () => {
+    type Input = string | Date | readonly string[];
+    const input = ['a', 'b', 'c'] as Input;
+
+    const output = match(input)
+      .with(P.array(P.string), (value) => 1)
+      .with(P.string, (value) => 2)
+      .with(P.instanceOf(Date), (value) => 3)
+      .exhaustive();
+  });
 });

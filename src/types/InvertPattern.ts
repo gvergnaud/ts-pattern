@@ -318,7 +318,10 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
     ? {
         select: InvertPatternForExcludeInternal<subpattern, i, empty>;
         array: i extends readonly (infer ii)[]
-          ? InvertPatternForExcludeInternal<subpattern, ii, empty>[]
+          ? MaybeAddReadonly<
+              InvertPatternForExcludeInternal<subpattern, ii, empty>[],
+              IsReadonlyArray<i>
+            >
           : empty;
         map: subpattern extends [infer pk, infer pv]
           ? i extends Map<infer ik, infer iv>
