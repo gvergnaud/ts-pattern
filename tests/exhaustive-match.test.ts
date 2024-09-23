@@ -980,7 +980,7 @@ describe('exhaustive()', () => {
     });
   });
 
-  it('issue #271: P.array should support readonly arrays as its input', () => {
+  it('issue #271: P.array should exhaustively match readonly arrays', () => {
     type Input = string | Date | readonly string[];
     const input = ['a', 'b', 'c'] as Input;
 
