@@ -985,8 +985,8 @@ describe('exhaustive()', () => {
     const input = ['a', 'b', 'c'] as Input;
 
     const output = match(input)
-      .with(P.array(P.string), (value) => 2)
-      .with(P.string, (value) => 1)
+      .with(P.array(P.string), (value) => 1)
+      .with(P.string, (value) => 2)
       .with(P.instanceOf(Date), (value) => 3)
       .exhaustive();
   });
