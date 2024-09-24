@@ -53,8 +53,7 @@ export const matchPattern = (
       let endPatterns = [];
       let variadicPatterns: AnyMatcher[] = [];
 
-      for (const i of pattern.keys()) {
-        const subpattern = pattern[i];
+      for (const subpattern of pattern) {
         if (isMatcher(subpattern) && subpattern[symbols.isVariadic]) {
           variadicPatterns.push(subpattern);
         } else if (variadicPatterns.length) {
@@ -80,7 +79,7 @@ export const matchPattern = (
           endPatterns.length === 0 ? [] : value.slice(-endPatterns.length);
         const middleValues = value.slice(
           startPatterns.length,
-          endPatterns.length === 0 ? Infinity : -endPatterns.length
+          endPatterns.length === 0 ? value.length : -endPatterns.length
         );
 
         return (
@@ -90,9 +89,7 @@ export const matchPattern = (
           endPatterns.every((subPattern, i) =>
             matchPattern(subPattern, endValues[i], select)
           ) &&
-          (variadicPatterns.length === 0
-            ? true
-            : matchPattern(variadicPatterns[0], middleValues, select))
+          matchPattern(variadicPatterns[0], middleValues, select)
         );
       }
 
@@ -107,7 +104,7 @@ export const matchPattern = (
       const subPattern = pattern[k];
 
       return (
-        (k in value || isOptionalPattern(subPattern)) &&
+        (Object.hasOwn(value, k) || isOptionalPattern(subPattern)) &&
         matchPattern(subPattern, value[k], select)
       );
     });
