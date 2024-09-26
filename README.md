@@ -103,7 +103,7 @@ TS-Pattern assumes that [Strict Mode](https://www.typescriptlang.org/tsconfig#st
 - ✅ Full support
 - ❌ Not supported
 
-## Want to learn how to build awesome, strongly-typed libraries?
+## Want to get better at TypeScript?
 
 Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), my online course teaching how to take full advantage of the most advanced features of TypeScript. You will learn everything there is to know to build awesome libraries with great developer experiences and become a real TypeScript expert in the process!
 
