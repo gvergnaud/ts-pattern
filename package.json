@@ -17,6 +17,15 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./types": {
+      "require": {
+        "types": "./dist/types/index.d.cts"
+      },
+      "import": {
+        "types": "./dist/types/index.d.ts"
+      },
+      "types": "./dist/types/index.d.ts"
+    },
     "./package.json": "./package.json"
   },
   "types": "dist/index.d.ts",
