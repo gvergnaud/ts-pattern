@@ -17,6 +17,14 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./types": {
+      "require": {
+        "types": "./dist/types/Pattern.d.cts"
+      },
+      "import": {
+        "types": "./dist/types/Pattern.d.ts"
+      }
+    },
     "./package.json": "./package.json"
   },
   "types": "dist/index.d.ts",
