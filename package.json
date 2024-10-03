@@ -19,10 +19,10 @@
     },
     "./types": {
       "require": {
-        "types": "./dist/types/Pattern.d.cts"
+        "types": "./dist/types/index.d.cts"
       },
       "import": {
-        "types": "./dist/types/Pattern.d.ts"
+        "types": "./dist/types/index.d.ts"
       }
     },
     "./package.json": "./package.json"
