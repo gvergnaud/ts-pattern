@@ -118,6 +118,28 @@ class MatchExpression<input, output> {
     throw new NonExhaustiveError(this.input);
   }
 
+  safeExhaustive(
+    handler: (value: input) => output,
+    handleErrorMessage?: (input: string) => unknown
+  ): output {
+    if (this.state.matched) return this.state.value;
+
+    let displayedValue;
+    try {
+      displayedValue = JSON.stringify(this.input);
+    } catch (e) {
+      displayedValue = this.input;
+    }
+    const errorMessage = `Pattern matching error: no pattern matches value ${displayedValue}`;
+    if (handleErrorMessage) {
+      handleErrorMessage(errorMessage);
+    } else {
+      console.error(errorMessage);
+    }
+
+    return handler(this.input);
+  }
+
   run(): output {
     return this.exhaustive();
   }
