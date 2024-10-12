@@ -1,5 +1,18 @@
 import type * as symbols from '../internals/symbols';
-import { MergeUnion, Primitives, WithDefault } from './helpers';
+import {
+  Call,
+  Fn,
+  GetOptionalObjectKeys,
+  IsAny,
+  IsLiteral,
+  IsPlainObject,
+  IsUnion,
+  MapArray,
+  MergeUnion,
+  Primitives,
+  UnionToTuple,
+  WithDefault,
+} from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
 import { matcher } from '../patterns';
 import { ExtractPreciseValue } from './ExtractPreciseValue';
@@ -670,3 +683,66 @@ export type ArrayChainable<
     },
     omitted
   >;
+
+namespace P {
+  export interface array<pattern> extends ArrayP<unknown, pattern> {}
+  export interface variadic<pattern> extends ArrayP<unknown, pattern> {}
+  export interface union<args extends any[]> extends OrP<unknown, args> {}
+  export interface optional<pattern> extends OptionalP<unknown, pattern> {}
+  export interface any_ extends AnyPattern {}
+  export interface string_ extends StringPattern {}
+  export interface number_ extends NumberPattern {}
+  export interface boolean_ extends BooleanPattern {}
+  export interface bigint_ extends BigIntPattern {}
+  export interface symbol_ extends SymbolPattern {}
+}
+
+interface ExactPatternFn extends Fn {
+  output: this['input'] extends infer T
+    ? IsUnion<T> extends true
+      ? P.union<MapArray<ExactPatternFn, UnionToTuple<T>>>
+      : IsLiteral<T> extends true
+      ? T
+      : IsAny<T> extends true
+      ? P.any_
+      : T extends string
+      ? P.string_
+      : T extends number
+      ? P.number_
+      : T extends boolean
+      ? P.boolean_
+      : T extends bigint
+      ? P.bigint_
+      : T extends symbol
+      ? P.symbol_
+      : T extends readonly any[]
+      ? ArrayToArrayPattern<MapArray<ExactPatternFn, T>>
+      : IsPlainObject<T> extends true
+      ? GetOptionalObjectKeys<T> extends infer optionalKeys extends keyof T
+        ? {
+            [K in keyof T]-?: K extends optionalKeys
+              ? P.optional<Call<ExactPatternFn, Exclude<T[K], undefined>>>
+              : Call<ExactPatternFn, T[K]>;
+          }
+        : never
+      : T
+    : never;
+}
+
+type ArrayToArrayPattern<input> = input extends readonly []
+  ? []
+  : input extends readonly (infer item)[]
+  ? input extends readonly [infer i1, ...infer iRest]
+    ? [i1, P.variadic<iRest>]
+    : input extends readonly [...infer iInit, infer i1]
+    ? [P.variadic<iInit>, i1]
+    : P.array<item>
+  : "Error: Input isn't an array";
+
+export type ExactPattern<T> = Call<ExactPatternFn, T>;
+
+type t1 = ExactPattern<[1, 2, string]>; // =>
+type t3 = ExactPattern<string | number>; // =>
+type t4 = ExactPattern<2 | string>; // =>
+type t2 = ExactPattern<{ a: number; b: string }>; // =>
+type t5 = ExactPattern<{ a?: number; b: string }>; // =>

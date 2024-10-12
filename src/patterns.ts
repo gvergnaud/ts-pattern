@@ -35,6 +35,7 @@ import {
   ArrayChainable,
   Variadic,
   NonNullablePattern,
+  ExactPattern,
 } from './types/Pattern';
 
 export type { Pattern, Fn as unstable_Fn };
@@ -114,6 +115,8 @@ export type narrow<input, pattern extends Pattern<any>> = ExtractPreciseValue<
   input,
   InvertPattern<pattern, input>
 >;
+
+export type exact<input> = ExactPattern<input>;
 
 function chainable<pattern extends Matcher<any, any, any, any, any>>(
   pattern: pattern

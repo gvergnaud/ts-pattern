@@ -8,6 +8,9 @@ import {
   IntersectObjects,
   UpdateAt,
   IsReadonlyArray,
+  Fn,
+  MapArray,
+  GetOptionalObjectKeys,
 } from '../src/types/helpers';
 
 describe('helpers', () => {
@@ -152,5 +155,49 @@ describe('helpers', () => {
     type test9 = Expect<Equal<t9, false>>;
     type t10 = IsReadonlyArray<[...any[], number]>;
     type test10 = Expect<Equal<t10, false>>;
+  });
+
+  describe('MapArray', () => {
+    interface Duplicate extends Fn {
+      output: [this['input'], this['input']];
+    }
+
+    type res1 = MapArray<Duplicate, []>; // =>
+    type test1 = Expect<Equal<res1, []>>;
+
+    type res2 = MapArray<Duplicate, readonly []>; // =>
+    type test2 = Expect<Equal<res2, readonly []>>;
+
+    type res3 = MapArray<Duplicate, [1, 2]>; // =>
+    type test3 = Expect<Equal<res3, [[1, 1], [2, 2]]>>;
+
+    type res4 = MapArray<Duplicate, [...1[], 2]>; // =>
+    type test4 = Expect<Equal<res4, [...[1, 1][], [2, 2]]>>;
+
+    type res5 = MapArray<Duplicate, [1, ...2[]]>; // =>
+    type test5 = Expect<Equal<res5, [[1, 1], ...[2, 2][]]>>;
+
+    type res6 = MapArray<Duplicate, [1, ...2[], 3]>; // =>
+    type test6 = Expect<Equal<res6, [[1, 1], ...[2, 2][], [3, 3]]>>;
+
+    type res7 = MapArray<Duplicate, [1, 2, ...3[], 4]>; // =>
+    type test7 = Expect<Equal<res7, [[1, 1], [2, 2], ...[3, 3][], [4, 4]]>>;
+  });
+
+  describe('GetOptionalObjectKeys', () => {
+    type res1 = GetOptionalObjectKeys<{}>; // =>
+    type test1 = Expect<Equal<res1, never>>;
+
+    type res2 = GetOptionalObjectKeys<{ a: string }>; // =>
+    type test2 = Expect<Equal<res2, never>>;
+
+    type res3 = GetOptionalObjectKeys<{ a?: string }>; // =>
+    type test3 = Expect<Equal<res3, 'a'>>;
+
+    type res4 = GetOptionalObjectKeys<{ a?: string; b: number }>; // =>
+    type test4 = Expect<Equal<res4, 'a'>>;
+
+    type res5 = GetOptionalObjectKeys<{ a?: string; b?: number }>; // =>
+    type test5 = Expect<Equal<res5, 'a' | 'b'>>;
   });
 });

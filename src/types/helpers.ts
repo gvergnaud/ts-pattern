@@ -237,6 +237,25 @@ export type MaybeAddReadonly<
   shouldAdd extends boolean
 > = shouldAdd extends true ? Readonly<a> : a;
 
+export type MapArray<
+  fn extends Fn,
+  input,
+  startOutput extends any[] = [],
+  endOutput extends any[] = [],
+  isReadonly extends boolean = IsReadonlyArray<input>
+> = input extends readonly []
+  ? MaybeAddReadonly<[...startOutput, ...endOutput], isReadonly>
+  : input extends readonly (infer item)[]
+  ? input extends readonly [infer i1, ...infer iRest]
+    ? MapArray<fn, iRest, [...startOutput, Call<fn, i1>], endOutput, isReadonly>
+    : input extends readonly [...infer iInit, infer i1]
+    ? MapArray<fn, iInit, startOutput, [...endOutput, Call<fn, i1>], isReadonly>
+    : MaybeAddReadonly<
+        [...startOutput, ...Call<fn, item>[], ...endOutput],
+        isReadonly
+      >
+  : "Error: Input isn't an array";
+
 export type MapKey<T> = T extends Map<infer K, any> ? K : never;
 
 export type MapValue<T> = T extends Map<any, infer V> ? V : never;
@@ -258,6 +277,10 @@ export type GetKey<O, K> = O extends any
     ? O[K]
     : never
   : never;
+
+export type GetOptionalObjectKeys<T> = {
+  [K in keyof T]-?: Omit<T, K> extends T ? K : never;
+}[keyof T];
 
 export interface Fn {
   input: unknown;
