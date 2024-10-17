@@ -278,9 +278,9 @@ export type GetKey<O, K> = O extends any
     : never
   : never;
 
-export type GetOptionalObjectKeys<T> = {
-  [K in keyof T]-?: Omit<T, K> extends T ? K : never;
-}[keyof T];
+export type OptionalKeysOf<Obj> = keyof {
+  [Key in keyof Obj as Omit<Obj, Key> extends Obj ? Key : never]: unknown;
+};
 
 export interface Fn {
   input: unknown;

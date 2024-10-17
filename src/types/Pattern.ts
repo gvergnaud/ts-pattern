@@ -2,7 +2,7 @@ import type * as symbols from '../internals/symbols';
 import {
   Call,
   Fn,
-  GetOptionalObjectKeys,
+  OptionalKeysOf,
   IsAny,
   IsLiteral,
   IsPlainObject,
@@ -684,17 +684,25 @@ export type ArrayChainable<
     omitted
   >;
 
-namespace P {
+export namespace P {
   export interface array<pattern> extends ArrayP<unknown, pattern> {}
-  export interface variadic<pattern> extends ArrayP<unknown, pattern> {}
   export interface union<args extends any[]> extends OrP<unknown, args> {}
   export interface optional<pattern> extends OptionalP<unknown, pattern> {}
-  export interface any_ extends AnyPattern {}
-  export interface string_ extends StringPattern {}
-  export interface number_ extends NumberPattern {}
-  export interface boolean_ extends BooleanPattern {}
-  export interface bigint_ extends BigIntPattern {}
-  export interface symbol_ extends SymbolPattern {}
+
+  // @ts-expect-error
+  export interface any extends AnyPattern {}
+  // @ts-expect-error
+  export interface string extends StringPattern {}
+  // @ts-expect-error
+  export interface number extends NumberPattern {}
+  // @ts-expect-error
+  export interface boolean extends BooleanPattern {}
+  // @ts-expect-error
+  export interface bigint extends BigIntPattern {}
+  // @ts-expect-error
+  export interface symbol extends SymbolPattern {}
+  export interface nullish extends NullishPattern {}
+  export interface nonNullable extends NonNullablePattern {}
 }
 
 interface ExactPatternFn extends Fn {
@@ -704,21 +712,21 @@ interface ExactPatternFn extends Fn {
       : IsLiteral<T> extends true
       ? T
       : IsAny<T> extends true
-      ? P.any_
+      ? P.any
       : T extends string
-      ? P.string_
+      ? P.string
       : T extends number
-      ? P.number_
+      ? P.number
       : T extends boolean
-      ? P.boolean_
+      ? P.boolean
       : T extends bigint
-      ? P.bigint_
+      ? P.bigint
       : T extends symbol
-      ? P.symbol_
+      ? P.symbol
       : T extends readonly any[]
       ? ArrayToArrayPattern<MapArray<ExactPatternFn, T>>
       : IsPlainObject<T> extends true
-      ? GetOptionalObjectKeys<T> extends infer optionalKeys extends keyof T
+      ? OptionalKeysOf<T> extends infer optionalKeys extends keyof T
         ? {
             [K in keyof T]-?: K extends optionalKeys
               ? P.optional<Call<ExactPatternFn, Exclude<T[K], undefined>>>
@@ -733,11 +741,11 @@ type ArrayToArrayPattern<input> = input extends readonly []
   ? []
   : input extends readonly (infer item)[]
   ? input extends readonly [infer i1, ...infer iRest]
-    ? [i1, P.variadic<iRest>]
+    ? [i1, ...ArrayToArrayPattern<iRest>]
     : input extends readonly [...infer iInit, infer i1]
-    ? [P.variadic<iInit>, i1]
+    ? [...ArrayToArrayPattern<iInit>, i1]
     : P.array<item>
-  : "Error: Input isn't an array";
+  : [];
 
 export type ExactPattern<T> = Call<ExactPatternFn, T>;
 

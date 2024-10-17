@@ -36,6 +36,7 @@ import {
   Variadic,
   NonNullablePattern,
   ExactPattern,
+  P,
 } from './types/Pattern';
 
 export type { Pattern, Fn as unstable_Fn };
@@ -660,7 +661,7 @@ function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
  *  match(value)
  *   .with(P.any, () => 'will always match')
  */
-export const any: AnyPattern = chainable(when(isUnknown));
+export const any: P.any = chainable(when(isUnknown));
 
 /**
  * `P._` is a wildcard pattern, matching **any value**.
@@ -795,7 +796,7 @@ const stringChainable = <pattern extends Matcher<any, any, any, any, any>>(
  *  match(value)
  *   .with(P.string, () => 'will match on strings')
  */
-export const string: StringPattern = stringChainable(when(isString));
+export const string: P.string = stringChainable(when(isString));
 
 /**
  * `P.number.between(min, max)` matches **numbers** between `min` and `max`,
@@ -942,7 +943,7 @@ const numberChainable = <pattern extends Matcher<any, any, any, any, any>>(
  *  match(value)
  *   .with(P.number, () => 'will match on numbers')
  */
-export const number: NumberPattern = numberChainable(when(isNumber));
+export const number: P.number = numberChainable(when(isNumber));
 
 /**
  * `P.bigint.between(min, max)` matches **bigint** between `min` and `max`,
@@ -1068,7 +1069,7 @@ const bigintChainable = <pattern extends Matcher<any, any, any, any, any>>(
  * @example
  *   .with(P.bigint, () => 'will match on bigints')
  */
-export const bigint: BigIntPattern = bigintChainable(when(isBigInt));
+export const bigint: P.bigint = bigintChainable(when(isBigInt));
 
 /**
  * `P.boolean` is a wildcard pattern, matching any **boolean**.
@@ -1078,7 +1079,7 @@ export const bigint: BigIntPattern = bigintChainable(when(isBigInt));
  * @example
  *   .with(P.boolean, () => 'will match on booleans')
  */
-export const boolean: BooleanPattern = chainable(when(isBoolean));
+export const boolean: P.boolean = chainable(when(isBoolean));
 
 /**
  * `P.symbol` is a wildcard pattern, matching any **symbol**.
@@ -1088,7 +1089,7 @@ export const boolean: BooleanPattern = chainable(when(isBoolean));
  * @example
  *   .with(P.symbol, () => 'will match on symbols')
  */
-export const symbol: SymbolPattern = chainable(when(isSymbol));
+export const symbol: P.symbol = chainable(when(isSymbol));
 
 /**
  * `P.nullish` is a wildcard pattern, matching **null** or **undefined**.
@@ -1098,7 +1099,7 @@ export const symbol: SymbolPattern = chainable(when(isSymbol));
  * @example
  *   .with(P.nullish, (x) => `${x} is null or undefined`)
  */
-export const nullish: NullishPattern = chainable(when(isNullish));
+export const nullish: P.nullish = chainable(when(isNullish));
 
 /**
  * `P.nonNullable` is a wildcard pattern, matching everything except **null** or **undefined**.
@@ -1108,7 +1109,7 @@ export const nullish: NullishPattern = chainable(when(isNullish));
  * @example
  *   .with(P.nonNullable, (x) => `${x} isn't null nor undefined`)
  */
-export const nonNullable: NonNullablePattern = chainable(when(isNonNullable));
+export const nonNullable: P.nonNullable = chainable(when(isNonNullable));
 
 /**
  * `P.instanceOf(SomeClass)` is a pattern matching instances of a given class.

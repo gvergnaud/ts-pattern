@@ -10,7 +10,7 @@ import {
   IsReadonlyArray,
   Fn,
   MapArray,
-  GetOptionalObjectKeys,
+  OptionalKeysOf,
 } from '../src/types/helpers';
 
 describe('helpers', () => {
@@ -184,20 +184,20 @@ describe('helpers', () => {
     type test7 = Expect<Equal<res7, [[1, 1], [2, 2], ...[3, 3][], [4, 4]]>>;
   });
 
-  describe('GetOptionalObjectKeys', () => {
-    type res1 = GetOptionalObjectKeys<{}>; // =>
+  describe('OptionalKeysOf', () => {
+    type res1 = OptionalKeysOf<{}>; // =>
     type test1 = Expect<Equal<res1, never>>;
 
-    type res2 = GetOptionalObjectKeys<{ a: string }>; // =>
+    type res2 = OptionalKeysOf<{ a: string }>; // =>
     type test2 = Expect<Equal<res2, never>>;
 
-    type res3 = GetOptionalObjectKeys<{ a?: string }>; // =>
+    type res3 = OptionalKeysOf<{ a?: string }>; // =>
     type test3 = Expect<Equal<res3, 'a'>>;
 
-    type res4 = GetOptionalObjectKeys<{ a?: string; b: number }>; // =>
+    type res4 = OptionalKeysOf<{ a?: string; b: number }>; // =>
     type test4 = Expect<Equal<res4, 'a'>>;
 
-    type res5 = GetOptionalObjectKeys<{ a?: string; b?: number }>; // =>
+    type res5 = OptionalKeysOf<{ a?: string; b?: number }>; // =>
     type test5 = Expect<Equal<res5, 'a' | 'b'>>;
   });
 });
