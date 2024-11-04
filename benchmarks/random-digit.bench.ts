@@ -6,9 +6,8 @@ type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 const rand = () => Math.floor(Math.random() * 10) as Digit;
 
 describe('ts-pattern-benchmark/random-digit', () => {
-  const digit = rand();
-  
   bench('ts-pattern.exhaustive()', () => {
+    const digit = rand();
     const result = match(digit)
       .with(0, () => 'zero')
       .with(1, () => 'one')
@@ -25,6 +24,7 @@ describe('ts-pattern-benchmark/random-digit', () => {
   });
 
   bench('ts-pattern.otherwise()', () => {
+    const digit = rand();
     const result = match(digit)
       .with(0, () => 'zero')
       .with(1, () => 'one')
@@ -41,6 +41,7 @@ describe('ts-pattern-benchmark/random-digit', () => {
   });
 
   bench('if/else', () => {
+    const digit = rand();
     let result = '';
     if (digit === 0) {
       result = 'zero';
@@ -67,6 +68,7 @@ describe('ts-pattern-benchmark/random-digit', () => {
   });
 
   bench('switch', () => {
+    const digit = rand();
     let result = '';
     switch (digit) {
       case 0:
@@ -104,6 +106,7 @@ describe('ts-pattern-benchmark/random-digit', () => {
   });
 
   bench('ternary', () => {
+    const digit = rand();
     const result =
       digit === 0
         ? 'zero'

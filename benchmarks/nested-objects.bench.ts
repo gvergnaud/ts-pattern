@@ -1,23 +1,20 @@
 import { bench, describe, expect } from 'vitest';
 import { P, match } from '../src';
 
+const map = {
+  0: { type: 'a' as const, value: { x: Math.random(), y: Math.random() } },
+  1: {
+    type: 'b' as const,
+    value: Math.random() > 0.5 ? [1, 2, 3, 4] : ['hello'],
+  },
+  2: { type: 'c' as const, age: Math.random(), name: 'acdfl' },
+};
+const rand = () => Math.floor(Math.random() * 3) as 0 | 1 | 2;
 
 describe('ts-pattern-benchmark/nested-objects', () => {
-  const inputIndex = Math.floor(Math.random() * 3) as 0 | 1 | 2;
-  const input = (() => {
-    const map = {
-      0: { type: 'a' as const, value: { x: Math.random(), y: Math.random() } },
-      1: {
-        type: 'b' as const,
-        value: Math.random() > 0.5 ? [1, 2, 3, 4] : ['hello'],
-      },
-      2: { type: 'c' as const, age: Math.random(), name: 'acdfl' },
-    };
-  
-    return map[inputIndex];
-  })();
-
   bench('ts-pattern.exhaustive()', () => {
+    const inputIndex = rand();
+    const input = map[inputIndex];
     const result = match(input)
       .with({ type: 'a', value: { x: P.number, y: P.number } }, () => 0)
       .with({ type: 'b', value: P.union([1, ...P.array(P.number)], ['hello']) }, () => 1)
@@ -27,6 +24,8 @@ describe('ts-pattern-benchmark/nested-objects', () => {
   });
 
   bench('if/else', () => {
+    const inputIndex = rand();
+    const input = map[inputIndex];
     const result = (() => {
       if (
         input &&
