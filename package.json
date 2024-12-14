@@ -75,6 +75,6 @@
     "prettier": "^2.8.8",
     "rimraf": "^5.0.1",
     "ts-jest": "^29.1.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.7.2"
   }
 }

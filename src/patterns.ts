@@ -92,10 +92,7 @@ export type unstable_Matcher<
  * const userPattern = { name: P.string }
  * type User = P.infer<typeof userPattern>
  */
-export type infer<pattern extends Pattern<any>> = InvertPattern<
-  pattern,
-  unknown
->;
+export type infer<pattern> = InvertPattern<NoInfer<pattern>, unknown>;
 
 /**
  * `P.narrow<Input, Pattern>` will narrow the input type to only keep
@@ -110,9 +107,8 @@ export type infer<pattern extends Pattern<any>> = InvertPattern<
  * type Narrowed = P.narrow<Input, typeof Pattern>
  * //     ^? ['a', 'a' | 'b']
  */
-export type narrow<input, pattern extends Pattern<any>> = ExtractPreciseValue<
-  input,
-  InvertPattern<pattern, input>
+export type narrow<input, pattern extends Pattern<any>> = NoInfer<
+  ExtractPreciseValue<input, InvertPattern<pattern, input>>
 >;
 
 function chainable<pattern extends Matcher<any, any, any, any, any>>(
