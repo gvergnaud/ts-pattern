@@ -33,10 +33,10 @@ export function isMatching<const p extends Pattern<unknown>>(
  *    return input.name
  *  }
  */
-export function isMatching<const p extends Pattern<unknown>>(
-  pattern: p,
-  value: unknown
-): value is P.infer<p>;
+export function isMatching<const T, const P extends P.Pattern<NoInfer<T>>>(
+  pattern: P,
+  value: T
+): value is P.infer<P>;
 
 export function isMatching<const p extends Pattern<any>>(
   ...args: [pattern: p, value?: any]

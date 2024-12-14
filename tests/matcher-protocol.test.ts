@@ -26,7 +26,8 @@ describe('matcher protocol', () => {
         match: (input) => {
           return {
             matched:
-              input instanceof Some && isMatching<any>(this.value, input.value),
+              input instanceof Some &&
+              isMatching<any, any>(this.value, input.value),
           };
         },
       };
