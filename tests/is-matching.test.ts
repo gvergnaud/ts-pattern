@@ -56,11 +56,11 @@ describe('isMatching', () => {
     }
   });
 
-  it('type inference should be precise without `as const`', () => {
-    type Pizza = { type: 'pizza'; topping: string };
-    type Sandwich = { type: 'sandwich'; condiments: string[] };
-    type Food = Pizza | Sandwich;
+  type Pizza = { type: 'pizza'; topping: string };
+  type Sandwich = { type: 'sandwich'; condiments: string[] };
+  type Food = Pizza | Sandwich;
 
+  it('type inference should be precise without `as const`', () => {
     const food = { type: 'pizza', topping: 'cheese' } as Food;
 
     const isPizza = isMatching({ type: 'pizza' });
@@ -76,5 +76,17 @@ describe('isMatching', () => {
     } else {
       throw new Error('Expected food to match the pizza pattern!');
     }
+  });
+
+  it('should reject invalid pattern when two parameters are passed', () => {
+    const food = { type: 'pizza', topping: 'cheese' } as Food;
+
+    isMatching(
+      {
+        // @ts-expect-error
+        type: 'oops',
+      },
+      food
+    );
   });
 });

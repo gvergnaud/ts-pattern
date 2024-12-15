@@ -22,4 +22,21 @@ describe('P.infer', () => {
       type test2 = Expect<Equal<QuizState, expected2>>;
     });
   });
+
+  it("P.infer shouldn't count as an inference point of the pattern", () => {
+    const getValueOfType = <T extends P.Pattern<unknown>>(
+      obj: unknown,
+      path: string,
+      pattern: T,
+      defaultValue: P.infer<T>
+    ): P.infer<T> => defaultValue;
+
+    getValueOfType(
+      null,
+      'a.b.c',
+      { x: P.string },
+      // @ts-expect-error 👇 error should be here
+      'oops'
+    );
+  });
 });

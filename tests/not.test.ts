@@ -110,7 +110,9 @@ describe('not', () => {
         .exhaustive()
     ).toBe('hello');
 
-    const untypedNullable = P.when((x) => x === null || x === undefined);
+    const untypedNullable = P.when(
+      (x): boolean => x === null || x === undefined
+    );
 
     expect(
       match<{ str: string }>({ str: 'hello' })
