@@ -248,7 +248,30 @@ type MakeTuples<ps extends readonly any[], value> = {
  * By default, TS-Pattern will throw an error if a runtime value isn't handled.
  */
 type Exhaustive<output, inferredOutput> = {
+  /**
+   * `.exhaustive()` checks that all cases are handled, and returns the result value.
+   *
+   * If you get a `NonExhaustiveError`, it means that you aren't handling
+   * all cases. You should probably add another `.with(...)` clause
+   * to match the missing case and prevent runtime errors.
+   *
+   * [Read the documentation for `.exhaustive()` on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
+   *
+   * */
   (): PickReturnValue<output, inferredOutput>;
+  /**
+   * `.exhaustive(fallback)` checks that all cases are handled, and returns the result value.
+   *
+   * If you get a `NonExhaustiveError`, it means that you aren't handling
+   * all cases. You should probably add another `.with(...)` clause
+   * to match the missing case and prevent runtime errors.
+   *
+   * The fallback function will be called if your input value doesn't match any pattern. This can only
+   * happen if the type of your input is incorrect.
+   *
+   * [Read the documentation for `.exhaustive()` on GitHub](https://github.com/gvergnaud/ts-pattern#exhaustive)
+   *
+   * */
   <otherOutput>(
     handler: (unexpectedValue: unknown) => PickReturnValue<output, otherOutput>
   ): PickReturnValue<output, Union<inferredOutput, otherOutput>>;
