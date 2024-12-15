@@ -166,4 +166,4 @@ export type FindSelected<i, p> =
   // This happens if the provided pattern didn't extend Pattern<i>,
   // Because the type checker falls back on the general `Pattern<i>` type
   // in this case.
-  NoInfer<Equal<p, Pattern<i>> extends true ? i : Selections<i, p>>;
+  Equal<p, Pattern<i>> extends true ? i : Selections<i, p>;
