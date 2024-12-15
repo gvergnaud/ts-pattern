@@ -145,7 +145,9 @@ export type UnknownPattern =
  * @example
  * const pattern: P.Pattern<User> = { name: P.string }
  */
-export type Pattern<a> = unknown extends a ? UnknownPattern : KnownPattern<a>;
+export type Pattern<a = unknown> = unknown extends a
+  ? UnknownPattern
+  : KnownPattern<a>;
 
 type KnownPattern<a> = KnownPatternInternal<a>;
 
