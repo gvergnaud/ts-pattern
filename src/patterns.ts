@@ -1,3 +1,10 @@
+/**
+ * The `P` module contains patterns for primitive types, wildcards and
+ * other pattern-matching utilities.
+ *
+ * @module
+ */
+
 import { matchPattern, getSelectionKeys, flatMap } from './internals/helpers';
 import * as symbols from './internals/symbols';
 import { matcher } from './internals/symbols';
@@ -37,17 +44,31 @@ import {
   NonNullablePattern,
 } from './types/Pattern';
 
-export type { Pattern, Fn as unstable_Fn };
+export type {
+  /**
+   * `Pattern<T>` is the type of all patterns
+   * that can match a value of type `T`.
+   */
+  Pattern,
+
+  /**
+   * `unstable_Fn` can be used to created a
+   * a Matchable instance – a custom type that
+   * can be used as a pattern.
+   *
+   * @experimental This feature is unstable.
+   */
+  Fn as unstable_Fn,
+};
 
 export { matcher };
 
 /**
- * @experimental
  * A `Matchable` is an object implementing
  * the Matcher Protocol. It must have a `[P.matcher]: P.Matcher<NarrowFn>`
  * key, which defines how this object should be matched by TS-Pattern.
  *
- * Note that this api is unstable.
+ * @experimental This feature is unstable.
  *
  * @example
  * ```ts
@@ -63,11 +84,10 @@ export type unstable_Matchable<
 > = CustomP<input, pattern, narrowedOrFn>;
 
 /**
- * @experimental
  * A `Matcher` is an object with `match` function, which
  * defines how this object should be matched by TS-Pattern.
  *
- * Note that this api is unstable.
+ * @experimental This feature is unstable.
  *
  * @example
  * ```ts
