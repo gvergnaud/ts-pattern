@@ -36,6 +36,7 @@
     "build": "rimraf dist && microbundle --format modern,cjs,umd && sh ./scripts/generate-cts.sh",
     "dev": "microbundle watch",
     "prepublishOnly": "npm run test && npm run build",
+    "publish:jsr": "npm run prepublishOnly && npx jsr publish",
     "test": "jest",
     "clear-test": "jest --clearCache",
     "fmt": "prettier ./src/** ./tests/** -w",
