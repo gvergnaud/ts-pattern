@@ -13,7 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "benny": "^3.7.1",
-    "bun": "^1.0.4",
+    "bun": "^1.1.30",
     "ts-pattern": "^5.0.5"
   }
 }
