@@ -732,7 +732,7 @@ If your input isn't typed, (if it's a `any` or a `unknown`), you are free to use
 
 ### Literals
 
-Literals are primitive JavaScript values, like `numbers`, `strings`, `booleans`, `bigints`, `symbols`, `null`, `undefined`, or `NaN`.
+Literals are primitive JavaScript values, like `numbers`, `strings`, `booleans`, `bigints`, `symbols`, `null`, `undefined`, `Infinity`, `-Infinity` or `NaN`.
 
 ```ts
 import { match } from 'ts-pattern';
