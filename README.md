@@ -72,40 +72,23 @@ Via npm
 npm install ts-pattern
 ```
 
-Via yarn
-
-```
-yarn add ts-pattern
-```
-
-Via pnpm
+You can also use your favorite package manager:
 
 ```
 pnpm add ts-pattern
-```
-
-Via Bun
-
-```
+# OR
+yarn add ts-pattern
+# OR
 bun add ts-pattern
+# OR
+npx jsr add @gabriel/ts-pattern
 ```
 
-### Compatibility with different TypeScript versions
+## Want to become a TypeScript Expert?
 
-TS-Pattern assumes that [Strict Mode](https://www.typescriptlang.org/tsconfig#strict) is enabled in your `tsconfig.json` file.
+Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), my online course teaching how to unleash the full potential of TypeScript's Turing-complete type system. You already know how to code, and types are just another programming language to learn! This course will show you how to transfer your existing coding skills to TypeScript types, so that you never get stuck on a type error or feel unable to type a generic function ever again.
 
-| ts-pattern                                                                                                                                                                              | TypeScript v5+ | TypeScript v4.5+ | TypeScript v4.2+ |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------------- | ---------------- |
-| v5.x [(Docs)](#documentation) [(Migration Guide)](https://github.com/gvergnaud/ts-pattern/tree/master/docs/v4-to-v5-migration-guide.md)                                                 | ✅             | ❌               | ❌               |
-| v4.x [(Docs)](https://github.com/gvergnaud/ts-pattern/tree/v4##documentation) [(Migration Guide)](https://github.com/gvergnaud/ts-pattern/tree/master/docs/v3-to-v4-migration-guide.md) | ✅             | ✅               | ❌               |
-| v3.x [(Docs)](https://github.com/gvergnaud/ts-pattern/tree/v3#documentation)                                                                                                            | ✅             | ✅               | ✅               |
-
-- ✅ Full support
-- ❌ Not supported
-
-## Want to get better at TypeScript?
-
-Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), my online course teaching how to take full advantage of the most advanced features of TypeScript. You will learn everything there is to know to build awesome libraries with great developer experiences and become a real TypeScript expert in the process!
+Type-Level TypeScript is a journey in the most advanced features of the type system. After you've taken those steps, you will become one of your company’s most proficient TypeScript developers, and know how to craft great code and libraries that your colleagues enjoy using!
 
 # Documentation
 
