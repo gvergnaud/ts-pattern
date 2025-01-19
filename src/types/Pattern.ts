@@ -126,11 +126,13 @@ export interface Override<a> {
   [symbols.override]: a;
 }
 
+export type UnknownProperties = { readonly [k: PropertyKey]: unknown };
+
 export type UnknownPattern =
   | readonly []
   | readonly [unknown, ...unknown[]]
   | readonly [...unknown[], unknown]
-  | { readonly [k: string]: unknown }
+  | UnknownProperties
   | Primitives
   | UnknownMatcher;
 

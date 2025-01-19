@@ -82,11 +82,28 @@ describe('isMatching', () => {
     const food = { type: 'pizza', topping: 'cheese' } as Food;
 
     isMatching(
-      {
-        // @ts-expect-error
-        type: 'oops',
-      },
+      // @ts-expect-error
+      { type: 'oops' },
       food
     );
+  });
+
+  it('should allow patterns targetting one member of a union type', () => {
+    const food = { type: 'pizza', topping: 'cheese' } as Food;
+    expect(isMatching({ topping: 'cheese' }, food)).toBe(true);
+
+    if (isMatching({ topping: 'cheese' }, food)) {
+      type t = Expect<Equal<typeof food, Food & { topping: 'cheese' }>>;
+    }
+  });
+
+  it('should allow targetting unknown properties', () => {
+    const food = { type: 'pizza', topping: 'cheese' } as Food;
+
+    expect(isMatching({ unknownProp: P.instanceOf(Error) }, food)).toBe(false);
+
+    if (isMatching({ unknownProp: P.instanceOf(Error) }, food)) {
+      type t = Expect<Equal<typeof food, Food & { unknownProp: Error }>>;
+    }
   });
 });
