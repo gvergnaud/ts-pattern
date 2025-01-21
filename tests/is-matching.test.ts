@@ -27,6 +27,7 @@ describe('isMatching', () => {
       );
     }
   });
+
   it('should act as a type guard function if given a two arguments', () => {
     const something: unknown = {
       title: 'Hello',
@@ -56,6 +57,47 @@ describe('isMatching', () => {
     }
   });
 
+  it('should work with object patterns', () => {
+    const value: unknown = { foo: true };
+    expect(isMatching({ foo: true }, value)).toEqual(true);
+    expect(isMatching({ foo: 'true' }, value)).toEqual(false);
+  });
+
+  it('should work with array patterns', () => {
+    const value: unknown = [1, 2, 3];
+    expect(isMatching(P.array(P.number), value)).toEqual(true);
+    expect(isMatching(P.array(P.string), value)).toEqual(false);
+  });
+
+  it('should work with variadic patterns', () => {
+    const value: unknown = [1, 2, 3];
+    expect(isMatching([1, ...P.array(P.number)], value)).toEqual(true);
+    expect(isMatching([2, ...P.array(P.number)], value)).toEqual(false);
+  });
+
+  it('should work with primitive patterns', () => {
+    const value: unknown = 1;
+    expect(isMatching(P.number, value)).toEqual(true);
+    expect(isMatching(P.boolean, value)).toEqual(false);
+  });
+
+  it('should work with literal patterns', () => {
+    const value: unknown = 1;
+    expect(isMatching(1, value)).toEqual(true);
+    expect(isMatching('oops', value)).toEqual(false);
+  });
+
+  it('should work with union and intersection patterns', () => {
+    const value: unknown = { foo: true };
+    expect(isMatching(P.union({ foo: true }, { bar: false }), value)).toEqual(
+      true
+    );
+
+    expect(isMatching(P.union({ foo: false }, { bar: false }), value)).toEqual(
+      false
+    );
+  });
+
   type Pizza = { type: 'pizza'; topping: string };
   type Sandwich = { type: 'sandwich'; condiments: string[] };
   type Food = Pizza | Sandwich;
@@ -83,7 +125,9 @@ describe('isMatching', () => {
 
     isMatching(
       // @ts-expect-error
-      { type: 'oops' },
+      {
+        type: 'oops',
+      },
       food
     );
   });
