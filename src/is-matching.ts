@@ -1,11 +1,17 @@
-import {
-  MatchedValue,
-  Pattern,
-  UnknownPattern,
-  UnknownProperties,
-} from './types/Pattern';
+import { MatchedValue, Pattern, UnknownProperties } from './types/Pattern';
 import * as P from './patterns';
 import { matchPattern } from './internals/helpers';
+
+/**
+ * This constraint allows using additional properties
+ * in object patterns. See "should allow targetting unknown properties"
+ * unit test in `is-matching.test.ts`.
+ */
+type PatternConstraint<T> = T extends readonly any[]
+  ? P.Pattern<T>
+  : T extends object
+  ? P.Pattern<T> & UnknownProperties
+  : P.Pattern<T>;
 
 /**
  * `isMatching` takes pattern and returns a **type guard** function, cheching if a value matches this pattern.
@@ -38,10 +44,10 @@ export function isMatching<const p extends Pattern<unknown>>(
  *    return input.name
  *  }
  */
-export function isMatching<
-  const T,
-  const P extends P.Pattern<T> & UnknownProperties
->(pattern: P, value: T): value is P.infer<P>;
+export function isMatching<const T, const P extends PatternConstraint<T>>(
+  pattern: P,
+  value: T
+): value is P.infer<P>;
 
 export function isMatching<const p extends Pattern<any>>(
   ...args: [pattern: p, value?: any]
