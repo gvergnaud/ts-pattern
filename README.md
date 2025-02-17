@@ -68,13 +68,13 @@ Read the introduction blog post: [Bringing Pattern Matching to TypeScript 🎨 I
 
 Via npm
 
-```
+```sh
 npm install ts-pattern
 ```
 
 You can also use your favorite package manager:
 
-```
+```sh
 pnpm add ts-pattern
 # OR
 yarn add ts-pattern
