@@ -544,12 +544,36 @@ match(...)
   .exhaustive()
 ```
 
-Runs the pattern-matching expression and returns its result. It also enables exhaustiveness checking, making sure at compile time that we have handled all possible cases.
+Runs the pattern-matching expression and returns its result. It also enables exhaustiveness checking, making sure that we have handled all possible cases **at compile time**.
+
+By default, `.exhaustive()` will throw an error if the input value wasn't handled by any `.with(...)` clause. This should only happen if your types are incorrect.
+
+It is possible to pass your own handler function as a parameter to decide what should happen if an unexpected value has been received. You can for example throw your own custom error:
+
+```ts
+match(...)
+  .with(...)
+  .exhaustive((unexpected: unknown) => {
+    throw MyCustomError(unexpected);
+  })
+```
+
+Or log an error and return a default value:
+
+```ts
+match<string, number>(...)
+  .with(P.string, (str) => str.length)
+  .exhaustive((notAString: unknown) => {
+    console.log(`received an unexpected value: ${notAString}`);
+    return 0;
+  })
+```
 
 #### Signature
 
 ```ts
 function exhaustive(): TOutput;
+function exhaustive(handler: (unexpectedValue: unknown) => TOutput): TOutput;
 ```
 
 #### Example
