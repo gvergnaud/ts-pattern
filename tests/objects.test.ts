@@ -11,9 +11,8 @@ describe('Objects', () => {
     it('should work with symbols', () => {
       const fn1 = (obj: Input) => {
         if (isMatching({ [symbolA]: { [symbolB]: 'foo' } }, obj)) {
-          type t = Expect<
-            Equal<typeof obj, { [symbolA]: { [symbolB]: 'foo' } }>
-          >;
+          const value = obj[symbolA][symbolB];
+          type t = Expect<Equal<typeof value, 'foo'>>;
         } else {
           throw new Error('Expected obj to match the foo pattern!');
         }
@@ -21,9 +20,8 @@ describe('Objects', () => {
 
       const fn2 = (obj: Input) => {
         if (isMatching({ [symbolA]: { [symbolB]: 'bar' } }, obj)) {
-          type t = Expect<
-            Equal<typeof obj, { [symbolA]: { [symbolB]: 'bar' } }>
-          >;
+          const value = obj[symbolA][symbolB];
+          type t = Expect<Equal<typeof value, 'bar'>>;
           throw new Error('Expected obj to not match the bar pattern!');
         }
       };

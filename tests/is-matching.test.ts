@@ -137,7 +137,9 @@ describe('isMatching', () => {
     expect(isMatching({ topping: 'cheese' }, food)).toBe(true);
 
     if (isMatching({ topping: 'cheese' }, food)) {
-      type t = Expect<Equal<typeof food, Food & { topping: 'cheese' }>>;
+      type t = Expect<
+        Equal<typeof food, Pizza & { topping: 'cheese'; type: 'pizza' }>
+      >;
     }
   });
 
