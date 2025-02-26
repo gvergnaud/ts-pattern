@@ -1,6 +1,7 @@
 import { MatchedValue, Pattern, UnknownProperties } from './types/Pattern';
 import * as P from './patterns';
 import { matchPattern } from './internals/helpers';
+import { WithDefault } from './types/helpers';
 
 /**
  * This constraint allows using additional properties
@@ -47,7 +48,7 @@ export function isMatching<const p extends Pattern<unknown>>(
 export function isMatching<const T, const P extends PatternConstraint<T>>(
   pattern: P,
   value: T
-): value is P.infer<P>;
+): value is T & WithDefault<P.narrow<T, P>, P.infer<P>>;
 
 export function isMatching<const p extends Pattern<any>>(
   ...args: [pattern: p, value?: any]

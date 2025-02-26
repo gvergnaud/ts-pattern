@@ -137,7 +137,9 @@ describe('isMatching', () => {
     expect(isMatching({ topping: 'cheese' }, food)).toBe(true);
 
     if (isMatching({ topping: 'cheese' }, food)) {
-      type t = Expect<Equal<typeof food, Food & { topping: 'cheese' }>>;
+      type t = Expect<
+        Equal<typeof food, Pizza & { topping: 'cheese'; type: 'pizza' }>
+      >;
     }
   });
 
@@ -148,6 +150,18 @@ describe('isMatching', () => {
 
     if (isMatching({ unknownProp: P.instanceOf(Error) }, food)) {
       type t = Expect<Equal<typeof food, Food & { unknownProp: Error }>>;
+    }
+  });
+
+  it('should correctly narrow undiscriminated unions of objects.', () => {
+    type Input = { someProperty: string[] } | { this: 'is a string' };
+    const input = { someProperty: ['hello'] } satisfies Input as Input;
+
+    if (isMatching({ someProperty: P.array() }, input)) {
+      expect(input.someProperty).toEqual(['hello']);
+      type t = Expect<Equal<typeof input.someProperty, string[]>>;
+    } else {
+      throw new Error('pattern should match');
     }
   });
 });

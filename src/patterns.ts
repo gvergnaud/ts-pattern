@@ -127,7 +127,7 @@ export type infer<pattern> = InvertPattern<NoInfer<pattern>, unknown>;
  * type Narrowed = P.narrow<Input, typeof Pattern>
  * //     ^? ['a', 'a' | 'b']
  */
-export type narrow<input, pattern extends Pattern<any>> = ExtractPreciseValue<
+export type narrow<input, pattern> = ExtractPreciseValue<
   input,
   InvertPattern<pattern, input>
 >;
