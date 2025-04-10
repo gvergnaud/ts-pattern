@@ -3,6 +3,7 @@
   "version": "5.7.0",
   "description": " The exhaustive Pattern Matching library for TypeScript.",
   "type": "module",
+  "sideEffects": false,
   "source": "src/index.ts",
   "exports": {
     ".": {
