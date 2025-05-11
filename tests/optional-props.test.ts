@@ -101,7 +101,7 @@ describe('optional properties', () => {
         return `Foo: ${value.b}`;
       })
       .with({ a: SomeEnum.Bar }, (value) => `Bar: ${value.b}`)
-      .with({ a: undefined }, (value) => `<undefined>: ${value.b}`)
+      .with({ a: P.optional(undefined) }, (value) => `<undefined>: ${value.b}`)
       .exhaustive();
 
     expect(result).toEqual(`Foo: not important`);

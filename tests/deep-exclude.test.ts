@@ -128,6 +128,21 @@ describe('DeepExclude', () => {
         >
       ];
     });
+
+    it("should exclude the undefined case of optional properties when the pattern's key is also optional", () => {
+      type input = {
+        type: 'a';
+        data?: { type: 'img'; src: string } | { type: 'text'; p: string };
+      };
+      type pattern = {
+        readonly type: 'a';
+        readonly data?: { readonly type: 'img' };
+      };
+      type res1 = DeepExclude<input, pattern>;
+      type test1 = Expect<
+        Equal<res1, { type: 'a'; data: { type: 'text'; p: string } }>
+      >;
+    });
   });
 
   describe('Tuples', () => {

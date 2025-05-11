@@ -267,3 +267,10 @@ export interface Fn {
 export type Call<fn extends Fn, input> = (fn & {
   input: input;
 })['output'];
+
+export type IsOptionalKeysOf<obj, key extends keyof obj> = {} extends Pick<
+  obj,
+  key
+>
+  ? true
+  : false;

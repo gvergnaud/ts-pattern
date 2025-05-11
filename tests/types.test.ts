@@ -1,6 +1,12 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, P } from '../src';
 import { State, Event } from './types-catalog/utils';
+import {
+  InvertPattern,
+  InvertPatternForExclude,
+} from '../src/types/InvertPattern';
+import { Chainable, GuardP, NotP } from '../src/types/Pattern';
+import { ExtractPreciseValue } from '../src/types/ExtractPreciseValue';
 
 describe('types', () => {
   type Input = [State, Event];
@@ -151,6 +157,7 @@ describe('types', () => {
       >;
       return 'ok';
     });
+
     match<Input>({ type: 'hello' })
       .with(P.not(P.when((x) => true)), (x) => {
         type t = Expect<Equal<typeof x, Input>>;
