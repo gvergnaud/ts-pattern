@@ -363,7 +363,9 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
         >
       : never
     : IsPlainObject<p> extends true
-    ? i extends object
+    ? Equal<{}, p> extends true
+      ? {}
+      : i extends object
       ? [keyof p & keyof i] extends [never]
         ? empty
         : OptionalKeys<p> extends infer optKeys

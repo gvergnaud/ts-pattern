@@ -990,4 +990,96 @@ describe('exhaustive()', () => {
       .with(P.instanceOf(Date), (value) => 3)
       .exhaustive();
   });
+
+  describe('issue #278: should support exhaustive check on optional property', () => {
+    // https://github.com/gvergnaud/ts-pattern/issues/278
+
+    type Input = { type?: 'one' } | { type: 'two' };
+
+    it("exhaustive should fail when the optional key isn't provided", () => {
+      const f = (input: Input) =>
+        match(input)
+          .with({ type: 'one' }, (x) => {
+            return false;
+          })
+          .with({ type: 'two' }, (x) => {
+            return false;
+          })
+          // @ts-expect-error
+          .exhaustive();
+
+      expect(f({ type: 'one' })).toBe(false);
+      expect(f({ type: 'two' })).toBe(false);
+      expect(() => f({})).toThrow();
+    });
+
+    it('exhaustive should fail when matching on { type: undefined }', () => {
+      // Because { type: undefined } doesn't match when passing an empty object –
+      // the key must be present on the object.
+      const f = (input: Input) =>
+        match(input)
+          .with({ type: 'one' }, (x) => {
+            return false;
+          })
+          .with({ type: 'two' }, (x) => {
+            return false;
+          })
+          .with({ type: undefined }, (x) => {
+            type t = Expect<Equal<typeof x, { type: undefined }>>;
+            return true;
+          })
+          // @ts-expect-error
+          .exhaustive();
+
+      expect(f({ type: 'one' })).toBe(false);
+      expect(f({ type: 'two' })).toBe(false);
+      expect(f({ type: undefined })).toBe(true);
+      expect(() => f({})).toThrow();
+    });
+
+    it('exhaustive should pass when using P.optional(undefined)', () => {
+      const f = (input: Input) =>
+        match(input)
+          .with({ type: 'one' }, (x) => {
+            return false;
+          })
+          .with({ type: 'two' }, (x) => {
+            return false;
+          })
+          .with({ type: P.optional(undefined) }, (x) => {
+            type t = Expect<Equal<typeof x, { type?: undefined }>>;
+            return true;
+          })
+          .exhaustive();
+
+      expect(f({ type: 'one' })).toBe(false);
+      expect(f({ type: 'two' })).toBe(false);
+      expect(f({ type: undefined })).toBe(true);
+      expect(f({})).toBe(true);
+    });
+
+    it('exhaustive should pass when using {} and { type: undefined }', () => {
+      const f = (input: Input) =>
+        match(input)
+          .with({ type: 'one' }, (x) => {
+            return false;
+          })
+          .with({ type: 'two' }, (x) => {
+            return false;
+          })
+          .with({ type: undefined }, (x) => {
+            type t = Expect<Equal<typeof x, { type: undefined }>>;
+            return true;
+          })
+          .with({}, (x) => {
+            return true;
+          })
+          .exhaustive();
+
+      expect(f({ type: 'one' })).toBe(false);
+      expect(f({ type: 'two' })).toBe(false);
+      expect(f({ type: undefined })).toBe(true);
+      expect(f({})).toBe(true);
+    });
+  });
 });
