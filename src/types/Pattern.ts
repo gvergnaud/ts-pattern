@@ -3,6 +3,7 @@ import { MergeUnion, Primitives, WithDefault } from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
 import { matcher } from '../patterns';
 import { ExtractPreciseValue } from './ExtractPreciseValue';
+import { InvertPattern } from './InvertPattern';
 
 export type MatcherType =
   | 'not'
@@ -92,6 +93,8 @@ export type CustomP<input, pattern, narrowedOrFn> = Matcher<
 
 export type ArrayP<input, p> = Matcher<input, p, 'array'>;
 
+export type ObjectP<input, p> = Matcher<input, p>;
+
 export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
 export type MapP<input, pkey, pvalue> = Matcher<input, [pkey, pvalue], 'map'>;
@@ -161,10 +164,12 @@ type KnownPatternInternal<
 > =
   | primitives
   | PatternMatcher<a>
-  | ([objs] extends [never] ? never : ObjectPattern<Readonly<MergeUnion<objs>>>)
+  | ([objs] extends [never]
+      ? never
+      : ObjectLiteralPattern<Readonly<MergeUnion<objs>>>)
   | ([arrays] extends [never] ? never : ArrayPattern<arrays>);
 
-type ObjectPattern<a> =
+export type ObjectLiteralPattern<a> =
   | {
       readonly [k in keyof a]?: Pattern<a[k]>;
     }
@@ -188,6 +193,11 @@ export type BigIntPattern = BigIntChainable<GuardP<unknown, bigint>, never>;
 export type SymbolPattern = Chainable<GuardP<unknown, symbol>, never>;
 export type NullishPattern = Chainable<
   GuardP<unknown, null | undefined>,
+  never
+>;
+export type ObjectPattern = ObjectChainable<GuardP<unknown, object>, never>;
+export type EmptyObjectPattern = Chainable<
+  GuardExcludeP<unknown, object, never>,
   never
 >;
 
@@ -671,6 +681,42 @@ export type ArrayChainable<
       select<input, k extends string>(
         key: k
       ): ArrayChainable<SelectP<k, input, pattern>, omitted | 'select'>;
+    },
+    omitted
+  >;
+
+export type ObjectChainable<
+  pattern,
+  omitted extends string = never
+> = Chainable<pattern, omitted> &
+  Omit<
+    {
+      /**
+       * `P.object.empty()` is a pattern, matching **objects** with no keys.
+       *
+       * [Read the documentation for `P.object.empty()` on GitHub](https://github.com/gvergnaud/ts-pattern#pobjectempty)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.object.empty(), () => 'will match on empty objects')
+       */
+      empty: () => EmptyObjectPattern;
+
+      /**
+       * `P.object.exact({...})` matching objects that contain exactly the set of defined in the pattern. Objects with additional keys won't match this pattern, even if keys defined in both the pattern and the object match.
+       *
+       * [Read the documentation for `P.object.exact()` on GitHub](https://github.com/gvergnaud/ts-pattern#pobjectexact)
+       *
+       * @example
+       *  match(value)
+       *   .with(
+       *     P.object.exact({ a: P.any }),
+       *     () => 'Objects with a single `a` key that contains anything.'
+       *   )
+       */
+      <input, const pattern extends ObjectLiteralPattern<input>>(
+        pattern: pattern
+      ): Chainable<GuardExcludeP<input, InvertPattern<pattern, input>, never>>;
     },
     omitted
   >;
