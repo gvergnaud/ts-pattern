@@ -212,6 +212,17 @@ export type Match<
   returnType: [inferredOutput] extends [never]
     ? <output>() => Match<i, output, handledCases>
     : TSPatternError<'calling `.returnType<T>()` is only allowed directly after `match(...)`.'>;
+
+  /**
+   * `.narrow()` narrows the input type to exclude all cases that have previously been handled.
+   *
+   * `.narrow()` is only useful if you want to excluded cases from union types or nullable
+   * properties that are deeply nested. Handled cases from top level union types are excluded
+   * by default.
+   *
+   * [Read the documentation for `.narrow() on GitHub](https://github.com/gvergnaud/ts-pattern#narrow)
+   */
+  narrow(): Match<DeepExcludeAll<i, handledCases>, o, [], inferredOutput>;
 };
 
 /**
