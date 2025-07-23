@@ -178,7 +178,7 @@ export type Match<
    *
    **/
   otherwise<c>(
-    handler: (value: i) => PickReturnValue<o, c>
+    handler: (value: DeepExcludeAll<i, handledCases>) => PickReturnValue<o, c>
   ): PickReturnValue<o, Union<inferredOutput, c>>;
 
   /**
