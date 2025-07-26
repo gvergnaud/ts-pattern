@@ -37,6 +37,7 @@
     "dev": "microbundle watch",
     "prepublishOnly": "npm run test && npm run build",
     "publish:jsr": "npm run prepublishOnly && npx jsr publish",
+    "release": "npm run prepublishOnly && npm publish && npx jsr publish",
     "test": "jest",
     "clear-test": "jest --clearCache",
     "fmt": "prettier ./src/** ./tests/** -w",
