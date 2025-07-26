@@ -101,6 +101,7 @@ Type-Level TypeScript takes you on a deep dive into the most advanced features o
   - [`.returnType`](#returntype)
   - [`.exhaustive`](#exhaustive)
   - [`.otherwise`](#otherwise)
+  - [`.narrow`](#narrow)
   - [`isMatching`](#ismatching)
   - [Patterns](#patterns)
     - [Literals](#literals)
@@ -638,6 +639,43 @@ returns the result of the pattern-matching expression, or **throws** if no patte
 
 ```ts
 function run(): TOutput;
+```
+
+### `.narrow`
+
+```ts
+match(...)
+  .with(...)
+  .narrow()
+  .with(...)
+```
+
+The `.narrow()` method deeply narrows the input type to exclude all values that have previously been handled. This is useful when you want to exclude cases from union types or nullable properties that are deeply nested.
+
+Note that handled case of top-level union types are excluded by default, without calling `.narrow()`.
+
+#### Signature
+
+```ts
+function narrow(): Match<Narrowed<TInput>, TOutput>;
+```
+
+#### Example
+
+```ts
+type Input = { color: 'red' | 'blue'; size: 'small' | 'large' };
+
+declare const input: Input;
+
+const result = match(input)
+  .with({ color: 'red', size: 'small' }, (red) => `Red: ${red.size}`)
+  .with({ color: 'blue', size: 'large' }, (red) => `Red: ${red.size}`)
+  .narrow() // 👈
+  .otherwise((narrowedInput) => {
+    // narrowedInput:
+    // | { color: 'red'; size: 'large' }
+    // | { color: 'blue'; size: 'small' }
+  });
 ```
 
 ### `isMatching`
