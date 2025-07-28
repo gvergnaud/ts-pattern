@@ -42,6 +42,10 @@ import {
   ArrayChainable,
   Variadic,
   NonNullablePattern,
+  ObjectChainable,
+  ObjectPattern,
+  EmptyObjectPattern,
+  ObjectLiteralPattern,
 } from './types/Pattern';
 
 export type {
@@ -170,6 +174,15 @@ function arrayChainable<pattern extends Matcher<any, any, any, any, any>>(
       arrayChainable(
         key === undefined ? select(pattern) : select(key, pattern)
       ),
+  }) as any;
+}
+
+function objectChainable<pattern extends Matcher<any, any, any, any, any>>(
+  pattern: pattern
+): ObjectChainable<pattern> {
+  return Object.assign(chainable(pattern), {
+    empty: () => emptyObject,
+    exact: exactObject,
   }) as any;
 }
 
@@ -658,6 +671,21 @@ function isNonNullable(x: unknown): x is {} {
   return x !== null && x !== undefined;
 }
 
+function isObject(x: unknown): x is object {
+  return !!x && (typeof x === 'object' || typeof x === 'function');
+}
+
+function hasExactKeys(keys: Set<PropertyKey>, x: unknown) {
+  if (!x || typeof x !== 'object') return false;
+  if (Array.isArray(x)) return false;
+  for (const key in x) if (!keys.has(key)) return false;
+  return true;
+}
+
+function isEmptyObject(x: unknown) {
+  return hasExactKeys(new Set(), x);
+}
+
 type AnyConstructor = abstract new (...args: any[]) => any;
 
 function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
@@ -1123,6 +1151,53 @@ export const nullish: NullishPattern = chainable(when(isNullish));
  *   .with(P.nonNullable, (x) => `${x} isn't null nor undefined`)
  */
 export const nonNullable: NonNullablePattern = chainable(when(isNonNullable));
+
+/**
+ * `P.object.empty()` is a pattern, matching **objects** with no keys.
+ *
+ * [Read the documentation for `P.object.empty()` on GitHub](https://github.com/gvergnaud/ts-pattern#pobjectempty)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.object.empty(), () => 'will match on empty objects')
+ */
+const emptyObject: EmptyObjectPattern = chainable(when(isEmptyObject));
+
+/**
+ * `P.object.exact({...})` matching objects that contain exactly the set of defined in the pattern. Objects with additional keys won't match this pattern, even if keys defined in both the pattern and the object match.
+ *
+ * [Read the documentation for `P.object.exact()` on GitHub](https://github.com/gvergnaud/ts-pattern#pobjectexact)
+ *
+ * @example
+ *  match(value)
+ *   .with(
+ *     P.object.exact({ a: P.any }),
+ *     () => 'Objects with a single `a` key that contains anything.'
+ *   )
+ */
+export function exactObject<
+  input,
+  const pattern extends ObjectLiteralPattern<input>
+>(
+  pattern: pattern
+): Chainable<GuardExcludeP<input, InvertPattern<pattern, input>, never>>;
+export function exactObject(pattern: ObjectLiteralPattern<{}>) {
+  const patternKeys = new Set(Object.keys(pattern));
+  return chainable(
+    when((input) => isMatching(pattern) && hasExactKeys(patternKeys, input))
+  );
+}
+
+/**
+ * `P.object` is a wildcard pattern, matching any **object**.
+ *
+ * [Read the documentation for `P.object` on GitHub](https://github.com/gvergnaud/ts-pattern#pobject-predicates)
+ *
+ * @example
+ * match(value)
+ *  .with(P.object, () => 'will match on objects')
+ **/
+export const object: ObjectPattern = objectChainable(when(isObject));
 
 /**
  * `P.instanceOf(SomeClass)` is a pattern matching instances of a given class.
