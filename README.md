@@ -86,9 +86,7 @@ npx jsr add @gabriel/ts-pattern
 
 ## Want to become a TypeScript Expert?
 
-Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), an online course teaching you how to unleash the full potential of TypeScript's Turing-complete type system. You already know how to code, and types are simply another programming language to master. This course bridges the gap, helping you apply your existing programming knowledge to TypeScript's type system, so you never again struggle with type errors or feel unable to type complex generic code correctly!
-
-Type-Level TypeScript takes you on a deep dive into the most advanced features of the type system. By the end of this journey, you'll emerge as one of your company's best TypeScript developers. You'll know how to craft elegant code and create awesome libraries that your colleagues will love using!
+Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), an online course teaching you how to unleash the full potential of TypeScript's Turing-complete type system. You already know how to code, and types are simply another programming language to master. This course **bridges the gap**, helping you apply your **existing programming knowledge** to **TypeScript's type system**, so you never again struggle with type errors or feel unable to type complex generic code correctly!
 
 # Documentation
 
