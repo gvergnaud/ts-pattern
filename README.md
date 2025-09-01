@@ -118,6 +118,7 @@ Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), an o
     - [`P.intersection` patterns](#pintersection-patterns)
     - [`P.string` predicates](#pstring-predicates)
     - [`P.number` and `P.bigint` predicates](#pnumber-and-pbigint-predicates)
+    - [`P.object` predicates](#pobject-predicates)
   - [Types](#types)
     - [`P.infer`](#pinfer)
     - [`P.Pattern`](#pPattern)
@@ -1553,6 +1554,53 @@ const fn = (input: number) =>
     .otherwise(() => '❌');
 
 console.log(fn(-3.141592), fn(7)); // logs '✅ ❌'
+```
+
+## `P.object` predicates
+
+`P.object` is itself a pattern, but also a module containing predicates related to object types.
+
+### `P.object`
+
+`P.object` matches any value assignable to the `object` TypeScript type. This includes all object literals, but also **arrays** and **functions**!
+
+`P.object` does not match primitive types, like strings or numbers.
+
+```ts
+import { match, P } from 'ts-pattern';
+
+const fn = (input: unknown) =>
+  match(input)
+    .with(P.object, () => '✅')
+    .otherwise(() => '❌');
+
+console.log(fn({})); // ✅
+console.log(fn({ hello: 'world!' })); // ✅
+console.log(fn([])); // ✅
+console.log(fn(() => {})); // ✅
+
+console.log(fn(1, true, 'hi')); // ❌ ❌ ❌
+```
+
+### `P.object.empty()`
+
+`P.object.empty()` matches the empty object `{}`:
+
+```ts
+import { isMatching, P } from 'ts-pattern';
+
+console.log(isMatching(P.object.empty(), {})); // true
+```
+
+`P.object.empty()` does **not** match empty arrays, 0 values or nullish values:
+
+```ts
+import { isMatching, P } from 'ts-pattern';
+
+console.log(isMatching(P.object.empty(), [])); // false
+console.log(isMatching(P.object.empty(), 0)); // false
+console.log(isMatching(P.object.empty(), null)); // false
+console.log(isMatching(P.object.empty(), undefined)); // false
 ```
 
 ## Types
