@@ -54,8 +54,6 @@ export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
           // otherwise `b extends a` wouldn't
           // not have passed.
           Compute<b & Omit<a, keyof b>>
-      : [keyof a & keyof b] extends [never]
-      ? never
       : Compute<
           // Keep other properties of `a`
           {

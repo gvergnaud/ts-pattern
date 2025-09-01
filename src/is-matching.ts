@@ -29,9 +29,9 @@ type PatternConstraint<T> = T extends readonly any[]
  *    return input.name
  *  }
  */
-export function isMatching<const p extends Pattern<unknown>>(
-  pattern: p
-): (value: unknown) => value is P.infer<p>;
+export function isMatching<const P extends Pattern<unknown>>(
+  pattern: P
+): <T>(value: T) => value is Extract<P.narrow<T, P>, T>;
 /**
  * `isMatching` takes pattern and a value and checks if the value matches this pattern.
  *
@@ -48,7 +48,7 @@ export function isMatching<const p extends Pattern<unknown>>(
 export function isMatching<const T, const P extends PatternConstraint<T>>(
   pattern: P,
   value: T
-): value is T & WithDefault<P.narrow<T, P>, P.infer<P>>;
+): value is Extract<P.narrow<T, P>, T>;
 
 export function isMatching<const p extends Pattern<any>>(
   ...args: [pattern: p, value?: any]

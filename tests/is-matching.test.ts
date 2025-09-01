@@ -1,4 +1,5 @@
-import { isMatching, P } from '../src';
+import { isMatching, match, P } from '../src';
+import { ExtractPreciseValue } from '../src/types/ExtractPreciseValue';
 import { Equal, Expect } from '../src/types/helpers';
 
 describe('isMatching', () => {
@@ -136,10 +137,25 @@ describe('isMatching', () => {
     const food = { type: 'pizza', topping: 'cheese' } as Food;
     expect(isMatching({ topping: 'cheese' }, food)).toBe(true);
 
+    // Findings:
+    // Infering extra properties and narrowing union types are hard to to
+    // reconcile because:
+    // - if you want to narrow on a key that only exist in one of the members,
+    // - you don't want this key as an extra key on the other members which don't
+    //   have it.
+    // - maybe the key is to switch to narrowing behavior if one of the objects
+    //   has this key, but that's somewhat arbitrary...
+
+    type X = ExtractPreciseValue<
+      Food,
+      {
+        readonly topping: 'cheese';
+      }
+    >;
+
     if (isMatching({ topping: 'cheese' }, food)) {
-      type t = Expect<
-        Equal<typeof food, Pizza & { topping: 'cheese'; type: 'pizza' }>
-      >;
+      type res = typeof food;
+      type t = Expect<Equal<res, Pizza & { topping: 'cheese'; type: 'pizza' }>>;
     }
   });
 
@@ -149,7 +165,8 @@ describe('isMatching', () => {
     expect(isMatching({ unknownProp: P.instanceOf(Error) }, food)).toBe(false);
 
     if (isMatching({ unknownProp: P.instanceOf(Error) }, food)) {
-      type t = Expect<Equal<typeof food, Food & { unknownProp: Error }>>;
+      type res = typeof food;
+      type t = Expect<Equal<res, Food & { unknownProp: Error }>>;
     }
   });
 
@@ -159,9 +176,71 @@ describe('isMatching', () => {
 
     if (isMatching({ someProperty: P.array() }, input)) {
       expect(input.someProperty).toEqual(['hello']);
-      type t = Expect<Equal<typeof input.someProperty, string[]>>;
+      type res = typeof input.someProperty;
+      type t = Expect<Equal<res, string[]>>;
     } else {
       throw new Error('pattern should match');
     }
+  });
+
+  describe('curried form types', () => {
+    it('should infer a precise type when used in the curried form', () => {
+      const x = { msg: 'hello' };
+
+      const result = [x].filter(isMatching({ age: 123 }));
+
+      type extracted = ExtractPreciseValue<typeof x, { readonly age: 123 }>;
+      //    ^?
+
+      result; // =>
+      type t = Expect<Equal<typeof result, { msg: string; age: 123 }[]>>;
+    });
+
+    it('should correctly narrow discriminated union types', () => {
+      const input: number[] = [1, 2, 3];
+
+      const pred = isMatching([1, 2]);
+
+      if (pred(input)) {
+        // @ts-expect-error
+        const [x, y, z] = input;
+      }
+    });
+
+    it('should correctly narrow discriminated union types', () => {
+      type Input =
+        | { role: 'user'; msg: string }
+        | { role: 'admin'; isAdmin: true };
+      const input = { role: 'admin', isAdmin: true } as Input;
+
+      const pred = isMatching({ role: 'user' });
+
+      if (pred(input)) {
+        type res = typeof input; // =>
+        type t = Expect<Equal<res, { role: 'user'; msg: string }>>;
+      }
+    });
+
+    it('should correctly narrow nested union types', () => {
+      type Input =
+        | {
+            type: 'human';
+            user:
+              | { role: 'user'; msg: string }
+              | { role: 'admin'; isAdmin: true };
+          }
+        | { type: 'robot'; imARobot: true };
+
+      const input = { type: 'robot', imARobot: true } as Input;
+
+      const pred = isMatching({ user: { role: 'admin' } });
+
+      if (pred(input)) {
+        type res = (typeof input)['user']; // =>
+        type t = Expect<Equal<res, { role: 'admin'; isAdmin: true }>>;
+
+        input.user;
+      }
+    });
   });
 });
