@@ -20,18 +20,21 @@ export type Some<key extends string> = {
 
 export type SelectionType = None | Some<string>;
 
+// SelectionsRecord -> SelectionsRecord
 type MapOptional<selections> = {
   [k in keyof selections]: selections[k] extends [infer v, infer subpath]
     ? [v | undefined, subpath]
     : never;
 };
 
+// SelectionsRecord -> SelectionsRecord
 type MapList<selections> = {
   [k in keyof selections]: selections[k] extends [infer v, infer subpath]
     ? [v[], subpath]
     : never;
 };
 
+// input -> pattern[] -> (string | number)[] -> Union SelectionRecord
 type ReduceFindSelectionUnion<
   i,
   ps extends readonly any[],
@@ -40,6 +43,7 @@ type ReduceFindSelectionUnion<
   ? ReduceFindSelectionUnion<i, tail, output | FindSelectionUnion<i, head>>
   : output;
 
+// input -> pattern -> (string | number)[] -> Union SelectionRecord
 type FindSelectionUnionInArray<
   i,
   p,
@@ -88,6 +92,7 @@ type FindSelectionUnionInArray<
           >
   : output;
 
+// input -> pattern -> (string | number)[] -> SelectionsRecord
 export type FindSelectionUnion<
   i,
   p,
@@ -106,12 +111,30 @@ export type FindSelectionUnion<
       select: sel extends Some<infer k>
         ? { [kk in k]: [i, path] } | FindSelectionUnion<i, pattern, path>
         : never;
+      // selection of arrays, records, maps, and sets are arrays,
+      // because the selection function is being mapped on their values
       array: i extends readonly (infer iItem)[]
         ? MapList<FindSelectionUnion<iItem, pattern>>
         : never;
-      // FIXME: selection for map and set is supported at the value level
-      map: never;
-      set: never;
+      record: [i, pattern] extends [
+        Record<infer k, infer v>,
+        [infer pkey, infer pvalue]
+      ]
+        ?
+            | MapList<FindSelectionUnion<k, pkey, path>>
+            | MapList<FindSelectionUnion<v, pvalue, path>>
+        : never;
+      map: [i, pattern] extends [
+        Map<infer k, infer v>,
+        [infer pkey, infer pvalue]
+      ]
+        ?
+            | MapList<FindSelectionUnion<k, pkey, path>>
+            | MapList<FindSelectionUnion<v, pvalue, path>>
+        : never;
+      set: i extends Set<infer v>
+        ? MapList<FindSelectionUnion<v, pattern, path>>
+        : never;
       optional: MapOptional<FindSelectionUnion<i, pattern>>;
       or: MapOptional<
         ReduceFindSelectionUnion<i, Extract<pattern, readonly any[]>>
@@ -145,6 +168,9 @@ export type MixedNamedAndAnonymousSelectError<
   __error: never;
 } & a;
 
+//                       Multiple selections   Single selection
+//                                 👇               👇
+// SelectionsRecord -> Record<string, unknown> | unknown | Error
 export type SelectionToArgs<selections extends SelectionsRecord> =
   symbols.anonymousSelectKey extends keyof selections
     ? // if there are several different paths for anonymous selections

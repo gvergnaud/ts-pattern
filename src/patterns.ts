@@ -14,7 +14,7 @@ import { Fn } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
   Pattern,
-  UnknownPattern,
+  UnknownValuePattern,
   OptionalP,
   ArrayP,
   MapP,
@@ -29,7 +29,7 @@ import {
   CustomP,
   Matcher,
   StringPattern,
-  AnyPattern,
+  UnknownPattern,
   NumberPattern,
   BooleanPattern,
   BigIntPattern,
@@ -42,6 +42,7 @@ import {
   ArrayChainable,
   Variadic,
   NonNullablePattern,
+  RecordP,
 } from './types/Pattern';
 
 export type {
@@ -185,7 +186,9 @@ function arrayChainable<pattern extends Matcher<any, any, any, any, any>>(
  */
 export function optional<
   input,
-  const pattern extends unknown extends input ? UnknownPattern : Pattern<input>
+  const pattern extends unknown extends input
+    ? UnknownValuePattern
+    : Pattern<input>
 >(pattern: pattern): Chainable<OptionalP<input, pattern>, 'optional'> {
   return chainable({
     [matcher]() {
@@ -218,6 +221,10 @@ type UnwrapSet<xs> = xs extends Set<infer x> ? x : never;
 type UnwrapMapKey<xs> = xs extends Map<infer k, any> ? k : never;
 
 type UnwrapMapValue<xs> = xs extends Map<any, infer v> ? v : never;
+
+type UnwrapRecordKey<xs> = xs extends Record<infer k, any> ? k : never;
+
+type UnwrapRecordValue<xs> = xs extends Record<any, infer v> ? v : never;
 
 type WithDefault<a, b> = [a] extends [never] ? b : a;
 
@@ -412,6 +419,102 @@ const mapEvery = <K, T>(
 };
 
 /**
+ * `P.record(keyPattern, valuePattern)` takes a subpattern to match against the
+ * key, a subpattern to match against the value and returns a pattern that
+ * matches on objects where all entries match those two
+ * subpatterns.
+ *
+ * [Read `P.record` documentation on GitHub](https://github.com/gvergnaud/ts-pattern#precord-patterns)
+ *
+ * @example
+ *  match(value)
+ *   .with({ users: P.record(P.string, P.number) }, (obj) => `object's type is Record<string, number>`)
+ */
+export function record<
+  input,
+  const pvalue extends Pattern<UnwrapRecordValue<input>>
+>(patternValue: pvalue): Chainable<RecordP<input, StringPattern, pvalue>>;
+export function record<
+  input,
+  const pkey extends Pattern<WithDefault<UnwrapRecordKey<input>, PropertyKey>>,
+  const pvalue extends Pattern<WithDefault<UnwrapRecordValue<input>, unknown>>
+>(
+  patternKey: pkey,
+  patternValue?: pvalue
+): Chainable<RecordP<input, pkey, pvalue>>;
+export function record(
+  ...args: [patternKey?: unknown, patternValue?: unknown]
+): Chainable<RecordP<unknown, unknown, unknown>> {
+  return chainable({
+    [matcher]() {
+      return {
+        match: (value: unknown) => {
+          if (
+            value === null ||
+            typeof value !== 'object' ||
+            Array.isArray(value)
+          ) {
+            return { matched: false };
+          }
+
+          if (args.length === 0) {
+            throw new Error(
+              `\`P.record\` wasn\'t given enough arguments. Expected (value) or (key, value), received ${args[0]?.toString()}`
+            );
+          }
+
+          let selections: Record<string, unknown[]> = {};
+
+          const selector = (key: string, value: unknown) => {
+            selections[key] = (selections[key] || []).concat([value]);
+          };
+
+          const [patternKey, patternValue] =
+            args.length === 1 ? [string, args[0]] : args;
+
+          const matched = recordEvery(value, (k, v) => {
+            // since number keys are coerced to strings, we need to coerce them back to numbers if the pattern is `number`
+            const coercedKey =
+              typeof k === 'string' && !Number.isNaN(Number(k))
+                ? Number(k)
+                : null;
+
+            const coercedKeyMatch =
+              coercedKey !== null
+                ? matchPattern(patternKey, coercedKey, selector)
+                : false;
+
+            const keyMatch = matchPattern(patternKey, k, selector);
+
+            const valueMatch = matchPattern(patternValue, v, selector);
+
+            return (keyMatch || coercedKeyMatch) && valueMatch;
+          });
+
+          return { matched, selections };
+        },
+        getSelectionKeys: () =>
+          args.length === 0
+            ? []
+            : [...getSelectionKeys(args[0]), ...getSelectionKeys(args[1])],
+      };
+    },
+  });
+}
+
+const recordEvery = <K extends PropertyKey, T>(
+  record: Record<K, T>,
+  predicate: (key: K, value: T) => boolean
+) => {
+  const keys = Reflect.ownKeys(record);
+  for (const key of keys) {
+    if (predicate(key as K, record[key as K] as T)) continue;
+    return false;
+  }
+  return true;
+};
+
+/**
  * `P.intersection(...patterns)` returns a pattern which matches
  * only if **every** patterns provided in parameter match the input.
  *
@@ -441,13 +544,13 @@ export function intersection<
         const selector = (key: string, value: any) => {
           selections[key] = value;
         };
-        const matched = (patterns as readonly UnknownPattern[]).every((p) =>
-          matchPattern(p, value, selector)
+        const matched = (patterns as readonly UnknownValuePattern[]).every(
+          (p) => matchPattern(p, value, selector)
         );
         return { matched, selections };
       },
       getSelectionKeys: () =>
-        flatMap(patterns as readonly UnknownPattern[], getSelectionKeys),
+        flatMap(patterns as readonly UnknownValuePattern[], getSelectionKeys),
       matcherType: 'and',
     }),
   });
@@ -478,16 +581,16 @@ export function union<
           selections[key] = value;
         };
         flatMap(
-          patterns as readonly UnknownPattern[],
+          patterns as readonly UnknownValuePattern[],
           getSelectionKeys
         ).forEach((key) => selector(key, undefined));
-        const matched = (patterns as readonly UnknownPattern[]).some((p) =>
+        const matched = (patterns as readonly UnknownValuePattern[]).some((p) =>
           matchPattern(p, value, selector)
         );
         return { matched, selections };
       },
       getSelectionKeys: () =>
-        flatMap(patterns as readonly UnknownPattern[], getSelectionKeys),
+        flatMap(patterns as readonly UnknownValuePattern[], getSelectionKeys),
       matcherType: 'or',
     }),
   });
@@ -507,7 +610,7 @@ export function union<
 
 export function not<
   input,
-  const pattern extends Pattern<input> | UnknownPattern
+  const pattern extends Pattern<input> | UnknownValuePattern
 >(pattern: pattern): Chainable<NotP<input, pattern>> {
   return chainable({
     [matcher]: () => ({
@@ -571,7 +674,7 @@ export function select<
   input,
   const patternOrKey extends
     | string
-    | (unknown extends input ? UnknownPattern : Pattern<input>)
+    | (unknown extends input ? UnknownValuePattern : Pattern<input>)
 >(
   patternOrKey: patternOrKey
 ): patternOrKey extends string
@@ -582,7 +685,9 @@ export function select<
     >;
 export function select<
   input,
-  const pattern extends unknown extends input ? UnknownPattern : Pattern<input>,
+  const pattern extends unknown extends input
+    ? UnknownValuePattern
+    : Pattern<input>,
   const k extends string
 >(
   key: k,
@@ -674,7 +779,18 @@ function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
  *  match(value)
  *   .with(P.any, () => 'will always match')
  */
-export const any: AnyPattern = chainable(when(isUnknown));
+export const any: UnknownPattern = chainable(when(isUnknown));
+
+/**
+ * `P.unknown` is a wildcard pattern, matching **unknown value**.
+ *
+ * [Read the documentation for `P.unknown` on GitHub](https://github.com/gvergnaud/ts-pattern#p_-wildcard)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.unknown, () => 'will always match')
+ */
+export const unknown: UnknownPattern = chainable(when(isUnknown));
 
 /**
  * `P._` is a wildcard pattern, matching **any value**.
@@ -1155,6 +1271,6 @@ export function instanceOf<T extends AnyConstructor>(
 export function shape<input, const pattern extends Pattern<input>>(
   pattern: pattern
 ): Chainable<GuardP<input, InvertPattern<pattern, input>>>;
-export function shape(pattern: UnknownPattern) {
+export function shape(pattern: UnknownValuePattern) {
   return chainable(when(isMatching(pattern)));
 }
