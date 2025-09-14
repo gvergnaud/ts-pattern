@@ -491,37 +491,77 @@ describe('P.record', () => {
       expect(result).toEqual('no match');
     });
 
-    // it("shouldn't allow incorrect key types", () => {
-    //   const input: Record<`key_${number}`, number> = {
-    //     [`key_1`]: 1,
-    //     [`key_2`]: 2,
-    //   };
+    it("shouldn't allow incorrect key types", () => {
+      const input: Record<number, number> = {
+        1: 1,
+        2: 2,
+      };
 
-    //   const result = match(input)
-    //     .with(P.record('key_1', P.number), (value) => {
-    //       return 'matched';
-    //     })
-    //     .with(
-    //       P.record(
-    //         'hello',
-    //         P.number
-    //       ),
-    //       (value) => {
-    //         return 'matched';
-    //       }
-    //     )
-    //     .otherwise(() => 'no match');
-    // });
+      const result = match(input)
+        // @ts-expect-error
+        .with(P.record('1', P.number), (value) => {
+          return 'matched';
+        })
+        .otherwise(() => 'no match');
+    });
 
     it('should exclude the correct types for exhaustive checking', () => {
-      const input: Record<`key_${number}`, number> = {
-        [`key_1`]: 1,
-        [`key_2`]: 2,
-      };
-      const pat = P.record('key_1', P.number);
-      type pat = typeof pat;
-      type inv = InvertPatternForExclude<pat, typeof input>;
-      type test = Exclude<typeof input, inv>;
+      // Test that P.record correctly excludes matched record types from exhaustive checking
+      type Input =
+        | { type: 'config'; data: Record<string, string> }
+        | { type: 'scores'; data: Record<string, number> }
+        | { type: 'flags'; data: Record<string, boolean> }
+        | { type: 'mixed'; data: Record<string, string | number> };
+
+      const input = { type: 'config', data: { theme: 'dark' } } as Input;
+
+      // Should not be exhaustive - missing other cases
+      match(input)
+        .with({ data: P.record(P.string, P.string) }, () => 'config')
+        // @ts-expect-error - not exhaustive, missing other cases
+        .exhaustive();
+
+      // Should not be exhaustive - missing 'flags' case
+      match(input)
+        .with({ data: P.record(P.string, P.string) }, () => 'config')
+        .with({ data: P.record(P.string, P.number) }, () => 'scores')
+        .with(
+          { data: P.record(P.string, P.union(P.string, P.number)) },
+          () => 'mixed'
+        )
+        // @ts-expect-error - not exhaustive, missing 'flags' case
+        .exhaustive();
+
+      // Should be exhaustive - all cases covered
+      match(input)
+        .with({ data: P.record(P.string, P.string) }, () => 'config')
+        .with({ data: P.record(P.string, P.number) }, () => 'scores')
+        .with({ data: P.record(P.string, P.boolean) }, () => 'flags')
+        .with(
+          { data: P.record(P.string, P.union(P.string, P.number)) },
+          () => 'mixed'
+        )
+        .exhaustive();
+
+      // Test with more complex record patterns using union keys
+      type ComplexInput =
+        | { kind: 'stringKeys'; data: Record<string, number> }
+        | { kind: 'numericKeys'; data: Record<number, string> }
+        | { kind: 'mixedKeys'; data: Record<string | number, boolean> };
+
+      const complexInput = {
+        kind: 'stringKeys',
+        data: { a: 1, b: 2 },
+      } as ComplexInput;
+
+      match(complexInput)
+        .with({ data: P.record(P.string, P.number) }, () => 'stringKeys')
+        .with({ data: P.record(P.number, P.string) }, () => 'numericKeys')
+        .with(
+          { data: P.record(P.union(P.string, P.number), P.boolean) },
+          () => 'mixedKeys'
+        )
+        .exhaustive();
     });
   });
 });
