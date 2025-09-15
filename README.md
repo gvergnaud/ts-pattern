@@ -106,9 +106,10 @@ Check out 👉 [Type-Level TypeScript](https://type-level-typescript.com/), an o
     - [Wildcards](#wildcards)
     - [Objects](#objects)
     - [Tuples (arrays)](#tuples-arrays)
-    - [Sets](#pset-patterns)
-    - [Maps](#pmap-patterns)
     - [`P.array` patterns](#parray-patterns)
+    - [`P.record` patterns](#precord-patterns)
+    - [`P.set`](#pset-patterns)
+    - [`P.map`](#pmap-patterns)
     - [`P.when` patterns](#pwhen-patterns)
     - [`P.not` patterns](#pnot-patterns)
     - [`P.select` patterns](#pselect-patterns)
@@ -1045,6 +1046,68 @@ const output = match(input)
   .with([...P.array(P.string), 'end'], (input) => input) // input: [...string[], 'end']
   .with(['start', ...P.array(P.string), 'end'], (input) => input) // input: ['start', ...string[], 'end']
   .otherwise((input) => input);
+```
+
+### `P.record` patterns
+
+To match a `Record<Key, Value>` (an object with consistent key and value types), you can use `P.record(keyPattern, valuePattern)`.
+It takes a sub-pattern to match against the key, a sub-pattern to match against the value, and will match if **all entries** in the object
+match these two sub-patterns.
+
+```ts
+import { match, P } from 'ts-pattern';
+
+type Input = Record<string, number>;
+
+const input: Input = {
+  alice: 100,
+  bob: 85,
+  charlie: 92,
+};
+
+const output = match(input)
+  .with(P.record(P.string, P.number), (scores) => `All user scores`)
+  .with(P.record(P.string, P.string), (names) => `All user names`)
+  .otherwise(() => '');
+
+console.log(output);
+// => "All user scores"
+```
+
+You can also use `P.record` with a single argument `P.record(valuePattern)`, which assumes string keys:
+
+```ts
+const userProfiles = {
+  alice: { name: 'Alice', age: 25 },
+  bob: { name: 'Bob', age: 30 },
+};
+
+const output = match(userProfiles)
+  .with(
+    P.record({ name: P.string, age: P.number }),
+    (profiles) => `User profiles with name and age`
+  )
+  .otherwise(() => 'Different format');
+
+console.log(output);
+// => "User profiles with name and age"
+```
+
+When using `P.select` in record patterns, you can extract all keys or all values as arrays:
+
+```ts
+const data = { a: 1, b: 2, c: 3 };
+
+const keys = match(data)
+  .with(P.record(P.string.select(), P.number), (keys) => keys)
+  .otherwise(() => []);
+
+const values = match(data)
+  .with(P.record(P.string, P.number.select()), (values) => values)
+  .otherwise(() => []);
+
+console.log(keys); // => ['a', 'b', 'c']
+console.log(values); // => [1, 2, 3]
 ```
 
 ### `P.set` patterns
