@@ -277,6 +277,24 @@ describe('P.record', () => {
     expect(f({ [Symbol('a')]: 1, [Symbol('b')]: 2 })).toEqual('matched');
   });
 
+  it('should be chainable', () => {
+    type Input = { key?: Record<string, number> };
+    const input: Input = { key: { a: 1, b: 2 } };
+    const result = match(input)
+      .with(
+        { key: P.record(P.string, P.number).optional().select() },
+        (value) => {
+          type t = Expect<
+            Equal<typeof value, Record<string, number> | undefined>
+          >;
+          return 'matched';
+        }
+      )
+      .otherwise(() => 'no match');
+
+    expect(result).toEqual('matched');
+  });
+
   describe('numeric keys', () => {
     it('should match numeric keys', () => {
       const input: unknown = { 1: 'one', 2: 'two', 3: 'three' };
