@@ -243,6 +243,10 @@ export type MapValue<T> = T extends Map<any, infer V> ? V : never;
 
 export type SetValue<T> = T extends Set<infer V> ? V : never;
 
+export type RecordKey<T> = T extends Record<infer K, any> ? K : never;
+
+export type RecordValue<T> = T extends Record<any, infer V> ? V : never;
+
 export type ReadonlyArrayValue<T> = T extends ReadonlyArray<infer V>
   ? V
   : never;

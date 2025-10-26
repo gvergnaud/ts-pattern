@@ -21,6 +21,8 @@ import {
   Fn,
   ReadonlyArrayValue,
   WithDefault,
+  RecordKey,
+  RecordValue,
 } from './helpers';
 import type { Matcher, Pattern, Override, AnyMatcher } from './Pattern';
 
@@ -118,6 +120,12 @@ type InvertPatternInternal<p, input> = 0 extends 1 & p
       not: DeepExclude<input, InvertPatternInternal<subpattern, input>>;
       select: InvertPatternInternal<subpattern, input>;
       array: InvertPatternInternal<subpattern, ReadonlyArrayValue<input>>[];
+      record: subpattern extends [infer pk, infer pv]
+        ? Record<
+            Extract<InvertPatternInternal<pk, RecordKey<input>>, PropertyKey>,
+            InvertPatternInternal<pv, RecordValue<input>>
+          >
+        : never;
       map: subpattern extends [infer pk, infer pv]
         ? Map<
             InvertPatternInternal<pk, MapKey<Extract<input, Map<any, any>>>>,
@@ -321,6 +329,15 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
           ? MaybeAddReadonly<
               InvertPatternForExcludeInternal<subpattern, ii, empty>[],
               IsReadonlyArray<i>
+            >
+          : empty;
+        record: subpattern extends [infer pk, infer pv]
+          ? Record<
+              Extract<
+                InvertPatternForExcludeInternal<pk, RecordKey<i>, empty>,
+                PropertyKey
+              >,
+              InvertPatternForExcludeInternal<pv, RecordValue<i>, empty>
             >
           : empty;
         map: subpattern extends [infer pk, infer pv]

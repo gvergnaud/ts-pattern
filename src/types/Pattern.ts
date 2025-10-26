@@ -10,6 +10,7 @@ export type MatcherType =
   | 'or'
   | 'and'
   | 'array'
+  | 'record'
   | 'map'
   | 'set'
   | 'select'
@@ -92,6 +93,12 @@ export type CustomP<input, pattern, narrowedOrFn> = Matcher<
 
 export type ArrayP<input, p> = Matcher<input, p, 'array'>;
 
+export type RecordP<input, pkey, pvalue> = Matcher<
+  input,
+  [pkey, pvalue],
+  'record'
+>;
+
 export type OptionalP<input, p> = Matcher<input, p, 'optional'>;
 
 export type MapP<input, pkey, pvalue> = Matcher<input, [pkey, pvalue], 'map'>;
@@ -128,7 +135,7 @@ export interface Override<a> {
 
 export type UnknownProperties = { readonly [k: PropertyKey]: unknown };
 
-export type UnknownPattern =
+export type UnknownValuePattern =
   | readonly []
   | readonly [unknown, ...unknown[]]
   | readonly [...unknown[], unknown]
@@ -148,7 +155,7 @@ export type UnknownPattern =
  * const pattern: P.Pattern<User> = { name: P.string }
  */
 export type Pattern<a = unknown> = unknown extends a
-  ? UnknownPattern
+  ? UnknownValuePattern
   : KnownPattern<a>;
 
 type KnownPattern<a> = KnownPatternInternal<a>;
@@ -180,7 +187,7 @@ type ArrayPattern<a> = a extends readonly (infer i)[]
   : never;
 
 // These aliases could be inferred, but lead to nicer display names in IDEs.
-export type AnyPattern = Chainable<GuardP<unknown, unknown>, never>;
+export type UnknownPattern = Chainable<GuardP<unknown, unknown>, never>;
 export type StringPattern = StringChainable<GuardP<unknown, string>, never>;
 export type NumberPattern = NumberChainable<GuardP<unknown, number>, never>;
 export type BooleanPattern = Chainable<GuardP<unknown, boolean>, never>;
@@ -227,7 +234,7 @@ export type Chainable<p, omitted extends string = never> = p &
        *     (username) => '...'
        *   )
        */
-      and<input, p2 extends Pattern<input>>(
+      and<input, const p2 extends Pattern<input>>(
         pattern: p2
       ): Chainable<AndP<input, [p, p2]>, omitted>;
       /**
@@ -243,7 +250,7 @@ export type Chainable<p, omitted extends string = never> = p &
        *     ({ value }) => 'value: number | string'
        *   )
        */
-      or<input, p2 extends Pattern<input>>(
+      or<input, const p2 extends Pattern<input>>(
         pattern: p2
       ): Chainable<OrP<input, [p, p2]>, omitted>;
       /**
