@@ -1,6 +1,5 @@
 import { Expect, Equal } from '../src/types/helpers';
 import { match, P } from '../src';
-import { InvertPatternForExclude } from '../src/types/InvertPattern';
 
 describe('P.record', () => {
   it('should match any object when called with P.unknown', () => {
