@@ -351,7 +351,7 @@ const setEvery = <T>(set: Set<T>, predicate: (value: T) => boolean) => {
  *
  * @example
  *  match(value)
- *   .with({ users: P.map(P.map(P.string, P.number)) }, (map) => `map's type is Map<string, number>`)
+ *   .with({ users: P.map(P.string, P.number) }, (map) => `map's type is Map<string, number>`)
  */
 export function map<input>(): Chainable<MapP<input, unknown, unknown>>;
 export function map<
