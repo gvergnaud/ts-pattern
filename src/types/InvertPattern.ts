@@ -25,6 +25,7 @@ import {
   RecordValue,
 } from './helpers';
 import type { Matcher, Pattern, Override, AnyMatcher } from './Pattern';
+import type { StandardSchemaV1 } from './standard-schema/standard-schema-v1';
 
 type OptionalKeys<p> = ValueOf<{
   [k in keyof p]: 0 extends 1 & p[k] // inlining IsAny for perf
@@ -145,6 +146,8 @@ type InvertPatternInternal<p, input> = 0 extends 1 & p
         narrowedOrFn extends Fn ? Call<narrowedOrFn, input> : narrowedOrFn
       >;
     }[matcherType]
+  : p extends StandardSchemaV1<any, any>
+  ? StandardSchemaV1.InferOutput<p>
   : p extends Primitives
   ? p
   : p extends readonly any[]
@@ -370,6 +373,8 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
           ? Call<narrowedOrFn, i>
           : excluded;
       }[matcherType]
+    : p extends StandardSchemaV1<any, any>
+    ? StandardSchemaV1.InferInput<p>
     : p extends readonly any[]
     ? Extract<i, readonly any[]> extends infer arrayInput
       ? InvertArrayPatternForExclude<
