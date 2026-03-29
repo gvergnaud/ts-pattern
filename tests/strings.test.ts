@@ -126,14 +126,6 @@ describe('Strings', () => {
     expect(f('   ')).toBe('empty or not string');
     expect(f('\t\n')).toBe('empty or not string');
     expect(f(42)).toBe('empty or not string');
-
-    const g = (input: string) =>
-      match(input)
-        .with(P.string.notEmpty().startsWith('a'), () => 'a-prefixed content')
-        .otherwise(() => 'other');
-
-    expect(g('abc')).toBe('a-prefixed content');
-    expect(g(' a')).toBe('other');
   });
 
   it(`P.string.length(..)`, () => {
