@@ -108,6 +108,34 @@ describe('Strings', () => {
     expect(f('a')).toBe('no');
   });
 
+  it(`P.string.notEmpty()`, () => {
+    const f = (input: string | number) =>
+      match(input)
+        .with(P.string.notEmpty(), (value) => {
+          type t = Expect<Equal<typeof value, string>>;
+          return 'non-empty';
+        })
+        .otherwise((value) => {
+          type t = Expect<Equal<typeof value, string | number>>;
+          return 'empty or not string';
+        });
+
+    expect(f('hello')).toBe('non-empty');
+    expect(f('  hi  ')).toBe('non-empty');
+    expect(f('')).toBe('empty or not string');
+    expect(f('   ')).toBe('empty or not string');
+    expect(f('\t\n')).toBe('empty or not string');
+    expect(f(42)).toBe('empty or not string');
+
+    const g = (input: string) =>
+      match(input)
+        .with(P.string.notEmpty().startsWith('a'), () => 'a-prefixed content')
+        .otherwise(() => 'other');
+
+    expect(g('abc')).toBe('a-prefixed content');
+    expect(g(' a')).toBe('other');
+  });
+
   it(`P.string.length(..)`, () => {
     const f = (input: string | number) =>
       match(input)

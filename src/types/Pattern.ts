@@ -325,6 +325,20 @@ export type StringChainable<
         omitted | 'minLength'
       >;
       /**
+       * `P.string.notEmpty()` is a pattern, matching **strings** with at least one non-whitespace
+       * character after `String.prototype.trim()` (empty and whitespace-only strings do not match).
+       *
+       * [Read the documentation for `P.string.notEmpty` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringnotEmpty)
+       *
+       * @example
+       *  match(value)
+       *   .with(P.string.notEmpty(), () => 'has visible content')
+       */
+      notEmpty<input>(): StringChainable<
+        MergeGuards<input, p, GuardExcludeP<unknown, string, never>>,
+        omitted | 'notEmpty'
+      >;
+      /**
        * `P.string.length(len)` is a pattern, matching **strings** with exactly `len` characters.
        *
        * [Read the documentation for `P.string.length` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringlength)

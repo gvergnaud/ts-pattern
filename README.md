@@ -1445,6 +1445,20 @@ const fn = (input: string) =>
 console.log(fn('two')); // logs '🎉'
 ```
 
+### `P.string.notEmpty`
+
+`P.string.notEmpty()` matches strings that contain at least one non-whitespace character. Matching uses the string's length **after** `trim()`, so `''` and strings made only of spaces, tabs, or other whitespace do not match (unlike `P.string.minLength(1)`, which still matches `"   "`).
+
+```ts
+const fn = (input: string) =>
+  match(input)
+    .with(P.string.notEmpty(), () => '🎉')
+    .otherwise(() => '❌');
+
+console.log(fn('hello')); // logs '🎉'
+console.log(fn('   ')); // logs '❌'
+```
+
 ### `P.string.length`
 
 `P.string.length(len)` matches strings with exactly `len` characters.
