@@ -326,7 +326,7 @@ export type StringChainable<
       >;
       /**
        * `P.string.notEmpty()` is a pattern, matching **strings** with at least one non-whitespace
-       * character after `String.prototype.trim()` (empty and whitespace-only strings do not match).
+       * character after `value.trim()` (equivalent to `value.trim().length > 0`).
        *
        * [Read the documentation for `P.string.notEmpty` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringnotEmpty)
        *

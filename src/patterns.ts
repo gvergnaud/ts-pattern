@@ -846,8 +846,8 @@ const minLength = <const min extends number>(min: min) =>
   when((value) => isString(value) && value.length >= min);
 
 /**
- * `P.string.notEmpty()` is a pattern, matching **strings** whose value has at least one non-whitespace
- * character (equivalent to `value.trim().length > 0`).
+ * `P.string.notEmpty()` is a pattern, matching **strings** with at least one non-whitespace
+ * character after `value.trim()` (equivalent to `value.trim().length > 0`).
  *
  * [Read the documentation for `P.string.notEmpty` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringnotEmpty)
  *
