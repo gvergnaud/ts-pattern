@@ -7,6 +7,12 @@
 import * as symbols from './symbols';
 import { SelectionType } from '../types/FindSelected';
 import { Pattern, Matcher, MatcherType, AnyMatcher } from '../types/Pattern';
+import type { StandardSchemaV1 } from '../types/standard-schema/standard-schema-v1';
+
+const STANDARD_SCHEMA_KEY = '~standard';
+
+const isPromise = (value: unknown): value is Promise<unknown> =>
+  typeof (value as any)?.then === 'function';
 
 // @internal
 export const isObject = (value: unknown): value is Object =>
@@ -18,6 +24,22 @@ export const isMatcher = (
 ): x is Matcher<unknown, unknown, MatcherType, SelectionType> => {
   const pattern = x as Matcher<unknown, unknown, MatcherType, SelectionType>;
   return pattern && !!pattern[symbols.matcher];
+};
+
+const isStandardSchema = (
+  value: unknown
+): value is StandardSchemaV1<any, any> => {
+  if (!isObject(value)) return false;
+  const standard = (value as Record<string | symbol, unknown>)[
+    STANDARD_SCHEMA_KEY
+  ];
+  if (!isObject(standard)) return false;
+  const { version, vendor, validate } = standard as StandardSchemaV1.Props;
+  return (
+    version === 1 &&
+    typeof vendor === 'string' &&
+    typeof validate === 'function'
+  );
 };
 
 // @internal
@@ -41,6 +63,16 @@ export const matchPattern = (
       Object.keys(selections).forEach((key) => select(key, selections[key]));
     }
     return matched;
+  }
+
+  if (isStandardSchema(pattern)) {
+    const result = pattern[STANDARD_SCHEMA_KEY].validate(value);
+    if (isPromise(result)) {
+      throw new Error(
+        'Async Standard Schema validation is not supported by ts-pattern.'
+      );
+    }
+    return !Array.isArray(result.issues);
   }
 
   if (isObject(pattern)) {

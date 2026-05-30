@@ -3,6 +3,7 @@ import { MergeUnion, Primitives, WithDefault } from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
 import { matcher } from '../patterns';
 import { ExtractPreciseValue } from './ExtractPreciseValue';
+import type { StandardSchemaV1 } from './standard-schema/standard-schema-v1';
 
 export type MatcherType =
   | 'not'
@@ -141,7 +142,8 @@ export type UnknownValuePattern =
   | readonly [...unknown[], unknown]
   | UnknownProperties
   | Primitives
-  | UnknownMatcher;
+  | UnknownMatcher
+  | StandardSchemaV1;
 
 /**
  * `Pattern<a>` is the generic type for patterns matching a value of type `a`. A pattern can be any (nested) javascript value.
@@ -168,6 +170,7 @@ type KnownPatternInternal<
 > =
   | primitives
   | PatternMatcher<a>
+  | StandardSchemaV1<a, any>
   | ([objs] extends [never] ? never : ObjectPattern<Readonly<MergeUnion<objs>>>)
   | ([arrays] extends [never] ? never : ArrayPattern<arrays>);
 
