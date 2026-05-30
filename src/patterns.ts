@@ -846,6 +846,19 @@ const minLength = <const min extends number>(min: min) =>
   when((value) => isString(value) && value.length >= min);
 
 /**
+ * `P.string.notEmpty()` is a pattern, matching **strings** with at least one non-whitespace
+ * character after `value.trim()` (equivalent to `value.trim().length > 0`).
+ *
+ * [Read the documentation for `P.string.notEmpty` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringnotEmpty)
+ *
+ * @example
+ *  match(value)
+ *   .with(P.string.notEmpty(), () => 'has visible content')
+ */
+const notEmpty = () =>
+  when((value) => isString(value) && value.trim().length > 0);
+
+/**
  * `P.string.length(len)` is a pattern, matching **strings** with exactly `len` characters.
  *
  * [Read the documentation for `P.string.length` on GitHub](https://github.com/gvergnaud/ts-pattern#pstringlength)
@@ -907,6 +920,7 @@ const stringChainable = <pattern extends Matcher<any, any, any, any, any>>(
       stringChainable(intersection(pattern, endsWith(str))),
     minLength: (min: number) =>
       stringChainable(intersection(pattern, minLength(min))),
+    notEmpty: () => stringChainable(intersection(pattern, notEmpty())),
     length: (len: number) =>
       stringChainable(intersection(pattern, length(len))),
     maxLength: (max: number) =>
