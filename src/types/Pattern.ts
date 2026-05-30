@@ -3,6 +3,8 @@ import { MergeUnion, Primitives, WithDefault } from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
 import { matcher } from '../patterns';
 import { ExtractPreciseValue } from './ExtractPreciseValue';
+// re-export InvertPattern in ts-pattern/types
+export { InvertPattern } from './InvertPattern';
 
 export type MatcherType =
   | 'not'
