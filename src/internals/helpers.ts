@@ -103,6 +103,12 @@ export const matchPattern = (
         : false;
     }
 
+    // An object pattern must not match an array value, even though arrays are
+    // objects in JavaScript. Without this guard an empty pattern `{}` would
+    // vacuously match any array because `Reflect.ownKeys({}).every(…)` is true
+    // for an empty iterable. See https://github.com/gvergnaud/ts-pattern/issues/309
+    if (Array.isArray(value)) return false;
+
     return Reflect.ownKeys(pattern).every((k): boolean => {
       const subPattern = pattern[k];
 
