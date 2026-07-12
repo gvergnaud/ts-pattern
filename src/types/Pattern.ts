@@ -1,5 +1,12 @@
 import type * as symbols from '../internals/symbols';
-import { MergeUnion, Primitives, WithDefault } from './helpers';
+import {
+  Contains,
+  IsAny,
+  IsNever,
+  MergeUnion,
+  Primitives,
+  WithDefault,
+} from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
 import { matcher } from '../patterns';
 import { ExtractPreciseValue } from './ExtractPreciseValue';
@@ -73,7 +80,17 @@ type PatternMatcher<input> = Matcher<input, unknown, any, any>;
 // We fall back to `a` if we weren't able to extract anything more precise
 export type MatchedValue<a, invpattern> = WithDefault<
   ExtractPreciseValue<a, invpattern>,
-  a
+  IsNever<invpattern> extends true
+    ? a
+    : IsAny<invpattern> extends true
+    ? a
+    : unknown extends invpattern
+    ? a
+    : invpattern extends object
+    ? Contains<invpattern, never> extends true
+      ? a
+      : a & invpattern
+    : a
 >;
 
 export type AnyMatcher = Matcher<any, any, any, any, any>;
