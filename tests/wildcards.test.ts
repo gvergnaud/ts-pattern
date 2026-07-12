@@ -114,6 +114,33 @@ describe('wildcards', () => {
       );
     });
 
+    it('should narrow nullable NoInfer object properties correctly', () => {
+      type User = { name: string | null };
+
+      const withNoInfer = (value: NoInfer<User | null> | null) =>
+        match(value)
+          .with({ name: P.nonNullable }, ({ name }) => {
+            type t = Expect<Equal<typeof name, string>>;
+            return `Hello ${name}`;
+          })
+          .otherwise(() => null);
+
+      const withoutNoInfer = (value: User | null) =>
+        match(value)
+          .with({ name: P.nonNullable }, ({ name }) => {
+            type t = Expect<Equal<typeof name, string>>;
+            return `Hello ${name}`;
+          })
+          .otherwise(() => null);
+
+      expect(withNoInfer({ name: 'Gabriel' })).toBe('Hello Gabriel');
+      expect(withNoInfer({ name: null })).toBeNull();
+      expect(withNoInfer(null)).toBeNull();
+      expect(withoutNoInfer({ name: 'Gabriel' })).toBe('Hello Gabriel');
+      expect(withoutNoInfer({ name: null })).toBeNull();
+      expect(withoutNoInfer(null)).toBeNull();
+    });
+
     it('combined with exhaustive, it should consider all values except null and undefined to be handled', () => {
       const fn1 = (input: string | number | null | undefined) =>
         match(input)
