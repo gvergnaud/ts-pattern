@@ -123,8 +123,8 @@ describe('isMatching', () => {
   it('should reject invalid pattern when two parameters are passed', () => {
     const food = { type: 'pizza', topping: 'cheese' } as Food;
 
+    // @ts-expect-error
     isMatching(
-      // @ts-expect-error
       {
         type: 'oops',
       },
@@ -162,6 +162,29 @@ describe('isMatching', () => {
       type t = Expect<Equal<typeof input.someProperty, string[]>>;
     } else {
       throw new Error('pattern should match');
+    }
+  });
+
+  it('should accept a top-level matcher pattern against a value of a concrete object type (#336)', () => {
+    class Foo {
+      foo = 'foo' as const;
+    }
+    const foo = new Foo();
+
+    // A top-level matcher pattern (e.g. `P.instanceOf`) used with the
+    // two-argument form of `isMatching` must type-check when the value has a
+    // concrete object type, not just `unknown`.
+    expect(isMatching(P.instanceOf(Foo), foo)).toBe(true);
+
+    if (isMatching(P.instanceOf(Foo), foo)) {
+      type t = Expect<Equal<typeof foo, Foo>>;
+    }
+
+    const err = new Error('boom') as Error;
+    expect(isMatching(P.instanceOf(Error), err)).toBe(true);
+
+    if (isMatching(P.instanceOf(Error), err)) {
+      type t = Expect<Equal<typeof err, Error>>;
     }
   });
 });
