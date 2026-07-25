@@ -7,6 +7,7 @@ import type {
   IsReadonlyArray,
   LeastUpperBound,
   MaybeAddReadonly,
+  Primitives,
   ValueOf,
 } from './helpers';
 
@@ -20,6 +21,12 @@ export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
   : // inlining IsAny for perf
   0 extends 1 & a
   ? b
+  : [b] extends [Primitives]
+  ? // Fast path for primitive and literal patterns, skipping
+    // the array, Map, Set and object checks below. This is
+    // important to keep exhaustive matching on large enums
+    // and literal unions performant.
+    LeastUpperBound<a, b>
   : b extends readonly any[]
   ? ExtractPreciseArrayValue<a, b, IsReadonlyArray<a>>
   : b extends Map<infer bk, infer bv>
