@@ -44,6 +44,7 @@
     "fmt": "prettier ./src/** ./tests/** -w",
     "check": "tsc --strict --noEmit --extendedDiagnostics",
     "perf": "tsc --project tests/tsconfig.json --noEmit --extendedDiagnostics",
+    "perf:compile-time": "tsc --project benchmarks/compile-time/tsconfig.json --extendedDiagnostics",
     "trace": "tsc --project tests/tsconfig.json --generateTrace trace --incremental false  --noEmit",
     "analyzeTrace": "npx @typescript/analyze-trace trace"
   },
