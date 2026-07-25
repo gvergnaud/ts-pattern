@@ -2,7 +2,7 @@ import type * as symbols from '../internals/symbols';
 import type { Pattern, MatchedValue } from './Pattern';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
-import type { Union, GuardValue, IsNever } from './helpers';
+import type { Union, GuardValue, IsNever, Primitives } from './helpers';
 import type { FindSelected } from './FindSelected';
 
 export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;
@@ -25,6 +25,38 @@ export type Match<
   handledCases extends any[] = [],
   inferredOutput = never
 > = {
+  /**
+   * `.with(pattern, handler)` Registers a pattern and an handler function that
+   * will be called if the pattern matches the input value.
+   *
+   * [Read the documentation for `.with()` on GitHub](https://github.com/gvergnaud/ts-pattern#with)
+   **/
+  /**
+   * `.with(pattern, handler)` Registers a pattern and an handler function that
+   * will be called if the pattern matches the input value.
+   *
+   * [Read the documentation for `.with()` on GitHub](https://github.com/gvergnaud/ts-pattern#with)
+   **/
+  // Fast overload for primitive patterns.
+  //
+  // It behaves identically to the general overload below, but is much
+  // cheaper to type check: a primitive pattern matching the input is
+  // always equal to its own inverted pattern and matched value, and it
+  // can't contain selections. The `0 extends 1 & i` check opts out of
+  // this overload when the input type is `any`, because `any & Primitives`
+  // would otherwise let non-primitive patterns match this overload.
+  with<const p extends 0 extends 1 & i ? never : i & Primitives, c>(
+    pattern: p,
+    handler: (selections: p, value: p) => PickReturnValue<o, c>
+  ): InvertPatternForExclude<p, p> extends infer excluded
+    ? Match<
+        Exclude<i, excluded>,
+        o,
+        [...handledCases, excluded],
+        Union<inferredOutput, c>
+      >
+    : never;
+
   /**
    * `.with(pattern, handler)` Registers a pattern and an handler function that
    * will be called if the pattern matches the input value.
