@@ -158,7 +158,14 @@ export type Pattern<a = unknown> = unknown extends a
   ? UnknownValuePattern
   : KnownPattern<a>;
 
-type KnownPattern<a> = KnownPatternInternal<a>;
+type KnownPattern<a> = [a] extends [Primitives]
+  ? // Fast path when the input only contains primitive types:
+    // it can only be matched by literals, primitive wildcards
+    // and pattern matchers, so we can skip the object and array
+    // pattern computations. This is important to keep exhaustive
+    // matching on large enums and literal unions performant.
+    a | PatternMatcher<a>
+  : KnownPatternInternal<a>;
 
 type KnownPatternInternal<
   a,
