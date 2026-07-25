@@ -300,7 +300,17 @@ type InvertArrayPatternForExclude<
 /**
  * ### InvertPatternForExclude
  */
-export type InvertPatternForExclude<p, i> = Equal<Pattern<i>, p> extends true
+export type InvertPatternForExclude<p, i> = [p] extends [Primitives]
+  ? // Fast path for primitive and literal patterns, skipping
+    // the more expensive checks below. This is important
+    // to keep exhaustive matching on large enums and literal
+    // unions performant.
+    IsLiteral<p> extends true
+    ? p
+    : IsLiteral<i> extends true
+    ? p
+    : never
+  : Equal<Pattern<i>, p> extends true
   ? never
   : InvertPatternForExcludeInternal<p, i>;
 
