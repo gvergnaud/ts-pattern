@@ -31,12 +31,6 @@ export type Match<
    *
    * [Read the documentation for `.with()` on GitHub](https://github.com/gvergnaud/ts-pattern#with)
    **/
-  /**
-   * `.with(pattern, handler)` Registers a pattern and an handler function that
-   * will be called if the pattern matches the input value.
-   *
-   * [Read the documentation for `.with()` on GitHub](https://github.com/gvergnaud/ts-pattern#with)
-   **/
   // Fast overload for primitive patterns.
   //
   // It behaves identically to the general overload below, but is much
