@@ -79,5 +79,11 @@
     "rimraf": "^5.0.1",
     "ts-jest": "^29.4.1",
     "typescript": "^5.9.2"
+  },
+  "overrides": {
+    "microbundle": {
+      ".": "$microbundle",
+      "rollup-plugin-typescript2": "0.37.0"
+    }
   }
 }
