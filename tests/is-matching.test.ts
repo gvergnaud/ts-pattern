@@ -124,8 +124,8 @@ describe('isMatching', () => {
     const food = { type: 'pizza', topping: 'cheese' } as Food;
 
     isMatching(
-      // @ts-expect-error
       {
+        // @ts-expect-error
         type: 'oops',
       },
       food
@@ -163,5 +163,33 @@ describe('isMatching', () => {
     } else {
       throw new Error('pattern should match');
     }
+  });
+
+  it('should accept a top level matcher when the input is an object', () => {
+    class Container {
+      constructor(public value: string) {}
+    }
+
+    const input = new Container('hello');
+
+    expect(isMatching(P.instanceOf(Container), input)).toBe(true);
+
+    if (isMatching(P.instanceOf(Container), input)) {
+      expect(input.value).toBe('hello');
+      type t = Expect<Equal<typeof input, Container>>;
+    } else {
+      throw new Error('pattern should match');
+    }
+
+    const pizza = { type: 'pizza', topping: 'cheese' } as Food;
+
+    expect(isMatching(P.any, pizza)).toBe(true);
+    expect(
+      isMatching(
+        P.when((x: Food) => x.type === 'pizza'),
+        pizza
+      )
+    ).toBe(true);
+    expect(isMatching(P.not({ type: 'sushi' }), pizza)).toBe(true);
   });
 });

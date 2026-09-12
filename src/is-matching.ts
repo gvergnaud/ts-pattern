@@ -1,4 +1,9 @@
-import { MatchedValue, Pattern, UnknownProperties } from './types/Pattern';
+import {
+  AnyMatcher,
+  MatchedValue,
+  Pattern,
+  UnknownProperties,
+} from './types/Pattern';
 import * as P from './patterns';
 import { matchPattern } from './internals/helpers';
 import { WithDefault } from './types/helpers';
@@ -7,11 +12,19 @@ import { WithDefault } from './types/helpers';
  * This constraint allows using additional properties
  * in object patterns. See "should allow targetting unknown properties"
  * unit test in `is-matching.test.ts`.
+ *
+ * `UnknownProperties` is only intersected with the object patterns of the
+ * union: a top level matcher, like `P.instanceOf(SomeClass)`, has no index
+ * signature and would otherwise be rejected when the input is an object.
  */
+type WithUnknownProperties<p> = p extends AnyMatcher
+  ? p
+  : p & UnknownProperties;
+
 type PatternConstraint<T> = T extends readonly any[]
   ? P.Pattern<T>
   : T extends object
-  ? P.Pattern<T> & UnknownProperties
+  ? WithUnknownProperties<P.Pattern<T>>
   : P.Pattern<T>;
 
 /**
