@@ -169,8 +169,12 @@ describe('isMatching', () => {
     class Container {
       constructor(public value: string) {}
     }
+    class Box {
+      constructor(public size: number) {}
+    }
 
-    const input = new Container('hello');
+    // typed as a union so that the narrowing assertion below is meaningful
+    const input: Container | Box = new Container('hello');
 
     expect(isMatching(P.instanceOf(Container), input)).toBe(true);
 
