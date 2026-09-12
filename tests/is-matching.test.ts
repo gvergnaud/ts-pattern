@@ -173,14 +173,15 @@ describe('isMatching', () => {
       constructor(public size: number) {}
     }
 
-    // typed as a union so that the narrowing assertion below is meaningful
-    const input: Container | Box = new Container('hello');
+    // widened to a union so that the narrowing assertion below is meaningful
+    const input = new Container('hello') as Container | Box;
 
     expect(isMatching(P.instanceOf(Container), input)).toBe(true);
 
     if (isMatching(P.instanceOf(Container), input)) {
       expect(input.value).toBe('hello');
-      type t = Expect<Equal<typeof input, Container>>;
+      // the guard must remove the `Box` member of the union
+      type t = Expect<Equal<Exclude<typeof input, Container>, never>>;
     } else {
       throw new Error('pattern should match');
     }
