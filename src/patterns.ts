@@ -309,6 +309,9 @@ export function set<
           let selections: Record<string, unknown[]> = {};
 
           if (value.size === 0) {
+            getSelectionKeys(args[0]).forEach((key) => {
+              selections[key] = [];
+            });
             return { matched: true, selections };
           }
 
@@ -375,6 +378,11 @@ export function map<
           let selections: Record<string, unknown[]> = {};
 
           if (value.size === 0) {
+            [...getSelectionKeys(args[0]), ...getSelectionKeys(args[1])].forEach(
+              (key) => {
+                selections[key] = [];
+              }
+            );
             return { matched: true, selections };
           }
 

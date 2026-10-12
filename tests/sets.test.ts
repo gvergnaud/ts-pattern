@@ -41,4 +41,22 @@ describe('Set', () => {
 
     expect(res).toEqual(true);
   });
+  it('returns empty named and anonymous selection arrays for an empty set', () => {
+    const input = new Set<string>();
+    const named = match(input)
+      .with(P.set(P.string.select('values')), (selection) => {
+        type t = Expect<Equal<typeof selection, { values: string[] }>>;
+        return selection;
+      })
+      .otherwise(() => 'no match');
+    expect(named).toEqual({ values: [] });
+
+    const anonymous = match(input)
+      .with(P.set(P.string.select()), (selection) => {
+        type t = Expect<Equal<typeof selection, string[]>>;
+        return selection;
+      })
+      .otherwise(() => 'no match');
+    expect(anonymous).toEqual([]);
+  });
 });
