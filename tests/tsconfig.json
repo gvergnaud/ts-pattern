@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
     "strict": true,
-    "downlevelIteration": true,
     "noEmit": true,
     "target": "ESNext",
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["jest"],
     "skipLibCheck": true,
     "esModuleInterop": true
   },
