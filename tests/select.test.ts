@@ -529,4 +529,14 @@ describe('select', () => {
       .exhaustive();
     expect(result).toStrictEqual({ value: undefined });
   });
+  it('discovers anonymous selections under symbol keys in optional patterns', () => {
+    const key = Symbol('value');
+    const result = match<{ box?: { [key]: number } }>({})
+      .with({ box: P.optional({ [key]: P.number.select() }) }, (selection) => {
+        type t = Expect<Equal<typeof selection, number | undefined>>;
+        return selection;
+      })
+      .exhaustive();
+    expect(result).toBeUndefined();
+  });
 });
