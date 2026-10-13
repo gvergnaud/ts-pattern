@@ -580,14 +580,22 @@ export function union<
         const selector = (key: string, value: any) => {
           selections[key] = value;
         };
-        const selectionKeys = flatMap(
+        flatMap(
           patterns as readonly UnknownValuePattern[],
           getSelectionKeys
-        );
+        ).forEach((key) => selector(key, undefined));
         const matched = (patterns as readonly UnknownValuePattern[]).some(
           (p) => {
-            selectionKeys.forEach((key) => selector(key, undefined));
-            return matchPattern(p, value, selector);
+            const candidate: Record<string, unknown> = Object.create(null);
+            const matched = matchPattern(p, value, (key, value) => {
+              candidate[key] = value;
+            });
+            if (matched) {
+              Object.keys(candidate).forEach((key) =>
+                selector(key, candidate[key])
+              );
+            }
+            return matched;
           }
         );
         return { matched, selections };
