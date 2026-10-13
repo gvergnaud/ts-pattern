@@ -7,6 +7,7 @@ import type {
   IsReadonlyArray,
   LeastUpperBound,
   MaybeAddReadonly,
+  Primitives,
   ValueOf,
 } from './helpers';
 
@@ -20,6 +21,12 @@ export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
   : // inlining IsAny for perf
   0 extends 1 & a
   ? b
+  : [b] extends [Primitives]
+  ? // Fast path for primitive and literal patterns, skipping
+    // the array, Map, Set and object checks below. This is
+    // important to keep exhaustive matching on large enums
+    // and literal unions performant.
+    LeastUpperBound<a, b>
   : b extends readonly any[]
   ? ExtractPreciseArrayValue<a, b, IsReadonlyArray<a>>
   : b extends Map<infer bk, infer bv>
@@ -56,24 +63,30 @@ export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
           Compute<b & Omit<a, keyof b>>
       : [keyof a & keyof b] extends [never]
       ? never
-      : Compute<
-          // Keep other properties of `a`
-          {
-            // `in keyof a as ...` preserves property modifiers,
-            // unlike `in keyof Exclude<keyof a, keyof b>`.
-            [k in keyof a as k extends keyof b ? never : k]: a[k];
-          } & {
-            // use `b` to extract precise values on `a`.
-            // This has the effect of preserving the optional
-            // property modifier (?:) of b in the output type.
-            [k in keyof b]: k extends keyof a
-              ? ExtractPreciseValue<a[k], b[k]>
-              : b[k];
-          }
-        > extends infer result
-      ? Contains<Pick<result, keyof result & keyof b>, never> extends true
+      : // use `b` to extract precise values on `a`.
+      // This has the effect of preserving the optional
+      // property modifier (?:) of b in the output type.
+      {
+          [k in keyof b]: k extends keyof a
+            ? ExtractPreciseValue<a[k], b[k]>
+            : b[k];
+        } extends infer bValues
+      ? // If any of the pattern's keys extracted `never`, the
+        // pattern doesn't match this member of the input union.
+        // Checking this before merging the properties of `a`
+        // is important for performance: it lets us skip the
+        // expensive `Compute<... & ...>` for all members of the
+        // input union the pattern doesn't match.
+        Contains<bValues, never> extends true
         ? never
-        : result
+        : Compute<
+            // Keep other properties of `a`
+            {
+              // `in keyof a as ...` preserves property modifiers,
+              // unlike `in keyof Exclude<keyof a, keyof b>`.
+              [k in keyof a as k extends keyof b ? never : k]: a[k];
+            } & bValues
+          >
       : never
     : LeastUpperBound<a, b>
   : LeastUpperBound<a, b>;

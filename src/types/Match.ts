@@ -2,10 +2,13 @@ import type * as symbols from '../internals/symbols';
 import type { Pattern, MatchedValue } from './Pattern';
 import type { InvertPatternForExclude, InvertPattern } from './InvertPattern';
 import type { DeepExclude } from './DeepExclude';
-import type { Union, GuardValue, IsNever } from './helpers';
+import type { Union, GuardValue, IsNever, Primitives } from './helpers';
 import type { FindSelected } from './FindSelected';
 
 export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;
+
+declare const invalidPattern: unique symbol;
+type InvalidPattern = typeof invalidPattern;
 
 interface NonExhaustiveError<i> {
   __nonExhaustive: never;
@@ -25,6 +28,64 @@ export type Match<
   handledCases extends any[] = [],
   inferredOutput = never
 > = {
+  /**
+   * `.with(pattern, handler)` Registers a pattern and an handler function that
+   * will be called if the pattern matches the input value.
+   *
+   * [Read the documentation for `.with()` on GitHub](https://github.com/gvergnaud/ts-pattern#with)
+   **/
+  // Fast overload for primitive patterns.
+  //
+  // It behaves identically to the general overload below, but is much
+  // cheaper to type check: a primitive pattern matching the input is
+  // always equal to its own inverted pattern and matched value, and it
+  // can't contain selections.
+  //
+  // TypeScript tries this overload first, so it must not change how other
+  // patterns are typed:
+  // - `p` has the same constraint as the general overload, and the
+  //   `IsNever<p>` hack gives the pattern the same contextual type
+  //   (`Pattern<i>`). Pattern creators like `P.when` are resolved once,
+  //   while checking this overload, so they must infer the same input type.
+  // - Non-primitive patterns are rejected on the `pattern` argument, before
+  //   the handler gets its parameter types, so they fall through to the
+  //   general overload unchanged. They are rejected with `p & void` rather
+  //   than `never`: when no overload matches (e.g. while the handler isn't
+  //   written yet), editors take the contextual type of the pattern from
+  //   this first overload, and `p` keeps the key and string literal
+  //   completions the general overload gives. `void` adds no members of its
+  //   own (a symbol would add `description`, `toString` and `valueOf`).
+  // - An invalid pattern makes `p` fall back to its constraint, which
+  //   contains `InvalidPattern`. In that case, we type the pattern as
+  //   `Pattern<i>`, the handler's input as `i` and keep `i` as is, like the
+  //   general overload does. This keeps errors on the same node and avoids
+  //   cascading errors on the next `.with()`.
+  // - `0 extends 1 & i` opts out of this overload when the input is `any`.
+  with<const p extends Pattern<i> | InvalidPattern, c>(
+    pattern: IsNever<p> extends true
+      ? Pattern<i>
+      : 0 extends 1 & i
+      ? p & void
+      : [p] extends [Primitives]
+      ? p
+      : true extends (p extends InvalidPattern ? true : never)
+      ? Pattern<i>
+      : p & void,
+    handler: (
+      selections: [p] extends [Primitives] ? p : i,
+      value: [p] extends [Primitives] ? p : i
+    ) => PickReturnValue<o, c>
+  ): [p] extends [Primitives]
+    ? InvertPatternForExclude<p, p> extends infer excluded
+      ? Match<
+          Exclude<i, excluded>,
+          o,
+          [...handledCases, excluded],
+          Union<inferredOutput, c>
+        >
+      : never
+    : Match<i, o, handledCases, inferredOutput>;
+
   /**
    * `.with(pattern, handler)` Registers a pattern and an handler function that
    * will be called if the pattern matches the input value.

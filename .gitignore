@@ -7,4 +7,5 @@ notes.md
 .vscode/
 tracing_output_folder/
 trace/
+scripts/completions/__cases__/
 *.tgz
