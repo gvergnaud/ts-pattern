@@ -1,6 +1,22 @@
 import { isMatching, match, P } from '../src';
 
 describe('sparse array patterns', () => {
+  it('does not visit elements appended while matching', () => {
+    const input = [1];
+    const visited: number[] = [];
+    const pattern = P.array(
+      P.when((value: number) => {
+        visited.push(value);
+        if (visited.length === 1) input.push(2);
+        return value === 1;
+      })
+    );
+
+    expect(isMatching(pattern, input)).toBe(true);
+    expect(visited).toEqual([1]);
+    expect(input).toEqual([1, 2]);
+  });
+
   it('checks missing array slots against the element pattern', () => {
     expect(isMatching(P.array(P.number), [1, , 3])).toBe(false);
     expect(isMatching(P.array(P.number), new Array(2))).toBe(false);

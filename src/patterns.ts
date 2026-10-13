@@ -269,7 +269,8 @@ export function array(
           };
 
           let matched = true;
-          for (let i = 0; i < value.length; i++) {
+          const length = value.length;
+          for (let i = 0; i < length; i++) {
             if (!matchPattern(pattern, value[i], selector)) {
               matched = false;
               break;
