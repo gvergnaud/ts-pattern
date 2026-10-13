@@ -3,6 +3,11 @@ import { MergeUnion, Primitives, WithDefault } from './helpers';
 import { None, Some, SelectionType } from './FindSelected';
 import { matcher } from '../patterns';
 import { ExtractPreciseValue } from './ExtractPreciseValue';
+import type {
+  Pattern as PrimitivePattern,
+  PatternMatcher,
+} from './PrimitivePattern';
+import type { Pattern as ObjectOrArrayPattern } from './KnownPattern';
 
 export type MatcherType =
   | 'not'
@@ -67,8 +72,6 @@ export interface Matcher<
   // only used for array matchers
   [symbols.isVariadic]?: boolean;
 }
-
-type PatternMatcher<input> = Matcher<input, unknown, any, any>;
 
 // We fall back to `a` if we weren't able to extract anything more precise
 export type MatchedValue<a, invpattern> = WithDefault<
@@ -158,40 +161,16 @@ export type Pattern<a = unknown> = unknown extends a
   ? UnknownValuePattern
   : KnownPattern<a>;
 
+// Type errors on invalid patterns print the name of these aliases, which
+// are both called `Pattern` (see their files).
 type KnownPattern<a> = [a] extends [Primitives]
   ? // Fast path when the input only contains primitive types:
     // it can only be matched by literals, primitive wildcards
     // and pattern matchers, so we can skip the object and array
     // pattern computations. This is important to keep exhaustive
     // matching on large enums and literal unions performant.
-    a | PatternMatcher<a>
-  : KnownPatternInternal<a>;
-
-type KnownPatternInternal<
-  a,
-  objs = Exclude<a, Primitives | Map<any, any> | Set<any> | readonly any[]>,
-  arrays = Extract<a, readonly any[]>,
-  primitives = Extract<a, Primitives>
-> =
-  | primitives
-  | PatternMatcher<a>
-  | ([objs] extends [never] ? never : ObjectPattern<Readonly<MergeUnion<objs>>>)
-  | ([arrays] extends [never] ? never : ArrayPattern<arrays>);
-
-type ObjectPattern<a> =
-  | {
-      readonly [k in keyof a]?: Pattern<a[k]>;
-    }
-  | never;
-
-type ArrayPattern<a> = a extends readonly (infer i)[]
-  ? a extends readonly [any, ...any]
-    ? { readonly [index in keyof a]: Pattern<a[index]> }
-    :
-        | readonly []
-        | readonly [Pattern<i>, ...Pattern<i>[]]
-        | readonly [...Pattern<i>[], Pattern<i>]
-  : never;
+    PrimitivePattern<a>
+  : ObjectOrArrayPattern<a>;
 
 // These aliases could be inferred, but lead to nicer display names in IDEs.
 export type UnknownPattern = Chainable<GuardP<unknown, unknown>, never>;
