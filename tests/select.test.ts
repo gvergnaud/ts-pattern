@@ -7,6 +7,40 @@ import {
 } from '../src/types/FindSelected';
 
 describe('select', () => {
+  it('does not retain selections from a rejected union branch', () => {
+    const result = match<{ first: number; second: number }>({
+      first: 1,
+      second: 2,
+    })
+      .with(
+        P.union(
+          { first: P.select('rejected'), second: 0 },
+          { first: 1, second: P.select('accepted') }
+        ),
+        (selections) => selections
+      )
+      .run();
+
+    expect(result).toEqual({ rejected: undefined, accepted: 2 });
+  });
+
+  it('clears nested selections when a later union branch matches', () => {
+    const result = match<{ values: number[]; valid: boolean }>({
+      values: [1, 2],
+      valid: true,
+    })
+      .with(
+        P.union(
+          { values: P.array(P.select('values')), valid: false },
+          { valid: true }
+        ),
+        (selections) => selections
+      )
+      .run();
+
+    expect(result).toEqual({ values: undefined });
+  });
+
   it('should work with tuples', () => {
     expect(
       match<[string, number], number>(['get', 2])

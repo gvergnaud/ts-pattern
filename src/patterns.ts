@@ -580,12 +580,15 @@ export function union<
         const selector = (key: string, value: any) => {
           selections[key] = value;
         };
-        flatMap(
+        const selectionKeys = flatMap(
           patterns as readonly UnknownValuePattern[],
           getSelectionKeys
-        ).forEach((key) => selector(key, undefined));
-        const matched = (patterns as readonly UnknownValuePattern[]).some((p) =>
-          matchPattern(p, value, selector)
+        );
+        const matched = (patterns as readonly UnknownValuePattern[]).some(
+          (p) => {
+            selectionKeys.forEach((key) => selector(key, undefined));
+            return matchPattern(p, value, selector);
+          }
         );
         return { matched, selections };
       },
