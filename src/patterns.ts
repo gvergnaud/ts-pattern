@@ -268,9 +268,13 @@ export function array(
             selections[key] = (selections[key] || []).concat([value]);
           };
 
-          const matched = value.every((v) =>
-            matchPattern(pattern, v, selector)
-          );
+          let matched = true;
+          for (let i = 0; i < value.length; i++) {
+            if (!matchPattern(pattern, value[i], selector)) {
+              matched = false;
+              break;
+            }
+          }
 
           return { matched, selections };
         },
