@@ -30,6 +30,13 @@ for (const name of [
       expect(selected[name]).toEqual([1, 2]);
     });
 
+    it('collects record values', () => {
+      const selected = match({ a: 1, b: 2 })
+        .with(P.record(P.string, P.select(name)), (value) => value)
+        .run();
+      expect(selected[name]).toEqual([1, 2]);
+    });
+
     it('collects map values', () => {
       const selected = match(
         new Map([
