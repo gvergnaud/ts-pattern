@@ -49,11 +49,12 @@ export type Match<
   //   while checking this overload, so they must infer the same input type.
   // - Non-primitive patterns are rejected on the `pattern` argument, before
   //   the handler gets its parameter types, so they fall through to the
-  //   general overload unchanged. They are rejected with `p & InvalidPattern`
-  //   rather than `never`: when no overload matches (e.g. while the handler
-  //   isn't written yet), editors take the contextual type of the pattern
-  //   from this first overload, and `p` keeps the string literal
-  //   completions the general overload gives.
+  //   general overload unchanged. They are rejected with `p & void` rather
+  //   than `never`: when no overload matches (e.g. while the handler isn't
+  //   written yet), editors take the contextual type of the pattern from
+  //   this first overload, and `p` keeps the key and string literal
+  //   completions the general overload gives. `void` adds no members of its
+  //   own (a symbol would add `description`, `toString` and `valueOf`).
   // - An invalid pattern makes `p` fall back to its constraint, which
   //   contains `InvalidPattern`. In that case, we type the pattern as
   //   `Pattern<i>`, the handler's input as `i` and keep `i` as is, like the
@@ -64,12 +65,12 @@ export type Match<
     pattern: IsNever<p> extends true
       ? Pattern<i>
       : 0 extends 1 & i
-      ? p & InvalidPattern
+      ? p & void
       : [p] extends [Primitives]
       ? p
       : true extends (p extends InvalidPattern ? true : never)
       ? Pattern<i>
-      : p & InvalidPattern,
+      : p & void,
     handler: (
       selections: [p] extends [Primitives] ? p : i,
       value: [p] extends [Primitives] ? p : i
