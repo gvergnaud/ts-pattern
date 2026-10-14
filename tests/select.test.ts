@@ -486,4 +486,57 @@ describe('select', () => {
       fn(['some cli cmd param --flag', 'some', 'cli', 'cmd', 'param', '--flag'])
     ).toEqual('param');
   });
+  it('discovers named selections under symbol keys in optional patterns', () => {
+    const key = Symbol('value');
+    const result = match<{ box?: { [key]: number } }>({})
+      .with(
+        { box: P.optional({ [key]: P.number.select('value') }) },
+        (selection) => {
+          type t = Expect<
+            Equal<typeof selection, { value: number | undefined }>
+          >;
+          return selection;
+        }
+      )
+      .exhaustive();
+    expect(result).toStrictEqual({ value: undefined });
+  });
+
+  it('retains a symbol-key selection when another union branch matches', () => {
+    const key = Symbol('value');
+    const result = match<unknown>({ kind: 'other' })
+      .with(
+        P.union({ [key]: P.number.select('value') }, { kind: 'other' }),
+        (selection) => {
+          type t = Expect<
+            Equal<typeof selection, { value: number | undefined }>
+          >;
+          return selection;
+        }
+      )
+      .otherwise(() => null);
+    expect(result).toStrictEqual({ value: undefined });
+  });
+
+  it('discovers selections under non-enumerable own pattern keys', () => {
+    const pattern = { hidden: P.number.select('value') };
+    Object.defineProperty(pattern, 'hidden', { enumerable: false });
+    const result = match<{ box?: { hidden: number } }>({})
+      .with({ box: P.optional(pattern) }, (selection) => {
+        type t = Expect<Equal<typeof selection, { value: number | undefined }>>;
+        return selection;
+      })
+      .exhaustive();
+    expect(result).toStrictEqual({ value: undefined });
+  });
+  it('discovers anonymous selections under symbol keys in optional patterns', () => {
+    const key = Symbol('value');
+    const result = match<{ box?: { [key]: number } }>({})
+      .with({ box: P.optional({ [key]: P.number.select() }) }, (selection) => {
+        type t = Expect<Equal<typeof selection, number | undefined>>;
+        return selection;
+      })
+      .exhaustive();
+    expect(result).toBeUndefined();
+  });
 });
