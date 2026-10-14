@@ -10,6 +10,12 @@ export type PickReturnValue<a, b> = a extends symbols.unset ? b : a;
 declare const invalidPattern: unique symbol;
 type InvalidPattern = typeof invalidPattern;
 
+// The type the fast `.with()` overload gives to the patterns it doesn't
+// handle, so that it fails on them (see below). An alias, so that
+// TypeScript prints `NotAPrimitivePattern<...>` when it lists the
+// overloads in an error, rather than the whole pattern type `& void`.
+type NotAPrimitivePattern<p> = p & void;
+
 interface NonExhaustiveError<i> {
   __nonExhaustive: never;
 }
@@ -65,12 +71,12 @@ export type Match<
     pattern: IsNever<p> extends true
       ? Pattern<i>
       : 0 extends 1 & i
-      ? p & void
+      ? NotAPrimitivePattern<p>
       : [p] extends [Primitives]
       ? p
       : true extends (p extends InvalidPattern ? true : never)
       ? Pattern<i>
-      : p & void,
+      : NotAPrimitivePattern<p>,
     handler: (
       selections: [p] extends [Primitives] ? p : i,
       value: [p] extends [Primitives] ? p : i
