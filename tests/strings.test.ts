@@ -183,6 +183,53 @@ describe('Strings', () => {
     }
   );
 
+  it.each(['', 'g', 'y', 'gy'])(
+    'matches frozen regular expressions with flags "%s"',
+    (flags) => {
+      const expression = new RegExp('^hello', flags);
+      expression.lastIndex = 2;
+      Object.freeze(expression);
+      const pattern = P.string.regex(expression);
+      const matches = (input: unknown) =>
+        match(input)
+          .with(pattern, () => true)
+          .otherwise(() => false);
+
+      expect(matches('hello')).toBe(true);
+      expect(matches('hello')).toBe(true);
+      expect(matches('world')).toBe(false);
+      expect(expression.lastIndex).toBe(2);
+    }
+  );
+
+  it('matches a non-global expression with a read-only nonzero lastIndex', () => {
+    const expression = /^hello/;
+    Object.defineProperty(expression, 'lastIndex', {
+      value: 2,
+      writable: false,
+    });
+    expect(
+      match('hello')
+        .with(P.string.regex(expression), () => true)
+        .otherwise(() => false)
+    ).toBe(true);
+    expect(expression.lastIndex).toBe(2);
+  });
+
+  it('defers invalid string expression errors until matching a string', () => {
+    const pattern = P.string.regex('[');
+    expect(
+      match(42)
+        .with(pattern, () => true)
+        .otherwise(() => false)
+    ).toBe(false);
+    expect(() =>
+      match('hello')
+        .with(pattern, () => true)
+        .otherwise(() => false)
+    ).toThrow(SyntaxError);
+  });
+
   it(`P.string.regex('^[a-z]+$')`, () => {
     const f = (input: string | number) =>
       match(input)
