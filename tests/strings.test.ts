@@ -152,6 +152,37 @@ describe('Strings', () => {
     expect(f('aaaaaaaaaaa')).toBe('no');
   });
 
+  it('reuses a sticky regular expression across matches', () => {
+    const pattern = P.string.regex(/^hello/y);
+    const matches = (input: unknown) =>
+      match(input)
+        .with(pattern, () => true)
+        .otherwise(() => false);
+
+    expect(matches('hello')).toBe(true);
+    expect(matches('hello')).toBe(true);
+    expect(matches('world')).toBe(false);
+    expect(matches('hello')).toBe(true);
+    expect(matches(42)).toBe(false);
+  });
+
+  it.each([/^hello/g, /^hello/y, /^hello/gy])(
+    'does not depend on or mutate lastIndex for %s',
+    (expression) => {
+      expression.lastIndex = 2;
+      const pattern = P.string.startsWith('h').regex(expression);
+      const matches = (input: unknown) =>
+        match(input)
+          .with(pattern, () => true)
+          .otherwise(() => false);
+
+      expect(matches('hello')).toBe(true);
+      expect(expression.lastIndex).toBe(2);
+      expect(matches('world')).toBe(false);
+      expect(expression.lastIndex).toBe(2);
+    }
+  );
+
   it(`P.string.regex('^[a-z]+$')`, () => {
     const f = (input: string | number) =>
       match(input)
