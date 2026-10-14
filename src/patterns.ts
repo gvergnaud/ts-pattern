@@ -584,8 +584,19 @@ export function union<
           patterns as readonly UnknownValuePattern[],
           getSelectionKeys
         ).forEach((key) => selector(key, undefined));
-        const matched = (patterns as readonly UnknownValuePattern[]).some((p) =>
-          matchPattern(p, value, selector)
+        const matched = (patterns as readonly UnknownValuePattern[]).some(
+          (p) => {
+            const candidate: Record<string, unknown> = Object.create(null);
+            const matched = matchPattern(p, value, (key, value) => {
+              candidate[key] = value;
+            });
+            if (matched) {
+              Object.keys(candidate).forEach((key) =>
+                selector(key, candidate[key])
+              );
+            }
+            return matched;
+          }
         );
         return { matched, selections };
       },
