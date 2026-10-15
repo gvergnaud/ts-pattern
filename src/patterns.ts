@@ -472,6 +472,18 @@ export function record(
           const [patternKey, patternValue] =
             args.length === 1 ? [string, args[0]] : args;
 
+          [
+            ...getSelectionKeys(patternKey),
+            ...getSelectionKeys(patternValue),
+          ].forEach((key) => {
+            Object.defineProperty(selections, key, {
+              value: [],
+              enumerable: true,
+              configurable: true,
+              writable: true,
+            });
+          });
+
           const matched = recordEvery(value, (k, v) => {
             // since number keys are coerced to strings, we need to coerce them back to numbers if the pattern is `number`
             const coercedKey =
