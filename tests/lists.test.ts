@@ -73,4 +73,32 @@ describe('List ([a])', () => {
         }
       );
   });
+
+  it('should match extra properties of array subtypes like RegExpExecArray', () => {
+    const fn = (input: RegExpExecArray) =>
+      match(input)
+        .with({ groups: { year: P.string } }, (x) => {
+          type t1 = Expect<Equal<typeof x.groups.year, string>>;
+          type t2 = Expect<
+            Equal<typeof x extends RegExpExecArray ? true : false, true>
+          >;
+          return x.groups.year;
+        })
+        .with({ index: 0 }, (x) => {
+          type t = Expect<Equal<typeof x, RegExpExecArray & { index: 0 }>>;
+          return 'start';
+        })
+        .otherwise(() => 'no match');
+
+    expect(fn(/(?<year>\d{4})/.exec('in 2024')!)).toBe('2024');
+    expect(fn(/\d{4}/.exec('2024')!)).toBe('start');
+    expect(fn(/\d{4}/.exec('in 2024')!)).toBe('no match');
+  });
+
+  it('should not accept object patterns on plain arrays', () => {
+    match<number[]>([1])
+      // @ts-expect-error
+      .with({ length: 1 }, () => 'one')
+      .otherwise(() => 'other');
+  });
 });

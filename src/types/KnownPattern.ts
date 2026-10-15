@@ -44,4 +44,13 @@ type ArrayPattern<a> = a extends readonly (infer i)[]
         | readonly []
         | readonly [AnyPattern<i>, ...AnyPattern<i>[]]
         | readonly [...AnyPattern<i>[], AnyPattern<i>]
+        | ArrayExtraPropsPattern<a>
   : never;
+
+/**
+ * Subtypes of arrays, like `RegExpExecArray`, can have extra
+ * properties (`groups`, `index`...) that object patterns can match on.
+ */
+type ArrayExtraPropsPattern<a> = [keyof a] extends [keyof any[]]
+  ? never
+  : ObjectPattern<Readonly<Pick<a, Exclude<keyof a, keyof any[]>>>>;
