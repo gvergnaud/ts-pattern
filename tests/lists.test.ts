@@ -101,4 +101,11 @@ describe('List ([a])', () => {
       .with({ length: 1 }, () => 'one')
       .otherwise(() => 'other');
   });
+
+  it('should not accept object patterns on tuples with optional elements', () => {
+    match<[value?: string]>([])
+      // @ts-expect-error
+      .with({ 0: P.string }, () => 'string')
+      .otherwise(() => 'other');
+  });
 });
