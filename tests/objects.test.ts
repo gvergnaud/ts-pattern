@@ -127,9 +127,28 @@ describe('Records ({})', () => {
   });
 
   it('issue #370: should not match array values against object patterns with optional keys or empty pattern', () => {
-    expect(isMatching({ customer: P.optional(P.string) })([1, 2, 3])).toBe(false);
-    expect(match<any>([1, 2, 3]).with({ customer: P.optional(P.string) }, () => 'matched').otherwise(() => 'no match')).toBe('no match');
-    expect(match<any>([]).with({}, () => 'matched').otherwise(() => 'no match')).toBe('no match');
-    expect(match<any>([1, 2, 3]).with({ length: 3 }, () => 'matched length').otherwise(() => 'no match')).toBe('matched length');
+    expect(isMatching({ customer: P.optional(P.string) })([1, 2, 3])).toBe(
+      false
+    );
+    expect(
+      match<any>([1, 2, 3])
+        .with({ customer: P.optional(P.string) }, () => 'matched')
+        .otherwise(() => 'no match')
+    ).toBe('no match');
+    expect(
+      match<any>([])
+        .with({}, () => 'matched')
+        .otherwise(() => 'no match')
+    ).toBe('no match');
+    expect(
+      match<any>([1, 2, 3])
+        .with({ length: 3 }, () => 'matched length')
+        .otherwise(() => 'no match')
+    ).toBe('matched length');
+    expect(
+      match<any>(['a'])
+        .with({ 0: 'a' }, () => 'matched index')
+        .otherwise(() => 'no match')
+    ).toBe('matched index');
   });
 });
