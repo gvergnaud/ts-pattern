@@ -79,6 +79,9 @@ export type ExtractPreciseValue<a, b> = b extends Override<infer b1>
         // input union the pattern doesn't match.
         Contains<bValues, never> extends true
         ? never
+        : // Keep array subtypes (like `RegExpExecArray`) as arrays.
+        a extends readonly any[]
+        ? a & bValues
         : Compute<
             // Keep other properties of `a`
             {
