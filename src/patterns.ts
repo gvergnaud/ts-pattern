@@ -309,6 +309,11 @@ export function set<
           let selections: Record<string, unknown[]> = {};
 
           if (value.size === 0) {
+            args.forEach((pattern) => {
+              getSelectionKeys(pattern).forEach((key) => {
+                selections[key] = [];
+              });
+            });
             return { matched: true, selections };
           }
 
@@ -375,6 +380,11 @@ export function map<
           let selections: Record<string, unknown[]> = {};
 
           if (value.size === 0) {
+            args.forEach((pattern) => {
+              getSelectionKeys(pattern).forEach((key) => {
+                selections[key] = [];
+              });
+            });
             return { matched: true, selections };
           }
 
