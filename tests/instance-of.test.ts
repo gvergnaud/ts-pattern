@@ -88,3 +88,47 @@ describe('instanceOf', () => {
     expect(get(new B())).toEqual('instance of Abstract');
   });
 });
+
+describe('instanceOf with non-public constructors', () => {
+  it('narrows classes with private constructors', () => {
+    class Private {
+      private constructor(public value: string) {}
+      static create(value: string) {
+        return new Private(value);
+      }
+    }
+    const parse = (input: Private | number) =>
+      match(input)
+        .with(P.instanceOf(Private), (value) => {
+          type t = Expect<Equal<typeof value, Private>>;
+          return value.value;
+        })
+        .with(P.number, (value) => String(value))
+        .exhaustive();
+    expect(parse(Private.create('private'))).toBe('private');
+    expect(parse(2)).toBe('2');
+  });
+
+  it('matches protected constructors and preserves inherited instance types', () => {
+    class Protected {
+      protected constructor(public value: number) {}
+    }
+    class Child extends Protected {
+      constructor() {
+        super(3);
+      }
+    }
+    const result = match<unknown>(new Child())
+      .with(P.instanceOf(Protected), (value) => {
+        type t = Expect<Equal<typeof value, Protected>>;
+        return value.value;
+      })
+      .otherwise(() => 0);
+    expect(result).toBe(3);
+    expect(
+      match({ value: 3 })
+        .with(P.instanceOf(Protected), () => true)
+        .otherwise(() => false)
+    ).toBe(false);
+  });
+});

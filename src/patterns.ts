@@ -763,11 +763,20 @@ function isNonNullable(x: unknown): x is {} {
   return x !== null && x !== undefined;
 }
 
-type AnyConstructor = abstract new (...args: any[]) => any;
+type AnyConstructor =
+  | (abstract new (...args: any[]) => any)
+  | (Function & { prototype: any });
+
+type Instance<T extends AnyConstructor> = T extends abstract new (
+  ...args: any[]
+) => any
+  ? InstanceType<T>
+  : T extends { prototype: infer instance }
+  ? instance
+  : never;
 
 function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
-  return (val: unknown): val is InstanceType<T> =>
-    val instanceof classConstructor;
+  return (val: unknown): val is Instance<T> => val instanceof classConstructor;
 }
 
 /**
@@ -1250,7 +1259,7 @@ export const nonNullable: NonNullablePattern = chainable(when(isNonNullable));
  */
 export function instanceOf<T extends AnyConstructor>(
   classConstructor: T
-): Chainable<GuardP<unknown, InstanceType<T>>> {
+): Chainable<GuardP<unknown, Instance<T>>> {
   return chainable(when(isInstanceOf(classConstructor)));
 }
 
