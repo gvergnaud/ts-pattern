@@ -895,7 +895,7 @@ const includes = <input, const substr extends string>(
 const regex = <input, const expr extends string | RegExp>(
   expr: expr
 ): GuardExcludeP<input, string, never> =>
-  when((value) => isString(value) && Boolean(value.match(expr)));
+  when((value) => isString(value) && new RegExp(expr).test(value));
 
 const stringChainable = <pattern extends Matcher<any, any, any, any, any>>(
   pattern: pattern
