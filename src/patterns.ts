@@ -10,7 +10,7 @@ import * as symbols from './internals/symbols';
 import { matcher } from './internals/symbols';
 import { isMatching } from './is-matching';
 import { ExtractPreciseValue } from './types/ExtractPreciseValue';
-import { Fn } from './types/helpers';
+import { Fn, IsAny } from './types/helpers';
 import { InvertPattern } from './types/InvertPattern';
 import {
   Pattern,
@@ -763,17 +763,22 @@ function isNonNullable(x: unknown): x is {} {
   return x !== null && x !== undefined;
 }
 
-type AnyConstructor =
-  | (abstract new (...args: any[]) => any)
-  | (Function & { prototype: any });
+type PublicConstructor = abstract new (...args: any[]) => any;
+type AnyConstructor = PublicConstructor | (Function & { prototype: unknown });
 
-type Instance<T extends AnyConstructor> = T extends abstract new (
-  ...args: any[]
-) => any
+type Instance<T extends AnyConstructor> = T extends PublicConstructor
   ? InstanceType<T>
   : T extends { prototype: infer instance }
   ? instance
   : never;
+
+type ClassConstructor<T extends AnyConstructor> = T extends PublicConstructor
+  ? T
+  : T extends (...args: any[]) => unknown
+  ? never
+  : IsAny<Instance<T>> extends true
+  ? never
+  : T;
 
 function isInstanceOf<T extends AnyConstructor>(classConstructor: T) {
   return (val: unknown): val is Instance<T> => val instanceof classConstructor;
@@ -1258,7 +1263,7 @@ export const nonNullable: NonNullablePattern = chainable(when(isNonNullable));
  *   .with(P.instanceOf(SomeClass), () => 'will match on SomeClass instances')
  */
 export function instanceOf<T extends AnyConstructor>(
-  classConstructor: T
+  classConstructor: T & ClassConstructor<T>
 ): Chainable<GuardP<unknown, Instance<T>>> {
   return chainable(when(isInstanceOf(classConstructor)));
 }

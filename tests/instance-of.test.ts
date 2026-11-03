@@ -132,3 +132,15 @@ describe('instanceOf with non-public constructors', () => {
     ).toBe(false);
   });
 });
+
+it('rejects callable-only functions as instanceOf patterns', () => {
+  const arrow = () => 1;
+  const asyncFunction = async function () {};
+  const widenedFunction: Function = arrow;
+  // @ts-expect-error An arrow function cannot be used with instanceof.
+  P.instanceOf(arrow);
+  // @ts-expect-error An async function cannot be used with instanceof.
+  P.instanceOf(asyncFunction);
+  // @ts-expect-error A general Function does not establish an instance type.
+  P.instanceOf(widenedFunction);
+});
