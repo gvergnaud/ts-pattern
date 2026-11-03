@@ -582,3 +582,29 @@ describe('P.record', () => {
     });
   });
 });
+
+describe('record key coercion', () => {
+  it('selects the original key once when a pattern accepts strings and numbers', () => {
+    const result = match<unknown>({ 1: 42 })
+      .with(P.record(P.select('keys'), P.number), ({ keys }) => keys)
+      .otherwise(() => []);
+    expect(result).toEqual(['1']);
+  });
+});
+
+it('still selects numeric record keys when the string form does not match', () => {
+  const result = match<unknown>({ 1: 42, 2: 43 })
+    .with(P.record(P.select('keys', P.number), P.number), ({ keys }) => keys)
+    .otherwise(() => []);
+  expect(result).toEqual([1, 2]);
+});
+
+it('selects a single key per entry with a string-or-number key pattern', () => {
+  const result = match<unknown>({ 1: 42, name: 43 })
+    .with(
+      P.record(P.select('keys', P.union(P.string, P.number)), P.number),
+      ({ keys }) => keys
+    )
+    .otherwise(() => []);
+  expect(result).toEqual(['1', 'name']);
+});
