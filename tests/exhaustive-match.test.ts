@@ -824,6 +824,44 @@ describe('exhaustive()', () => {
       }
     });
 
+    it('preserves NonExhaustiveError when the input cannot be serialized or coerced', () => {
+      const circular = Object.create(null);
+      circular.self = circular;
+      const unprintable = {
+        toJSON() {
+          throw new Error('Cannot serialize');
+        },
+        [Symbol.toPrimitive]() {
+          throw new Error('Cannot coerce');
+        },
+      };
+
+      expect.assertions(4);
+      for (const input of [circular, unprintable]) {
+        try {
+          match(input).run();
+        } catch (error) {
+          if (!(error instanceof NonExhaustiveError)) throw error;
+          expect(error.input).toBe(input);
+          expect(error.message).toBe(
+            'Pattern matching error: no pattern matches value <unserializable>'
+          );
+        }
+      }
+    });
+
+    it('keeps string representations for inputs that cannot be JSON serialized', () => {
+      const circular: { self?: unknown } = {};
+      circular.self = circular;
+
+      expect(new NonExhaustiveError(circular).message).toBe(
+        'Pattern matching error: no pattern matches value [object Object]'
+      );
+      expect(new NonExhaustiveError(1n).message).toBe(
+        'Pattern matching error: no pattern matches value 1'
+      );
+    });
+
     it('Matched pattern with callback error does not result in NonExhaustiveError', () => {
       expect.assertions(3);
 
