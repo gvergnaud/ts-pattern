@@ -184,3 +184,48 @@ describe('Strings', () => {
     expect(f('a b c')).toBe('something else');
   });
 });
+
+describe('stateful regular expressions', () => {
+  it('only compiles string patterns when matching a string', () => {
+    const pattern = P.string.regex('(');
+    const accepts = (value: unknown) =>
+      match(value)
+        .with(pattern, () => true)
+        .otherwise(() => false);
+
+    expect(accepts(1)).toBe(false);
+    expect(() => accepts('a')).toThrow(SyntaxError);
+  });
+
+  it.each(['g', 'y', 'gy'])(
+    'does not read or modify lastIndex with %s',
+    (flags) => {
+      const expression = new RegExp('a', flags);
+      expression.lastIndex = 1;
+      const pattern = P.string.regex(expression);
+      const accepts = (value: unknown) =>
+        match(value)
+          .with(pattern, () => true)
+          .otherwise(() => false);
+      expect(accepts('a')).toBe(true);
+      expect(accepts('a')).toBe(true);
+      expect(accepts('b')).toBe(false);
+      expect(accepts('a')).toBe(true);
+      expect(accepts(1)).toBe(false);
+      expect(expression.lastIndex).toBe(1);
+    }
+  );
+
+  it('accepts frozen regular expressions and chained patterns', () => {
+    const expression = Object.freeze(/a/y);
+    const pattern = P.string.minLength(1).regex(expression);
+    const accepts = (value: string) =>
+      match(value)
+        .with(pattern, () => true)
+        .otherwise(() => false);
+    expect(accepts('a')).toBe(true);
+    expect(accepts('a')).toBe(true);
+    expect(accepts('ba')).toBe(false);
+    expect(expression.lastIndex).toBe(0);
+  });
+});
