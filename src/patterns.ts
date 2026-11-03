@@ -479,16 +479,14 @@ export function record(
                 ? Number(k)
                 : null;
 
-            const coercedKeyMatch =
-              coercedKey !== null
-                ? matchPattern(patternKey, coercedKey, selector)
-                : false;
-
-            const keyMatch = matchPattern(patternKey, k, selector);
+            const keyMatch =
+              matchPattern(patternKey, k, selector) ||
+              (coercedKey !== null &&
+                matchPattern(patternKey, coercedKey, selector));
 
             const valueMatch = matchPattern(patternValue, v, selector);
 
-            return (keyMatch || coercedKeyMatch) && valueMatch;
+            return keyMatch && valueMatch;
           });
 
           return { matched, selections };
