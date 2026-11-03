@@ -2,6 +2,16 @@ import { Expect, Equal } from '../src/types/helpers';
 import { match, P } from '../src';
 
 describe('Set', () => {
+  it('selects __proto__ as an own property from an empty collection', () => {
+    const result = match(new Set<string>())
+      .with(P.set(P.select('__proto__', P.string)), (selection) => selection)
+      .exhaustive();
+
+    expect(Object.keys(result)).toEqual(['__proto__']);
+    expect(result.__proto__).toEqual([]);
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+  });
+
   it('selects empty arrays from an empty Set', () => {
     const input = new Set<string>();
     const named = match(input)

@@ -2,6 +2,19 @@ import { Expect, Equal } from '../src/types/helpers';
 import { match, P } from '../src';
 
 describe('Map', () => {
+  it('selects __proto__ as an own property from an empty collection', () => {
+    const result = match(new Map<string, number>())
+      .with(
+        P.map(P.select('__proto__', P.string), P.number),
+        (selection) => selection
+      )
+      .exhaustive();
+
+    expect(Object.keys(result)).toEqual(['__proto__']);
+    expect(result.__proto__).toEqual([]);
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+  });
+
   it('selects empty key and value arrays from an empty Map', () => {
     const input = new Map<string, number>();
     const result = match(input)
