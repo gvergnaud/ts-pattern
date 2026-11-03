@@ -836,13 +836,17 @@ describe('exhaustive()', () => {
         },
       };
 
+      expect.assertions(4);
       for (const input of [circular, unprintable]) {
-        expect(() => match(input).run()).toThrow(NonExhaustiveError);
-        const error = new NonExhaustiveError(input);
-        expect(error.input).toBe(input);
-        expect(error.message).toBe(
-          'Pattern matching error: no pattern matches value <unserializable>'
-        );
+        try {
+          match(input).run();
+        } catch (error) {
+          if (!(error instanceof NonExhaustiveError)) throw error;
+          expect(error.input).toBe(input);
+          expect(error.message).toBe(
+            'Pattern matching error: no pattern matches value <unserializable>'
+          );
+        }
       }
     });
 
