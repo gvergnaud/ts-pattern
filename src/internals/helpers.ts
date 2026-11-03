@@ -44,7 +44,7 @@ export const matchPattern = (
   }
 
   if (isObject(pattern)) {
-    if (!isObject(value)) return false;
+    if (!isObject(value) && typeof value !== 'function') return false;
 
     // Tuple pattern
     if (Array.isArray(pattern)) {
