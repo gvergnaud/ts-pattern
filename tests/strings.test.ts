@@ -186,6 +186,17 @@ describe('Strings', () => {
 });
 
 describe('stateful regular expressions', () => {
+  it('only compiles string patterns when matching a string', () => {
+    const pattern = P.string.regex('(');
+    const accepts = (value: unknown) =>
+      match(value)
+        .with(pattern, () => true)
+        .otherwise(() => false);
+
+    expect(accepts(1)).toBe(false);
+    expect(() => accepts('a')).toThrow(SyntaxError);
+  });
+
   it.each(['g', 'y', 'gy'])(
     'does not read or modify lastIndex with %s',
     (flags) => {
