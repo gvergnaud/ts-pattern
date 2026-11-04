@@ -27,7 +27,7 @@ describe('selecting an explicit undefined pattern', () => {
       match<unknown>(undefined)
         .with(P.select('value', undefined), (selection) => selection)
         .otherwise(() => 'fallback')
-    ).toEqual({ value: undefined });
+    ).toStrictEqual({ value: undefined });
   });
 
   it('keeps selections without a pattern unrestricted', () => {
