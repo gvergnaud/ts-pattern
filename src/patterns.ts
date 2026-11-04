@@ -149,7 +149,7 @@ const variadic = <pattern extends {}>(pattern: pattern): Variadic<pattern> =>
   Object.assign(pattern, {
     [Symbol.iterator](): Iterator<pattern, void, undefined> {
       let i = 0;
-      const variadicPattern = Object.assign(pattern, {
+      const variadicPattern = Object.assign({}, pattern, {
         [symbols.isVariadic]: true,
       });
       const values: IteratorResult<pattern, void>[] = [
