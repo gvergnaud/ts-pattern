@@ -704,6 +704,8 @@ export function select(
       : typeof args[0] === 'string'
       ? undefined
       : args[0];
+  const hasPattern =
+    args.length === 2 || (args.length === 1 && typeof args[0] !== 'string');
   return chainable({
     [matcher]() {
       return {
@@ -716,7 +718,7 @@ export function select(
           };
           return {
             matched:
-              pattern === undefined
+              !hasPattern
                 ? true
                 : matchPattern(pattern, value, selector),
             selections: selections,
@@ -724,7 +726,7 @@ export function select(
         },
         getSelectionKeys: () =>
           [key ?? symbols.anonymousSelectKey].concat(
-            pattern === undefined ? [] : getSelectionKeys(pattern)
+            !hasPattern ? [] : getSelectionKeys(pattern)
           ),
       };
     },
