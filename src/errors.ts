@@ -8,7 +8,11 @@ export class NonExhaustiveError extends Error {
     try {
       displayedValue = JSON.stringify(input);
     } catch (e) {
-      displayedValue = input;
+      try {
+        displayedValue = String(input);
+      } catch (e) {
+        displayedValue = '<unserializable>';
+      }
     }
     super(`Pattern matching error: no pattern matches value ${displayedValue}`);
   }
