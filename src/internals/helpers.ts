@@ -123,7 +123,9 @@ export const getSelectionKeys = (pattern: any): string[] => {
       return pattern[symbols.matcher]().getSelectionKeys?.() ?? [];
     }
     if (Array.isArray(pattern)) return flatMap(pattern, getSelectionKeys);
-    return flatMap(Object.values(pattern), getSelectionKeys);
+    return flatMap(Reflect.ownKeys(pattern), (key) =>
+      getSelectionKeys(pattern[key])
+    );
   }
   return [];
 };
