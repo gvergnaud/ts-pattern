@@ -126,3 +126,48 @@ describe('Records ({})', () => {
     ).toEqual('vector1');
   });
 });
+
+describe('object patterns on functions', () => {
+  it('matches static properties on a class constructor', () => {
+    class Service {
+      static schema = { kind: 'service' };
+    }
+    expect(
+      match(Service)
+        .with({ schema: { kind: 'service' } }, () => true)
+        .otherwise(() => false)
+    ).toBe(true);
+  });
+});
+
+it('matches and selects properties of callable objects', () => {
+  const callable = Object.assign(() => 42, { label: 'callable' });
+  const result = match(callable)
+    .with({ label: P.select(P.string) }, (label) => label)
+    .otherwise(() => 'missing');
+  expect(result).toBe('callable');
+  expect(
+    match(callable)
+      .with({ label: 'other' }, () => true)
+      .otherwise(() => false)
+  ).toBe(false);
+});
+
+it('matches inherited static properties and still rejects primitive inputs', () => {
+  class Base {
+    static kind = 'service';
+  }
+  class Child extends Base {}
+  expect(
+    match(Child)
+      .with({ kind: 'service' }, () => true)
+      .otherwise(() => false)
+  ).toBe(true);
+  for (const value of [null, undefined, 1, 'service', false]) {
+    expect(
+      match<unknown>(value)
+        .with({ kind: 'service' }, () => true)
+        .otherwise(() => false)
+    ).toBe(false);
+  }
+});
