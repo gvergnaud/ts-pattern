@@ -311,9 +311,14 @@ export function set<
         match: <UnknownInput>(value: UnknownInput | input) => {
           if (!(value instanceof Set)) return { matched: false };
 
-          let selections: Record<string, unknown[]> = {};
+          const selections: Record<string, unknown[]> = Object.create(null);
 
           if (value.size === 0) {
+            args.forEach((pattern) => {
+              getSelectionKeys(pattern).forEach((key) => {
+                selections[key] = [];
+              });
+            });
             return { matched: true, selections };
           }
 
@@ -377,9 +382,14 @@ export function map<
         match: <UnknownInput>(value: UnknownInput | input) => {
           if (!(value instanceof Map)) return { matched: false };
 
-          let selections: Record<string, unknown[]> = {};
+          const selections: Record<string, unknown[]> = Object.create(null);
 
           if (value.size === 0) {
+            args.forEach((pattern) => {
+              getSelectionKeys(pattern).forEach((key) => {
+                selections[key] = [];
+              });
+            });
             return { matched: true, selections };
           }
 
