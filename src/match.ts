@@ -68,7 +68,12 @@ class MatchExpression<input, output> {
     let selected: Record<string, unknown> = {};
     const select = (key: string, value: unknown) => {
       hasSelections = true;
-      selected[key] = value;
+      Object.defineProperty(selected, key, {
+        value,
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      });
     };
 
     const matched =

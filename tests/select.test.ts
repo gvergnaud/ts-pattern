@@ -7,6 +7,22 @@ import {
 } from '../src/types/FindSelected';
 
 describe('select', () => {
+  it('should preserve __proto__ as an own named selection', () => {
+    const input = { value: 1 };
+    const result = match(input)
+      .with(P.select('__proto__'), (selected) => {
+        type t = Expect<
+          Equal<typeof selected, { __proto__: { value: number } }>
+        >;
+        return selected;
+      })
+      .run();
+
+    expect(result).toStrictEqual({ ['__proto__']: input });
+    expect(Object.keys(result)).toEqual(['__proto__']);
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+  });
+
   it('should work with tuples', () => {
     expect(
       match<[string, number], number>(['get', 2])
