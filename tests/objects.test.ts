@@ -125,4 +125,39 @@ describe('Records ({})', () => {
         .otherwise(() => 'no match')
     ).toEqual('vector1');
   });
+
+  it('issue #309: arrays should not match object patterns', () => {
+    // An empty array is an object in JavaScript, so {} would vacuously match it.
+    // The fix ensures that a non-array pattern never matches an array value.
+    expect(
+      match<any, string>([])
+        .with({}, () => 'matched object pattern')
+        .otherwise(() => 'no match')
+    ).toEqual('no match');
+
+    expect(
+      match<any, string>([1, 2, 3])
+        .with({}, () => 'matched object pattern')
+        .otherwise(() => 'no match')
+    ).toEqual('no match');
+
+    expect(
+      match<any, string>([1, 2, 3])
+        .with({ length: 3 }, () => 'matched object pattern')
+        .otherwise(() => 'no match')
+    ).toEqual('no match');
+
+    // Plain objects should still match object patterns
+    expect(
+      match<any, string>({})
+        .with({}, () => 'matched')
+        .otherwise(() => 'no match')
+    ).toEqual('matched');
+
+    expect(
+      match<any, string>({ a: 1 })
+        .with({ a: 1 }, () => 'matched')
+        .otherwise(() => 'no match')
+    ).toEqual('matched');
+  });
 });
