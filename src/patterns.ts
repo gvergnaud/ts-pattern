@@ -145,33 +145,32 @@ function chainable<pattern extends Matcher<any, any, any, any, any>>(
   }) as Chainable<pattern>;
 }
 
-const variadic = <pattern extends {}>(pattern: pattern): Variadic<pattern> =>
-  Object.assign(pattern, {
-    [Symbol.iterator](): Iterator<pattern, void, undefined> {
-      let i = 0;
-      const variadicPattern = Object.assign({}, pattern, {
-        [symbols.isVariadic]: true,
-      });
-      const values: IteratorResult<pattern, void>[] = [
-        { value: variadicPattern, done: false },
-        { done: true, value: undefined },
-      ];
-      return {
-        next: () => values[i++] ?? values.at(-1)!,
-      };
-    },
-  });
+const variadic = <pattern extends {}>(pattern: pattern): Variadic<pattern> => {
+  const p = pattern as any;
+  p[Symbol.iterator] = (): Iterator<pattern, void, undefined> => {
+    let i = 0;
+    const variadicPattern = Object.assign({}, pattern, {
+      [symbols.isVariadic]: true,
+    });
+    const values: IteratorResult<pattern, void>[] = [
+      { value: variadicPattern, done: false },
+      { done: true, value: undefined },
+    ];
+    return {
+      next: () => values[i++] ?? values.at(-1)!,
+    };
+  };
+  return p;
+};
 
 function arrayChainable<pattern extends Matcher<any, any, any, any, any>>(
   pattern: pattern
 ): ArrayChainable<pattern> {
-  return Object.assign(variadic(pattern), {
-    optional: () => arrayChainable(optional(pattern)),
-    select: (key: any) =>
-      arrayChainable(
-        key === undefined ? select(pattern) : select(key, pattern)
-      ),
-  }) as any;
+  const p = variadic(pattern) as any;
+  p.optional = () => arrayChainable(optional(pattern));
+  p.select = (key: any) =>
+    arrayChainable(key === undefined ? select(pattern) : select(key, pattern));
+  return p;
 }
 
 /**
