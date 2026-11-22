@@ -194,7 +194,7 @@ export function optional<
     [matcher]() {
       return {
         match: <UnknownInput>(value: UnknownInput | input) => {
-          let selections: Record<string, unknown[]> = {};
+          let selections: Record<string, unknown[]> = Object.create(null);
           const selector = (key: string, value: any) => {
             selections[key] = value;
           };
@@ -255,7 +255,7 @@ export function array(
           if (args.length === 0) return { matched: true };
 
           const pattern = args[0];
-          let selections: Record<string, unknown[]> = {};
+          let selections: Record<string, unknown[]> = Object.create(null);
 
           if (value.length === 0) {
             getSelectionKeys(pattern).forEach((key) => {
@@ -311,7 +311,7 @@ export function set<
         match: <UnknownInput>(value: UnknownInput | input) => {
           if (!(value instanceof Set)) return { matched: false };
 
-          let selections: Record<string, unknown[]> = {};
+          let selections: Record<string, unknown[]> = Object.create(null);
 
           if (value.size === 0) {
             return { matched: true, selections };
@@ -377,7 +377,7 @@ export function map<
         match: <UnknownInput>(value: UnknownInput | input) => {
           if (!(value instanceof Map)) return { matched: false };
 
-          let selections: Record<string, unknown[]> = {};
+          let selections: Record<string, unknown[]> = Object.create(null);
 
           if (value.size === 0) {
             return { matched: true, selections };
@@ -468,7 +468,7 @@ export function record(
             );
           }
 
-          let selections: Record<string, unknown[]> = {};
+          let selections: Record<string, unknown[]> = Object.create(null);
 
           const selector = (key: string, value: unknown) => {
             selections[key] = (selections[key] || []).concat([value]);
@@ -543,7 +543,7 @@ export function intersection<
   return chainable({
     [matcher]: () => ({
       match: (value) => {
-        let selections: Record<string, unknown[]> = {};
+        let selections: Record<string, unknown[]> = Object.create(null);
         const selector = (key: string, value: any) => {
           selections[key] = value;
         };
@@ -579,7 +579,7 @@ export function union<
   return chainable({
     [matcher]: () => ({
       match: <UnknownInput>(value: UnknownInput | input) => {
-        let selections: Record<string, unknown[]> = {};
+        let selections: Record<string, unknown[]> = Object.create(null);
         const selector = (key: string, value: any) => {
           selections[key] = value;
         };
@@ -713,9 +713,8 @@ export function select(
     [matcher]() {
       return {
         match: (value) => {
-          let selections: Record<string, unknown> = {
-            [key ?? symbols.anonymousSelectKey]: value,
-          };
+          let selections: Record<string, unknown> = Object.create(null);
+          selections[key ?? symbols.anonymousSelectKey] = value;
           const selector = (key: string, value: any) => {
             selections[key] = value;
           };
