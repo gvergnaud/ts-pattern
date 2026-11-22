@@ -1,4 +1,9 @@
-import { MatchedValue, Pattern, UnknownProperties } from './types/Pattern';
+import {
+  Matcher,
+  MatchedValue,
+  Pattern,
+  UnknownProperties,
+} from './types/Pattern';
 import * as P from './patterns';
 import { matchPattern } from './internals/helpers';
 import { WithDefault } from './types/helpers';
@@ -46,6 +51,16 @@ export function isMatching<const p extends Pattern<unknown>>(
  *  }
  */
 export function isMatching<const T, const P extends PatternConstraint<T>>(
+  pattern: P,
+  value: T
+): value is T & WithDefault<P.narrow<T, P>, P.infer<P>>;
+/**
+ * Overload handling top-level matcher patterns (e.g. `P.instanceOf(...)`,
+ * `P.string`, `P.when(...)`) when the value has a concrete type. A `Matcher`
+ * has no string index signature, so it isn't assignable to the
+ * `& UnknownProperties` constraint used for object patterns. See issue #336.
+ */
+export function isMatching<const T, const P extends Matcher<unknown, T>>(
   pattern: P,
   value: T
 ): value is T & WithDefault<P.narrow<T, P>, P.infer<P>>;
