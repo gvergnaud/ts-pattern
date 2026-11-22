@@ -103,7 +103,15 @@ export const matchPattern = (
         : false;
     }
 
-    return Reflect.ownKeys(pattern).every((k): boolean => {
+    const keys = Reflect.ownKeys(pattern);
+    if (
+      Array.isArray(value) &&
+      (keys.length === 0 || !keys.some((k) => k in value))
+    ) {
+      return false;
+    }
+
+    return keys.every((k): boolean => {
       const subPattern = pattern[k];
 
       return (
